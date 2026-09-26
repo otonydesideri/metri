@@ -1,14 +1,26 @@
+---
+id: backend/transactions
+description: "o mecanismo de atomicidade depois que o fluxo requer transação — o contrato de transação entre agregados; a avaliação e a proteção do risco de concorrência (concorrência e locking); a escrita de sistema externo que não cabe na transação e o risco de consistência aceito."
+use_when:
+  - "escrever um caso de uso que persiste dois ou mais agregados"
+  - "proteger uma operação contra execução concorrente"
+  - "gravar em sistema externo numa operação que também grava no banco"
+  - "aceitar um risco de consistência novo"
+applies_to:
+  - "apps/app-api/src/domain/application/transactions/**"
+  - "apps/app-api/src/infra/persistence/prisma/transactions/**"
+  - "apps/app-api/test/transactions/**"
+keywords: [transação, contrato de transação, run, $transaction, tx, atomicidade, unit of work, concorrência, locking, locking otimista, locking pessimista, version, SELECT FOR UPDATE, updateMany, revalidação, CONFLICT, unicidade, unique index, sistema externo, risco aceito]
+not_covered:
+  - "a decisão de que o fluxo requer transação e a resposta a um efeito pós-commit que falha → backend/operation-routing"
+examples: [backend/transactions.examples.md]
+status: active
+---
 # Transações
-
-Dono de: o mecanismo de atomicidade depois que o fluxo requer transação — o contrato de transação entre agregados; a avaliação e a proteção do risco de concorrência (concorrência e locking); a escrita de sistema externo que não cabe na transação e o risco de consistência aceito.
-
-Consultar antes de: escrever um caso de uso que persiste dois ou mais agregados; proteger uma operação contra execução concorrente; gravar em sistema externo numa operação que também grava no banco; aceitar um risco de consistência novo.
-
-Não cobre: a decisão de que o fluxo requer transação e a resposta a um efeito pós-commit que falha (`backend/operation-routing.md`).
 
 Como o backend garante atomicidade quando uma operação de negócio grava em mais de um agregado, como risco de concorrência é avaliado e protegido, e o que acontece quando uma escrita de sistema externo não cabe na transação.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `backend/modules.md`.
 
 ## O problema
 
@@ -74,26 +86,7 @@ async execute({ orderId }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
 
 A implementação converte com os mappers dos agregados envolvidos e escreve tudo no mesmo `tx`:
 
-```ts
-@Injectable()
-export class OrderInvoicingPrismaTransactionImpl implements OrderInvoicingTransaction {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async run(params: OrderInvoicingTransactionParams): Promise<void> {
-    const orderData = OrderPrismaMapper.toPrisma(params.order);
-    const invoiceData = InvoicePrismaMapper.toPrisma(params.invoice);
-
-    await this.prisma.client.$transaction(async (tx) => {
-      await tx.order.update({
-        where: { id: orderData.id },
-        data: { status: orderData.status, updatedAt: orderData.updatedAt },
-      });
-
-      await tx.invoice.create({ data: invoiceData });
-    });
-  }
-}
-```
+Exemplo completo: transactions.examples.md#orderinvoicingprismatransactionimpl
 
 Pontos-chave:
 

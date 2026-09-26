@@ -1,14 +1,26 @@
+---
+id: backend/reading
+description: "a leitura no backend — o caminho de domínio versus a query de exibição, com contrato na aplicação e execução direta no banco; DTO, projeção e read model; o não-encontrado do detalhe; a paginação e a agregação de dashboard e relatório."
+use_when:
+  - "criar endpoint ou query de listagem, detalhe, dashboard ou relatório"
+  - "paginar ou agregar uma leitura"
+  - "adicionar um método de leitura novo a um contrato de repositório"
+  - "decidir se uma leitura passa por caso de uso ou vira query de exibição"
+applies_to:
+  - "apps/app-api/src/domain/application/queries/**"
+  - "apps/app-api/src/infra/persistence/prisma/queries/**"
+keywords: [leitura, query de exibição, "<Ação>Query", "<Ação>PrismaQueryImpl", DTO, projeção, read model, CQRS, não-encontrado, PaginatedResult, paginação, pageSize, dashboard, relatório, agregação, módulo de tela, $queryRaw, DATE_TRUNC, bigint, persistence.module.ts]
+not_covered:
+  - "o filtro pelo escopo do dono → backend/access-scope"
+  - "o cache de uma leitura → infrastructure/cache"
+examples: [backend/reading.examples.md]
+status: active
+---
 # Leitura
-
-Dono de: a leitura no backend — o caminho de domínio versus a query de exibição, com contrato na aplicação e execução direta no banco; DTO, projeção e read model; o não-encontrado do detalhe; a paginação e a agregação de dashboard e relatório.
-
-Consultar antes de: criar endpoint ou query de listagem, detalhe, dashboard ou relatório; paginar ou agregar uma leitura; adicionar um método de leitura novo a um contrato de repositório; decidir se uma leitura passa por caso de uso ou vira query de exibição.
-
-Não cobre: o filtro pelo escopo do dono (`backend/access-scope.md`); o cache de uma leitura (`infrastructure/cache.md`).
 
 Como o backend monta respostas de consulta: quando uma leitura pertence ao caminho de domínio (contrato, entidade, caso de uso) e quando ela vira uma query de exibição com contrato na aplicação e execução direta no banco pela infraestrutura, onde cada artefato mora, paginação, não-encontrado e agregação.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`.
 
 ## As duas naturezas de uma leitura
 
@@ -99,59 +111,7 @@ export abstract class FetchOrdersQuery {
 }
 ```
 
-```ts
-// infra/persistence/prisma/queries/order/fetch-orders.prisma-query.impl.ts
-import { Injectable } from '@nestjs/common';
-import type {
-  FetchOrdersQuery,
-  FetchOrdersQueryInput,
-  OrderListItem,
-} from '../../../../../domain/application/queries/order/fetch-orders.query';
-import type { PaginatedResult } from '../../../../../domain/application/queries/pagination';
-import { PrismaService } from '../../prisma.service';
-
-@Injectable()
-export class FetchOrdersPrismaQueryImpl implements FetchOrdersQuery {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async execute(
-    input: FetchOrdersQueryInput,
-  ): Promise<PaginatedResult<OrderListItem>> {
-    const where = {
-      customerId: input.customerId,
-      ...(input.status ? { status: input.status } : {}),
-    };
-
-    const [rows, total] = await Promise.all([
-      this.prisma.client.order.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (input.page - 1) * input.pageSize,
-        take: input.pageSize,
-        include: { customer: { select: { name: true } } },
-      }),
-      this.prisma.client.order.count({ where }),
-    ]);
-
-    const items = rows.map((row) => ({
-      id: row.id,
-      number: row.number,
-      customerName: row.customer.name,
-      status: row.status,
-      totalInCents: row.totalInCents,
-      createdAt: row.createdAt,
-    }));
-
-    const result = {
-      items,
-      total,
-      page: input.page,
-      pageSize: input.pageSize,
-    };
-    return result;
-  }
-}
-```
+Exemplo completo: reading.examples.md#fetchordersprismaqueryimpl
 
 Pontos-chave:
 

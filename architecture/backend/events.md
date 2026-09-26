@@ -1,14 +1,24 @@
+---
+id: backend/events
+description: "o domain event depois que a reação vira evento — a classe de evento e a granularidade dele; o registro do fato na entidade e o despacho pelo repositório depois de persistir; o subscriber no que tem de específico e a falha no handler; o bus in-process."
+use_when:
+  - "criar evento ou subscriber novo"
+  - "registrar na entidade um fato para outro módulo reagir"
+  - "tratar a falha de um handler de evento"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/events/**"
+  - "apps/app-api/src/infra/events/**"
+keywords: [domain event, evento, subscriber, DomainEvent, DomainEvents, EventHandler, AggregateRoot, addDomainEvent, dispatchEventsForAggregate, setupSubscriptions, events.module.ts, bus, in-process, "@metri/core/events", shouldRun, clearHandlers, waitFor, particípio]
+not_covered:
+  - "a escolha entre evento, chamada direta, transação e job → backend/operation-routing"
+examples: [backend/events.examples.md]
+status: active
+---
 # Eventos de domínio
-
-Dono de: o domain event depois que a reação vira evento — a classe de evento e a granularidade dele; o registro do fato na entidade e o despacho pelo repositório depois de persistir; o subscriber no que tem de específico e a falha no handler; o bus in-process.
-
-Consultar antes de: criar evento ou subscriber novo; registrar na entidade um fato para outro módulo reagir; tratar a falha de um handler de evento.
-
-Não cobre: a escolha entre evento, chamada direta, transação e job (`backend/operation-routing.md`).
 
 Como um módulo reage a um fato acontecido em outro sem acoplamento direto: o que é um domain event, como declarar, emitir, assinar e testar, e o que acontece quando um handler falha.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `backend/modules.md`.
 
 ## O que é um domain event
 
@@ -39,26 +49,7 @@ Emitir o evento de nível mais alto que descreve o fato, não cada subpasso. Ped
 
 Evento mora em `src/domain/enterprise/events/<evento>.event.ts` e implementa o contrato `DomainEvent` do core. Classe `<Agregado><FatoNoParticípio>Event`.
 
-```ts
-import type { UniqueEntityID } from '@metri/core/entities';
-import type { DomainEvent } from '@metri/core/events';
-
-/** ORDER-003 — pedido saiu de rascunho; notificação e faturamento reagem. */
-export class OrderConfirmedEvent implements DomainEvent {
-  public readonly occurredAt: Date;
-
-  constructor(
-    public readonly orderId: UniqueEntityID,
-    public readonly customerId: UniqueEntityID,
-  ) {
-    this.occurredAt = new Date();
-  }
-
-  getAggregateId(): UniqueEntityID {
-    return this.orderId;
-  }
-}
-```
+Exemplo completo: events.examples.md#orderconfirmedevent
 
 Pontos-chave:
 
@@ -115,56 +106,7 @@ Pontos-chave:
 
 Subscriber é adaptador de entrada (`backend/application.md`), da mesma natureza do controller: escuta o bus interno e dispara um caso de uso. Mora em `src/infra/events/on-<evento>.subscriber.ts`, classe `On<Evento>Subscriber`, implementando o contrato `EventHandler` do core.
 
-```ts
-import { Injectable } from '@nestjs/common';
-import { DomainEvents, type EventHandler } from '@metri/core/events';
-import { PinoLogger } from 'nestjs-pino';
-import { SendOrderConfirmationUseCase } from '../../domain/application/use-cases/notification/send-order-confirmation.use-case';
-import { OrderConfirmedEvent } from '../../domain/enterprise/events/order-confirmed.event';
-
-@Injectable()
-export class OnOrderConfirmedSubscriber implements EventHandler {
-  constructor(
-    private readonly sendOrderConfirmationUseCase: SendOrderConfirmationUseCase,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext(OnOrderConfirmedSubscriber.name);
-    this.setupSubscriptions();
-  }
-
-  setupSubscriptions(): void {
-    DomainEvents.register(
-      // Cast seguro: o registro é chaveado pelo nome da classe, então só
-      // OrderConfirmedEvent chega neste callback.
-      (event) => {
-        void this.handle(event as OrderConfirmedEvent);
-      },
-      OrderConfirmedEvent.name,
-    );
-  }
-
-  private async handle(event: OrderConfirmedEvent): Promise<void> {
-    try {
-      const result = await this.sendOrderConfirmationUseCase.execute({
-        orderId: event.orderId.toValue(),
-        customerId: event.customerId.toValue(),
-      });
-
-      if (result.isFailure()) {
-        this.logger.error(
-          { err: result.value, orderId: event.orderId.toValue() },
-          'OnOrderConfirmedSubscriber falhou',
-        );
-      }
-    } catch (error) {
-      this.logger.error(
-        { err: error, orderId: event.orderId.toValue() },
-        'OnOrderConfirmedSubscriber falhou',
-      );
-    }
-  }
-}
-```
+Exemplo completo: events.examples.md#onorderconfirmedsubscriber
 
 Pontos-chave:
 

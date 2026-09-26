@@ -1,10 +1,21 @@
+---
+id: backend/operation-routing
+description: "a escolha do mecanismo que executa uma operação ou um efeito — escrita do agregado, execução em linha com chamada direta, service dedicado, contrato de transação, domain event, job assíncrono e tarefa agendada — e a resposta a um efeito pós-commit que falha (compensação)."
+use_when:
+  - "decidir se uma reação vira chamada direta, transação, evento ou job"
+  - "escrever caso de uso que grava em mais de um agregado"
+  - "criar evento, subscriber, job ou cron novo"
+  - "aceitar a perda de um efeito secundário"
+keywords: [roteamento de operação, árvore de decisão, chamada direta, em linha, service dedicado, contrato de transação, domain event, subscriber, job, tarefa agendada, cron, compensação, retry, dead letter, efeito aditivo, efeito pós-commit, auditoria]
+not_covered:
+  - "como cada mecanismo é construído — contrato de transação, concorrência e locking → backend/transactions"
+  - "como cada mecanismo é construído — evento, despacho, subscriber e falha no handler → backend/events"
+  - "como cada mecanismo é construído — contrato de fila, worker, quem enfileira, idempotência, retry e dead letter → backend/async-jobs"
+  - "como cada mecanismo é construído — escrita canônica do agregado → backend/persistence"
+  - "como cada mecanismo é construído — contrato injetado e caso de uso → backend/application"
+status: active
+---
 # Roteamento de operação
-
-Dono de: a escolha do mecanismo que executa uma operação ou um efeito — escrita do agregado, execução em linha com chamada direta, service dedicado, contrato de transação, domain event, job assíncrono e tarefa agendada — e a resposta a um efeito pós-commit que falha (compensação).
-
-Consultar antes de: decidir se uma reação vira chamada direta, transação, evento ou job; escrever caso de uso que grava em mais de um agregado; criar evento, subscriber, job ou cron novo; aceitar a perda de um efeito secundário.
-
-Não cobre: como cada mecanismo é construído — contrato de transação, concorrência e locking em `backend/transactions.md`; evento, despacho, subscriber e falha no handler em `backend/events.md`; contrato de fila, worker, quem enfileira, idempotência, retry e dead letter em `backend/async-jobs.md`; escrita canônica do agregado em `backend/persistence.md`; contrato injetado e caso de uso em `backend/application.md`.
 
 Uma operação de negócio raramente termina na própria gravação: ela confirma um pedido e emite uma fatura, avisa o cliente, alimenta um relatório. Este documento decide por qual mecanismo cada parte acontece; os documentos de cada mecanismo dizem como ela é construída depois de escolhida. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`, `notification`) de `backend/modules.md`.
 

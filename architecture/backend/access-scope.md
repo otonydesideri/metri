@@ -1,10 +1,21 @@
+---
+id: backend/access-scope
+description: "o contrato genérico de escopo do dono — de onde o dono validado chega, como ele se propaga até a aplicação, o filtro de leitura, o uso na escrita e no storage quando pertinentes, o isolamento entre donos e a prova A/B."
+use_when:
+  - "expor, alterar ou assinar acesso a dado que pertence a um dono"
+  - "escrever query, caso de uso ou contrato de asset que recebe identificador de dono"
+  - "montar o e2e de um dado com dono"
+keywords: [escopo do dono, dono, identificador de dono, isolamento, prova A/B, where, SQL cru, recurso filho, fronteira de request, asset, registro de upload, não-encontrado, businessId, organizationId, tenantId, customerId]
+not_covered:
+  - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto → activation"
+  - "autenticação e login → activation"
+  - "mascaramento de recurso de outro dono, anti-enumeração e status HTTP (\"Erros sensíveis\") → backend/errors"
+  - "query de exibição, paginação, projeção e não-encontrado da leitura → backend/reading"
+  - "storage → infrastructure/storage"
+  - "a fronteira de request como peça do framework → infrastructure/runtime"
+status: active
+---
 # Escopo de acesso
-
-Dono de: o contrato genérico de escopo do dono — de onde o dono validado chega, como ele se propaga até a aplicação, o filtro de leitura, o uso na escrita e no storage quando pertinentes, o isolamento entre donos e a prova A/B.
-
-Consultar antes de: expor, alterar ou assinar acesso a dado que pertence a um dono; escrever query, caso de uso ou contrato de asset que recebe identificador de dono; montar o e2e de um dado com dono.
-
-Não cobre: a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto; autenticação e login; mascaramento de recurso de outro dono, anti-enumeração e status HTTP (`backend/errors.md`, "Erros sensíveis"); query de exibição, paginação, projeção e não-encontrado da leitura (`backend/reading.md`); storage (`infrastructure/storage.md`); a fronteira de request como peça do framework (`infrastructure/runtime.md`).
 
 Este documento fixa a forma do contrato de escopo do dono, igual para qualquer projeto; quem é o dono em cada projeto é decisão daquele projeto. Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`, com o cliente no papel de dono.
 

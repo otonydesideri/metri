@@ -1,14 +1,26 @@
+---
+id: backend/testing
+description: "a pirâmide de teste do backend — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber e e2e por controller contra banco Postgres isolado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis."
+use_when:
+  - "escrever spec de entidade, value object, caso de uso ou subscriber do backend"
+  - "escrever e2e de controller, que prova o fluxo HTTP completo com tradução de erro e persistência real"
+  - "criar factory de teste ou repositório em memória de um agregado"
+  - "decidir se um comportamento do backend precisa de dublê novo ou reusa um existente"
+applies_to:
+  - "apps/app-api/src/**/*.spec.ts"
+  - "apps/app-api/src/**/*.e2e-spec.ts"
+  - "apps/app-api/test/**"
+keywords: [spec, e2e, e2e-spec, pirâmide, factory de teste, "make<Agregado>", makePrisma, repositório em memória, InMemoryRepositoryImpl, makeInMemoryRepositories, dublê, Vitest, setup-e2e.ts, "@faker-js/faker", instanceof, waitFor, supertest, overrideProvider, setGlobalPrefix, OnDatabase, payload, Arrange, Act]
+not_covered:
+  - "o teste do frontend, com pirâmide própria → frontend/testing"
+examples: [backend/testing.examples.md]
+status: active
+---
 # Testes
-
-Dono de: a pirâmide de teste do backend — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber e e2e por controller contra banco Postgres isolado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis.
-
-Consultar antes de: escrever spec de entidade, value object, caso de uso ou subscriber do backend; escrever e2e de controller, que prova o fluxo HTTP completo com tradução de erro e persistência real; criar factory de teste ou repositório em memória de um agregado; decidir se um comportamento do backend precisa de dublê novo ou reusa um existente.
-
-Não cobre: o teste do frontend, com pirâmide própria (`frontend/testing.md`).
 
 Como o backend do produto prova comportamento: os três níveis da pirâmide, o que cada um prova e onde mora, as factories e dublês compartilhados entre eles.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica.
 
 ## A pirâmide
 
@@ -49,51 +61,7 @@ Duas partes no mesmo arquivo:
 
 Agregado de tabela externa não muda essa forma: a entidade dele existe, só com `reconstitute()` (`domain/model.md`, "Propriedade do agregado: quem escreve a tabela"), e a factory a devolve como a de qualquer outro. Tabela sem representação no modelo de domínio não é agregado (`domain/model.md`), e esta forma não se aplica a ela.
 
-```ts
-// test/factories/make-order.factory.ts
-import { faker } from '@faker-js/faker';
-import { Injectable } from '@nestjs/common';
-import { UniqueEntityID } from '@metri/core/entities';
-import { Order, type OrderProps, OrderItemList } from '../../src/domain/enterprise/order.entity';
-import { OrderStatus } from '../../src/domain/enterprise/enums/order-status.enum';
-import { OrderPrismaMapper } from '../../src/infra/persistence/prisma/mappers/order.prisma-mapper';
-import { PrismaService } from '../../src/infra/persistence/prisma/prisma.service';
-
-export function makeOrder(
-  override: Partial<OrderProps> = {},
-  id?: UniqueEntityID,
-): Order {
-  return Order.reconstitute(
-    {
-      customerId: new UniqueEntityID(),
-      items: new OrderItemList([]),
-      status: OrderStatus.Draft,
-      createdAt: faker.date.recent(),
-      ...override,
-    },
-    id ?? new UniqueEntityID(),
-  );
-}
-
-/** Grava um `order` real via Prisma — usado em e2e, ao contrário de `makeOrder` (entidade em memória, só teste unitário). */
-@Injectable()
-export class OrderFactory {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async makePrismaOrder(
-    override: Partial<OrderProps> = {},
-    id?: UniqueEntityID,
-  ): Promise<Order> {
-    const order = makeOrder(override, id);
-
-    await this.prisma.client.order.create({
-      data: OrderPrismaMapper.toPrisma(order),
-    });
-
-    return order;
-  }
-}
-```
+Exemplo completo: testing.examples.md#make-orderfactoryts
 
 ## Como criar um repositório em memória de teste (`test/repositories/<agregado>.in-memory-repository.impl.ts`)
 
@@ -102,33 +70,7 @@ export class OrderFactory {
 - Todo método de escrita despacha eventos no fim, como o real (`DomainEvents.dispatchEventsForAggregate(...)`, `backend/events.md`).
 - Registrado em `test/factories/make-in-memory-repositories.factory.ts` (`makeInMemoryRepositories()`), que devolve todos de uma vez para o spec desestruturar em `inMemory`.
 
-```ts
-export class OrderInMemoryRepositoryImpl implements OrderRepository {
-  public items: Order[] = [];
-
-  async findById(id: string): Promise<Order | null> {
-    const order = this.items.find((item) => item.id.toValue() === id);
-
-    if (!order) {
-      return null;
-    }
-
-    return order;
-  }
-
-  async save(order: Order): Promise<void> {
-    const index = this.items.findIndex((item) => item.id.equals(order.id));
-
-    if (index === -1) {
-      this.items.push(order);
-    } else {
-      this.items[index] = order;
-    }
-
-    DomainEvents.dispatchEventsForAggregate(order.id);
-  }
-}
-```
+Exemplo completo: testing.examples.md#orderinmemoryrepositoryimpl
 
 ## Como escrever spec de entidade e value object (`enterprise/<entidade>.entity.spec.ts`, `enterprise/value-objects/<nome>.spec.ts`)
 
@@ -137,37 +79,7 @@ export class OrderInMemoryRepositoryImpl implements OrderRepository {
 - Prova invariante de criação (entrada inválida vira `failure` com a classe certa) e transição de estado por método de domínio (mudança de prop, `touch()` quando a entidade tem `updatedAt`, evento registrado quando o método emite um).
 - Asserção de falha é `instanceof`, nunca comparando `message` (`backend/errors.md`).
 
-```ts
-describe('Order', () => {
-  it('create() sem item → falha', () => {
-    const result = Order.create({ customerId: new UniqueEntityID(), items: [] });
-
-    expect(result.isFailure()).toBe(true);
-    expect(result.isFailure() && result.value).toBeInstanceOf(EmptyOrderError);
-  });
-
-  it('confirm() muda o status e marca updatedAt', () => {
-    const item = OrderItem.create({
-      productId: new UniqueEntityID(),
-      quantity: 1,
-      unitPriceInCents: 5000,
-    }).value;
-    const orderOrError = Order.create({
-      customerId: new UniqueEntityID(),
-      items: [item],
-    });
-    const sut = orderOrError.value;
-
-    expect(sut.updatedAt).toBeUndefined();
-
-    const result = sut.confirm();
-
-    expect(result.isSuccess()).toBe(true);
-    expect(sut.status).toBe(OrderStatus.Confirmed);
-    expect(sut.updatedAt).toBeInstanceOf(Date);
-  });
-});
-```
+Exemplo completo: testing.examples.md#order
 
 ## Como escrever spec de caso de uso (`application/use-cases/<módulo>/<ação>.use-case.spec.ts`)
 
@@ -175,44 +87,7 @@ describe('Order', () => {
 - Linha em branco separa Arrange (`inMemory.<Agregado>Repository.items.push(...)`, montagem do `request`) de Act, e Act do primeiro `expect`.
 - Asserção de falha por `instanceof`, nunca comparando `message` (`backend/errors.md`).
 
-```ts
-describe('ConfirmOrderUseCase', () => {
-  let inMemory: InMemoryRepositoriesProps;
-  let sut: ConfirmOrderUseCase;
-
-  beforeEach(() => {
-    inMemory = makeInMemoryRepositories();
-    sut = new ConfirmOrderUseCase(inMemory.OrderRepository);
-  });
-
-  it('pedido não encontrado → falha', async () => {
-    const request = {
-      orderId: 'order-1',
-      requesterId: 'customer-1',
-    };
-
-    const result = await sut.execute(request);
-
-    expect(result.isFailure()).toBe(true);
-    expect(result.isFailure() && result.value).toBeInstanceOf(OrderNotFoundError);
-  });
-
-  it('rascunho do próprio cliente → confirmado', async () => {
-    const order = makeOrder({ customerId: new UniqueEntityID('customer-1') });
-    inMemory.OrderRepository.items.push(order);
-
-    const request = {
-      orderId: order.id.toValue(),
-      requesterId: 'customer-1',
-    };
-
-    const result = await sut.execute(request);
-
-    expect(result.isSuccess()).toBe(true);
-    expect(order.status).toBe(OrderStatus.Confirmed);
-  });
-});
-```
+Exemplo completo: testing.examples.md#confirmorderusecase
 
 ## Como escrever spec de subscriber (`infra/events/on-<evento>.subscriber.spec.ts`)
 
@@ -263,62 +138,7 @@ it('envia a confirmação quando o pedido é confirmado', async () => {
 - Objeto passado a `.send()` vira variável `payload` montada antes da chamada quando o literal é multi-linha (2 ou mais campos que não cabem numa linha só); campo único que já cabe inline continua inline.
 - Linha em branco separa cada passo de Arrange do próximo, Arrange de Act, e Act do `expect` que valida essa chamada especificamente — vale mesmo quando o teste encadeia vários pares de Act+Assert em sequência. Dentro de um mesmo passo, a chamada e o guard/expect que valida só ela ficam colados, sem linha em branco: é o guard que fecha o passo, não abre um novo.
 
-```ts
-// infra/http/controllers/order/confirm-order.e2e-spec.ts
-import {
-  FastifyAdapter,
-  type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import { Test, type TestingModule } from '@nestjs/testing';
-import request from 'supertest';
-import { OrderFactory } from '../../../../../test/factories/make-order.factory';
-import { AppModule } from '../../../../app.module';
-import { PersistenceModule } from '../../../persistence/persistence.module';
-import { PrismaService } from '../../../persistence/prisma/prisma.service';
-
-describe('POST /api/orders/:orderId/confirm (e2e)', () => {
-  let app: NestFastifyApplication;
-  let prisma: PrismaService;
-  let orderFactory: OrderFactory;
-
-  beforeAll(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule, PersistenceModule],
-      providers: [OrderFactory],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-      { bodyParser: false },
-    );
-    app.setGlobalPrefix('api');
-    await app.init();
-    await app.getHttpAdapter().getInstance().ready();
-
-    prisma = moduleRef.get(PrismaService);
-    orderFactory = moduleRef.get(OrderFactory);
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
-
-  it('rascunho existente → confirmado', async () => {
-    const order = await orderFactory.makePrismaOrder();
-
-    const response = await request(app.getHttpServer()).post(
-      `/api/orders/${order.id.toValue()}/confirm`,
-    );
-
-    expect(response.status).toBe(200);
-
-    const confirmedOnDatabase = await prisma.client.order.findUnique({
-      where: { id: order.id.toValue() },
-    });
-    expect(confirmedOnDatabase?.status).toBe('confirmed');
-  });
-});
-```
+Exemplo completo: testing.examples.md#confirm-ordere2e-spects
 
 ## O que não tem spec próprio
 

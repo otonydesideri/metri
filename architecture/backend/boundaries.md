@@ -1,14 +1,23 @@
+---
+id: backend/boundaries
+description: "o grafo de dependência permitido entre camadas e pacotes do backend — o que cada camada e pacote pode importar, com as exceções declaradas (`@Injectable()` no domínio, `@metri/db` só em `infra/persistence/prisma`, Zod só na fronteira, produção sem `test/`); os comandos que verificam o grafo."
+use_when:
+  - "adicionar um import que cruza camada ou pacote do backend"
+  - "criar uma área nova em `src/`"
+  - "adicionar dependência externa a `@metri/core` ou a `@metri/utils`"
+  - "usar framework, Prisma ou Zod dentro de `domain/`"
+applies_to:
+  - "apps/app-api/**"
+keywords: [import, grafo de dependência, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
+not_covered:
+  - "as regras próprias do frontend → frontend/structure"
+status: active
+---
 # Fronteiras de dependência
-
-Dono de: o grafo de dependência permitido entre camadas e pacotes do backend — o que cada camada e pacote pode importar, com as exceções declaradas (`@Injectable()` no domínio, `@metri/db` só em `infra/persistence/prisma`, Zod só na fronteira, produção sem `test/`); os comandos que verificam o grafo.
-
-Consultar antes de: adicionar um import que cruza camada ou pacote do backend; criar uma área nova em `src/`; adicionar dependência externa a `@metri/core` ou a `@metri/utils`; usar framework, Prisma ou Zod dentro de `domain/`.
-
-Não cobre: as regras próprias do frontend (`frontend/structure.md`).
 
 Quem pode importar o quê entre camadas e pacotes do backend.
 
-Cobre o backend: `apps/app-api`, `@metri/core`, `@metri/utils` e `@metri/db`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize a situação e pergunte antes de implementar.
+Cobre o backend: `apps/app-api`, `@metri/core`, `@metri/utils` e `@metri/db`.
 
 A violação típica destas regras compila sem erro e passa em type-check; o custo só aparece depois, como acoplamento que impede trocar uma implementação ou testar sem subir infraestrutura. Por isso cada regra termina em um comando de verificação, na seção "Verificação".
 

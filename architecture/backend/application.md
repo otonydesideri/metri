@@ -1,10 +1,30 @@
+---
+id: backend/application
+description: "o contrato injetável como `abstract class` e o mecanismo de injeção dele; o caso de uso (arquivo, `execute()`, `Input`/`Output`, responsabilidade, ordem de leitura, regra e gravação, proibição de chamar outro caso de uso, papel de leitura ao vivo ou de confirmação); o caso de uso agnóstico de quem o chama; o log do caso de uso por contrato neutro de framework; o adaptador de entrada fino e a fronteira entre a aplicação e os adaptadores."
+use_when:
+  - "criar caso de uso ou contrato de aplicação"
+  - "criar adaptador de entrada (controller, subscriber, worker, webhook, router de biblioteca)"
+  - "decidir se uma decisão mora no adaptador ou no caso de uso"
+applies_to:
+  - "apps/app-api/src/domain/application/**"
+keywords: [caso de uso, use case, execute(), Input, Output, abstract class, contrato, injeção de dependência, useClass, Symbol token, "@Inject", "@Injectable", método especulativo, leitura ao vivo, confirmação, contrato de log, nestjs-pino, adaptador de entrada, adaptador fino, controller, subscriber, worker, webhook, failure, Either]
+not_covered:
+  - "a regra de domínio que o caso de uso orquestra → domain/model"
+  - "a regra de domínio que o caso de uso orquestra → domain/domain-services"
+  - "repositório, mapper e escrita → backend/persistence"
+  - "a forma da porta HTTP → backend/http-api"
+  - "subscriber e worker no que têm de específico → backend/events"
+  - "subscriber e worker no que têm de específico → backend/async-jobs"
+  - "classe de erro, `Either` e tradução → backend/errors"
+  - "a regra dos níveis para service de infra → infrastructure/services"
+  - "query de exibição → backend/reading"
+  - "a escolha do mecanismo de uma operação → backend/operation-routing"
+  - "o escopo do dono → backend/access-scope"
+  - "o spec de caso de uso → backend/testing"
+examples: [backend/application.examples.md]
+status: active
+---
 # Aplicação
-
-Dono de: o contrato injetável como `abstract class` e o mecanismo de injeção dele; o caso de uso (arquivo, `execute()`, `Input`/`Output`, responsabilidade, ordem de leitura, regra e gravação, proibição de chamar outro caso de uso, papel de leitura ao vivo ou de confirmação); o caso de uso agnóstico de quem o chama; o log do caso de uso por contrato neutro de framework; o adaptador de entrada fino e a fronteira entre a aplicação e os adaptadores.
-
-Consultar antes de: criar caso de uso ou contrato de aplicação; criar adaptador de entrada (controller, subscriber, worker, webhook, router de biblioteca); decidir se uma decisão mora no adaptador ou no caso de uso.
-
-Não cobre: a regra de domínio que o caso de uso orquestra (`domain/model.md`, `domain/domain-services.md`); repositório, mapper e escrita (`backend/persistence.md`); a forma da porta HTTP (`backend/http-api.md`); subscriber e worker no que têm de específico (`backend/events.md`, `backend/async-jobs.md`); classe de erro, `Either` e tradução (`backend/errors.md`); a regra dos níveis para service de infra (`infrastructure/services.md`); query de exibição (`backend/reading.md`); a escolha do mecanismo de uma operação (`backend/operation-routing.md`); o escopo do dono (`backend/access-scope.md`); o spec de caso de uso (`backend/testing.md`).
 
 A camada `domain/application` orquestra o domínio: casos de uso que carregam, decidem pela entidade e gravam, falando com o mundo só por contratos. Tudo que escuta o mundo (HTTP, bus, fila, webhook) é adaptador, e adaptador não decide nada. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`).
 
@@ -90,56 +110,7 @@ export abstract class OrderRepository {
 
 O caso de uso de referência:
 
-```ts
-import { Injectable } from '@nestjs/common';
-import { type Either, failure, success } from '@metri/core/types';
-import {
-  InvalidOrderStatusTransitionError,
-  OrderNotFoundError,
-} from '../../../enterprise/errors/order.errors';
-import { OrderRepository } from '../../repositories/order-repository.contract';
-
-interface ConfirmOrderInput {
-  orderId: string;
-  requesterId: string;
-}
-
-type ConfirmOrderOutput = Either<
-  OrderNotFoundError | InvalidOrderStatusTransitionError,
-  { order: Order }
->;
-
-/** ORDER-003 — confirmação congela o pedido para faturamento. */
-@Injectable()
-export class ConfirmOrderUseCase {
-  constructor(private readonly orderRepository: OrderRepository) {}
-
-  async execute({
-    orderId,
-    requesterId,
-  }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
-    const order = await this.orderRepository.findById(orderId);
-
-    if (!order) {
-      return failure(new OrderNotFoundError(orderId));
-    }
-
-    if (order.customerId.toValue() !== requesterId) {
-      return failure(new OrderNotFoundError(orderId));
-    }
-
-    const confirmed = order.confirm();
-
-    if (confirmed.isFailure()) {
-      return failure(confirmed.value);
-    }
-
-    await this.orderRepository.save(order);
-
-    return success({ order });
-  }
-}
-```
+Exemplo completo: application.examples.md#confirmorderusecase
 
 - O segundo `if` aplica o escopo do dono na escrita (`backend/access-scope.md`) e devolve a mesma classe do não-encontrado para recurso de outro dono (`backend/errors.md`, "Erros sensíveis").
 - A regra da transição é de `order.confirm()`; o caso de uso só propaga a falha.

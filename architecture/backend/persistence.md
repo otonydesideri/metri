@@ -1,10 +1,29 @@
+---
+id: backend/persistence
+description: "o repositório (contrato e implementação Prisma), o mapper, a escrita canônica do agregado (`save()`, delta da coleção filha, escrita em lote), o nome do método de escrita, a leitura em lote contra N+1, a propriedade de tabela no schema, a política de SQL cru e o outcome de persistência: como uma condição que o driver só revela na gravação vira um resultado declarado da operação."
+use_when:
+  - "criar ou mudar repositório, mapper ou método de contrato de persistência"
+  - "escrever SQL cru"
+  - "tratar violação de unicidade, registro ausente ou `where` que não casa"
+  - "criar model no schema"
+applies_to:
+  - "apps/app-api/src/domain/application/repositories/**"
+  - "apps/app-api/src/infra/persistence/prisma/repositories/**"
+  - "apps/app-api/src/infra/persistence/prisma/mappers/**"
+keywords: [repositório, mapper, toDomain, toPrisma, reconstitute, save, upsert, createMany, deleteMany, delta, WatchedList, leitura em lote, N+1, findManyByIds, Map, PrismaService, PrismaClient, UncheckedCreateInput, SQL cru, $queryRaw, $queryRawUnsafe, outcome de persistência, "models/<módulo>.prisma"]
+not_covered:
+  - "atomicidade entre agregados, contrato de transação, unit of work, concorrência e a escada de locking → backend/transactions"
+  - "o mecanismo de contrato `abstract class` e o caso de uso → backend/application"
+  - "a propriedade do agregado e o formato do id → domain/model"
+  - "quando a coleção usa `WatchedList` → domain/watched-list"
+  - "o despacho de evento depois de persistir → backend/events"
+  - "a query de exibição → backend/reading"
+  - "quem importa `@metri/db` e `PrismaService` → backend/boundaries"
+  - "o dublê em memória → backend/testing"
+examples: [backend/persistence.examples.md]
+status: active
+---
 # Persistência
-
-Dono de: o repositório (contrato e implementação Prisma), o mapper, a escrita canônica do agregado (`save()`, delta da coleção filha, escrita em lote), o nome do método de escrita, a leitura em lote contra N+1, a propriedade de tabela no schema, a política de SQL cru e o outcome de persistência: como uma condição que o driver só revela na gravação vira um resultado declarado da operação.
-
-Consultar antes de: criar ou mudar repositório, mapper ou método de contrato de persistência; escrever SQL cru; tratar violação de unicidade, registro ausente ou `where` que não casa; criar model no schema.
-
-Não cobre: atomicidade entre agregados, contrato de transação, unit of work, concorrência e a escada de locking (`backend/transactions.md`); o mecanismo de contrato `abstract class` e o caso de uso (`backend/application.md`); a propriedade do agregado e o formato do id (`domain/model.md`); quando a coleção usa `WatchedList` (`domain/watched-list.md`); o despacho de evento depois de persistir (`backend/events.md`); a query de exibição (`backend/reading.md`); quem importa `@metri/db` e `PrismaService` (`backend/boundaries.md`); o dublê em memória (`backend/testing.md`).
 
 Persistência é a borda entre o agregado em memória e o banco: o repositório dá acesso do tipo coleção a uma raiz de agregado, o mapper converte nos dois sentidos, e nenhuma outra camada conhece Prisma. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`), com o `Order` de `domain/model.md`.
 
@@ -120,131 +139,9 @@ Quando há mais de um resultado esperado: **Obrigatório.** União fechada local
 
 O mapper e o repositório de referência:
 
-```ts
-import { UniqueEntityID } from '@metri/core/entities';
-import type {
-  Order as PrismaOrder,
-  OrderItem as PrismaOrderItem,
-  Prisma,
-} from '@metri/db/postgres/example';
-import { OrderItem } from '../../../../domain/enterprise/order-item.entity';
-import { OrderItemList } from '../../../../domain/enterprise/order-item-list';
-import { Order } from '../../../../domain/enterprise/order.entity';
-import type { OrderStatus } from '../../../../domain/enterprise/enums/order-status.enum';
+Exemplo completo: persistence.examples.md#orderprismamapper
 
-type RawOrder = PrismaOrder & { items: PrismaOrderItem[] };
-
-export class OrderPrismaMapper {
-  static toDomain(raw: RawOrder): Order {
-    const items = raw.items.map((item) =>
-      OrderItem.reconstitute(
-        {
-          productId: new UniqueEntityID(item.productId),
-          quantity: item.quantity,
-          unitPriceInCents: item.unitPriceInCents,
-        },
-        new UniqueEntityID(item.id),
-      ),
-    );
-
-    const order = Order.reconstitute(
-      {
-        customerId: new UniqueEntityID(raw.customerId),
-        items: new OrderItemList(items),
-        status: raw.status as OrderStatus,
-        createdAt: raw.createdAt,
-        updatedAt: raw.updatedAt,
-      },
-      new UniqueEntityID(raw.id),
-    );
-
-    return order;
-  }
-
-  static toPrisma(order: Order): Prisma.OrderUncheckedCreateInput {
-    return {
-      id: order.id.toValue(),
-      customerId: order.customerId.toValue(),
-      status: order.status,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-    };
-  }
-}
-```
-
-```ts
-import { Injectable } from '@nestjs/common';
-import { DomainEvents } from '@metri/core/events';
-import { OrderRepository } from '../../../../domain/application/repositories/order-repository.contract';
-import type { Order } from '../../../../domain/enterprise/order.entity';
-import { OrderItemPrismaMapper } from '../mappers/order-item.prisma-mapper';
-import { OrderPrismaMapper } from '../mappers/order.prisma-mapper';
-import { PrismaService } from '../prisma.service';
-
-@Injectable()
-export class OrderPrismaRepositoryImpl implements OrderRepository {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async findById(id: string): Promise<Order | null> {
-    const data = await this.prisma.client.order.findUnique({
-      where: { id },
-      include: { items: true },
-    });
-
-    if (!data) {
-      return null;
-    }
-
-    const order = OrderPrismaMapper.toDomain(data);
-
-    return order;
-  }
-
-  async findManyByIds(ids: string[]): Promise<Order[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-
-    const rows = await this.prisma.client.order.findMany({
-      where: { id: { in: ids } },
-      include: { items: true },
-    });
-
-    const orders = rows.map(OrderPrismaMapper.toDomain);
-
-    return orders;
-  }
-
-  async save(order: Order): Promise<void> {
-    const data = OrderPrismaMapper.toPrisma(order);
-    const newItems = order.items.getNewItems();
-    const removedItems = order.items.getRemovedItems();
-
-    await this.prisma.client.$transaction(async (tx) => {
-      await tx.order.upsert({
-        where: { id: data.id },
-        create: data,
-        update: { status: data.status, updatedAt: data.updatedAt },
-      });
-
-      if (newItems.length > 0) {
-        await tx.orderItem.createMany({
-          data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-        });
-      }
-
-      if (removedItems.length > 0) {
-        await tx.orderItem.deleteMany({
-          where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
-        });
-      }
-    });
-
-    DomainEvents.dispatchEventsForAggregate(order.id);
-  }
-}
-```
+Exemplo completo: persistence.examples.md#orderprismarepositoryimpl
 
 - `toDomain()` chama `reconstitute()`, nunca `create()`, pela regra de `domain/model.md`: linha do banco não passa de novo pela validação de nascimento.
 - O delta vem de `getNewItems()`/`getRemovedItems()` da `WatchedList` (`domain/watched-list.md`), que rastreia pertencimento, não conteúdo.

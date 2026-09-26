@@ -1,14 +1,27 @@
+---
+id: backend/async-jobs
+description: "a construção de um job depois que a operação vira job — o contrato de fila e a implementação dele; o worker no que tem de específico, com o registro e o ciclo de vida dele; quem enfileira, o enfileiramento transacional e as tarefas agendadas; a idempotência e o destino de um job que falha (retry e dead letter)."
+use_when:
+  - "criar job, worker ou cron novo"
+  - "tirar uma operação do fluxo de quem pediu para executar depois, com garantia"
+  - "enfileirar um job a partir de caso de uso ou subscriber"
+  - "tornar um job idempotente ou decidir o retry e a dead letter dele"
+  - "escolher a ferramenta de fila"
+applies_to:
+  - "apps/app-api/src/domain/application/queues/**"
+  - "apps/app-api/src/infra/jobs/**"
+  - "apps/app-api/test/queues/**"
+keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
+not_covered:
+  - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
+examples: [backend/async-jobs.examples.md]
+status: active
+---
 # Jobs assíncronos
-
-Dono de: a construção de um job depois que a operação vira job — o contrato de fila e a implementação dele; o worker no que tem de específico, com o registro e o ciclo de vida dele; quem enfileira, o enfileiramento transacional e as tarefas agendadas; a idempotência e o destino de um job que falha (retry e dead letter).
-
-Consultar antes de: criar job, worker ou cron novo; tirar uma operação do fluxo de quem pediu para executar depois, com garantia; enfileirar um job a partir de caso de uso ou subscriber; tornar um job idempotente ou decidir o retry e a dead letter dele; escolher a ferramenta de fila.
-
-Não cobre: a escolha entre job, evento, chamada direta e transação (`backend/operation-routing.md`).
 
 Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o contrato de fila, o worker, o enfileiramento transacional, tarefas agendadas, idempotência e o destino de um job que falha.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `backend/modules.md`.
 
 **A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`activation.md`, "Matriz de delegações"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "O que a decisão final não muda". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
 
@@ -58,26 +71,7 @@ Pontos-chave:
 
 Mora em `src/infra/jobs/<fluxo>.pg-boss-queue.impl.ts`, espelhando o `<agregado>.prisma-repository.impl.ts` da persistência. É fina: repassa o input para a fila do job.
 
-```ts
-import { Injectable } from '@nestjs/common';
-import {
-  OrderConfirmationQueue,
-  type OrderConfirmationQueueInput,
-} from '../../domain/application/queues/order-confirmation-queue.contract';
-import { PgBossService } from './pg-boss.service';
-import { SEND_ORDER_CONFIRMATION_QUEUE } from './send-order-confirmation.worker';
-
-@Injectable()
-export class OrderConfirmationPgBossQueueImpl implements OrderConfirmationQueue {
-  constructor(private readonly pgBoss: PgBossService) {}
-
-  async enqueue(input: OrderConfirmationQueueInput): Promise<void> {
-    await this.pgBoss.send(SEND_ORDER_CONFIRMATION_QUEUE.name, input, {
-      singletonKey: input.orderId,
-    });
-  }
-}
-```
+Exemplo completo: async-jobs.examples.md#orderconfirmationpgbossqueueimpl
 
 `singletonKey` deduplica na origem: enquanto existir job pendente com a mesma chave, enfileirar de novo não cria segundo job. É a primeira linha de defesa contra duplicação; a segunda é a idempotência do handler.
 
@@ -85,54 +79,7 @@ export class OrderConfirmationPgBossQueueImpl implements OrderConfirmationQueue 
 
 Mora em `src/infra/jobs/<job>.worker.ts`, classe `<Job>Worker`. O nome da fila é o nome do comando em kebab-case, igual ao arquivo. A definição da fila (retry, dead letter) vive como constante exportada no arquivo do worker, que é quem conhece o custo de reexecutar.
 
-```ts
-import { Injectable, type OnModuleInit } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
-import type { OrderConfirmationQueueInput } from '../../domain/application/queues/order-confirmation-queue.contract';
-import { SendOrderConfirmationUseCase } from '../../domain/application/use-cases/notification/send-order-confirmation.use-case';
-import { PgBossService, type QueueDefinition } from './pg-boss.service';
-
-export const SEND_ORDER_CONFIRMATION_QUEUE: QueueDefinition = {
-  name: 'send-order-confirmation',
-  deadLetter: 'send-order-confirmation-dlq',
-  retryLimit: 5,
-  retryDelay: 5,
-  retryBackoff: true,
-};
-
-@Injectable()
-export class SendOrderConfirmationWorker implements OnModuleInit {
-  constructor(
-    private readonly pgBoss: PgBossService,
-    private readonly sendOrderConfirmationUseCase: SendOrderConfirmationUseCase,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext(SendOrderConfirmationWorker.name);
-  }
-
-  async onModuleInit(): Promise<void> {
-    await this.pgBoss.work<OrderConfirmationQueueInput>(
-      SEND_ORDER_CONFIRMATION_QUEUE,
-      (input) => this.handle(input),
-    );
-  }
-
-  private async handle(input: OrderConfirmationQueueInput): Promise<void> {
-    const result = await this.sendOrderConfirmationUseCase.execute({
-      orderId: input.orderId,
-      customerId: input.customerId,
-    });
-
-    if (result.isFailure()) {
-      // failure esperado é resultado de negócio: retry não muda a regra.
-      this.logger.error(
-        { err: result.value, orderId: input.orderId },
-        'SendOrderConfirmationWorker descartou o job',
-      );
-    }
-  }
-}
-```
+Exemplo completo: async-jobs.examples.md#sendorderconfirmationworker
 
 Pontos-chave:
 

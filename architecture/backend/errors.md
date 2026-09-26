@@ -1,12 +1,23 @@
+---
+id: backend/errors
+description: "o erro de domínio — `DomainError`, `DomainErrorType`, `type`, `code` e os erros de cada módulo; o retorno por `Either`, nunca `throw`; a tradução para HTTP por tabela e o envelope único da resposta de erro, com `ApiErrorType`, o erro de formato HTTP e o erro inesperado do filtro global; os erros sensíveis, o que uma resposta de erro não vaza."
+use_when:
+  - "criar uma classe de erro nova ou reusar uma existente"
+  - "adicionar valor em `DomainErrorType` ou em `ApiErrorType`"
+  - "ajustar a tradução de erro na porta HTTP ou o formato da resposta de erro"
+  - "mudar a resposta a uma requisição que falha na validação de formato (corpo ou param fora do schema)"
+  - "decidir o que uma recusa revela sobre recurso de outro dono"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/errors/**"
+keywords: [DomainError, DomainErrorType, ApiErrorType, type, code, Either, failure, throw, toHttpException, STATUS_MAP, "Record<DomainErrorType, number>", toInvalidRequestException, ZodValidationPipe, APP_PIPE, UnexpectedErrorFilter, APP_FILTER, envelope, INVALID_REQUEST, INTERNAL_ERROR, REQUEST_REJECTED, erros sensíveis, anti-enumeração, "@metri/core/errors"]
+examples: [backend/errors.examples.md]
+status: active
+---
 # Erros
-
-Dono de: o erro de domínio — `DomainError`, `DomainErrorType`, `type`, `code` e os erros de cada módulo; o retorno por `Either`, nunca `throw`; a tradução para HTTP por tabela e o envelope único da resposta de erro, com `ApiErrorType`, o erro de formato HTTP e o erro inesperado do filtro global; os erros sensíveis, o que uma resposta de erro não vaza.
-
-Consultar antes de: criar uma classe de erro nova ou reusar uma existente; adicionar valor em `DomainErrorType` ou em `ApiErrorType`; ajustar a tradução de erro na porta HTTP ou o formato da resposta de erro; mudar a resposta a uma requisição que falha na validação de formato (corpo ou param fora do schema); decidir o que uma recusa revela sobre recurso de outro dono.
 
 Como erro de domínio é modelado, retornado e traduzido em resposta HTTP, e o envelope único que toda resposta de erro da API usa, com a taxonomia de protocolo dele (`ApiErrorType`).
 
-Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras deste documento, não force o encaixe nem infira uma variação por conta própria: pare, sinalize a situação e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `backend/modules.md`.
 
 ## Os três tipos de erro que existem no sistema
 
@@ -64,36 +75,7 @@ Unicidade de `code` é convenção, não checagem de compilador: duas classes po
 
 Um arquivo `<módulo>.errors.ts` em `enterprise/errors/`, ao lado dos outros arquivos de classe de erro do app (`backend/modules.md`), com uma classe por falha observável. Value object usado por mais de um módulo é a exceção, e os erros dele vão num `<value-object>.errors.ts`: não há módulo dono a escolher, e repetir as classes em cada arquivo de módulo colocaria o mesmo `code` em dois lugares.
 
-```ts
-import { DomainError, DomainErrorType } from "@metri/core/errors";
-
-export class OrderNotFoundError extends DomainError {
-  readonly type = DomainErrorType.RESOURCE_NOT_FOUND;
-  readonly code = "ORDER_NOT_FOUND";
-
-  constructor(id: string) {
-    super(`Pedido ${id} não encontrado`);
-  }
-}
-
-export class OrderNumberAlreadyUsedError extends DomainError {
-  readonly type = DomainErrorType.CONFLICT;
-  readonly code = "ORDER_NUMBER_ALREADY_USED";
-
-  constructor(orderNumber: string) {
-    super(`O número de pedido ${orderNumber} já está em uso`);
-  }
-}
-
-export class EmptyOrderError extends DomainError {
-  readonly type = DomainErrorType.VALIDATION;
-  readonly code = "EMPTY_ORDER";
-
-  constructor() {
-    super("Pedido precisa de ao menos um item");
-  }
-}
-```
+Exemplo completo: errors.examples.md#ordererrorsts
 
 Pontos-chave:
 
@@ -268,48 +250,7 @@ Pontos-chave:
 
 Erro inesperado não passa pela tabela de tradução acima: não é um `DomainError`, é uma exceção lançada por acidente de programação ou por falha de infraestrutura externa. A captura é um filtro global do Nest, registrado via `APP_FILTER` (`infrastructure/runtime.md`):
 
-```ts
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-} from "@nestjs/common";
-import type { FastifyReply } from "fastify";
-
-@Catch()
-export class UnexpectedErrorFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost): void {
-    const reply = host.switchToHttp().getResponse<FastifyReply>();
-
-    if (exception instanceof HttpException) {
-      const status = exception.getStatus();
-      const response = exception.getResponse();
-
-      // toHttpException e toInvalidRequestException já montaram o envelope
-      if (typeof response === "object" && "code" in response && "type" in response) {
-        reply.status(status).send(response);
-        return;
-      }
-
-      // HttpException nativa do framework: mesmo status, corpo no envelope
-      reply.status(status).send({
-        code: HttpStatus[status],
-        message: "Requisição não atendida",
-        type: "REQUEST_REJECTED",
-      });
-      return;
-    }
-
-    reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Erro interno inesperado",
-      type: "INTERNAL_ERROR",
-    });
-  }
-}
-```
+Exemplo completo: errors.examples.md#unexpectederrorfilter
 
 ```ts
 providers: [{ provide: APP_FILTER, useClass: UnexpectedErrorFilter }];

@@ -1,12 +1,24 @@
+---
+id: backend/modules
+description: "o que é um módulo, quando criar um, a granularidade, do que ele é feito e como se organiza nas camadas, a fronteira entre módulos e a comunicação entre eles."
+use_when:
+  - "criar um módulo ou decidir se um conceito merece um"
+  - "expor comportamento novo de um módulo existente"
+  - "fazer um módulo usar outro"
+keywords: [módulo, granularidade, agregado principal, agregado satélite, módulo de tela, layer-first, comunicação entre módulos, http.module.ts, persistence.module.ts, bounded context, checklist de módulo novo]
+not_covered:
+  - "entidade, value object, agregado e propriedade do agregado → domain/model"
+  - "contrato e caso de uso → backend/application"
+  - "repositório, mapper e schema → backend/persistence"
+  - "a porta HTTP → backend/http-api"
+  - "o mecanismo de reação ou de atomicidade entre módulos → backend/operation-routing"
+  - "o bounded context e a interação entre contextos → domain/bounded-contexts"
+  - "a divisão real de módulos de cada app, que é decisão de projeto → activation"
+status: active
+---
 # Módulos
 
-Dono de: o que é um módulo, quando criar um, a granularidade, do que ele é feito e como se organiza nas camadas, a fronteira entre módulos e a comunicação entre eles.
-
-Consultar antes de: criar um módulo ou decidir se um conceito merece um; expor comportamento novo de um módulo existente; fazer um módulo usar outro.
-
-Não cobre: entidade, value object, agregado e propriedade do agregado (`domain/model.md`); contrato e caso de uso (`backend/application.md`); repositório, mapper e schema (`backend/persistence.md`); a porta HTTP (`backend/http-api.md`); o mecanismo de reação ou de atomicidade entre módulos (`backend/operation-routing.md`); o bounded context e a interação entre contextos (`domain/bounded-contexts.md`); a divisão real de módulos de cada app, que é decisão de projeto (`activation.md`).
-
-Os exemplos de código usam um domínio didático de pedidos (`order`, `invoice`): módulo real raramente tem todos os casos que um padrão precisa mostrar, e exemplo espelhando código real convida a tratar o arquivo atual como canônico. Divisão de módulos e forma de cada agregado são decisão por app, registradas como decisão de projeto do app, nunca aqui (`authoring.md`, "Decisões específicas de projeto"). Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize a situação e pergunte antes de implementar.
+Os exemplos de código usam um domínio didático de pedidos (`order`, `invoice`): módulo real raramente tem todos os casos que um padrão precisa mostrar, e exemplo espelhando código real convida a tratar o arquivo atual como canônico. Divisão de módulos e forma de cada agregado são decisão por app, registradas como decisão de projeto do app, nunca aqui (`authoring.md`, "Decisões específicas de projeto").
 
 ## A pergunta que precede tudo: isso merece ser um módulo?
 
