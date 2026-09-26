@@ -1,10 +1,26 @@
+---
+id: infrastructure/cache
+description: "o cache do backend como capacidade condicional — quando introduzir, a fonte de verdade fora do cache, quem decide a semântica do que é cacheado, onde o cache mora, a forma da chave, o cache de leitura, invalidação e expiração, a falha do cache e o spec."
+use_when:
+  - "introduzir cache numa leitura, num cálculo ou numa chamada externa do backend"
+  - "mudar a expiração (TTL) ou a invalidação de algo cacheado"
+  - "escolher provider de cache"
+applies_to:
+  - "apps/app-api/src/domain/application/services/cache/**"
+  - "apps/app-api/src/infra/services/cache/**"
+  - "apps/app-api/test/services/cache/**"
+keywords: [cache, TTL, validade, invalidação, expiração, chave, namespace, versão da chave, escopo do dono, cache de leitura, cache local, provider de cache, CacheKey, CacheProviderService, OrderListCache, OrderListCacheImpl, fonte de verdade, dado velho]
+not_covered:
+  - "o cache de servidor do frontend, que é o do React Query → frontend/data-fetching"
+  - "o cache de servidor do frontend, que é o do React Query → frontend/state"
+  - "a query de exibição e o caminho de leitura → backend/reading"
+  - "o escopo do dono → backend/access-scope"
+  - "a regra dos níveis de service de infra → infrastructure/services"
+  - "o mecanismo de uma invalidação que reage a outro fluxo → backend/operation-routing"
+  - "o provider e os valores concretos de cada fluxo, que são delegação de projeto (\"Matriz de delegações\") → activation"
+status: active
+---
 # Cache
-
-Dono de: o cache do backend como capacidade condicional — quando introduzir, a fonte de verdade fora do cache, quem decide a semântica do que é cacheado, onde o cache mora, a forma da chave, o cache de leitura, invalidação e expiração, a falha do cache e o spec.
-
-Consultar antes de: introduzir cache numa leitura, num cálculo ou numa chamada externa do backend; mudar a expiração (TTL) ou a invalidação de algo cacheado; escolher provider de cache.
-
-Não cobre: o cache de servidor do frontend, que é o do React Query (`frontend/data-fetching.md`, `frontend/state.md`); a query de exibição e o caminho de leitura (`backend/reading.md`); o escopo do dono (`backend/access-scope.md`); a regra dos níveis de service de infra (`infrastructure/services.md`); o mecanismo de uma invalidação que reage a outro fluxo (`backend/operation-routing.md`); o provider e os valores concretos de cada fluxo, que são delegação de projeto (`activation.md`, "Matriz de delegações").
 
 Cache é capacidade condicional: o padrão é não ter. Quando uma necessidade medida aparece, este documento já decide a forma, e o projeto escolhe o provider e os valores de cada fluxo. Nenhum provider é decidido aqui. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 

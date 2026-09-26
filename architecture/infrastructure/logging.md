@@ -1,14 +1,26 @@
+---
+id: infrastructure/logging
+description: "o log estruturado da aplicação — o mecanismo (`nestjs-pino`), o bootstrap e o nível e formato por ambiente; o contexto progressivo e o agrupamento das linhas por request; a redação de campo sensível e o que não entra em log; como um provider de `infra/` e uma biblioteca externa logam."
+use_when:
+  - "adicionar log a um provider, controller, subscriber, worker ou repositório"
+  - "mudar o nível, o formato ou os campos de contexto da request no log"
+  - "decidir que dado pode entrar num log e o que precisa de redação"
+  - "ligar o logger de uma biblioteca externa ao log da aplicação"
+  - "mandar as linhas de log para um coletor ou agregador"
+applies_to:
+  - "apps/app-api/src/main.ts"
+  - "apps/app-api/src/app.module.ts"
+keywords: [log, nestjs-pino, pino, pino-http, pino-pretty, PinoLogger, Logger, LoggerModule, forRootAsync, bufferLogs, useLogger, LoggerErrorInterceptor, RequestLogContextInterceptor, APP_INTERCEPTOR, genReqId, X-Request-Id, x-request-id, req.id, requestId, assign, assignResponse, setContext, messageFormat, LOG_LEVEL_BY_ENV, redact, censor, "[REDACTED]", audit log, auditoria, VendorLoggerConfig, disableColors, dado sensível]
+not_covered:
+  - "métrica, alerta e reconciliação → infrastructure/observability"
+  - "o contrato de log do caso de uso (\"Log no caso de uso\") → backend/application"
+  - "o registro global dos interceptors de log → infrastructure/runtime"
+examples: [infrastructure/logging.examples.md]
+status: active
+---
 # Log
 
-Dono de: o log estruturado da aplicação — o mecanismo (`nestjs-pino`), o bootstrap e o nível e formato por ambiente; o contexto progressivo e o agrupamento das linhas por request; a redação de campo sensível e o que não entra em log; como um provider de `infra/` e uma biblioteca externa logam.
-
-Consultar antes de: adicionar log a um provider, controller, subscriber, worker ou repositório; mudar o nível, o formato ou os campos de contexto da request no log; decidir que dado pode entrar num log e o que precisa de redação; ligar o logger de uma biblioteca externa ao log da aplicação; mandar as linhas de log para um coletor ou agregador.
-
-Não cobre: métrica, alerta e reconciliação (`infrastructure/observability.md`); o contrato de log do caso de uso (`backend/application.md`, "Log no caso de uso"); o registro global dos interceptors de log (`infrastructure/runtime.md`).
-
 Como a aplicação produz log estruturado: o mecanismo (`nestjs-pino`) e como qualquer provider loga por ele. Vale pra log de qualquer natureza, não só do caminho de erro; `backend/errors.md` cobre a tradução de erro em resposta HTTP e usa o mecanismo daqui para o detalhe de erro inesperado, sem duplicar o desenho.
-
-Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
 
 ## Por que `nestjs-pino`
 
@@ -195,30 +207,7 @@ Provider cobre qualquer classe de `infra/` no container do Nest: repositório, c
 
 Biblioteca com logger próprio escreve, por padrão, direto no console, fora do JSON do processo: a linha dela não carrega `requestId`, não respeita o nível do ambiente e, num agregador, aparece como texto solto no meio de JSON. Quando a biblioteca aceita um logger custom, ele aponta pra mesma instância de pino, e a config disso é uma classe injetável que recebe o `PinoLogger` no construtor como qualquer provider:
 
-```ts
-// parte da config injetável da biblioteca
-@Injectable()
-export class VendorLoggerConfig {
-  constructor(private readonly logger: PinoLogger) {
-    this.logger.setContext('Vendor');
-  }
-
-  build(): VendorLoggerOptions {
-    const options: VendorLoggerOptions = {
-      disableColors: true,
-      level: 'debug',
-      log: (level, message, ...args) => {
-        if (args.length === 0) {
-          this.logger[level](message);
-          return;
-        }
-        this.logger[level]({ args }, message);
-      },
-    };
-    return options;
-  }
-}
-```
+Exemplo completo: logging.examples.md#vendorloggerconfig
 
 Pontos-chave:
 

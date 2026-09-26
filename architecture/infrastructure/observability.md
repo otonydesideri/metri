@@ -1,10 +1,22 @@
+---
+id: infrastructure/observability
+description: "métrica, alerta e reconciliação operacional como capacidades condicionais — a diferença entre log, métrica, alerta e reconciliação, quando uma métrica existe e o que ela declara, a cardinalidade das dimensões, onde a métrica é emitida, quando um alerta existe e o que ele declara, e quando e como uma reconciliação funciona."
+use_when:
+  - "criar métrica ou alerta"
+  - "desenhar uma reconciliação, processo que confere o estado esperado contra o estado real"
+  - "vigiar um risco aceito"
+  - "escolher ferramenta de observabilidade"
+keywords: [observabilidade, métrica, alerta, reconciliação, sinal, pergunta operacional, dimensão, cardinalidade, threshold, severidade, janela, dono operacional, dead letter, redrive, requestId, fonte de verdade, estado esperado, estado real, divergência, cadência, idempotente, órfão de storage, risco aceito]
+not_covered:
+  - "log, o mecanismo e o que entra nele → infrastructure/logging"
+  - "captura de erro inesperado → backend/errors"
+  - "retry, dead letter e tarefa agendada → backend/async-jobs"
+  - "a divergência possível de cada capacidade, declarada pelo dono dela — o órfão de storage → infrastructure/storage"
+  - "a divergência possível de cada capacidade, declarada pelo dono dela — o risco aceito de consistência → backend/transactions"
+  - "ferramenta, métricas concretas, thresholds, destinos e reconciliações concretas, que são delegação de projeto (\"Matriz de delegações\") → activation"
+status: active
+---
 # Observabilidade
-
-Dono de: métrica, alerta e reconciliação operacional como capacidades condicionais — a diferença entre log, métrica, alerta e reconciliação, quando uma métrica existe e o que ela declara, a cardinalidade das dimensões, onde a métrica é emitida, quando um alerta existe e o que ele declara, e quando e como uma reconciliação funciona.
-
-Consultar antes de: criar métrica ou alerta; desenhar uma reconciliação, processo que confere o estado esperado contra o estado real; vigiar um risco aceito; escolher ferramenta de observabilidade.
-
-Não cobre: log, o mecanismo e o que entra nele (`infrastructure/logging.md`); captura de erro inesperado (`backend/errors.md`); retry, dead letter e tarefa agendada (`backend/async-jobs.md`); a divergência possível de cada capacidade, declarada pelo dono dela — o órfão de storage em `infrastructure/storage.md`, o risco aceito de consistência em `backend/transactions.md`; ferramenta, métricas concretas, thresholds, destinos e reconciliações concretas, que são delegação de projeto (`activation.md`, "Matriz de delegações").
 
 Métrica, alerta e reconciliação são capacidades condicionais: um projeto pode não ter nenhuma, e cada uma nasce de uma pergunta operacional real. Quando nasce, a forma dela já está decidida aqui. Nenhuma ferramenta é escolhida neste documento (coleta, armazenamento de série, destino de alerta). Os exemplos usam o domínio didático de pedidos e as capacidades que a Source já desenha.
 

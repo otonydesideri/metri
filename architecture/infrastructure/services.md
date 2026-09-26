@@ -1,14 +1,30 @@
+---
+id: infrastructure/services
+description: "a regra transversal dos níveis para um serviço de infraestrutura compartilhado — a classe de infra que guarda o client do vendor, sem contrato; o contrato por fluxo real que domínio e aplicação injetam; o registro no `ServicesModule`; o dublê por contrato."
+use_when:
+  - "integrar um serviço externo ou um vendor novo ao backend"
+  - "criar a classe de infra ou o contrato de um serviço de infraestrutura"
+  - "decidir se um nível a mais de abstração compensa para uma capacidade"
+  - "registrar um service no `ServicesModule` ou criar o dublê dele"
+applies_to:
+  - "apps/app-api/src/domain/application/services/**"
+  - "apps/app-api/src/infra/services/**"
+  - "apps/app-api/test/services/**"
+keywords: [ServicesModule, services.module.ts, classe de infra, contrato por fluxo, vendor, nível de abstração, capacidade, useClass, provide, exports, PrismaService, PgBossService, dublê, fake, items, stub, overrideProvider]
+not_covered:
+  - "o desenho de cada capacidade → infrastructure/mail"
+  - "o desenho de cada capacidade → infrastructure/storage"
+  - "o desenho de cada capacidade → infrastructure/cache"
+  - "a fila → backend/async-jobs"
+  - "hook de request, guard, interceptor e filter, que não são serviço de integração (\"Fronteiras de request\") → infrastructure/runtime"
+  - "a mecânica do contrato `abstract class` → backend/application"
+status: active
+---
 # Infraestrutura
-
-Dono de: a regra transversal dos níveis para um serviço de infraestrutura compartilhado — a classe de infra que guarda o client do vendor, sem contrato; o contrato por fluxo real que domínio e aplicação injetam; o registro no `ServicesModule`; o dublê por contrato.
-
-Consultar antes de: integrar um serviço externo ou um vendor novo ao backend; criar a classe de infra ou o contrato de um serviço de infraestrutura; decidir se um nível a mais de abstração compensa para uma capacidade; registrar um service no `ServicesModule` ou criar o dublê dele.
-
-Não cobre: o desenho de cada capacidade (`infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`); a fila (`backend/async-jobs.md`); hook de request, guard, interceptor e filter, que não são serviço de integração (`infrastructure/runtime.md`, "Fronteiras de request"); a mecânica do contrato `abstract class` (`backend/application.md`).
 
 Como as capacidades técnicas compartilhadas são organizadas e consumidas pelos módulos: quantos níveis de abstração cada uma tem, onde o contrato mora, onde a implementação concreta mora e o critério pra decidir se um nível a mais compensa.
 
-Os exemplos usam as classes de e-mail de `infrastructure/mail.md` como instância da regra. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam as classes de e-mail de `infrastructure/mail.md` como instância da regra.
 
 ## A regra dos níveis para um serviço de infraestrutura compartilhado
 

@@ -1,10 +1,29 @@
+---
+id: infrastructure/runtime
+description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, e o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers."
+use_when:
+  - "editar `main.ts` ou `app.module.ts`"
+  - "registrar pipe, interceptor, filtro ou guard global"
+  - "ler variável de ambiente ou montar o client de uma capacidade"
+  - "criar hook de request, guard, interceptor ou filter"
+  - "depender de hook de shutdown no encerramento do processo"
+applies_to:
+  - "apps/app-api/src/main.ts"
+  - "apps/app-api/src/app.module.ts"
+  - "apps/app-api/src/infra/common/**"
+keywords: [main.ts, app.module.ts, AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
+not_covered:
+  - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"
+  - "o que cada provider global faz — log → infrastructure/logging"
+  - "a regra dos níveis de service e o `ServicesModule` → infrastructure/services"
+  - "fila, worker e o ciclo de vida do `PgBossService` → backend/async-jobs"
+  - "a superfície HTTP sob `/api` → overview"
+  - "o contrato de escopo do dono → backend/access-scope"
+  - "o formato do e2e → backend/testing"
+  - "a topologia de deploy de cada projeto → activation"
+status: active
+---
 # Runtime da aplicação
-
-Dono de: a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, e o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers.
-
-Consultar antes de: editar `main.ts` ou `app.module.ts`; registrar pipe, interceptor, filtro ou guard global; ler variável de ambiente ou montar o client de uma capacidade; criar hook de request, guard, interceptor ou filter; depender de hook de shutdown no encerramento do processo.
-
-Não cobre: o que cada provider global faz — validação de formato e tradução de erro em `backend/errors.md`, log em `infrastructure/logging.md`; a regra dos níveis de service e o `ServicesModule` (`infrastructure/services.md`); fila, worker e o ciclo de vida do `PgBossService` (`backend/async-jobs.md`); a superfície HTTP sob `/api` (`overview.md`); o contrato de escopo do dono (`backend/access-scope.md`); o formato do e2e (`backend/testing.md`); a topologia de deploy de cada projeto (`activation.md`).
 
 O mesmo `AppModule` sobe em dois lugares: no processo real, pelo `main.ts`, e nos e2e, por `Test.createTestingModule`, sem `main.ts` nenhum. O que o grafo de módulos registra vale nos dois; o que só o `main.ts` configura, o e2e repete na própria montagem quando depende dele (`backend/testing.md`).
 

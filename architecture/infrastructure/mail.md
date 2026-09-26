@@ -1,14 +1,25 @@
+---
+id: infrastructure/mail
+description: "o envio de e-mail — a classe de infra única que guarda o client do vendor de e-mail e é o único lugar com o nome dele; o sender de cada fluxo de e-mail do produto, consumido por quem dispara o fluxo, com a composição da mensagem dentro dele."
+use_when:
+  - "criar um fluxo novo de e-mail"
+  - "disparar um e-mail a partir de um fluxo do produto"
+  - "escolher ou trocar o vendor de e-mail"
+applies_to:
+  - "apps/app-api/src/domain/application/services/mail/**"
+  - "apps/app-api/src/infra/services/mail/**"
+keywords: [e-mail, vendor de e-mail, Resend, ResendMailService, RESEND_API_KEY, sender, OrderConfirmationSender, OrderConfirmationSenderImpl, viewer, render, "@react-email/render", client.emails.send, response.error, MAIL_FROM, contrato por fluxo]
+not_covered:
+  - "a regra transversal de organização — classe de infra sem contrato, contrato por fluxo, registro no `ServicesModule`, dublê por contrato → infrastructure/services"
+  - "o mecanismo que dispara o envio, chamada direta, evento ou job → backend/operation-routing"
+examples: [infrastructure/mail.examples.md]
+status: active
+---
 # E-mail
-
-Dono de: o envio de e-mail — a classe de infra única que guarda o client do vendor de e-mail e é o único lugar com o nome dele; o sender de cada fluxo de e-mail do produto, consumido por quem dispara o fluxo, com a composição da mensagem dentro dele.
-
-Consultar antes de: criar um fluxo novo de e-mail; disparar um e-mail a partir de um fluxo do produto; escolher ou trocar o vendor de e-mail.
-
-Não cobre: a regra transversal de organização — classe de infra sem contrato, contrato por fluxo, registro no `ServicesModule`, dublê por contrato (`infrastructure/services.md`); o mecanismo que dispara o envio, chamada direta, evento ou job (`backend/operation-routing.md`).
 
 O envio de e-mail: uma classe de infra que expõe o client do vendor e um contrato por fluxo real do produto (confirmação de pedido, aviso de fatura vencida), consumido por quem dispara aquele fluxo, nunca pela classe de infra direto.
 
-O vendor de e-mail é delegação de projeto (`activation.md`, "Matriz de delegações"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+O vendor de e-mail é delegação de projeto (`activation.md`, "Matriz de delegações"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `backend/modules.md`.
 
 ## A classe de infra
 
@@ -47,46 +58,7 @@ export abstract class OrderConfirmationSender {
 }
 ```
 
-```ts
-// infra/services/mail/order-confirmation-sender.impl.ts
-import { Injectable } from '@nestjs/common';
-import { render } from '@react-email/render';
-import {
-  OrderConfirmationSender,
-  type OrderConfirmationSenderInput,
-} from '../../../domain/application/services/mail/order-confirmation-sender.contract';
-import { MAIL_FROM } from '../../common/constants/mail.constant';
-import { ResendMailService } from './resend-mail.service';
-import { OrderConfirmationEmail } from './viewers/order-confirmation.viewer';
-
-@Injectable()
-export class OrderConfirmationSenderImpl implements OrderConfirmationSender {
-  constructor(private readonly mail: ResendMailService) {}
-
-  async send({
-    orderId,
-    customerEmail,
-    customerName,
-  }: OrderConfirmationSenderInput): Promise<void> {
-    const html = await render(
-      OrderConfirmationEmail({ customerName, orderId }),
-    );
-
-    const response = await this.mail.client.emails.send({
-      from: MAIL_FROM,
-      to: customerEmail,
-      subject: `Pedido ${orderId} confirmado`,
-      html,
-    });
-
-    if (response.error) {
-      throw new Error(
-        `Falha ao enviar e-mail via Resend: ${response.error.message}`,
-      );
-    }
-  }
-}
-```
+Exemplo completo: mail.examples.md#orderconfirmationsenderimpl
 
 Quem dispara a confirmação (o caso de uso do fluxo, ver `backend/operation-routing.md`, "Job") entrega só dado de domínio, nunca HTML pronto:
 

@@ -1,14 +1,31 @@
+---
+id: infrastructure/storage
+description: "o storage de objetos — os dois buckets por visibilidade e a chave canônica de um asset; o contrato por asset (origem do binário × visibilidade de leitura) sobre a classe de infra; o caminho do binário, por upload direto com URL assinada de escrita e registro pendente ou por passthrough pelo backend, e a URL de leitura, pública ou assinada; o arquivo físico que segue o destino do registro e a limpeza de uploads órfãos."
+use_when:
+  - "criar um asset novo ou um fluxo de upload de arquivo"
+  - "gerar URL assinada de escrita, para upload direto, ou de leitura, para exibir arquivo privado"
+  - "gravar no storage um arquivo gerado pelo backend, como um relatório ou um export"
+  - "mudar a chave, o bucket ou a visibilidade, pública ou privada, de um asset"
+  - "remover ou substituir o arquivo físico de um registro"
+  - "escolher ou trocar o provider de storage"
+applies_to:
+  - "apps/app-api/src/domain/application/services/storage/**"
+  - "apps/app-api/src/infra/services/storage/**"
+  - "apps/app-api/test/services/storage/**"
+keywords: [storage, bucket, bucket público, bucket privado, asset, chave canônica, URL assinada, requestUpload, getSignedUrl, getSignedReadUrl, getSignedUploadUrl, publicUrl, stat, upload direto, passthrough, registro pendente, Upload, uploadId, órfão, limpeza, allowlist, SVG, Content-Type, data URL, base64, limite de corpo, R2, R2StorageService, S3Client, CDN, ProductPhotoStorage, OrderReportStorage]
+not_covered:
+  - "o escopo do dono na assinatura e na recarga do registro → backend/access-scope"
+  - "a regra transversal de organização — classe de infra sem contrato, contrato específico, registro, dublê → infrastructure/services"
+  - "o mecanismo da tarefa agendada que limpa os órfãos → backend/async-jobs"
+  - "o provider, os buckets e o domínio público de cada projeto (\"Matriz de delegações\") → activation"
+examples: [infrastructure/storage.examples.md]
+status: active
+---
 # Storage
-
-Dono de: o storage de objetos — os dois buckets por visibilidade e a chave canônica de um asset; o contrato por asset (origem do binário × visibilidade de leitura) sobre a classe de infra; o caminho do binário, por upload direto com URL assinada de escrita e registro pendente ou por passthrough pelo backend, e a URL de leitura, pública ou assinada; o arquivo físico que segue o destino do registro e a limpeza de uploads órfãos.
-
-Consultar antes de: criar um asset novo ou um fluxo de upload de arquivo; gerar URL assinada de escrita, para upload direto, ou de leitura, para exibir arquivo privado; gravar no storage um arquivo gerado pelo backend, como um relatório ou um export; mudar a chave, o bucket ou a visibilidade, pública ou privada, de um asset; remover ou substituir o arquivo físico de um registro; escolher ou trocar o provider de storage.
-
-Não cobre: o escopo do dono na assinatura e na recarga do registro (`backend/access-scope.md`); a regra transversal de organização — classe de infra sem contrato, contrato específico, registro, dublê (`infrastructure/services.md`); o mecanismo da tarefa agendada que limpa os órfãos (`backend/async-jobs.md`); o provider, os buckets e o domínio público de cada projeto (`activation.md`, "Matriz de delegações").
 
 O storage de objetos: dois buckets, um público, servido por domínio customizado atrás de CDN, e um privado, acessado só por URL assinada (na implementação de referência, contra o endpoint S3 nativo). O backend é o único trust boundary do storage: gera as chaves, assina as URLs e é quem decide o que cada chamador pode alcançar. Quem escolhe por onde o binário de usuário sobe é tamanho e volume: arquivo pequeno e de baixa frequência passa pelo backend, que recebe o corpo e grava ele mesmo; arquivo grande ou de alto volume sobe direto pro storage por URL assinada de escrita, e o backend só emite a permissão (seção "Quando o binário do usuário passa pelo backend").
 
-Os exemplos usam o Cloudflare R2 como implementação de referência, não como vendor obrigatório: a decisão dos dois buckets nasce de uma restrição real dele, e argumentar isso no abstrato esconderia o motivo. O que é padrão aqui é a forma — dois buckets por visibilidade, chave canônica, contrato por asset, registro pendente —, não o nome do vendor: as regras deste documento independem do vendor, salvo onde o texto marca um detalhe como da implementação de referência. O resto dos exemplos segue o domínio didático de pedidos de `backend/modules.md`, com o agregado `Product` e a coleção de fotos dele de `domain/watched-list.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o Cloudflare R2 como implementação de referência, não como vendor obrigatório: a decisão dos dois buckets nasce de uma restrição real dele, e argumentar isso no abstrato esconderia o motivo. O que é padrão aqui é a forma — dois buckets por visibilidade, chave canônica, contrato por asset, registro pendente —, não o nome do vendor: as regras deste documento independem do vendor, salvo onde o texto marca um detalhe como da implementação de referência. O resto dos exemplos segue o domínio didático de pedidos de `backend/modules.md`, com o agregado `Product` e a coleção de fotos dele de `domain/watched-list.md`.
 
 ## Por que dois buckets
 
@@ -43,99 +60,7 @@ Quando um asset pertence a uma entidade que também é fronteira de acesso, ela 
 
 Na implementação de referência, `R2StorageService` guarda o client S3 do R2 (privado, ninguém fora da classe o toca) e expõe os dois nomes de bucket e as operações genéricas. Diferente do client do Resend (`infrastructure/mail.md`), o `S3Client` cru não é uma interface confortável: toda operação exige montar um `Command`, e essa montagem se repetiria idêntica em cada asset. Por isso aqui a classe de infra tem métodos, todos genéricos, sem nenhuma convenção de asset dentro:
 
-```ts
-// infra/services/storage/r2-storage.service.ts
-import { Injectable } from '@nestjs/common';
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  HeadObjectCommand,
-  NotFound,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { EnvService } from '../../common/env/env.service';
-
-const SIGNED_URL_TTL_SECONDS = 600;
-
-export type ObjectStat = {
-  sizeInBytes: number;
-  contentType: string;
-};
-
-@Injectable()
-export class R2StorageService {
-  readonly publicBucket: string;
-  readonly privateBucket: string;
-  readonly publicBaseUrl: string;
-  private readonly client: S3Client;
-
-  constructor(env: EnvService) {
-    this.client = new S3Client({
-      region: 'auto',
-      endpoint: `https://${env.getOrThrow('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: env.getOrThrow('R2_ACCESS_KEY_ID'),
-        secretAccessKey: env.getOrThrow('R2_SECRET_ACCESS_KEY'),
-      },
-    });
-    this.publicBucket = env.getOrThrow('R2_PUBLIC_BUCKET');
-    this.privateBucket = env.getOrThrow('R2_PRIVATE_BUCKET');
-    this.publicBaseUrl = env.getOrThrow('R2_PUBLIC_BASE_URL');
-  }
-
-  async save(bucket: string, key: string, body: Buffer, contentType: string): Promise<void> {
-    await this.client.send(
-      new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }),
-    );
-  }
-
-  async remove(bucket: string, key: string): Promise<void> {
-    await this.client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-  }
-
-  async stat(bucket: string, key: string): Promise<ObjectStat | null> {
-    try {
-      const head = await this.client.send(
-        new HeadObjectCommand({ Bucket: bucket, Key: key }),
-      );
-      // `?? 0` faria objeto de tamanho desconhecido passar como válido na
-      // confirmação, que é o que o `stat` existe pra impedir. Resposta 200 sem
-      // esses headers é quebra de contrato do vendor, não ausência de objeto.
-      if (head.ContentLength === undefined || head.ContentType === undefined) {
-        throw new Error(`HEAD de ${key} veio sem tamanho ou tipo`);
-      }
-
-      const objectStat = {
-        sizeInBytes: head.ContentLength,
-        contentType: head.ContentType,
-      };
-      return objectStat;
-    } catch (error) {
-      if (error instanceof NotFound) {
-        return null;
-      }
-      throw error;
-    }
-  }
-
-  getSignedReadUrl(bucket: string, key: string): Promise<string> {
-    const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-    return getSignedUrl(this.client, command, { expiresIn: SIGNED_URL_TTL_SECONDS });
-  }
-
-  getSignedUploadUrl(bucket: string, key: string, contentType: string): Promise<string> {
-    const command = new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: contentType });
-    return getSignedUrl(this.client, command, { expiresIn: SIGNED_URL_TTL_SECONDS });
-  }
-
-  publicUrl(key: string): string {
-    const url = `${this.publicBaseUrl}/${key}`;
-    return url;
-  }
-}
-```
+Exemplo completo: storage.examples.md#r2storageservice
 
 Pontos-chave:
 
@@ -214,57 +139,7 @@ export abstract class OrderReportStorage {
 
 A implementação de cada contrato concentra o que é daquele asset: a convenção de chave, a escolha do bucket e os limites de tamanho/tipo. Cada método vira uma ou duas linhas sobre a classe de infra (`R2StorageService`, na implementação de referência):
 
-```ts
-// infra/services/storage/product-photo-storage.impl.ts
-import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
-import {
-  ProductPhotoStorage,
-  type ProductPhotoMimeType,
-  type RequestProductPhotoUploadInput,
-  type RequestProductPhotoUploadOutput,
-} from '../../../domain/application/services/storage/product-photo-storage.contract';
-import { R2StorageService } from './r2-storage.service';
-
-const EXTENSION_BY_MIME_TYPE: Record<ProductPhotoMimeType, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};
-
-@Injectable()
-export class ProductPhotoStorageImpl implements ProductPhotoStorage {
-  constructor(private readonly r2: R2StorageService) {}
-
-  async requestUpload(
-    input: RequestProductPhotoUploadInput,
-  ): Promise<RequestProductPhotoUploadOutput> {
-    const extension = EXTENSION_BY_MIME_TYPE[input.mimeType];
-    const key = `products/${input.productId}/photos/${randomUUID()}.${extension}`;
-
-    const uploadUrl = await this.r2.getSignedUploadUrl(
-      this.r2.publicBucket,
-      key,
-      input.mimeType,
-    );
-
-    const output = { key, uploadUrl };
-    return output;
-  }
-
-  async stat(key: string) {
-    return this.r2.stat(this.r2.publicBucket, key);
-  }
-
-  async remove(key: string): Promise<void> {
-    await this.r2.remove(this.r2.publicBucket, key);
-  }
-
-  publicUrl(key: string): string {
-    return this.r2.publicUrl(key);
-  }
-}
-```
+Exemplo completo: storage.examples.md#productphotostorageimpl
 
 A allowlist de tipos do asset é a união fechada do contrato: a fronteira Zod valida o mime com `z.enum(PRODUCT_PHOTO_MIME_TYPES)` (mesma regra do identificador variável de `backend/persistence.md`), e a extensão sai de um `Record` total sobre essa união, nunca de manipulação de string livre. O motivo de segurança está na regra 10 das "Regras absolutas do storage".
 
