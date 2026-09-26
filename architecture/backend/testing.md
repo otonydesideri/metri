@@ -1,0 +1,344 @@
+# Testes
+
+Dono de: a pirâmide de teste do backend — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber e e2e por controller contra banco Postgres isolado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis.
+
+Consultar antes de: escrever spec de entidade, value object, caso de uso ou subscriber do backend; escrever e2e de controller, que prova o fluxo HTTP completo com tradução de erro e persistência real; criar factory de teste ou repositório em memória de um agregado; decidir se um comportamento do backend precisa de dublê novo ou reusa um existente.
+
+Não cobre: o teste do frontend, com pirâmide própria (`frontend/testing.md`).
+
+Como o backend do produto prova comportamento: os três níveis da pirâmide, o que cada um prova e onde mora, as factories e dublês compartilhados entre eles.
+
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+
+## A pirâmide
+
+Três níveis, do mais barato ao mais caro:
+
+1. **Spec de entidade e value object**: puro, sem I/O, sem Nest. Prova invariante de criação e transição de estado direto na classe de domínio.
+2. **Spec de caso de uso**: injeta os repositórios em memória de `test/repositories/`, sem Nest e sem banco. Prova a orquestração (leitura, regra, gravação) com dublês.
+3. **E2e por controller**: app Nest inteiro, banco Postgres isolado por arquivo. Prova o fluxo HTTP completo, incluindo tradução de erro e persistência real.
+
+Cada nível prova uma camada diferente da mesma operação; o mesmo caso de uso tem spec unitário cobrindo a regra de negócio e pode aparecer num e2e cobrindo o fluxo HTTP em volta dela, sem repetir a mesma variação de regra nos dois lugares.
+
+| Artefato | Caminho |
+| --- | --- |
+| Spec de entidade | `src/domain/enterprise/<entidade>.entity.spec.ts` |
+| Spec de value object | `src/domain/enterprise/value-objects/<nome>.spec.ts` |
+| Spec de caso de uso | `src/domain/application/use-cases/<módulo>/<ação>.use-case.spec.ts` |
+| Spec de subscriber | `src/infra/events/on-<evento>.subscriber.spec.ts` |
+| Spec de função ou filtro de infra transversal | `src/infra/<caminho>/<nome>.spec.ts`, ao lado do arquivo que prova |
+| E2e de controller | `src/infra/http/controllers/<módulo>/<ação>.e2e-spec.ts` |
+| Factory de teste | `test/factories/make-<agregado>.factory.ts` |
+| Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` |
+| Registro de repositórios em memória | `test/factories/make-in-memory-repositories.factory.ts` |
+| Dublê de contrato de service ou fila | `test/services/<capacidade>/fake-<contrato>.impl.ts`, `test/queues/<fluxo>.in-memory-queue.impl.ts` |
+| Setup do banco isolado de e2e | `test/setup-e2e.ts` |
+
+Paths de `src/` e `test/` são relativos ao app backend (`apps/app-api/`).
+
+## Convenção de nome e execução
+
+O nome do arquivo declara o nível: `*.spec.ts` para spec unitário (entidade, value object, caso de uso ou subscriber), `*.e2e-spec.ts` para e2e. Dois configs do Vitest fazem a separação: um roda `src/**/*.spec.ts` sem nenhum setup, o outro roda `src/**/*.e2e-spec.ts` com um setup que cria um banco Postgres novo por arquivo (nunca um schema novo dentro do mesmo banco: o client tipado do Prisma sempre assume o schema `public` na SQL gerada, então isolamento por schema daria falsa sensação de isolamento) e roda as migrations nele antes da suíte, dropando o banco no fim.
+
+## Como criar uma factory de teste (`test/factories/make-<agregado>.factory.ts`)
+
+Duas partes no mesmo arquivo:
+
+- Uma função pura `make<Agregado>(override, id?)`, devolvendo a entidade em memória via `reconstitute()`, nunca `create()` (`domain/model.md`): a factory parte de estado já válido, sem repetir a validação de nascimento que o spec de entidade (seção seguinte) já prova. Valores default vêm de `@faker-js/faker`, `id` é o segundo parâmetro (com fallback para um id novo quando ausente, já que `reconstitute()` exige um), e `...override` sempre por último no objeto de props.
+- Quando o agregado também precisa existir num banco real para e2e, o mesmo arquivo ganha uma classe `@Injectable() <Agregado>Factory` com `makePrisma<Agregado>()`, que chama a função pura e grava via `PrismaService` + `<Agregado>PrismaMapper.toPrisma()`.
+
+Agregado de tabela externa não muda essa forma: a entidade dele existe, só com `reconstitute()` (`domain/model.md`, "Propriedade do agregado: quem escreve a tabela"), e a factory a devolve como a de qualquer outro. Tabela sem representação no modelo de domínio não é agregado (`domain/model.md`), e esta forma não se aplica a ela.
+
+```ts
+// test/factories/make-order.factory.ts
+import { faker } from '@faker-js/faker';
+import { Injectable } from '@nestjs/common';
+import { UniqueEntityID } from '@metri/core/entities';
+import { Order, type OrderProps, OrderItemList } from '../../src/domain/enterprise/order.entity';
+import { OrderStatus } from '../../src/domain/enterprise/enums/order-status.enum';
+import { OrderPrismaMapper } from '../../src/infra/persistence/prisma/mappers/order.prisma-mapper';
+import { PrismaService } from '../../src/infra/persistence/prisma/prisma.service';
+
+export function makeOrder(
+  override: Partial<OrderProps> = {},
+  id?: UniqueEntityID,
+): Order {
+  return Order.reconstitute(
+    {
+      customerId: new UniqueEntityID(),
+      items: new OrderItemList([]),
+      status: OrderStatus.Draft,
+      createdAt: faker.date.recent(),
+      ...override,
+    },
+    id ?? new UniqueEntityID(),
+  );
+}
+
+/** Grava um `order` real via Prisma — usado em e2e, ao contrário de `makeOrder` (entidade em memória, só teste unitário). */
+@Injectable()
+export class OrderFactory {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async makePrismaOrder(
+    override: Partial<OrderProps> = {},
+    id?: UniqueEntityID,
+  ): Promise<Order> {
+    const order = makeOrder(override, id);
+
+    await this.prisma.client.order.create({
+      data: OrderPrismaMapper.toPrisma(order),
+    });
+
+    return order;
+  }
+}
+```
+
+## Como criar um repositório em memória de teste (`test/repositories/<agregado>.in-memory-repository.impl.ts`)
+
+- `<Agregado>InMemoryRepositoryImpl implements <Agregado>Repository` — nomenclatura com o agregado como prefixo, espelhando o repositório Prisma real (`backend/persistence.md`), mesmo sendo dublê de teste. Um `items: <Agregado>[] = []` público e mutável, mais qualquer array auxiliar que o contrato precise; spec arruma estado direto com `.push()`, sem passar por um método de escrita.
+- Implementa só o que `<Agregado>Repository` já declara, mesma regra de método especulativo do contrato real (`backend/application.md`), nunca mais que isso.
+- Todo método de escrita despacha eventos no fim, como o real (`DomainEvents.dispatchEventsForAggregate(...)`, `backend/events.md`).
+- Registrado em `test/factories/make-in-memory-repositories.factory.ts` (`makeInMemoryRepositories()`), que devolve todos de uma vez para o spec desestruturar em `inMemory`.
+
+```ts
+export class OrderInMemoryRepositoryImpl implements OrderRepository {
+  public items: Order[] = [];
+
+  async findById(id: string): Promise<Order | null> {
+    const order = this.items.find((item) => item.id.toValue() === id);
+
+    if (!order) {
+      return null;
+    }
+
+    return order;
+  }
+
+  async save(order: Order): Promise<void> {
+    const index = this.items.findIndex((item) => item.id.equals(order.id));
+
+    if (index === -1) {
+      this.items.push(order);
+    } else {
+      this.items[index] = order;
+    }
+
+    DomainEvents.dispatchEventsForAggregate(order.id);
+  }
+}
+```
+
+## Como escrever spec de entidade e value object (`enterprise/<entidade>.entity.spec.ts`, `enterprise/value-objects/<nome>.spec.ts`)
+
+- Sem repositório, sem Nest, sem I/O: instancia a classe direto e chama os métodos de domínio.
+- A entidade sob prova nasce por `create()`, nunca pela factory de teste da seção anterior: a factory reconstitui de propósito para não pagar validação duas vezes, e é exatamente a validação de nascimento que este spec existe para provar. O que é só insumo do arranjo (a entidade filha que preenche a raiz, e que tem spec próprio) vem da factory normalmente. Mesmo princípio de "o que está sob prova não usa atalho" que separa, no e2e, a pré-condição montada por factory do fluxo HTTP real.
+- Prova invariante de criação (entrada inválida vira `failure` com a classe certa) e transição de estado por método de domínio (mudança de prop, `touch()` quando a entidade tem `updatedAt`, evento registrado quando o método emite um).
+- Asserção de falha é `instanceof`, nunca comparando `message` (`backend/errors.md`).
+
+```ts
+describe('Order', () => {
+  it('create() sem item → falha', () => {
+    const result = Order.create({ customerId: new UniqueEntityID(), items: [] });
+
+    expect(result.isFailure()).toBe(true);
+    expect(result.isFailure() && result.value).toBeInstanceOf(EmptyOrderError);
+  });
+
+  it('confirm() muda o status e marca updatedAt', () => {
+    const item = OrderItem.create({
+      productId: new UniqueEntityID(),
+      quantity: 1,
+      unitPriceInCents: 5000,
+    }).value;
+    const orderOrError = Order.create({
+      customerId: new UniqueEntityID(),
+      items: [item],
+    });
+    const sut = orderOrError.value;
+
+    expect(sut.updatedAt).toBeUndefined();
+
+    const result = sut.confirm();
+
+    expect(result.isSuccess()).toBe(true);
+    expect(sut.status).toBe(OrderStatus.Confirmed);
+    expect(sut.updatedAt).toBeInstanceOf(Date);
+  });
+});
+```
+
+## Como escrever spec de caso de uso (`application/use-cases/<módulo>/<ação>.use-case.spec.ts`)
+
+- `sut.execute()` com request de 2 ou mais campos vira variável `request` montada antes da chamada (`const request = {...}`, depois `const result = await sut.execute(request);`), deixando o Act como uma linha só, independente de quantos campos o request tem. Request de campo único que já cabe numa linha fica inline; extrair não muda a legibilidade da linha do Act, só adiciona uma variável.
+- Linha em branco separa Arrange (`inMemory.<Agregado>Repository.items.push(...)`, montagem do `request`) de Act, e Act do primeiro `expect`.
+- Asserção de falha por `instanceof`, nunca comparando `message` (`backend/errors.md`).
+
+```ts
+describe('ConfirmOrderUseCase', () => {
+  let inMemory: InMemoryRepositoriesProps;
+  let sut: ConfirmOrderUseCase;
+
+  beforeEach(() => {
+    inMemory = makeInMemoryRepositories();
+    sut = new ConfirmOrderUseCase(inMemory.OrderRepository);
+  });
+
+  it('pedido não encontrado → falha', async () => {
+    const request = {
+      orderId: 'order-1',
+      requesterId: 'customer-1',
+    };
+
+    const result = await sut.execute(request);
+
+    expect(result.isFailure()).toBe(true);
+    expect(result.isFailure() && result.value).toBeInstanceOf(OrderNotFoundError);
+  });
+
+  it('rascunho do próprio cliente → confirmado', async () => {
+    const order = makeOrder({ customerId: new UniqueEntityID('customer-1') });
+    inMemory.OrderRepository.items.push(order);
+
+    const request = {
+      orderId: order.id.toValue(),
+      requesterId: 'customer-1',
+    };
+
+    const result = await sut.execute(request);
+
+    expect(result.isSuccess()).toBe(true);
+    expect(order.status).toBe(OrderStatus.Confirmed);
+  });
+});
+```
+
+## Como escrever spec de subscriber (`infra/events/on-<evento>.subscriber.spec.ts`)
+
+Prova a cadeia inteira com os dublês: escrita no repositório em memória despacha, subscriber reage, caso de uso executa.
+
+```ts
+let inMemory: InMemoryRepositoriesProps;
+let sendOrderConfirmation: SendOrderConfirmationUseCase;
+let executeSpy: MockInstance;
+
+beforeEach(() => {
+  DomainEvents.clearHandlers();
+  DomainEvents.clearMarkedAggregates();
+
+  inMemory = makeInMemoryRepositories();
+  sendOrderConfirmation = new SendOrderConfirmationUseCase(/* dublês */);
+  executeSpy = vi.spyOn(sendOrderConfirmation, 'execute');
+
+  new OnOrderConfirmedSubscriber(sendOrderConfirmation);
+});
+
+it('envia a confirmação quando o pedido é confirmado', async () => {
+  const order = makeOrder();
+  order.confirm();
+
+  await inMemory.OrderRepository.save(order);
+
+  await waitFor(() => {
+    expect(executeSpy).toHaveBeenCalled();
+  });
+});
+```
+
+- `clearHandlers()` e `clearMarkedAggregates()` no `beforeEach` impedem que o subscriber do teste anterior continue assinado; sem isso, cada teste dispara os handlers acumulados de todos os anteriores.
+- `waitFor` (`test/utils/wait-for.ts`) reexecuta as asserções até passarem ou estourar o tempo, porque o handler é assíncrono e o despacho não espera por ele.
+- A factory reconstitui e por isso não registra evento de nascimento (seção "Como criar uma factory de teste"); o teste provoca o fato que quer provar (`order.confirm()`).
+
+## Como escrever um e2e-spec de controller (`http/controllers/<módulo>/<ação>.e2e-spec.ts`)
+
+- Um arquivo por ação de controller, ao lado dele. `beforeAll` monta o app Nest inteiro do zero (`Test.createTestingModule`, `FastifyAdapter` com `bodyParser: false`, `app.setGlobalPrefix('api')`, `app.init()`, `.getHttpAdapter().getInstance().ready()`), mesmo sendo idêntico entre arquivos — nunca vira um `createTestApp()` compartilhado em `test/`. O e2e não executa `main.ts`, por isso repete o prefixo antes de `app.init()`. Toda rota, inclusive health, é chamada sob `/api`. `afterAll` fecha (`app.close()`).
+- Pré-condição que o teste precisa só para chegar ao requisito real é montada por factory registrada em `providers`, sem round-trip HTTP. O fluxo HTTP completo fica reservado para o teste cuja própria mecânica é o requisito sob prova, ou que depende de um efeito colateral que a factory não reproduz. Montar a pré-condição pela API encadeia o teste ao comportamento de outra rota: quando aquela rota quebra, este teste falha por um motivo que não é o dele.
+- Header que a fronteira de request consome é declarado explicitamente na chamada, com o valor que o chamador real enviaria. Deixá-lo no default do supertest faz o teste depender do endereço interno do servidor; inventá-lo quando o chamador real não o enviaria prova um cenário que não existe.
+- Sem função utilitária escondendo um passo de Arrange/Act/Assert (`createOrder()`, `confirmOrder()`) — o passo fica inline no corpo do `it()`, mesmo que repita as mesmas linhas em vários arquivos, sempre que essa mecânica for o requisito sob prova. Uma factory de teste registrada em `providers` (`OrderFactory`) não é esse tipo de utilitário: grava de verdade contra a infraestrutura real, em vez de só empacotar uma sequência de chamadas HTTP que o próprio teste deveria estar exercitando. Utilitário puro sem semântica de fluxo, que só transforma um dado (`extractLink()` parseando `href` de um HTML, por exemplo), continua permitido, local ao arquivo.
+- `.overrideProvider(<Contrato>).useClass(Fake<Contrato>Impl)` no `Test.createTestingModule` só entra quando o teste precisa inspecionar o que o dublê capturou; teste que só passa pelo fluxo sem checar aquele efeito não precisa do override.
+- Guard de status HTTP de Arrange usa `expect(response.status, \`<Rótulo> falhou (${response.status}): ${JSON.stringify(response.body)}\`).toBeLessThan(400)` — segundo argumento de `expect()` do Vitest é mensagem customizada mostrada só quando a asserção falha. Guard de "achei ou não achei" (`.find()`, path segment, regex match) continua `throw`, nunca `expect()`: o código seguinte desreferencia o resultado contando com o `throw` para estreitar o tipo de `T | undefined` para `T`, e `expect().toBeDefined()` não é assertion function para o TypeScript.
+- Consulta ao banco feita só para validar o teste (sempre seguida de um `expect` sobre o resultado dela) leva o sufixo `OnDatabase` na variável; consulta usada só para montar estado (arrange) não leva.
+- Estado que a API não alcança sozinha, ou só alcançaria com passos demais, é montado com mutação direta via Prisma, inline no `it()`, com comentário explicando o motivo quando não for óbvio.
+- Objeto passado a `.send()` vira variável `payload` montada antes da chamada quando o literal é multi-linha (2 ou mais campos que não cabem numa linha só); campo único que já cabe inline continua inline.
+- Linha em branco separa cada passo de Arrange do próximo, Arrange de Act, e Act do `expect` que valida essa chamada especificamente — vale mesmo quando o teste encadeia vários pares de Act+Assert em sequência. Dentro de um mesmo passo, a chamada e o guard/expect que valida só ela ficam colados, sem linha em branco: é o guard que fecha o passo, não abre um novo.
+
+```ts
+// infra/http/controllers/order/confirm-order.e2e-spec.ts
+import {
+  FastifyAdapter,
+  type NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import { Test, type TestingModule } from '@nestjs/testing';
+import request from 'supertest';
+import { OrderFactory } from '../../../../../test/factories/make-order.factory';
+import { AppModule } from '../../../../app.module';
+import { PersistenceModule } from '../../../persistence/persistence.module';
+import { PrismaService } from '../../../persistence/prisma/prisma.service';
+
+describe('POST /api/orders/:orderId/confirm (e2e)', () => {
+  let app: NestFastifyApplication;
+  let prisma: PrismaService;
+  let orderFactory: OrderFactory;
+
+  beforeAll(async () => {
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      imports: [AppModule, PersistenceModule],
+      providers: [OrderFactory],
+    }).compile();
+
+    app = moduleRef.createNestApplication<NestFastifyApplication>(
+      new FastifyAdapter(),
+      { bodyParser: false },
+    );
+    app.setGlobalPrefix('api');
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+
+    prisma = moduleRef.get(PrismaService);
+    orderFactory = moduleRef.get(OrderFactory);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('rascunho existente → confirmado', async () => {
+    const order = await orderFactory.makePrismaOrder();
+
+    const response = await request(app.getHttpServer()).post(
+      `/api/orders/${order.id.toValue()}/confirm`,
+    );
+
+    expect(response.status).toBe(200);
+
+    const confirmedOnDatabase = await prisma.client.order.findUnique({
+      where: { id: order.id.toValue() },
+    });
+    expect(confirmedOnDatabase?.status).toBe('confirmed');
+  });
+});
+```
+
+## O que não tem spec próprio
+
+- **Tabela declarativa de tradução de erro** (`toHttpException`): sem spec unitário; a exaustividade é garantida pela anotação `Record<DomainErrorType, ...>` no compilador e o status resultante aparece nos e2e de erro (`backend/errors.md`). O critério que separa: função ou filtro de infra com ramificação própria (`UnexpectedErrorFilter`) ganha spec unitário ao lado do arquivo; tabela pura não, porque não tem branch que um teste possa errar.
+- **Contrato e implementação de query de leitura de exibição**: sem spec unitário nem dublê em memória; o contrato não contém comportamento e o e2e do controller é a prova da implementação contra o banco real (`backend/reading.md`). Specification compartilhada pela query mantém seu spec unitário (`domain/specification.md`).
+- **Worker de job**: sem spec unitário próprio, passthrough coberto pelos specs do caso de uso que ele dispara; o ciclo completo com fila real é assunto de e2e, formato em aberto até o primeiro job real do produto (`backend/async-jobs.md`).
+- **Classe de infra que fala com o vendor** (`PrismaService`, o client da fila, o client do storage): nunca tem dublê em `test/`; dublê é sempre por contrato de fluxo, e a única substituição é o stub local ao spec da impl que compõe (`infrastructure/services.md`).
+- **Contrato de transação**: dublê recebe no construtor os repositórios em memória dos agregados envolvidos e escreve nos `items` deles, para o spec observar o estado nos mesmos lugares de sempre (`backend/transactions.md`).
+
+## Verificação rápida
+
+- O teste está no nível certo da pirâmide (entidade/VO puro, caso de uso com repositório em memória, ou e2e com banco real)?
+- O nome do arquivo declara o nível (`.spec.ts` contra `.e2e-spec.ts`)?
+- Spec de entidade ou value object usa `create()`, nunca a factory de teste?
+- Factory de teste usa `reconstitute()`, nunca `create()`?
+- Repositório em memória implementa só o que o contrato declara, despachando eventos no fim de cada escrita?
+- Request de caso de uso com 2 ou mais campos foi extraído antes do Act?
+- Asserção de falha é `instanceof`, nunca comparando `message`?
+- E2e: Arrange inline, sem função utilitária escondendo um passo que está sob prova?
+- E2e: pré-condição montada por factory; fluxo HTTP completo só quando a mecânica dele é o requisito sob prova?
+- E2e: repetiu `setGlobalPrefix('api')` antes de `app.init()` e chamou a rota sob `/api`?
+- E2e: header que a fronteira de request consome está declarado com o valor que o chamador real enviaria?
+- O que não tem spec próprio (query, worker, classe de infra) segue o documento da área certa, sem dublê inventado aqui?

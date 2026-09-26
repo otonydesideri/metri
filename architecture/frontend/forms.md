@@ -1,0 +1,154 @@
+# Formulários do frontend
+
+Dono de: onde o formulário mora e como se compõe; o uso do React Hook Form (desestruturação, submit, commit por campo, campo como string); `defaultValues`; o schema de form e a diferença dele para o schema de API; o campo montado no app sobre o compound do `@metri/ui` (dependência externa, comportamento próprio, máscara); rótulo, descrição e nome acessível do controle.
+
+Consultar antes de: criar formulário; escrever schema de form; montar um campo que o `@metri/ui` não entrega; ligar rótulo, descrição e controle.
+
+Não cobre: o modal de tarefa que contém o form e a regra de Esc e clique fora (`frontend/routing.md`); a mutation que o form dispara, o estado em voo e a notificação (`frontend/data-fetching.md`); o contrato com o backend (`backend/http-api.md`); o layout visual do formulário (`frontend/design-system.md`, "Vocabulário visual"); a estrutura de pastas do frontend (`frontend/structure.md`); o tipo derivado de schema (`frontend/helpers.md`); a promoção de peça ao pacote (`overview.md`).
+
+Formulário é a parte da tela que recebe entrada do usuário: ele valida no navegador, transforma o que precisa antes de enviar e entrega a escrita a um hook de mutation. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
+
+## Ferramentas
+
+| Ferramenta | Status | Decisão |
+| --- | --- | --- |
+| React Hook Form | DECIDIDA | `overview.md`, "Stack" |
+| Zod | DECIDIDA | `overview.md`, "Stack" |
+| `react-phone-number-input` | DECIDIDA | "Campo montado no app", abaixo |
+| `use-mask-input` (sobre o Inputmask) | DECIDIDA | "Campo montado no app", abaixo |
+
+## Regras
+
+### Onde o formulário mora
+
+**Obrigatório.** Formulário fica inline na página que o usa, ou dentro de um componente quando a UX é esse componente, um modal ou drawer, por exemplo.
+
+**Proibido.** Camada de formulário à parte: um `<Nome>Form` intermediário ou o par "form genérico + wrapper" do modelo.
+
+**Proibido.** Componente extraído só para organizar condicionais que obrigue a atravessar `register`, `control`, `errors` ou o restante do React Hook Form por props.
+
+### Submit e handlers
+
+**Obrigatório.** Quem dispara a escrita vem de um hook de mutation em `hooks/<módulo>/` (`frontend/data-fetching.md`, "Hooks de mutation"), nunca embutido no form: o form monta os campos e chama o handler, que é da página ou do componente que o contém.
+
+**Obrigatório.** O callback passado ao `handleSubmit` se chama `handleFormSubmit`.
+
+Quando a linha se confirma sozinha, sem salvar em lote: **Obrigatório.** O handler não passa por `handleSubmit`: valida e manda um campo só, com `trigger` e `getValues`, e se chama `handleFieldCommit`.
+
+> **Por quê.** O `handleSubmit` valida o formulário inteiro, e um campo inválido barraria a gravação de outro.
+
+**Obrigatório.** O `useForm` é desestruturado no ponto de uso (`const { register, handleSubmit, formState } = useForm(...)`); o objeto inteiro só fica quando precisa ser passado adiante, a um subcomponente ou contexto.
+
+**Obrigatório.** Campo de formulário é sempre string, com a conversão no submit (`Number`, `parseBRLToCents`).
+
+**Proibido.** `z.coerce` no schema de form.
+
+> **Por quê.** String é o que o `<input>` entrega e o que o `register` guarda. Um schema com `z.coerce` teria tipo de entrada diferente do de saída, e o `useForm` passaria a discordar do resolver, com o erro aparecendo como incompatibilidade de tipo no `resolver`, longe da causa.
+
+### `defaultValues` estático fica fora; derivado fica dentro
+
+**Obrigatório.** O `defaultValues` do `useForm` referencia uma const nomeada no mesmo arquivo, nunca um objeto literal inline.
+
+Quando todos os valores são estáticos: **Obrigatório.** A const fica no escopo do módulo.
+
+> **Por quê.** Declara que a configuração independe da renderização, mantém o corpo do componente focado no fluxo da tela e entrega uma referência estável. A estabilidade é consequência, não motivo para usar `useMemo`.
+
+Quando ao menos um valor depende de dado disponível só durante a renderização (prop, parâmetro de rota, resultado já resolvido de query): **Obrigatório.** A const fica dentro do componente, depois da fonte da qual deriva.
+
+**Proibido.** Transformar essa const em função para levá-la ao escopo do módulo.
+
+> **Por quê.** Função passada a `defaultValues` é o loader assíncrono do React Hook Form, chamado sem os argumentos do componente.
+
+Quando o dado chega depois da montagem: **Obrigatório.** A tela aguarda o dado antes de montar o formulário, ou usa `values` quando o formulário precisa acompanhar a fonte.
+
+> **Por quê.** O React Hook Form já capturou os defaults iniciais; dado que chega depois não torna a const "dinâmica".
+
+**Obrigatório.** `reset` fica para um evento explícito que substitui os valores depois da montagem, nunca como hidratação automática por reflexo.
+
+### Schema de form e schema de API são coisas diferentes
+
+**Obrigatório.** Schema de form e schema de API são declarações separadas, mesmo quando coincidem campo a campo: o de form mora em `shared/schemas/<módulo>.schema.ts`, e o de API é o contrato canônico do pacote dono (`backend/http-api.md`, "Contrato de API compartilhado").
+
+**Obrigatório.** O schema de form carrega o que é da UI: mensagem de erro em português, campo que o form aceita vazio mas a API exige, transformação aplicada antes de enviar (normalizar e-mail, parsear data) e restrição mais estreita que o contrato do backend.
+
+**Obrigatório.** A página conta com a transformação declarada no schema, sem repetir a normalização no handler.
+
+**Obrigatório.** Restrição de entrada fica no schema de form e não desce para o domínio, que segue no formato geral.
+
+> **Por quê.** A entrada de telefone é fixa num país enquanto o value object do backend aceita qualquer E.164: mudar a regra de entrada depois mexe num arquivo só.
+
+**Obrigatório.** Depois do parse e da transformação do schema de form, a chamada usa o contrato canônico da API, importado do pacote dono, nunca uma cópia local nem o form; é ele que valida em runtime a resposta, passado como `output` do `httpClient` (`frontend/data-fetching.md`, "Funções de API").
+
+> **Por quê.** O schema de form muda por requisito de tela, o de API muda por contrato do backend, e um não arrasta o outro.
+
+### Campo montado no app
+
+**Obrigatório.** Campo que o `@metri/ui` não entrega pronto mora em `shared/components/inputs/`, não no pacote, e continua montado com o compound dele.
+
+**Obrigatório.** O campo de partida é o primitivo do pacote com a semântica certa, `Input` ou `Textarea`, não sempre o `Input`.
+
+Quando o campo precisa de uma dependência externa que o pacote não tem: **Obrigatório.** A peça externa entra como filho comum de `Input.Wrapper`, no lugar do `Input.Input`.
+
+> **Por quê.** Isso só funciona porque ela não compõe select próprio, e por isso não briga com o `recursiveCloneChildren` do compound.
+
+Quando o campo precisa de um comportamento próprio sobre o campo do pacote: **Obrigatório.** O compound entrega o campo e os afixos, e o app acrescenta o controle que falta como irmão do `Input.Input` dentro do `Input.Wrapper` (a senha, com o botão que alterna o `type`).
+
+Quando o campo tem semântica de domínio com lib dedicada: **Obrigatório.** Ele usa a lib dedicada, que entrega máscara, parsing e formato canônico numa peça só: o telefone sai do `react-phone-number-input/input` já em E.164, sem conversão no submit nem na hidratação do form.
+
+Quando a máscara é puramente sintática (documento, CEP, moeda): **Obrigatório.** Ela usa o `use-mask-input`, sobre o Inputmask, pelo `withMask`, que devolve um ref callback e compõe com o campo controlado.
+
+**Proibido.** `useHookFormMask` em campo controlado: ele devolve os props de `register` e só serve a campo não controlado.
+
+Quando a máscara varia com o comprimento: **Obrigatório.** Array de máscaras, sempre da mais curta para a mais longa.
+
+> **Por quê.** A troca acontece só no sentido de crescer, e a ordem invertida prende o valor curto na máscara longa sem nada acusar.
+
+**Obrigatório.** `showMaskOnHover` e `showMaskOnFocus` ficam desligados.
+
+> **Por quê.** Senão a prévia do Inputmask cobre o `placeholder` do campo.
+
+### Rótulo, descrição e o nome acessível do controle
+
+**Obrigatório.** A descrição fica fora do `<label>`, ligada ao controle por `aria-describedby`.
+
+> **Por quê.** Dentro do rótulo ela entra no nome acessível, e o controle passa a se chamar "Observação Aparece no comprovante enviado ao cliente". Errar não produz erro nenhum: a tela fica igual, o teste passa, e só o nome falado sai errado.
+
+Enquanto o `@metri/ui` não tem uma raiz de campo que feche a ligação sozinha: **Obrigatório.** Cada linha amarra o `aria-describedby` à mão.
+
+**Obrigatório.** O `<label>` só entra quando o controle não tem texto próprio: `input`, `Select.Trigger`, `Switch` e `Checkbox`.
+
+Quando o controle da linha é botão: **Obrigatório.** O título é `div` com a mesma tipografia do `Label.Root`, e o botão se nomeia sozinho ("Alterar foto", "Gerar códigos").
+
+> **Por quê.** Botão já carrega o nome no conteúdo, e o `<label>` nativo vence esse conteúdo: um rótulo "Foto de perfil" apontando para o botão o faz anunciar "Foto de perfil", sem verbo nenhum.
+
+Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** Ele leva `aria-label` com o alvo junto, começando pelo rótulo visível.
+
+**Obrigatório.** `Label.Sub` é qualificador inline, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
+
+## Aplicação
+
+- Base UI, shadcn e MUI resolvem a ligação de descrição com uma raiz de campo; é essa peça que ainda falta no `@metri/ui`.
+- O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `Hint` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
+- O layout do formulário (seções, campo, par Cancelar/submissão) é o do vocabulário visual (`frontend/design-system.md`, "Vocabulário visual").
+- O tipo de cada schema vem do `z.infer`, nunca redeclarado à mão (`frontend/helpers.md`, "Zod schema vs. type plain"), e o tipo de valores do form (`<Nome>Values`) fica no próprio arquivo de schema (`frontend/helpers.md`, "Tipos compartilhados").
+- Campo reusado por mais de um app tem a casa reavaliada pela colocação de `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app".
+
+## Verificação
+
+- Formulário fica inline na página (ou dentro do componente-modal), sem camada "form genérico + wrapper", e a escrita vem de hook de mutation, não embutida no form?
+- O submit usa `handleFormSubmit`, commit por campo usa `handleFieldCommit` com `trigger`/`getValues`, e o campo é string com a conversão no submit?
+- O `defaultValues` referencia const nomeada, fora do componente quando estática e dentro quando deriva de dado disponível na montagem?
+- Schema de form em `shared/schemas/<módulo>.schema.ts`, separado do schema de API, que vem do contrato canônico do pacote dono sem cópia local, cada tipo via `z.infer`?
+- Campo que o pacote não entrega mora em `shared/components/inputs/`, montado sobre o compound?
+- Campo mascarado monta o `use-mask-input` por `withMask`, com o array da máscara mais curta para a mais longa e `showMaskOn*` desligado?
+- Descrição fica fora do `<label>`, ligada por `aria-describedby`, e botão se nomeia sozinho?
+
+## Referências
+
+- `frontend/routing.md`: o modal de tarefa que contém o formulário.
+- `frontend/data-fetching.md`: hook de mutation, estado em voo e notificação.
+- `backend/http-api.md`: o contrato canônico de API que a chamada usa.
+- `frontend/design-system.md`: o layout visual do formulário.
+- `frontend/structure.md`: a casa de `shared/schemas/` e `shared/components/`.
+- `frontend/helpers.md`: tipo derivado do schema.
+- `overview.md`: a promoção de peça ao pacote.

@@ -1,0 +1,251 @@
+# Strategy
+
+Dono de: a Strategy — a variação de comportamento selecionada por dado: a família de classes puras para variação de regra de domínio, um token de DI por variação de integração e o Template Method para a lógica comum entre variações.
+
+Consultar antes de: adicionar o segundo ramo de comportamento a uma mesma operação; escolher entre implementações de uma regra ou de uma integração conforme um dado do fluxo.
+
+A variação de comportamento selecionada por dado: cada variação é uma classe própria sob o mesmo contrato, e a escolha é uma consulta a um `Record` tipado.
+
+Os exemplos usam o domínio didático de pedidos de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+
+## O problema
+
+Uma operação precisa executar de um jeito diferente conforme um dado do fluxo: a notificação sai por e-mail ou SMS conforme a preferência do cliente, o frete depende da modalidade de entrega escolhida no pedido. Sem desenho, cada variação nova é mais um ramo de `if`/`switch` dentro do caso de uso: a escolha da variação se mistura com a execução dela, toda variação nova edita um arquivo que já funcionava, e nenhum erro acusa a variação que ficou sem tratamento.
+
+Strategy separa os dois papéis. Cada variação vira uma classe própria sob o mesmo contrato, e a escolha vira uma consulta a um `Record` tipado, indexado por uma chave de união fechada. Variação nova passa a ser extensão (uma classe nova), não modificação de quem já funciona, e o compilador garante que toda variação tem tratamento.
+
+## O princípio: aberto para extensão, fechado para modificação
+
+O padrão existe para servir esse princípio, e o mapeamento é um para um. O contrato é a interface estável em volta do ponto de variação. As variações são a parte aberta: regra nova é classe nova. O consumidor é a parte fechada: quando a família cresce, ele não é editado, e as variações existentes também não. A direção de dependência é a mesma de `backend/boundaries.md`: a variação depende do contrato, nunca o contrário. É isso que mantém o núcleo fechado enquanto a borda cresce.
+
+O princípio só paga em ponto de variação comprovado. Proteger um ponto que nunca variou desperdiça esforço e adiciona complexidade, e com ela defeito; um desenho simples, retrabalhado quando a pressão de mudança real chegar, é mais barato que a generalização especulativa que nunca é usada. Daí o gatilho da árvore: a segunda variação real, nunca "para quando precisar".
+
+## A árvore de decisão
+
+```mermaid
+flowchart TD
+    start[Comportamento varia dentro de uma operação] --> q1{A escolha acontece por dado de runtime?}
+    q1 -- não, por ambiente ou teste --> port[Porta: contrato com uma implementação, backend/application.md]
+    q1 -- sim --> q2{Já existem duas ou mais variações reais?}
+    q2 -- não --> inline[if onde a regra mora, sem padrão]
+    q2 -- sim --> q3{A variação é regra de domínio ou integração externa?}
+    q3 -- regra de domínio --> domain[Família de classes puras em enterprise, sem DI]
+    q3 -- integração --> infra[Contrato por variação, implementações em infra, Record no consumidor]
+```
+
+Os critérios por trás da árvore:
+
+- Duas ou mais variações reais, vivas ao mesmo tempo. Contrato de variação "para quando precisar" é especulação, mesma regra do método especulativo de contrato em `backend/application.md`: o padrão nasce quando a segunda variação chega, junto com o enum e o `Record`.
+- Um ou dois ramos simples e estáveis não pedem padrão: `if` onde a regra mora. O sinal de conversão é o mesmo ramo se repetindo em mais de um lugar, ou a lista de variações crescendo.
+- Porta não é Strategy. Contrato com uma implementação trocada por ambiente ou teste continua porta de `backend/application.md`; Strategy é o mesmo contrato com N implementações vivas na mesma build, escolhidas por dado.
+- A chave é união fechada (enum de domínio ou union de literais), nunca string livre. Chave que chega de request valida na fronteira Zod como união fechada, mesma regra do identificador variável de `backend/persistence.md`.
+- O `Record` é total e não tem ramo default: variação nova entra como entrada explícita. Um "resto" silencioso esconderia variação sem tratamento, o mesmo motivo da rejeição do `switch` em `backend/errors.md`.
+- Strategy decide como, nunca se: a decisão de negócio de executar ou não (notificar? cobrar?) fica na entidade ou no caso de uso; a estratégia só executa a variação escolhida.
+
+## Variação de regra de domínio: família de classes puras
+
+O cenário: o frete do pedido nasce com duas modalidades, retirada e entrega padrão. Três meses depois o negócio lança a expressa; no trimestre seguinte, a agendada. Regra de precificação é assim, chega em fila; o desenho existe para que cada chegada seja uma classe nova, nunca uma edição no cálculo que já funciona em produção.
+
+A família inteira mora num arquivo da regra em `enterprise/strategies/<regra>.strategy.ts`: o contrato, as variações e a tabela. Nada de DI, nada de infra; são classes puras de domínio.
+
+```ts
+// domain/enterprise/enums/delivery-method.enum.ts
+export enum DeliveryMethod {
+  Pickup = 'pickup',
+  Standard = 'standard',
+  Express = 'express',
+}
+```
+
+```ts
+// domain/enterprise/strategies/shipping-cost.strategy.ts
+import { DeliveryMethod } from '../enums/delivery-method.enum';
+
+export interface ShippingContext {
+  distanceInKm: number;
+  totalWeightInGrams: number;
+}
+
+export abstract class ShippingCostCalculator {
+  /** ORDER-004 — frete em centavos inteiros, por modalidade de entrega. */
+  abstract calculate(context: ShippingContext): number;
+}
+
+class PickupShippingCost extends ShippingCostCalculator {
+  calculate(): number {
+    return 0;
+  }
+}
+
+class StandardShippingCost extends ShippingCostCalculator {
+  calculate(context: ShippingContext): number {
+    const baseInCents = 1200;
+    const weightFeeInCents = Math.ceil(context.totalWeightInGrams / 500) * 100;
+    const totalInCents = baseInCents + weightFeeInCents;
+    return totalInCents;
+  }
+}
+
+class ExpressShippingCost extends ShippingCostCalculator {
+  calculate(context: ShippingContext): number {
+    const baseInCents = 2500;
+    const distanceFeeInCents = context.distanceInKm > 100 ? 1500 : 0;
+    const totalInCents = baseInCents + distanceFeeInCents;
+    return totalInCents;
+  }
+}
+
+export const SHIPPING_COST_CALCULATORS: Record<
+  DeliveryMethod,
+  ShippingCostCalculator
+> = {
+  [DeliveryMethod.Pickup]: new PickupShippingCost(),
+  [DeliveryMethod.Standard]: new StandardShippingCost(),
+  [DeliveryMethod.Express]: new ExpressShippingCost(),
+};
+```
+
+Quem consome (método de entidade ou caso de uso) seleciona pela tabela e conhece só o contrato:
+
+```ts
+const calculator = SHIPPING_COST_CALCULATORS[order.deliveryMethod];
+const shippingCostInCents = calculator.calculate({
+  distanceInKm,
+  totalWeightInGrams,
+});
+```
+
+Pontos-chave:
+
+- A modalidade agendada chegar significa: uma classe `ScheduledShippingCost` nova, um valor novo no enum, uma entrada nova na tabela. Nenhuma classe existente muda, nenhum consumidor muda, e o `Record` total sobre o enum quebra a compilação até a entrada existir.
+- Só o contrato e a tabela são exportados; as variações são classes internas do arquivo. Consumidor que não enxerga `ExpressShippingCost` não tem como acoplar nela.
+- Classes stateless, instanciadas uma vez na própria tabela. O spec unitário do arquivo testa cada variação direto, sem dublê e sem módulo de teste.
+- Dependência externa não entra aqui: no primeiro `EnvService`, repositório ou client que uma variação precisar, a família muda de casa para a forma de integração da seção seguinte.
+
+## Variação de integração: um token de DI por variação
+
+Quando a variação fala com o mundo externo (canal de envio, gateway por método de pagamento), as implementações moram em infra e entram pela DI. Nesse caso, cada variação precisa de um token próprio, porque uma `abstract class` aponta para uma única implementação no wiring. O contrato declara a base e um contrato vazio por variação:
+
+```ts
+// domain/application/services/notification/order-notifier.contract.ts
+export interface OrderNotification {
+  orderId: string;
+  totalInCents: number;
+}
+
+export abstract class OrderNotifier {
+  abstract send(notification: OrderNotification): Promise<void>;
+}
+
+export abstract class EmailOrderNotifier extends OrderNotifier {}
+
+export abstract class SmsOrderNotifier extends OrderNotifier {}
+```
+
+As implementações vivem em `infra/services/<capacidade>/<nome>.impl.ts` (`notification/email-order-notifier.impl.ts`, por exemplo) e entram em `services.module.ts` provendo o contrato da própria variação, construção igual à de qualquer service de `infrastructure/services.md`: `{ provide: EmailOrderNotifier, useClass: EmailOrderNotifierImpl }`, `{ provide: SmsOrderNotifier, useClass: SmsOrderNotifierImpl }`. Cada implementação consome por baixo a classe de infra do vendor daquele canal, que é a única a nomeá-lo (`infrastructure/services.md`).
+
+O consumidor injeta os contratos das variações, nunca implementação, e monta a tabela de despacho no construtor:
+
+```ts
+// domain/application/use-cases/order/notify-order-confirmation.use-case.ts
+import { Injectable } from '@nestjs/common';
+import { type Either, failure, success } from '@metri/core/types';
+import { NotificationChannel } from '../../../enterprise/enums/notification-channel.enum';
+import { OrderNotFoundError } from '../../../enterprise/errors/order.errors';
+import { OrderRepository } from '../../repositories/order-repository.contract';
+import {
+  EmailOrderNotifier,
+  OrderNotifier,
+  SmsOrderNotifier,
+} from '../../services/notification/order-notifier.contract';
+
+interface NotifyOrderConfirmationInput {
+  orderId: string;
+  channel: NotificationChannel;
+}
+
+type NotifyOrderConfirmationOutput = Either<OrderNotFoundError, { order: Order }>;
+
+/** ORDER-005 — confirmação notifica o cliente pelo canal da preferência dele. */
+@Injectable()
+export class NotifyOrderConfirmationUseCase {
+  private readonly notifiers: Record<NotificationChannel, OrderNotifier>;
+
+  constructor(
+    private readonly orderRepository: OrderRepository,
+    emailNotifier: EmailOrderNotifier,
+    smsNotifier: SmsOrderNotifier,
+  ) {
+    this.notifiers = {
+      [NotificationChannel.Email]: emailNotifier,
+      [NotificationChannel.Sms]: smsNotifier,
+    };
+  }
+
+  async execute({
+    orderId,
+    channel,
+  }: NotifyOrderConfirmationInput): Promise<NotifyOrderConfirmationOutput> {
+    const order = await this.orderRepository.findById(orderId);
+
+    if (!order) {
+      return failure(new OrderNotFoundError(orderId));
+    }
+
+    const notifier = this.notifiers[channel];
+    await notifier.send({
+      orderId: order.id.toValue(),
+      totalInCents: order.totalInCents,
+    });
+
+    return success({ order });
+  }
+}
+```
+
+Pontos-chave:
+
+- O contrato vazio por variação (`EmailOrderNotifier`) existe para ser o token daquela variação; a base (`OrderNotifier`) é o tipo comum que o `Record` carrega. O caso de uso continua sem importar nada de `infra/` (`backend/boundaries.md`).
+- `Record<NotificationChannel, OrderNotifier>` no construtor é o que faz canal novo no enum sem entrada correspondente virar erro de compilação, não um canal silenciosamente sem notificação.
+- Variação nova é extensão, não modificação: uma classe nova em `infra/services/<capacidade>/`, um contrato vazio novo, a entrada no enum. Nenhum comportamento existente é editado; o compilador aponta os dois pontos de registro que faltam (o provider no módulo e a entrada no `Record`).
+- No exemplo o canal chega no input já validado; num produto real ele vem da preferência persistida do cliente ou da fronteira Zod como união fechada.
+- Spec unitário entrega um dublê por contrato de variação e afirma qual estratégia foi chamada com o quê; nada muda em relação a testar qualquer service.
+
+## Lógica comum entre variações: Template Method
+
+Quando duas ou mais variações duplicam a mesma preparação (montar a mensagem, validar o payload, registrar o resultado), a base deixa de ser só contrato: o método público concreto orquestra o passo comum e delega às variações apenas o passo que de fato varia, agora `protected` e abstrato. Vale para as duas casas, a família pura de `enterprise/` e o contrato de integração; o exemplo abaixo evolui o segundo.
+
+```ts
+// domain/application/services/notification/order-notifier.contract.ts
+export abstract class OrderNotifier {
+  async send(notification: OrderNotification): Promise<void> {
+    const totalInReais = (notification.totalInCents / 100).toFixed(2);
+    const message = `Pedido ${notification.orderId} confirmado. Total: R$ ${totalInReais}.`;
+
+    await this.deliver(message, notification);
+  }
+
+  protected abstract deliver(
+    message: string,
+    notification: OrderNotification,
+  ): Promise<void>;
+}
+```
+
+Pontos-chave:
+
+- Nada muda para o consumidor: o `Record` e a chamada `send()` continuam idênticos. A refatoração é interna à família de estratégias.
+- `protected` no passo variável impede um caller de pular a preparação comum chamando `deliver()` direto.
+- Template Method entra quando a duplicação já existe entre variações, nunca antes: uma base com orquestração especulativa engessa a família no primeiro caso que não seguir o roteiro. Contrato sem lógica comum permanece só abstrato, como na seção anterior.
+
+## Verificação rápida
+
+- A variação passou pela árvore de decisão (dado de runtime, duas ou mais variações reais)?
+- A chave é união fechada, validada na fronteira Zod quando vem de request, nunca string livre?
+- O despacho é um `Record` total tipado pela união, sem ramo default e sem `switch`?
+- Variação nova entrou como classe nova mais entrada de tabela, sem editar variação existente nem consumidor?
+- Regra de domínio: família num arquivo `enterprise/strategies/<regra>.strategy.ts` (contrato + variações não exportadas + tabela), sem DI e sem dependência externa?
+- Integração: contrato base + contrato vazio por variação em `application/services/<capacidade>/`, implementações `<nome>.impl.ts` em `infra/services/<capacidade>/`, `Record` montado no construtor do consumidor?
+- O domínio segue sem importar implementação concreta (`backend/boundaries.md`)?
+- A decisão de negócio de executar ou não ficou fora da estratégia?
+- Lógica comum entre variações subiu para a base como Template Method só depois de a duplicação existir, com o passo variável `protected`?
