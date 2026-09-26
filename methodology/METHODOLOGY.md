@@ -2,8 +2,10 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.1**, consolidada em 26/09/2026.
+> **Versão 1.1.1**, consolidada em 26/09/2026.
 > Status: pronta para a fase de **setup**. Depois do setup vem a **fase de validação e melhoria**, com um piloto real (seção 19).
+
+**O que mudou da v1.1 para a v1.1.1:** formato enxuto das regras, com frontmatter no lugar do cabeçalho e marca `check`/`manual` no lugar do checklist (seções 4.3, 6.13 e 7); stack padrão em `defaults/` (6.2); área `general/` (5.3); ADR `proposed` (6.5).
 
 **O que mudou da v1.0 para a v1.1**
 
@@ -154,6 +156,10 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | aplica a                                  | `applies_to`                                     | Globs de caminho onde uma regra vale                                                          |
 | imposto por                               | `enforced_by`                                    | Check ou lint que garante a regra                                                             |
 | SOT keyword                               | `keywords`                                       | Palavra-chave que torna um arquivo encontrável por grep                                       |
+| descrição                                 | `description`                                    | O que a regra decide, em uma linha; é a linha do `INDEX.md` gerado e do `rules-for`           |
+| ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta                                                    |
+| não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`)                                      |
+| marca check / manual                      | `check: <id>` \| `manual`                        | Como cada regra é garantida: por um check do `enforced_by` ou por revisão no `/accept`        |
 | tracer                                    | `tracer`                                         | Ticket que corta um caminho fino e completo, demonstrável                                     |
 | portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
 
@@ -200,9 +206,9 @@ docs/
 ```
 architecture-source/            repositório próprio, versionado por tags (vX.Y)
   INDEX.md                      áreas → índice de cada área
-  backend/  domain/  frontend/  infra/  ...   regras de padronização por área (+ INDEX.md gerado)
+  general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
   catalog/<capacidade>.md       slices reutilizáveis (inclui design-system)
-  defaults/                     escolhas padrão quando o projeto não decide (ex.: ui.md → shadcn/ui)
+  defaults/                     escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui)
   methodology/
     VOCABULARY.md               vocabulário da metodologia (seção 4.3)
     templates/                  modelos de AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX
@@ -212,7 +218,7 @@ architecture-source/            repositório próprio, versionado por tags (vX.Y
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
 ```
 
-As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
+`general/` guarda as regras que valem para mais de uma área (princípios transversais, colocação de código entre app e pacote). As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
 
 ---
 
@@ -235,6 +241,8 @@ As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
 ### 6.2 Architecture Source (global)
 
 **O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `defaults/`: escolhas tecnológicas padrão, cada uma sustentada por um ADR global, usadas quando o projeto não decide nada diferente.
+
+**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (seção 8.1): `defaults/stack.md` + ADR global. Cada tema continua num arquivo só: a regra é escrita sem biblioteca, e a seção opcional `## Stack padrão` diz, em bullets, como ela se aplica na stack default. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto no lugar dessa seção.
 
 **Entrada no projeto:** submódulo ou pacote em `.architecture-source/`, **somente leitura e com versão fixada**. É dependência só de desenvolvimento: **não vai para o código entregue** (fica fora de build, exportação e pacote final).
 
@@ -271,7 +279,9 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 
 **Onde:** as decisões globais ficam em `architecture-source/adr/`; as do projeto, em `docs/adr/`.
 
-**Status:** `accepted` ou `superseded by ADR-NNNN`. Nunca se apaga um ADR.
+**Status:** `proposed`, `accepted` ou `superseded by ADR-NNNN`. Nunca se apaga um ADR.
+
+**Ponto em aberto** (pergunta ainda sem decisão) vira ADR `proposed`, nunca seção de regra; a regra aponta para ele em `adr`. Decidido, o ADR passa a `accepted` e a regra é editada no lugar. O que uma decisão explicitamente não é entra no ADR como alternativa considerada.
 
 ### 6.6 `PRODUCT.md`
 
@@ -343,7 +353,11 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 ### 6.13 Lint estrutural (parte do `verify`)
 
 - **Árvore permitida:** `AGENTS.md`, `CLAUDE.md`, `docs/{CONTEXT,PRODUCT,DESIGN}.md`, `docs/architecture/**`, `docs/adr/**`, `docs/plan/MATRIX.md`, `docs/plan/tech/**` (reservado). Nada mais em `docs/`.
-- **Regras:** frontmatter válido (chaves da seção 7); seções obrigatórias presentes; `applies_to` casa com algum arquivo (ou `status: draft` durante um ticket de padrão); `examples` e `enforced_by` apontam para algo que existe; ADRs citados existem; tamanho máximo.
+- **Regras:**
+  - frontmatter com todas as chaves do esqueleto (seção 7.1); `id` igual ao caminho `<área>/<tema>`; `description`, `applies_to`, `keywords` e `status` preenchidos;
+  - `## Regras` presente; toda regra com modalidade e marca `check: <id>` ou `manual`; todo `check: <id>` listado em `enforced_by`;
+  - `applies_to` casa com algum arquivo (ou `status: draft` durante um ticket de padrão); `examples`, `enforced_by`, `read_first` e `not_covered` apontam para algo que existe; ADRs citados existem;
+  - no máximo 170 linhas no arquivo principal, sem contar a `## Árvore de decisão`.
 - **Gerados:** `INDEX.md` atualizados.
 - **Matriz:** esquema da seção 9 (chaves em inglês, ids válidos, valores de enum válidos); todo ticket tem slice, tipo e checks; todo tracer aponta para um UC; nada órfão; todo `GAP-n` do código existe na matriz e vice-versa.
 - **Opcional:** sinônimos proibidos do `CONTEXT.md` ausentes dos identificadores; nenhum valor fixo de cor ou espaçamento fora do tema.
@@ -352,76 +366,69 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 ## 7. Formato dos arquivos de regra
 
-Serve para o global e para o projeto. O arquivo é rico, mas com **esqueleto fixo, ordenado por quem precisa de cada parte**: o que todo caso precisa vem primeiro; o detalhe vem depois ou em arquivo separado.
+Serve para o global e para o projeto. O arquivo é enxuto e tem **esqueleto fixo, ordenado por quem precisa de cada parte**: o que todo caso precisa vem primeiro; o detalhe vem depois ou em arquivo separado.
 
 ### 7.1 Esqueleto
 
 ```markdown
 ---
-id: backend/endpoints
-title: Construção de endpoints
-description: Como criar endpoints protegidos: procedure, permissão, validação e erro.
-applies_to: ["src/server/routers/**"]
-keywords: [endpoint, router, protectedProcedure]
-enforced_by: [eslint:arch/protected-procedure, check:endpoint-input-schema]
-examples: [src/server/routers/member.ts]
-related: [backend/errors, backend/validation]
-adr: []
-status: active            # active | draft | deprecated
+id: <área>/<tema>
+description: <o que este arquivo decide, 1 linha, começando pelo tema>    # antigo "Dono de"
+applies_to: [<globs>]
+keywords: [<SOT keywords>]
+read_first: [<ids>]                         # antigo "Consultar antes de"
+not_covered: ["<tema> → <id>"]              # antigo "Não cobre"
+enforced_by: [<checks ou lints>]            # vazio enquanto não existir
+examples: [<caminhos>]
+adr: [<ids>]
+status: active | draft | deprecated
 ---
+# <Título>
 
-## Regra
+## Regras
+- **<Modalidade>.** <regra em uma linha> — `check: <id>` | `manual`
+  Por quê: <1 linha; só quando o motivo não for óbvio>
+  Exceção: <quando> (ADR-NNNN)
+- **Proibido.** <X>; em vez disso, <Y>. — `manual`
 
-(Obrigatório. O que sempre fazer, em bullets positivos.)
-
-## Quando usar / quando não
-
-(Obrigatório se houver alternativas.)
-
-## Árvore de decisão
-
-(Opcional. Quando há variantes a escolher.)
-
-## Padrão
-
-(Obrigatório. A forma essencial + ponteiro para o exemplo canônico.
-Trecho ilustrativo curto permitido, marcado como ilustrativo.)
-
-## Anti-padrões
-
-(Opcional. Sempre em par: "em vez de X → faça Y".)
-
-## Checklist de revisão
-
-(Obrigatório. O que o revisor confere. Cada item marcado como
-"coberto por <check>" ou "manual".)
-
-## Por quê
-
-(Obrigatório, curto.)
-
-## Exceções
-
-(Sempre com ADR.)
+## Árvore de decisão   (opcional; bullets e setas, sem prosa)
+## Padrão              (opcional; forma essencial, até ~15 linhas de código; o resto em <tema>.examples.md)
+## Stack padrão        (opcional, só no global; bullets de como a regra se aplica na stack default)
 ```
 
-### 7.2 Por que essa ordem
+- **Modalidades:** `Obrigatório`, `Proibido`, `Padrão`, `Recomendado`, `Permitido`. Uma modalidade e um assunto por regra; a condição entra no texto (`**Obrigatório.** Quando X, Y.`).
+- **Seções:** só `## Regras` é obrigatória. As outras entram quando mudam o comportamento do agente, nesta ordem.
 
-- **Quem constrói** lê Regra → Quando usar → Árvore → Padrão.
-- **Quem revisa** lê Anti-padrões → Checklist de revisão.
-- **O humano** lê Por quê → Exceções.
+### 7.2 Por que esse formato
 
-O **Checklist de revisão** torna o revisor de padrões do `/accept` genérico: ele confere os checklists das regras resolvidas para os caminhos tocados, e só isso. Os itens marcados "manual" mostram o que ainda pode descer na escada.
+A regra entra inteira no contexto de cada ticket (até ~5 regras, seção 6.11). Cada linha custa contexto; a que não muda o comportamento do agente sai.
+
+- **Frontmatter no lugar do cabeçalho.** `Dono de` / `Consultar antes de` / `Não cobre` viram `description`, `read_first` e `not_covered`. Como chaves, o `rules-index` e o `rules-for` os leem sem abrir o arquivo, e o lint confere os ids.
+- **Marca `check`/`manual` no lugar do checklist.** Cada regra diz como é garantida. O revisor de padrões do `/accept` confere só as regras marcadas `manual` dos arquivos resolvidos para os caminhos tocados; as marcadas `check` já passaram no portão. As `manual` mostram o que ainda pode descer na escada (seção 6.12).
+- **`Proibido` com alternativa no lugar de anti-padrões.** A proibição é uma regra como as outras, com modalidade e marca, e já diz o que fazer em vez disso. O agente lê uma lista só.
 
 A `description` do frontmatter é a linha que aparece no `INDEX.md` gerado e na saída do `rules-for`. Ela funciona como ponteiro, e por isso é curta e começa pela palavra-chave.
 
-### 7.3 Limites
+### 7.3 Exemplos, tamanho e escrita
 
-- **Os exemplos apontam para código real.** O trecho inline é só a forma essencial.
-- **Arquivo passou de ~150 linhas?** Divide em regras menores, ou move o detalhe para um arquivo-irmão (`endpoints.examples.md`) apontado pela regra.
-- **O lint confere** as seções obrigatórias, os `examples` e o `enforced_by`.
+**Exemplos**
 
-No setup, as seções do formato que você já usa são mapeadas para este esqueleto, sem perder conteúdo.
+- **Global:** exemplos didáticos, no domínio de pedidos, em `<tema>.examples.md` ao lado da regra. `examples` aponta para ele e, quando existir, para o código em `template/`.
+- **Projeto:** `examples` aponta para código real do projeto.
+- O `## Padrão` traz só a forma essencial, até ~15 linhas de código; o resto vai para `<tema>.examples.md`.
+- Exemplo ilustra uma regra; nunca é a única fonte dela.
+
+**Tamanho**
+
+- Meta de ~100 linhas no arquivo principal; o lint barra acima de 170. A `## Árvore de decisão` não entra na conta.
+- Passou do limite: primeiro, o código vai para `<tema>.examples.md`. Divida o tema só onde houver partes independentes.
+
+**Escrita** (quem lê é o agente)
+
+- Imperativo, uma ideia por linha.
+- Sem introdução, narrativa ou explicação didática.
+- Não repete o que outro arquivo diz: aponta com `read_first` ou `not_covered`.
+- Usa os termos do vocabulário (seção 4.3).
 
 ---
 
@@ -669,11 +676,11 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 ### Etapa 5: Aceitar
 
 - **Objetivo:** julgar o que check nenhum julga. Aceitar a **slice** e, quando ela é a última de uma feature, a **feature**.
-- **Entrada:** diff desde o início da branch da slice + contrato + regras resolvidas para os caminhos tocados (com seus **checklists de revisão**) + UCs envolvidos. **Nada da conversa do construtor.**
+- **Entrada:** diff desde o início da branch da slice + contrato + regras resolvidas para os caminhos tocados (com suas **regras marcadas `manual`**) + UCs envolvidos. **Nada da conversa do construtor.**
 - **Processo:**
   - **Dois revisores em paralelo:**
     - **Contrato e UCs:** faltou algo, sobrou algo, implementou errado, os checks cobrem os critérios?
-    - **Padrões:** os itens "manuais" dos checklists de revisão; o que o lint cobre já passou no portão.
+    - **Padrões:** as regras marcadas `manual`; as marcadas `check` já passaram no portão.
   - **Humano:**
     - leitura do caminho linear da slice ("me mostre o fluxo e as fontes da verdade");
     - QA dos UCs (e da feature, quando for a última slice), incluindo conformidade visual com o `DESIGN.md`;
@@ -860,7 +867,7 @@ Entra por PR no repositório do source, com nova versão e registro no `CHANGELO
 
 **Poda:**
 
-- Regra totalmente coberta por check → reduzida ao frontmatter + "Por quê" + checklist, ou removida.
+- Regra sem nenhuma linha marcada `manual` (tudo coberto por check) → reduzida ao frontmatter + `## Regras`, ou removida.
 - Regra cujo `applies_to` não casa com nada → o lint acusa.
 - ADR superado → `superseded by`.
 
