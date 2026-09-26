@@ -1,12 +1,24 @@
+---
+id: frontend/helpers
+description: "o código auxiliar do `app-web` que não é componente nem página — a hierarquia pelo que a função conhece (inline, helper do módulo, casa fora do módulo); as rules de UI por domínio; as constantes; os tipos compartilhados e a escolha entre Zod schema e type plain."
+use_when:
+  - "criar um helper, uma rule, uma constante ou um tipo compartilhado no `app-web`"
+  - "tirar um valor inline para arquivo próprio"
+  - "escolher entre Zod schema e type plain"
+applies_to:
+  - "apps/app-web/src/pages/**/*.helpers.ts"
+  - "apps/app-web/src/shared/utils/**"
+  - "apps/app-web/src/shared/rules/**"
+  - "apps/app-web/src/shared/constants/**"
+  - "apps/app-web/src/shared/types/**"
+keywords: [helper, "<módulo>.helpers.ts", util.ts, rule, orderRules, constante, PER_PAGE, tipo compartilhado, z.infer, Pick, type plain, Zod schema, formatBRL, parseBRLToCents, Intl, "@metri/utils", "@metri/ui", "@metri/core", ApiErrorType, "@metri/core/errors"]
+status: active
+---
 # Código auxiliar do frontend
-
-Dono de: o código auxiliar do `app-web` que não é componente nem página — a hierarquia pelo que a função conhece (inline, helper do módulo, casa fora do módulo); as rules de UI por domínio; as constantes; os tipos compartilhados e a escolha entre Zod schema e type plain.
-
-Consultar antes de: criar um helper, uma rule, uma constante ou um tipo compartilhado no `app-web`; tirar um valor inline para arquivo próprio; escolher entre Zod schema e type plain.
 
 Como o `app-web` organiza o que não é componente nem página: helper, rule, constante e tipo compartilhado. Onde cada um mora, e quando um valor sai de inline pra arquivo próprio. A estrutura de pastas em si é canônica em `frontend/structure.md`, "Estrutura de pastas"; aqui está o detalhe de cada casa auxiliar (`shared/utils`, `shared/rules`, `shared/constants`, `shared/types`).
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`.
 
 ## A hierarquia de código auxiliar
 

@@ -1,10 +1,26 @@
+---
+id: frontend/forms
+description: "onde o formulário mora e como se compõe; o uso do React Hook Form (desestruturação, submit, commit por campo, campo como string); `defaultValues`; o schema de form e a diferença dele para o schema de API; o campo montado no app sobre o compound do `@metri/ui` (dependência externa, comportamento próprio, máscara); rótulo, descrição e nome acessível do controle."
+use_when:
+  - "criar formulário"
+  - "escrever schema de form"
+  - "montar um campo que o `@metri/ui` não entrega"
+  - "ligar rótulo, descrição e controle"
+applies_to:
+  - "apps/app-web/src/shared/schemas/**"
+  - "apps/app-web/src/shared/components/inputs/**"
+keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", Input.Wrapper, Input.Input, Textarea, react-phone-number-input, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label.Root, Label.Sub, aria-label, "@metri/ui"]
+not_covered:
+  - "o modal de tarefa que contém o form e a regra de Esc e clique fora → frontend/routing"
+  - "a mutation que o form dispara, o estado em voo e a notificação → frontend/data-fetching"
+  - "o contrato com o backend → backend/http-api"
+  - "o layout visual do formulário (\"Vocabulário visual\") → frontend/design-system"
+  - "a estrutura de pastas do frontend → frontend/structure"
+  - "o tipo derivado de schema → frontend/helpers"
+  - "a promoção de peça ao pacote → overview"
+status: active
+---
 # Formulários do frontend
-
-Dono de: onde o formulário mora e como se compõe; o uso do React Hook Form (desestruturação, submit, commit por campo, campo como string); `defaultValues`; o schema de form e a diferença dele para o schema de API; o campo montado no app sobre o compound do `@metri/ui` (dependência externa, comportamento próprio, máscara); rótulo, descrição e nome acessível do controle.
-
-Consultar antes de: criar formulário; escrever schema de form; montar um campo que o `@metri/ui` não entrega; ligar rótulo, descrição e controle.
-
-Não cobre: o modal de tarefa que contém o form e a regra de Esc e clique fora (`frontend/routing.md`); a mutation que o form dispara, o estado em voo e a notificação (`frontend/data-fetching.md`); o contrato com o backend (`backend/http-api.md`); o layout visual do formulário (`frontend/design-system.md`, "Vocabulário visual"); a estrutura de pastas do frontend (`frontend/structure.md`); o tipo derivado de schema (`frontend/helpers.md`); a promoção de peça ao pacote (`overview.md`).
 
 Formulário é a parte da tela que recebe entrada do usuário: ele valida no navegador, transforma o que precisa antes de enviar e entrega a escrita a um hook de mutation. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -70,6 +86,8 @@ Quando o dado chega depois da montagem: **Obrigatório.** A tela aguarda o dado 
 **Obrigatório.** Schema de form e schema de API são declarações separadas, mesmo quando coincidem campo a campo: o de form mora em `shared/schemas/<módulo>.schema.ts`, e o de API é o contrato canônico do pacote dono (`backend/http-api.md`, "Contrato de API compartilhado").
 
 **Obrigatório.** O schema de form carrega o que é da UI: mensagem de erro em português, campo que o form aceita vazio mas a API exige, transformação aplicada antes de enviar (normalizar e-mail, parsear data) e restrição mais estreita que o contrato do backend.
+
+Schema de form mais estrito que o do backend não é divergência, é decisão de produto.
 
 **Obrigatório.** A página conta com a transformação declarada no schema, sem repetir a normalização no handler.
 

@@ -1,12 +1,20 @@
+---
+id: frontend/structure
+description: "a estrutura de pastas do `app-web` — as casas por função, a nomeação de arquivo, a pasta do dono e a fronteira de casa, que faz o que não encaixa abrir casa nova."
+use_when:
+  - "decidir em que pasta (casa) do `app-web` um arquivo de código novo entra"
+  - "nomear um arquivo do frontend"
+  - "abrir uma casa nova no `app-web`"
+applies_to:
+  - "apps/app-web/src/**"
+keywords: [estrutura de pastas, casa, app/, pages/, hooks/, api/, lib/, shared/, shared/components, shared/mocks, nomeação de arquivo, kebab-case, pasta do dono, arquivo de entrada, "<tela>-page.tsx", "<área>-layout.tsx", casa nova, "@metri/utils", "@metri/ui"]
+status: active
+---
 # Visão geral do frontend
-
-Dono de: a estrutura de pastas do `app-web` — as casas por função, a nomeação de arquivo, a pasta do dono e a fronteira de casa, que faz o que não encaixa abrir casa nova.
-
-Consultar antes de: decidir em que pasta (casa) do `app-web` um arquivo de código novo entra; nomear um arquivo do frontend; abrir uma casa nova no `app-web`.
 
 O frontend numa página: onde cada arquivo do `app-web` mora. A colocação entre app e pacote compartilhado segue `overview.md`.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`). Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
 Este documento cobre a estrutura de pastas. Cliente HTTP e hooks de React Query estão em `frontend/data-fetching.md`, estado cliente em `frontend/state.md`, rotas em `frontend/routing.md`, página e componente em `frontend/components.md`, formulário em `frontend/forms.md`, design system em `frontend/design-system.md`, código auxiliar em `frontend/helpers.md`.
 

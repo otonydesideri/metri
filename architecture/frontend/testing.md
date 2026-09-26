@@ -1,14 +1,28 @@
+---
+id: frontend/testing
+description: "a pirâmide de testes do frontend — spec de função pura (rule, schema), de hook, de página e componente, de rota e guard, e de fluxo entre telas; o dublê de rede único, o MSW no nível do fetch; os builders de payload; o spec de estrutura e o de config do dev server."
+use_when:
+  - "escrever spec de rule de UI ou de schema Zod do `app-web`"
+  - "escrever spec de hook do `app-web`, com a rede pelo MSW"
+  - "escrever spec de página ou componente, com a interação do usuário e o corpo da requisição enviada"
+  - "escrever spec de rota, guard ou fluxo entre telas"
+  - "criar builder de payload ou decidir se um comportamento do frontend precisa de dublê novo"
+applies_to:
+  - "apps/app-web/src/**/*.spec.ts"
+  - "apps/app-web/src/**/*.spec.tsx"
+  - "apps/app-web/test/**"
+  - "apps/app-web/dev-server-proxy.spec.ts"
+keywords: [pirâmide, spec, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
+not_covered:
+  - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
+examples: [frontend/testing.examples.md]
+status: active
+---
 # Testes do frontend
-
-Dono de: a pirâmide de testes do frontend — spec de função pura (rule, schema), de hook, de página e componente, de rota e guard, e de fluxo entre telas; o dublê de rede único, o MSW no nível do fetch; os builders de payload; o spec de estrutura e o de config do dev server.
-
-Consultar antes de: escrever spec de rule de UI ou de schema Zod do `app-web`; escrever spec de hook do `app-web`, com a rede pelo MSW; escrever spec de página ou componente, com a interação do usuário e o corpo da requisição enviada; escrever spec de rota, guard ou fluxo entre telas; criar builder de payload ou decidir se um comportamento do frontend precisa de dublê novo.
-
-Não cobre: o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá (`backend/testing.md`).
 
 Como o frontend do produto prova comportamento: os cinco níveis da pirâmide, o que cada um prova e onde mora, o spec de estrutura que fica fora dela, o dublê de rede único e os builders de payload compartilhados.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) dos demais documentos. Regra que já tem casa num documento de área (cliente HTTP e sincronização de cache em `frontend/data-fetching.md`, rule de UI em `frontend/helpers.md`, estado de leitura em `frontend/components.md`, casa de pasta em `frontend/structure.md`, rota e guard em `frontend/routing.md`, formulário em `frontend/forms.md`, estado cliente em `frontend/state.md`, contrato com o backend em `backend/http-api.md`) é referenciada aqui, nunca duplicada. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) dos demais documentos. Regra que já tem casa num documento de área (cliente HTTP e sincronização de cache em `frontend/data-fetching.md`, rule de UI em `frontend/helpers.md`, estado de leitura em `frontend/components.md`, casa de pasta em `frontend/structure.md`, rota e guard em `frontend/routing.md`, formulário em `frontend/forms.md`, estado cliente em `frontend/state.md`, contrato com o backend em `backend/http-api.md`) é referenciada aqui, nunca duplicada.
 
 ## A pirâmide
 
@@ -123,28 +137,7 @@ Atenção a store que se desliga sem assinantes: alguns só mantêm o valor vivo
 - Título no formato `'<condição> → <resultado>'`.
 - Schema prova o que aceita, o que recusa e o que transforma. Coerção e normalização (aparar espaço, converter texto em data) são comportamento, não detalhe: o consumidor depende do valor de saída.
 
-```ts
-// src/shared/rules/order.rule.spec.ts
-describe('orderRules.resolveDestination', () => {
-  it('pedido confirmado na rota de edição → rota de detalhe', () => {
-    const destination = orderRules.resolveDestination({
-      status: 'confirmed',
-      pathname: '/orders/order-1/edit',
-    });
-
-    expect(destination).toBe('/orders/order-1');
-  });
-
-  it('pedido confirmado na rota de detalhe → null', () => {
-    const destination = orderRules.resolveDestination({
-      status: 'confirmed',
-      pathname: '/orders/order-1',
-    });
-
-    expect(destination).toBe(null);
-  });
-});
-```
+Exemplo completo: testing.examples.md#orderrulesresolvedestination
 
 ## Como escrever spec de hook (`hooks/<módulo>/<nome>.spec.tsx`)
 
@@ -154,37 +147,7 @@ describe('orderRules.resolveDestination', () => {
 - Debounce usa timers falsos, com o avanço dentro de `act`.
 - Mudança de props entre renders usa `rerender`, com o valor novo passado como argumento, não uma variável externa mutada.
 
-```tsx
-// src/hooks/order/use-confirm-order.spec.tsx
-const APP_URL = window.location.origin;
-
-describe('useConfirmOrder', () => {
-  it('confirmação bem-sucedida → detalhe do pedido descartado do cache', async () => {
-    server.use(
-      http.post(`${APP_URL}/api/orders/order-1/confirm`, () =>
-        HttpResponse.json({ orderId: 'order-1' }),
-      ),
-    );
-
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-    queryClient.setQueryData(orderKeys.detail('order-1'), makeOrder());
-
-    const { result } = renderHook(() => useConfirmOrder(), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      ),
-    });
-
-    result.current.mutate('order-1');
-
-    await waitFor(() => {
-      expect(queryClient.getQueryData(orderKeys.detail('order-1'))).toBeUndefined();
-    });
-  });
-});
-```
+Exemplo completo: testing.examples.md#useconfirmorder
 
 ## Como escrever spec de página (`pages/<módulo>/<tela>/<tela>-page.spec.tsx`)
 
@@ -243,27 +206,7 @@ Uma função pura `make<Recurso>(override = {})`, com `...override` sempre por �
 
 Resposta de escrita é envelope: quando o presenter do backend devolve `{ order: { ... } }`, o builder devolve esse formato, com o override aplicado ao miolo (`Partial<...['order']>`) pra ergonomia — nunca um objeto achatado que mente sobre a forma do wire.
 
-```ts
-// test/factories/make-order.factory.ts
-import { faker } from '@faker-js/faker';
-
-interface OrderPayload {
-  id: string;
-  customerName: string;
-  status: 'draft' | 'confirmed';
-  totalInCents: number;
-}
-
-export function makeOrder(override: Partial<OrderPayload> = {}): OrderPayload {
-  return {
-    id: faker.string.uuid(),
-    customerName: faker.person.fullName(),
-    status: 'draft',
-    totalInCents: faker.number.int({ min: 1000, max: 100_000 }),
-    ...override,
-  };
-}
-```
+Exemplo completo: testing.examples.md#makeorder
 
 ## Nada de helper de render compartilhado
 

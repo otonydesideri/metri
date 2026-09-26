@@ -1,10 +1,27 @@
+---
+id: frontend/routing
+description: "a estrutura conceitual das rotas do `app-web` — o grupo de rota como par guard + layout, o acesso que a página exige, o guard, a rota de não-encontrado, a decisão entre rota e modal de tarefa, o carregamento lazy da página com o `Suspense` do layout e o fallback dele, e a nomeação do segmento de rota."
+use_when:
+  - "criar página ou rota"
+  - "criar ou mudar o guard ou o layout de um grupo"
+  - "decidir se uma tarefa vira rota ou modal"
+  - "nomear segmento ou parâmetro de rota"
+applies_to:
+  - "apps/app-web/src/app/router/**"
+  - "apps/app-web/src/app/layouts/**"
+  - "apps/app-web/index.html"
+keywords: [rota, grupo de rota, guard, layout, routes.tsx, react-router, "<Route path=\"*\">", não-encontrado, modal de tarefa, isDirty, onEscapeKeyDown, onInteractOutside, React.lazy, lazy, Suspense, Outlet, AppSplash, code splitting, segmento de rota, kebab-case, orderId]
+not_covered:
+  - "o corpo da página e do modal como componente → frontend/components"
+  - "o formulário dentro do modal → frontend/forms"
+  - "estado guardado na URL → frontend/state"
+  - "o que o cache descarta quando um guard lê um dado pra decidir rota → frontend/data-fetching"
+  - "a pasta e o nome de arquivo de guard, layout e página → frontend/structure"
+  - "o token e o vocabulário visual → frontend/design-system"
+  - "o spec de rota e guard → frontend/testing"
+status: active
+---
 # Rotas do frontend
-
-Dono de: a estrutura conceitual das rotas do `app-web` — o grupo de rota como par guard + layout, o acesso que a página exige, o guard, a rota de não-encontrado, a decisão entre rota e modal de tarefa, o carregamento lazy da página com o `Suspense` do layout e o fallback dele, e a nomeação do segmento de rota.
-
-Consultar antes de: criar página ou rota; criar ou mudar o guard ou o layout de um grupo; decidir se uma tarefa vira rota ou modal; nomear segmento ou parâmetro de rota.
-
-Não cobre: o corpo da página e do modal como componente (`frontend/components.md`); o formulário dentro do modal (`frontend/forms.md`); estado guardado na URL (`frontend/state.md`); o que o cache descarta quando um guard lê um dado pra decidir rota (`frontend/data-fetching.md`); a pasta e o nome de arquivo de guard, layout e página (`frontend/structure.md`); o token e o vocabulário visual (`frontend/design-system.md`); o spec de rota e guard (`frontend/testing.md`).
 
 Num SPA tudo é client: o eixo que organiza uma tela é o acesso que ela exige, não o ambiente de render, e é isso que a decisão "Server vs. Client Component" do modelo Next.js não cobre aqui. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 

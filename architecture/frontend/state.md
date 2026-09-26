@@ -1,14 +1,27 @@
+---
+id: frontend/state
+description: "o estado cliente do `app-web`, que vive só no navegador — a divisão entre estado servidor e estado cliente; a árvore que roteia cada dado para URL, `useState`, Context ou Zustand; a limpeza do estado na troca de dono; a persistência que sobrevive a refresh."
+use_when:
+  - "introduzir estado de tela que atravessa componentes"
+  - "decidir se um estado do navegador mora na URL, em `useState`, em Context ou em Zustand"
+  - "guardar paginação, filtro, tab, busca ou ordenação na URL"
+  - "abrir um store ou um context novo"
+  - "persistir estado do navegador entre refreshes"
+applies_to:
+  - "apps/app-web/src/shared/stores/**"
+  - "apps/app-web/src/shared/contexts/**"
+  - "apps/app-web/src/pages/**/use-*-params.ts"
+keywords: [estado cliente, estado servidor, URL state, useSearchParams, search params, "use-<tela>-params.ts", useState, useBoolean, Context, createContext, Provider, Zustand, useShallow, selector, persist, localStorage, useLocalStorage, troca de dono, queryClient.clear, nuqs, Jotai, tema]
+not_covered:
+  - "o estado servidor, dado que vem ou vai para a API, que fica em React Query → frontend/data-fetching"
+examples: [frontend/state.examples.md]
+status: active
+---
 # Estado cliente no frontend
-
-Dono de: o estado cliente do `app-web`, que vive só no navegador — a divisão entre estado servidor e estado cliente; a árvore que roteia cada dado para URL, `useState`, Context ou Zustand; a limpeza do estado na troca de dono; a persistência que sobrevive a refresh.
-
-Consultar antes de: introduzir estado de tela que atravessa componentes; decidir se um estado do navegador mora na URL, em `useState`, em Context ou em Zustand; guardar paginação, filtro, tab, busca ou ordenação na URL; abrir um store ou um context novo; persistir estado do navegador entre refreshes.
-
-Não cobre: o estado servidor, dado que vem ou vai para a API, que fica em React Query (`frontend/data-fetching.md`).
 
 Como o `app-web` guarda estado que vive só no navegador: a divisão entre estado servidor e estado cliente, e a árvore que roteia cada dado pra URL, `useState`, Context ou Zustand.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`). Quando um caso real não encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
 ## A divisão fundamental: servidor ou cliente
 
@@ -51,38 +64,7 @@ Casos:
 
 No react-router isso não precisa de wrapper próprio: `useSearchParams` devolve o par leitura/escrita, e o updater funcional cobre merge e remoção de chave.
 
-```tsx
-import { useSearchParams } from 'react-router';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@metri/ui/components/ui/tabs';
-
-export function OrderDetailsTabs() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') ?? 'details';
-
-  function handleTabChange(value: string) {
-    setSearchParams(
-      (params) => {
-        params.set('tab', value);
-        return params;
-      },
-      { replace: true },
-    );
-  }
-
-  return (
-    <Tabs value={activeTab} onValueChange={handleTabChange}>
-      <TabsList>
-        <TabsTrigger value="details">Detalhes</TabsTrigger>
-        <TabsTrigger value="items">Itens</TabsTrigger>
-        <TabsTrigger value="payments">Pagamentos</TabsTrigger>
-      </TabsList>
-      <TabsContent value="details">{/* ... */}</TabsContent>
-      <TabsContent value="items">{/* ... */}</TabsContent>
-      <TabsContent value="payments">{/* ... */}</TabsContent>
-    </Tabs>
-  );
-}
-```
+Exemplo completo: state.examples.md#orderdetailstabs
 
 Filtro e paginação seguem o mesmo mecanismo, e o valor lido da URL vira parâmetro do hook de React Query. Trocar filtro reescreve a URL, a chave da query muda, e o React Query refetcha com a chave nova (`frontend/data-fetching.md`, "A key factory"). A URL é a fonte única do filtro; o componente não guarda uma segunda cópia em `useState`.
 
@@ -113,49 +95,7 @@ O hook concentra três regras que, espalhadas pelos handlers da página, viram c
 - **Mudou o recorte, a página sai da URL.** Filtro, busca, ordenação e tamanho de página redefinem o recorte da lista, então `page` deixa de fazer sentido e é removida na mesma escrita. A invariante é um updater privado que todo setter de recorte atravessa; só o `setPage` escapa dele.
 - **A busca escreve na URL depois do debounce.** O input é não controlado (`defaultValue` com o valor da URL): o que o usuário digita não reescreve a URL a cada tecla — só o valor estabilizado pelo debounce vira search param, e o input não remonta nem perde o cursor no meio da digitação.
 
-```ts
-// pages/order/list/use-list-params.ts
-import { orderStatusSchema } from '@metri/<pacote-dono>';
-import { useSearchParams } from 'react-router';
-
-export function useListParams() {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // query string é entrada do usuário: valida antes de virar filtro
-  const statusParam = orderStatusSchema.safeParse(searchParams.get('status'));
-  const status = statusParam.success ? statusParam.data : undefined;
-  const search = searchParams.get('search') ?? undefined;
-  const page = Number(searchParams.get('page') ?? '1');
-
-  // recorte novo invalida a página atual: todo setter de recorte passa aqui
-  function updateResettingPage(mutate: (params: URLSearchParams) => void) {
-    setSearchParams((params) => {
-      mutate(params);
-      params.delete('page');
-      return params;
-    });
-  }
-
-  function setStatus(value: string) {
-    updateResettingPage((params) => {
-      if (value === 'all') {
-        params.delete('status');
-      } else {
-        params.set('status', value);
-      }
-    });
-  }
-
-  function setPage(nextPage: number) {
-    setSearchParams((params) => {
-      params.set('page', String(nextPage));
-      return params;
-    });
-  }
-
-  return { status, search, page, setStatus, setPage };
-}
-```
+Exemplo completo: state.examples.md#uselistparams
 
 Os valores que o hook devolve viram o filtro do hook de React Query da listagem, e os nomes dos search params são os da query string da API (`backend/http-api.md`, "União fechada e limite do contrato").
 
@@ -184,60 +124,7 @@ Use Context quando o estado é lido por vários componentes de uma árvore espec
 
 O arquivo do context mora na casa `shared/contexts/`, por módulo, como as outras casas do `app-web` (`frontend/structure.md`, "Estrutura de pastas"). O nome segue `frontend/structure.md`, "Nomeação de arquivo" (`contexts/<módulo>.tsx`). A casa não vira depósito de estado global: cada context é local a uma árvore, e a separação por módulo é o que evita um Context único inchado.
 
-```tsx
-// shared/contexts/order-wizard.tsx
-import { createContext, useContext, useState, type ReactNode } from 'react';
-
-type WizardStep = 'customer' | 'items' | 'shipping' | 'review';
-
-interface WizardData {
-  customerId?: string;
-  items?: Array<{ productId: string; quantity: number }>;
-  shippingAddress?: { street: string; city: string; postalCode: string };
-}
-
-interface OrderWizardContextValue {
-  currentStep: WizardStep;
-  data: WizardData;
-  goToStep: (step: WizardStep) => void;
-  updateData: (partial: Partial<WizardData>) => void;
-  reset: () => void;
-}
-
-const OrderWizardContext = createContext<OrderWizardContextValue | null>(null);
-
-export function OrderWizardProvider({ children }: { children: ReactNode }) {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('customer');
-  const [data, setData] = useState<WizardData>({});
-
-  function goToStep(step: WizardStep) {
-    setCurrentStep(step);
-  }
-
-  function updateData(partial: Partial<WizardData>) {
-    setData((prev) => ({ ...prev, ...partial }));
-  }
-
-  function reset() {
-    setCurrentStep('customer');
-    setData({});
-  }
-
-  return (
-    <OrderWizardContext.Provider value={{ currentStep, data, goToStep, updateData, reset }}>
-      {children}
-    </OrderWizardContext.Provider>
-  );
-}
-
-export function useOrderWizard() {
-  const context = useContext(OrderWizardContext);
-  if (!context) {
-    throw new Error('useOrderWizard precisa estar dentro de OrderWizardProvider');
-  }
-  return context;
-}
-```
+Exemplo completo: state.examples.md#orderwizardprovider
 
 O Provider é montado local à árvore que o usa, não em `app/`: a página que renderiza o wizard (uma tela de `pages/order/`, por exemplo) envolve só a subárvore do fluxo. Quando essa árvore desmonta, o estado do wizard morre com ela. `app/` fica reservado aos providers globais da aplicação, ver a seção de Zustand e tema abaixo.
 
@@ -251,30 +138,7 @@ O store mora na casa `shared/stores/`, por módulo (`shared/stores/cart.ts`), co
 
 A ausência de Provider também decide casos que a árvore acima empurraria pro Context. Um estado cujo gatilho mora num componente de `shared/components/` fica em store mesmo quando só uma árvore o lê: com Provider, aquele componente passa a quebrar em qualquer tela montada fora dela, e `shared/components/` existe justamente pra ser usada de qualquer área. Vale pra abertura de um menu de busca disparada tanto pelo layout quanto pelo cabeçalho de cada tela.
 
-```ts
-// shared/stores/cart.ts
-import { create } from 'zustand';
-
-interface CartItem {
-  productId: string;
-  quantity: number;
-}
-
-interface CartState {
-  items: CartItem[];
-  addItem: (item: CartItem) => void;
-  removeItem: (productId: string) => void;
-  clear: () => void;
-}
-
-export const useCartStore = create<CartState>((set) => ({
-  items: [],
-  addItem: (item) => set((state) => ({ items: [...state.items, item] })),
-  removeItem: (productId) =>
-    set((state) => ({ items: state.items.filter((i) => i.productId !== productId) })),
-  clear: () => set({ items: [] }),
-}));
-```
+Exemplo completo: state.examples.md#usecartstore
 
 **Selector sempre, nunca o store inteiro.** Um componente subscreve a fatia que usa, não o objeto todo; consumir `useCartStore()` sem selector re-renderiza o componente a cada mudança de qualquer campo. Pra selecionar um valor único, passe o selector direto. Pra selecionar um objeto ou lista derivada, use `useShallow`, senão o novo objeto a cada render dispara re-render por identidade.
 

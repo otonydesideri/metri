@@ -1,14 +1,31 @@
+---
+id: frontend/data-fetching
+description: "a busca e o envio de dado do `app-web` ao app-api — o cliente HTTP same-origin e as funções de `api/`; os hooks de query e de mutation do React Query, com a key factory, o `staleTime`, a paginação e a sincronização de cache; o erro, o sucesso e o estado em voo de uma ação; o provider e os defaults."
+use_when:
+  - "adicionar uma chamada à API ou uma função de `api/` no `app-web`"
+  - "criar hook de query ou de mutation do React Query"
+  - "decidir se uma escrita atualiza ou invalida o cache"
+  - "nomear o erro, o sucesso e o estado em voo de uma ação que chama a API"
+  - "configurar o provider de dado ou os defaults do React Query"
+applies_to:
+  - "apps/app-web/src/api/**"
+  - "apps/app-web/src/hooks/**"
+  - "apps/app-web/src/lib/http/**"
+  - "apps/app-web/src/app/providers/query-client.ts"
+  - "apps/app-web/src/app/index.tsx"
+  - "apps/app-web/vite.config.ts"
+keywords: [httpClient, "@better-fetch/fetch", createFetch, BetterFetchError, toUserFacingMessage, "/api", proxy, React Query, useQuery, useMutation, key factory, keys.ts, staleTime, gcTime, refetchInterval, queryOptions, setQueryData, invalidateQueries, resetQueries, placeholderData, prefetchQuery, mutateAsync, useTransition, isSubmitting, variables, notification, LoadErrorState, QueryClient, QueryClientProvider, queryClient.clear, persistQueryClient, optimistic update, polling]
+not_covered:
+  - "o estado que vive só no navegador → frontend/state"
+  - "o contrato da API do lado do backend → backend/http-api"
+examples: [frontend/data-fetching.examples.md]
+status: active
+---
 # Busca de dados no frontend
-
-Dono de: a busca e o envio de dado do `app-web` ao app-api — o cliente HTTP same-origin e as funções de `api/`; os hooks de query e de mutation do React Query, com a key factory, o `staleTime`, a paginação e a sincronização de cache; o erro, o sucesso e o estado em voo de uma ação; o provider e os defaults.
-
-Consultar antes de: adicionar uma chamada à API ou uma função de `api/` no `app-web`; criar hook de query ou de mutation do React Query; decidir se uma escrita atualiza ou invalida o cache; nomear o erro, o sucesso e o estado em voo de uma ação que chama a API; configurar o provider de dado ou os defaults do React Query.
-
-Não cobre: o estado que vive só no navegador (`frontend/state.md`); o contrato da API do lado do backend (`backend/http-api.md`).
 
 Como o `app-web` busca e envia dado pro app-api: o cliente HTTP, as funções de `api/`, os hooks de React Query (query e mutation), a key factory, a sincronização de cache e o caminho de erro.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`.
 
 ## A árvore de decisão
 
@@ -113,37 +130,7 @@ Só a mensagem sai daqui. O título da notificação é a ação que falhou, e q
 
 Cada operação REST do app-api é uma função em `api/<módulo>.ts` (`frontend/structure.md`, casa `api/`): usa o `httpClient`, não tem lógica de UI e não conhece React Query. Leitura valida a resposta com o schema do contrato canônico, importado do pacote dono do conceito (`backend/http-api.md`, "Contrato de API compartilhado"), passado como `output`, garantindo em runtime que o backend devolveu o formato esperado. Escrita recebe o input já tipado. Nos exemplos, `@metri/<pacote-dono>` é esse pacote, cuja escolha segue a colocação de `overview.md`.
 
-```ts
-// api/order.ts
-import {
-  type CreateOrderInput,
-  type FetchOrdersFilters,
-  type Order,
-  type OrderList,
-  orderListSchema,
-  orderSchema,
-} from '@metri/<pacote-dono>';
-import { httpClient } from '@/lib/http/client';
-
-export function fetchOrder(id: string): Promise<Order> {
-  return httpClient(`/orders/${id}`, { output: orderSchema });
-}
-
-export function fetchOrders(filters?: FetchOrdersFilters): Promise<OrderList> {
-  return httpClient('/orders', {
-    query: filters,
-    output: orderListSchema,
-  });
-}
-
-export function createOrder(input: CreateOrderInput): Promise<{ id: string }> {
-  return httpClient('/orders', { method: 'POST', body: input });
-}
-
-export function cancelOrder(id: string): Promise<void> {
-  return httpClient(`/orders/${id}/cancel`, { method: 'POST' });
-}
-```
+Exemplo completo: data-fetching.examples.md#apiorderts
 
 O tipo da resposta é o que o contrato canônico exporta, derivado do schema por `z.infer` e nomeado lá, e é importado do pacote, nunca redeclarado à mão nem escrito como `z.infer<typeof schema>` na própria assinatura (`frontend/helpers.md`, "Tipos compartilhados" e "Zod schema vs. type plain"). Escrita sem retorno de corpo (`cancelOrder`) não precisa de `output` nem de tipo.
 
@@ -273,39 +260,7 @@ O terceiro caso é estreito e vale explicar. Invalidar marca a query como stale 
 
 Regra prática: mutação que muda um fato lido por um guard usa `resetQueries` na key desse fato. As demais seguem em `invalidateQueries`.
 
-```ts
-// hooks/order/use-confirm-order.ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { confirmOrder } from '@/api/order';
-import { orderKeys } from './keys';
-import type { OrderDetails } from '@metri/<pacote-dono>';
-
-export function useConfirmOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: confirmOrder,
-    onSuccess: ({ order, invoice }) => {
-      // a resposta carrega o estado novo — inclusive a fatura emitida no
-      // mesmo commit: entra no cache do detalhe sem outra ida ao servidor
-      queryClient.setQueryData<OrderDetails>(orderKeys.detail(order.id), (old) => {
-        if (!old) {
-          return old;
-        }
-        return {
-          ...old,
-          status: order.status,
-          updatedAt: order.updatedAt,
-          invoice,
-        };
-      });
-      // ordenação, filtro e contagem da lista são do backend, e o pedido
-      // pode mudar de página com o status novo: invalida
-      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
-    },
-  });
-}
-```
+Exemplo completo: data-fetching.examples.md#useconfirmorder
 
 ## Paginação: a página anterior fica na tela, a próxima já chega
 
@@ -313,43 +268,7 @@ Lista paginada declara `placeholderData: (previous) => previous`: durante o refe
 
 O prefetch mora num `useEffect` com **dependências primitivas**, nunca com o objeto de filtros: o objeto muda de referência a cada render e dispararia o prefetch em todo commit. O hook desmonta o objeto nas primitivas e remonta o filtro da página seguinte dentro do efeito.
 
-```ts
-// hooks/order/use-orders.ts
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import type { FetchOrdersFilters } from '@metri/<pacote-dono>';
-import { fetchOrders } from '@/api/order';
-import { orderKeys } from './keys';
-
-export function useOrders(filters: FetchOrdersFilters) {
-  const queryClient = useQueryClient();
-  const { status, page, pageSize } = filters;
-
-  const query = useQuery({
-    queryKey: orderKeys.list(filters),
-    queryFn: () => fetchOrders(filters),
-    placeholderData: (previous) => previous,
-  });
-
-  // deps primitivas de propósito: o objeto `filters` muda de referência a
-  // cada render e dispararia o prefetch em todo commit
-  const total = query.data?.total;
-
-  useEffect(() => {
-    const hasNextPage = total !== undefined && page * pageSize < total;
-
-    if (hasNextPage) {
-      const nextFilters = { status, page: page + 1, pageSize };
-      queryClient.prefetchQuery({
-        queryKey: orderKeys.list(nextFilters),
-        queryFn: () => fetchOrders(nextFilters),
-      });
-    }
-  }, [total, status, page, pageSize, queryClient]);
-
-  return query;
-}
-```
+Exemplo completo: data-fetching.examples.md#useorders
 
 A página e os filtros moram na URL, não em `useState`, e chegam como parâmetro do hook: mudar a URL troca a key e o React Query refetcha (`frontend/state.md`, "URL state" e "O hook de params da tela").
 
@@ -405,27 +324,7 @@ Erro de campo de formulário continua no `Hint` do campo via react-hook-form, n�
 
 O `QueryClient` é singleton de módulo em `app/providers/query-client.ts` (casa dos providers globais do app), importado no provider em `app/index.tsx` (a casa de composição). Sem SSR, um singleton de módulo basta; não há request a isolar, então o `useState(() => new QueryClient())` do modelo Next.js não é necessário.
 
-```tsx
-// app/index.tsx
-import { QueryClientProvider } from '@tanstack/react-query';
-import { NotificationProvider } from '@metri/ui/components/providers/notification-provider';
-import { Toaster } from '@metri/ui/components/ui/toast';
-import { BrowserRouter } from 'react-router';
-import { queryClient } from './providers/query-client';
-import { AppRoutes } from './router/routes';
-
-export function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppRoutes />
-        <NotificationProvider />
-        <Toaster />
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
-}
-```
+Exemplo completo: data-fetching.examples.md#app
 
 A troca de dono segue `frontend/state.md`, "Troca de dono: o estado que depende do dono é limpo": no cache, é o `queryClient.clear()` na instância do `QueryClientProvider`, e nenhum `persistQueryClient` é montado.
 
@@ -439,34 +338,7 @@ Sem instância no produto ainda; a primeira de cada segue este documento, pela r
 
 Atualiza o cache antes da resposta e reverte no erro, pra feedback imediato. Só quando a latência percebida importa e a reversão é barata.
 
-```ts
-export function useCancelOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: cancelOrder,
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: orderKeys.detail(id) });
-      const previous = queryClient.getQueryData<Order>(orderKeys.detail(id));
-      queryClient.setQueryData<Order>(orderKeys.detail(id), (old) => {
-        if (!old) {
-          return old;
-        }
-        return { ...old, status: 'CANCELLED' };
-      });
-      return { previous };
-    },
-    onError: (_err, id, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(orderKeys.detail(id), context.previous);
-      }
-    },
-    onSettled: (_data, _err, id) => {
-      queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) });
-    },
-  });
-}
-```
+Exemplo completo: data-fetching.examples.md#usecancelorder
 
 O `onError` do hook trata a reversão do cache; a notificação continua sendo do handler que disparou a ação, no `catch` dele.
 
