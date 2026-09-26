@@ -12,6 +12,7 @@
 - Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `defaults/stack.md` + ADR global (seção 6.2).
 - Release segue `docs/architecture/infrastructure/release.md` (seções 9.3 e 10).
 - Regras existentes são refinadas, não reescritas (7.2); sem limite de linhas; sem marca check/manual por regra.
+- "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (seções 4.3, 6.11, 6.13, 7.2 e A.5).
 
 **O que mudou da v1.0 para a v1.1**
 
@@ -160,10 +161,11 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | fronteira                                 | `frontier`                                       | Tickets desbloqueados e ainda não pegos                                                       |
 | exemplo canônico                          | `examples`                                       | Código de referência de um padrão                                                             |
 | aplica a                                  | `applies_to`                                     | Globs de caminho onde uma regra vale                                                          |
-| imposto por                               | `enforced_by`                                    | Ids dos checks ou lints que automatizam a regra; vazio enquanto não houver                    |
+| imposto por                               | `enforced_by`                                    | Ids dos checks ou lints que automatizam a regra; ausente enquanto não houver                  |
 | SOT keyword                               | `keywords`                                       | Palavra-chave que torna um arquivo encontrável por grep                                       |
 | descrição                                 | `description`                                    | O que a regra decide, em uma linha; é a linha do `INDEX.md` gerado e do `rules-for`           |
-| ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta                                                    |
+| usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
+| ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
 | não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`)                                      |
 | id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
 | ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita                                                                 |
@@ -171,6 +173,8 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | marca de check                            | `(check: <id>)`                                  | Opcional, no item de verificação automatizado por um check; o id vai em `enforced_by`         |
 | tracer                                    | `tracer`                                         | Ticket que corta um caminho fino e completo, demonstrável                                     |
 | portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
+
+**Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (seção 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`.
 
 ---
 
@@ -327,8 +331,9 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 - A **fonte da verdade do escopo** de uma regra é o `applies_to` no frontmatter.
 - **`rules-for <caminhos | --ticket T2.1>`** é um script do template, independente de ferramenta. Ele devolve só as regras aplicáveis (global, depois projeto, mais os ADRs citados).
+- Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no `applies_to` global: fica na seção "Caminhos do projeto" do `docs/architecture/INDEX.md` (glob → id), e o `rules-for` soma esses caminhos ao `applies_to` da regra.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
-- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`). Não há segunda fonte.
+- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`) e listam `id`, `description` e `use_when` de cada regra. Não há segunda fonte.
 - **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
 
 ### 6.12 Fonte única por conceito e escada de regras
@@ -363,7 +368,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 - **Árvore permitida:** `AGENTS.md`, `CLAUDE.md`, `docs/{CONTEXT,PRODUCT,DESIGN}.md`, `docs/architecture/**`, `docs/adr/**`, `docs/plan/MATRIX.md`, `docs/plan/tech/**` (reservado). Nada mais em `docs/`.
 - **Regras:** o `docs-lint` checa só o frontmatter:
-  - as chaves da seção 4.3;
+  - as quatro chaves obrigatórias da seção 4.3 (`id`, `description`, `use_when`, `status`) e nenhuma chave vazia;
   - `id` igual ao caminho `<área>/<tema>`;
   - os ids de `read_first` e `not_covered` existem;
   - os arquivos citados em `examples` existem.
@@ -389,11 +394,12 @@ Serve para o global e para o projeto.
 
 Numa regra existente, muda só isto:
 
-1. Entra o frontmatter no topo. "Dono de", "Consultar antes de" e "Não cobre" passam para `description`, `read_first` e `not_covered` e saem do corpo.
+1. Entra o frontmatter no topo. "Dono de", "Consultar antes de" e "Não cobre" passam para `description`, `use_when` e `not_covered` e saem do corpo. "Consultar antes de" é o gatilho do próprio arquivo, não uma lista de pré-requisitos: vai para `use_when` sem alteração, uma entrada por situação, e não para `read_first`.
 2. Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, idêntico, com um ponteiro no texto. Trecho curto que ilustra uma regra fica onde está.
 3. Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
 4. A cópia da regra de escape sai (ela vive em `authoring.md`).
 5. "Pontos em aberto" vira ADR `proposed`.
+6. Citação que não se sustenta, em que o arquivo e a seção citados não dizem o que foi citado: a frase vai para o arquivo dono, usando um texto que já existe em outro arquivo. Se esse texto não existe em lugar nenhum, vira dúvida.
 
 Todo o resto fica como está: texto, ordem das seções, diagramas e tabelas.
 
@@ -1076,6 +1082,12 @@ source: architecture-source@vX.Y
 | ------- | ---------------- |
 | backend | backend/INDEX.md |
 
+## Caminhos do projeto
+
+(Globs que dependem de decisão de projeto, como o pacote do contrato de API; o `rules-for` os soma ao `applies_to` da regra.)
+
+- <glob> → <id>
+
 ## Exceções e defaults trocados
 
 - <regra global ou default> → ADR-NNNN
@@ -1091,13 +1103,14 @@ source: architecture-source@vX.Y
 ---
 id: <área>/<tema>
 description: <o que a regra decide, em uma linha, começando pelo tema>
-applies_to: [<globs>]
-keywords: [<SOT keywords>]
-read_first: [<ids>]
-not_covered: ["<tema> → <id>"]
-enforced_by: []
-examples: []
-adr: []
+use_when: [<situação em que o agente lê a regra>]
+applies_to: [<globs>]                  # opcional
+keywords: [<SOT keywords>]             # opcional
+read_first: [<ids>]                    # opcional
+not_covered: ["<tema> → <id>"]         # opcional
+enforced_by: [<ids dos checks>]        # opcional
+examples: [<arquivos>]                 # opcional
+adr: [<ids>]                           # opcional
 status: active
 ---
 # <Tema>
@@ -1126,6 +1139,8 @@ flowchart TD
 
 - <Pergunta de sim ou não que confere a norma>? (check: <id>)
 ````
+
+Chave marcada `# opcional` só é escrita quando tem valor (seção 4.3).
 
 `(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
 

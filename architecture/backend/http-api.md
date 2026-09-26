@@ -1,12 +1,17 @@
 ---
 id: backend/http-api
 description: "a porta HTTP de um módulo — controller por ação, DTO Zod de request, validação de params, query e body na fronteira, presenter e corpo de resposta — e o contrato de API compartilhado com o frontend: a representação canônica única do schema de request e response, da união fechada e do limite que os dois lados consomem."
+use_when:
+  - "criar endpoint ou controller"
+  - "escrever DTO ou schema de API"
+  - "mudar a forma de uma resposta"
+  - "expor um contrato ao frontend"
+  - "levar ao frontend uma união fechada ou um limite que a API impõe"
 applies_to:
   - "apps/app-api/src/infra/http/controllers/**"
   - "apps/app-api/src/infra/http/dtos/**"
   - "apps/app-api/src/infra/http/presenters/**"
 keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, contrato canônico, união fechada, sortBy, sortDirection, ApiErrorType, "@metri/contracts"]
-read_first: []
 not_covered:
   - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
   - "o adaptador fino em geral → backend/application"
@@ -18,9 +23,6 @@ not_covered:
   - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
   - "o schema de form → frontend/forms"
   - "a colocação de código entre app e pacote → overview"
-enforced_by: []
-examples: []
-adr: []
 status: active
 ---
 # API HTTP

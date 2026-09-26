@@ -1,11 +1,15 @@
 ---
 id: frontend/components
 description: "a construção de página e componente no `app-web` — a ordem do corpo da página e do modal, o nome que separa estado da fonte e estado da página, a forma da condicional, um arquivo por componente, a composição (compound do pacote e do app) e os estados de leitura (loading, vazio e erro)."
+use_when:
+  - "criar página, componente ou estado de tela"
+  - "extrair um componente"
+  - "montar um compound"
+  - "decidir o loading, o vazio ou o erro de uma tela"
 applies_to:
   - "apps/app-web/src/pages/**/*.tsx"
   - "apps/app-web/src/shared/components/**/*.tsx"
 keywords: [página, componente, modal, guard, handler, compound, "import * as", Skeleton, EmptyState, load-error-state, isLoading, isBusy, isPending, estado vazio, erro de leitura, erro de escrita, "@metri/ui"]
-read_first: []
 not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
   - "formulário, schema de form e campo → frontend/forms"
@@ -13,9 +17,7 @@ not_covered:
   - "a casa e o nome de arquivo → frontend/structure"
   - "o dado da tela e o feedback de escrita → frontend/data-fetching"
   - "estado cliente → frontend/state"
-enforced_by: []
 examples: [frontend/components.examples.md]
-adr: []
 status: active
 ---
 # Componentes do frontend

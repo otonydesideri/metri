@@ -44,8 +44,9 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
   - D12 Escrita para agentes, só em texto novo (skills, templates, regras novas): imperativo, uma ideia por linha, sem introdução, narrativa nem explicação didática, sem repetir outro arquivo (`read_first`/`not_covered`), termos do vocabulário.
 - [x] 2.2 Formato das regras (metodologia, seção 7) e mapeamento do formato atual para ele
   - Mapeamento: METHODOLOGY 7.2
-- [ ] 2.3 Piloto de refinamento: http-api e components
-- [ ] 2.4 Refinar as demais regras, área por área (7.2), um commit por área
+- [x] 2.3 Piloto de refinamento: http-api e components
+  - use_when = Consultar antes de; chave vazia não é escrita; Caminhos do projeto no INDEX
+- [ ] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
 - [ ] 2.5 Extrair as regras do `overview.md` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation.md` → template de INDEX de projeto (3.4), `authoring.md` → absorvido pela metodologia (apagar no fim da fase)
 - [ ] 2.6 Pontos em aberto → ADRs `proposed` (D8)
 - [ ] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
@@ -57,13 +58,13 @@ Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy
 - [ ] 3.1 `methodology/VOCABULARY.md`
 - [ ] 3.2 `adr/0001-default-ui-library.md` (shadcn/ui) + `defaults/ui.md` + `DESIGN.md` base neutro; `defaults/stack.md` + ADR da stack padrão
 - [ ] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
-- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX, regra, slice, ADR, MATRIX
+- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX (com "Caminhos do projeto"), regra, slice, ADR, MATRIX
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
 - [ ] 4.0 Decidir a linguagem dos scripts (sugestão: TypeScript/Node)
 - [ ] 4.1 `rules-index`: gera os `INDEX.md` a partir do frontmatter
-- [ ] 4.2 `rules-for`: devolve as regras aplicáveis a caminhos ou a um ticket
+- [ ] 4.2 `rules-for`: devolve as regras aplicáveis a caminhos ou a um ticket; soma os "Caminhos do projeto" do INDEX ao `applies_to`
 - [ ] 4.3 `docs-lint`: árvore permitida, frontmatter das regras, formato da matriz
 - [ ] 4.4 `verify`: agrega os checks
 - [ ] 4.5 Rodar tudo neste repositório até ficar verde
