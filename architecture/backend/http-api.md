@@ -1,121 +1,70 @@
+---
+id: backend/http-api
+description: "API HTTP: controller por ação, validação na fronteira, presenter, corpo de resposta e contrato de API compartilhado com o frontend."
+applies_to:
+  - "apps/app-api/src/infra/http/**"
+  - "apps/app-web/src/**/api/**"
+keywords: [endpoint, controller, dto, presenter, toHTTP, response body, api contract, closed union, path param, uuid]
+read_first: [backend/application, backend/errors]
+not_covered:
+  - "registro global do pipe de validação → infrastructure/runtime"
+  - "superfície /api e same-origin → overview"
+  - "colocação de código entre app e pacote → overview"
+  - "pacote dono de cada contrato (decisão de projeto) → activation"
+  - "registro de controller e caso de uso no módulo HTTP → backend/modules"
+  - "query de exibição e paginação → backend/reading"
+  - "escopo do dono → backend/access-scope"
+  - "consumo do contrato no frontend (cliente HTTP, funções de api/) → frontend/data-fetching"
+  - "casa de tipos e constantes no frontend → frontend/helpers"
+  - "schema de form → frontend/forms"
+  - "prova do limite do contrato em cada lado → frontend/testing"
+enforced_by: []
+examples: []
+adr: []
+status: active
+---
 # API HTTP
 
-Dono de: a porta HTTP de um módulo — controller por ação, DTO Zod de request, validação de params, query e body na fronteira, presenter e corpo de resposta — e o contrato de API compartilhado com o frontend: a representação canônica única do schema de request e response, da união fechada e do limite que os dois lados consomem.
-
-Consultar antes de: criar endpoint ou controller; escrever DTO ou schema de API; mudar a forma de uma resposta; expor um contrato ao frontend; levar ao frontend uma união fechada ou um limite que a API impõe.
-
-Não cobre: `DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado (`backend/errors.md`); o adaptador fino em geral (`backend/application.md`); o registro global do pipe de validação (`infrastructure/runtime.md`); a superfície `/api` e same-origin (`overview.md`); query de exibição e paginação (`backend/reading.md`); o escopo do dono (`backend/access-scope.md`); o consumo do contrato no frontend — cliente HTTP, funções de `api/`, casa de tipos e constantes (`frontend/data-fetching.md`, `frontend/helpers.md`); o schema de form (`frontend/forms.md`); a colocação de código entre app e pacote (`overview.md`).
-
-A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de caso de uso e resultado em resposta, sem decidir nada. Quando o frontend consome o mesmo contrato, a porta passa a ter dois lados, e o que precisa coincidir entre eles é decidido aqui. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
-
 ## Regras
+- **Obrigatório.** Exponha cada comportamento HTTP por um controller por ação, em `src/infra/http/controllers/<módulo>/<ação>.controller.ts`; nunca um controller por módulo. — `manual`
+  Por quê: o diff de uma feature nova não toca o arquivo de outra.
+- **Obrigatório.** No controller, receba o DTO validado, chame o caso de uso e traduza o `failure` pela tabela de `backend/errors`. — `manual`
+- **Obrigatório.** Tipe body, query e path param com DTO de schema, validado na fronteira antes do controller. — `manual`
+- **Proibido.** Path param solto, fora de DTO; em vez disso, receba os params como um objeto tipado pelo DTO. — `manual`
+- **Obrigatório.** Dê a todo campo de texto do schema de request um comprimento máximo, além do mínimo. — `manual`
+- **Proibido.** Validar id de entidade como UUID v4; em vez disso, aceite UUID de qualquer versão. — `manual`
+  Por quê: a v4 recusa o UUID nil, que rota de consulta pública recebe como id inexistente.
+- **Obrigatório.** Envie toda resposta de erro da porta, inclusive recusa de validação e recusa nativa do framework (rota inexistente, rate limit), no envelope único de `backend/errors`. — `manual`
+- **Obrigatório.** No sucesso de uma escrita, responda com o agregado escrito. — `manual`
+- **Proibido.** Entidade no corpo da resposta; em vez disso, converta o agregado pelo presenter `src/infra/http/presenters/<agregado>.presenter.ts`, com `static toHTTP`. — `manual`
+- **Proibido.** Chave genérica (`data`) no corpo da resposta; em vez disso, nomeie o que ele carrega (`{ order }`, `{ order, invoice }`). — `manual`
+  Exceção: listagem paginada usa o `PaginatedResult<T>` de `backend/reading`.
+- **Obrigatório.** Coloque o schema consumido só pelo backend em `src/infra/http/dtos/<módulo>/<nome>.dto.ts`. — `manual`
+- **Obrigatório.** Quando frontend e backend consomem o mesmo contrato de API (schema de request ou response, união fechada, limite), mantenha uma representação canônica única no pacote dono do conceito, importada pelo controller e pelo frontend. — `manual`
+  Por quê: o contrato é a fronteira dos dois lados; nasce no pacote dono (`overview`), não por contagem de consumidores.
+- **Proibido.** Uma cópia do contrato em cada lado, sincronizada à mão; em vez disso, importe a representação canônica. — `manual`
+- **Proibido.** Pacote de contratos que junta domínios diferentes; em vez disso, o pacote dono de cada conceito. — `manual`
+- **Proibido.** Subir para o pacote schema de form ou tipo local de tela por se parecer com o contrato; em vez disso, mantenha-os no app. — `manual`
+- **Obrigatório.** Declare parâmetro de conjunto fechado (coluna de ordenação, direção, status) como união fechada no contrato canônico. — `manual`
+- **Proibido.** String livre ou valores redeclarados no frontend para parâmetro de conjunto fechado; em vez disso, importe a união do contrato. — `manual`
+- **Obrigatório.** Dê ao search param da URL do app o mesmo nome do query param da API (`sortBy`, `sortDirection`); URL, hook e função de `api/` não renomeiam no meio. — `manual`
+- **Proibido.** Redeclarar no app um limite que a API impõe (comprimento, quantidade); em vez disso, exporte-o do contrato canônico e importe-o no schema de request e no frontend. — `manual`
 
-### Controller por ação
+## Stack padrão
+- DTO: classe `createZodDto` (nestjs-zod) sobre schema Zod, validada pelo `ZodValidationPipe` global.
+- Path param: `@Param() params: <Nome>Dto`; nunca `@Param('campo') campo: string`.
+- Texto: `.min()` e `.max()`; id de entidade: `z.uuid()`, nunca `z.uuidv4()`.
+- Tradução do `failure` no controller: `toHttpException`.
+- Erro de validação: `ZodValidationPipe` composto com `toInvalidRequestException`; o filtro global normaliza no mesmo envelope a `HttpException` nativa (rota inexistente, throttler).
+- Envelope de erro e `ApiErrorType` cruzam a fronteira por `@metri/core/errors`; o frontend consome o `ApiErrorType`, nunca o `DomainErrorType`.
+- Contrato compartilhado: no pacote `@metri/*` dono do conceito; nunca num `@metri/contracts`.
+- Limite no contrato canônico, usado pelo schema de request e importado pelo schema de form:
 
-**Obrigatório.** Todo comportamento que um módulo expõe por HTTP entra por um controller por ação (`<ação>.controller.ts`), nunca um por módulo.
+  ```ts
+  export const ORDER_NOTE_MIN_LENGTH = 8;
+  export const ORDER_NOTE_MAX_LENGTH = 128;
 
-> **Por quê.** O arquivo diz o que ele faz, e o diff de uma feature nova não toca o arquivo de nenhuma outra.
-
-**Obrigatório.** O controller recebe o DTO Zod (`createZodDto`), chama o caso de uso e traduz `failure` com `toHttpException` (`backend/errors.md`).
-
-### Validação na fronteira
-
-**Obrigatório.** Body, query e path param entram tipados como classe `createZodDto`, validados pelo `ZodValidationPipe` global.
-
-**Obrigatório.** Path param entra como objeto (`@Param() params: <Nome>Dto`).
-
-**Proibido.** `@Param('campo') campo: string`.
-
-> **Por quê.** Param solto não passa por validação nenhuma.
-
-**Obrigatório.** Campo de texto tem `.max()` além do `.min()`.
-
-> **Por quê.** Sem ele a porta aceita payload de qualquer tamanho antes da primeira checagem.
-
-**Obrigatório.** Id de entidade é `z.uuid()`.
-
-**Proibido.** `z.uuidv4()` em id de entidade.
-
-> **Por quê.** A versão v4 recusa o uuid nil, que rota de consulta pública recebe como id inexistente.
-
-### Presenter e corpo de resposta
-
-**Obrigatório.** O sucesso de uma escrita devolve o agregado escrito, e quem o transforma em corpo serializável é um presenter, `infra/http/presenters/<agregado>.presenter.ts`, com `static toHTTP`.
-
-> **Por quê.** Entidade não é JSON e não é contrato de API.
-
-**Obrigatório.** O corpo da resposta nomeia o que carrega: `{ order }`, `{ order, invoice }`.
-
-**Proibido.** Chave genérica (`data`) no corpo da resposta.
-
-- **Exceção.** Listagem paginada: usa o `PaginatedResult<T>` de `backend/reading.md`.
-
-### Contrato de API compartilhado
-
-**Obrigatório.** Schema consumido só pelo backend vive em `infra/http/dtos/<módulo>/`.
-
-Quando frontend e backend consomem o mesmo contrato de API (schema de request ou response, união fechada que a API aceita ou devolve, limite que ela impõe): **Obrigatório.** Ele tem uma representação canônica única, no pacote dono do conceito, e o controller e o frontend importam de lá.
-
-> **Por quê.** O contrato é a fronteira entre os dois lados, e é isso que dá a ele ownership compartilhado inequívoco: a casa no pacote é o caso permitido de `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app", não promoção pela contagem de consumidores.
-
-**Proibido.** Duas cópias do mesmo contrato, uma em cada lado, mantidas em sincronia à mão.
-
-**Proibido.** Tratar como contrato de API o que não é: o schema de form é do frontend (`frontend/forms.md`), e tipo local de tela não sobe para o pacote por se parecer com um do contrato.
-
-### União fechada e limite do contrato
-
-Quando um parâmetro varia num conjunto fechado (coluna de ordenação, direção, status): **Obrigatório.** Ele nasce como união fechada no contrato canônico, e o frontend usa essa mesma união, sem redeclarar os valores.
-
-**Proibido.** `z.string()` livre no frontend para parâmetro de conjunto fechado.
-
-> **Por quê.** Aceitaria valor que a API vai recusar.
-
-**Obrigatório.** O search param que guarda o valor na URL do app usa o mesmo nome do query param da API (`sortBy`, `sortDirection`): o caminho do valor — URL, hook, função de `api/` — não renomeia nada no meio.
-
-Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade): **Obrigatório.** O limite é exportado pelo contrato canônico e importado pelo frontend, nunca redeclarado numa constante do app.
-
-## Aplicação
-
-- Toda resposta de erro da porta sai no envelope único de `backend/errors.md`, "O formato de resposta de erro", com o `type` no `ApiErrorType`: o `ZodValidationPipe` é registrado no grafo de módulos (`infrastructure/runtime.md`), composto com `toInvalidRequestException`, e o filtro global normaliza no mesmo envelope a `HttpException` nativa do framework (rota inexistente, throttler).
-- Controller e caso de uso entram nas listas de `http.module.ts`, agrupados por comentário de área (`backend/modules.md`).
-- O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
-- Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
-- O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`, como parte do contrato de API; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
-- O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes (`@metri/contracts`): é o catch-all que `overview.md` proíbe.
-- Qual pacote é dono de cada contrato é decisão de projeto (`activation.md`, "Matriz de delegações").
-- O limite que a API impõe sai do contrato canônico, e o schema de request o usa; o schema de form do frontend importa o mesmo valor, e pode ser mais estrito que ele (`frontend/forms.md`):
-
-```ts
-// no contrato canônico, no pacote dono do conceito
-export const ORDER_NOTE_MIN_LENGTH = 8;
-export const ORDER_NOTE_MAX_LENGTH = 128;
-
-export const createOrderBodySchema = z.object({
-  note: z.string().min(ORDER_NOTE_MIN_LENGTH).max(ORDER_NOTE_MAX_LENGTH),
-});
-```
-
-- Com uma representação só, não há espelho a manter; cada lado continua provando o limite onde o consome (`frontend/testing.md`, "Limite do contrato compartilhado").
-
-## Verificação
-
-- O comportamento entrou por um controller por ação, com DTO `createZodDto` na fronteira e a tradução de erro na porta?
-- Toda resposta de erro, inclusive a recusa nativa do framework, sai no envelope único com `type` no `ApiErrorType`?
-- Path param entra como objeto, texto tem `.max()`, e id é `z.uuid()`?
-- A resposta nomeia o que carrega, com o agregado passado por presenter, e sem chave genérica fora do envelope de paginação?
-- Contrato que frontend e backend consomem tem uma representação canônica só, no pacote dono do conceito, sem `@metri/contracts` e sem cópia mantida à mão em nenhum lado?
-- Parâmetro de conjunto fechado usa a união do contrato canônico, com o mesmo nome do query param na URL do app?
-- Limite que a API impõe vem do contrato canônico, sem constante redeclarada no frontend?
-
-## Referências
-
-- `backend/errors.md`: taxonomia, tradução e envelope de erro.
-- `backend/application.md`: o adaptador fino.
-- `infrastructure/runtime.md`: registro global do pipe.
-- `backend/reading.md`: query de exibição e paginação.
-- `backend/modules.md`: registro no `http.module.ts`.
-- `overview.md`: colocação entre app e pacote.
-- `frontend/data-fetching.md`: o consumo do contrato no frontend.
-- `frontend/helpers.md`: casa de constantes e tipos no frontend.
-- `frontend/forms.md`: o schema de form, separado do contrato.
-- `frontend/testing.md`: prova do limite do contrato em cada lado.
+  export const createOrderBodySchema = z.object({
+    note: z.string().min(ORDER_NOTE_MIN_LENGTH).max(ORDER_NOTE_MAX_LENGTH),
+  });
+  ```

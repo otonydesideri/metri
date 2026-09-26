@@ -99,6 +99,24 @@ Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy
 - [ ] 4.4 `verify`: agrega os checks
 - [ ] 4.5 Rodar tudo neste repositório até ficar verde
 
+Checks candidatos (regra `manual` até o check existir; depois `check:` + `enforced_by`):
+
+- backend/http-api: cada `*.controller.ts` em `controllers/<módulo>/` tem uma classe com um único handler de rota
+- backend/http-api: nenhum `@Param('<campo>')`; só `@Param()` tipado por DTO
+- backend/http-api: todo `z.string()` de schema de request tem `.max()`
+- backend/http-api: nenhum `z.uuidv4()`
+- backend/http-api: retorno do controller não é entidade de domínio (tipo) e passa por `<agregado>.presenter.ts`
+- backend/http-api: corpo de resposta sem chave `data` no topo, fora de `PaginatedResult` (teste e2e)
+- backend/http-api: erro de validação, rota inexistente e throttler saem no envelope com `type` em `ApiErrorType` (teste e2e)
+- backend/http-api: nenhum pacote `@metri/contracts` no workspace
+- backend/http-api: o app não declara constante de limite (`*_MIN_LENGTH`, `*_MAX_LENGTH`) que o contrato exporta
+- frontend/components: todo hook antes do primeiro retorno (Biome `useHookAtTopLevel`)
+- frontend/components: um componente por `.tsx`, salvo compound com bloco `export { X as Root, ... }` (spec de estrutura)
+- frontend/components: nenhum `cond ? null : <X />`
+- frontend/components: handler local `handle*` e prop de callback `on*`
+- frontend/components: booleanos com prefixo `is`, `has`, `can` ou `should`
+- frontend/components: `EmptyState` exige ação de saída no tipo das props
+
 ## Fase 5: skills (seção 16)
 
 - [ ] 5.1 `writing-for-agents` primeiro (adaptada do Matt; é usada para escrever as outras)
