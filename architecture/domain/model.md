@@ -1,10 +1,32 @@
+---
+id: domain/model
+description: "entidade (construtor privado, `create()` × `reconstitute()`, id), value object, agregado e sua fronteira de consistência, propriedade do agregado (quem escreve a tabela), referência entre agregados por identidade, atualização parcial e a mutação interna do agregado por método de domínio."
+use_when:
+  - "criar agregado, entidade, value object ou enum de domínio"
+  - "decidir quem escreve a tabela de um agregado"
+  - "adicionar mudança de estado ou atualização parcial a uma entidade"
+  - "fazer um agregado referenciar outro"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/*.entity.ts"
+  - "apps/app-api/src/domain/enterprise/value-objects/**"
+  - "apps/app-api/src/domain/enterprise/enums/**"
+keywords: [entidade, value object, agregado, enum de domínio, AggregateRoot, ValueObject, UniqueEntityID, "create()", "reconstitute()", "touch()", Optional, Either, setter, atualização parcial, propriedade do agregado, tabela externa, referência entre agregados, uuid, .entity.ts, .vo.ts, .enum.ts, "@metri/core/entities"]
+not_covered:
+  - "quando e como uma coleção usa `WatchedList` → domain/watched-list"
+  - "classe de erro, `Either` e tradução → backend/errors"
+  - "registro e despacho de evento → backend/events"
+  - "repositório, mapper e escrita → backend/persistence"
+  - "caso de uso e contrato → backend/application"
+  - "Strategy → domain/strategy"
+  - "Specification → domain/specification"
+  - "Builder → domain/builder"
+  - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto → activation"
+  - "Domain Service / Policy → domain/domain-services"
+  - "bounded context → domain/bounded-contexts"
+examples: [domain/model.examples.md]
+status: active
+---
 # Modelo de domínio
-
-Dono de: entidade (construtor privado, `create()` × `reconstitute()`, id), value object, agregado e sua fronteira de consistência, propriedade do agregado (quem escreve a tabela), referência entre agregados por identidade, atualização parcial e a mutação interna do agregado por método de domínio.
-
-Consultar antes de: criar agregado, entidade, value object ou enum de domínio; decidir quem escreve a tabela de um agregado; adicionar mudança de estado ou atualização parcial a uma entidade; fazer um agregado referenciar outro.
-
-Não cobre: quando e como uma coleção usa `WatchedList` (`domain/watched-list.md`); classe de erro, `Either` e tradução (`backend/errors.md`); registro e despacho de evento (`backend/events.md`); repositório, mapper e escrita (`backend/persistence.md`); caso de uso e contrato (`backend/application.md`); Strategy, Specification e Builder (`domain/strategy.md`, `domain/specification.md`, `domain/builder.md`); a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (`activation.md`); Domain Service / Policy (`domain/domain-services.md`); bounded context (`domain/bounded-contexts.md`).
 
 O modelo de domínio é TypeScript puro em `domain/enterprise`: entidades e value objects que guardam as invariantes do negócio e só existem em estado válido. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`), com o `Order` como agregado de referência.
 
@@ -128,123 +150,9 @@ Quando a operação tem nome de negócio: **Obrigatório.** Método nomeado, mes
 
 A entidade completa, com a coleção de itens e dois métodos de domínio:
 
-```ts
-// domain/enterprise/order-item-list.ts
-import { WatchedList } from '@metri/core/entities';
-import { OrderItem } from './order-item.entity';
+Exemplo completo: model.examples.md#orderitemlist
 
-export class OrderItemList extends WatchedList<OrderItem> {
-  compareItems(a: OrderItem, b: OrderItem): boolean {
-    return a.equals(b);
-  }
-}
-```
-
-```ts
-// domain/enterprise/order.entity.ts
-import { AggregateRoot, UniqueEntityID } from '@metri/core/entities';
-import {
-  type Either,
-  failure,
-  type Optional,
-  success,
-} from '@metri/core/types';
-import { OrderConfirmedEvent } from './events/order-confirmed.event';
-import { OrderStatus } from './enums/order-status.enum';
-import { OrderItem } from './order-item.entity';
-import { OrderItemList } from './order-item-list';
-import {
-  EmptyOrderError,
-  InvalidOrderStatusTransitionError,
-  OrderNotEditableError,
-} from './errors/order.errors';
-
-export interface OrderProps {
-  customerId: UniqueEntityID;
-  items: OrderItemList;
-  status: OrderStatus;
-  createdAt: Date;
-  updatedAt?: Date | null;
-}
-
-export class Order extends AggregateRoot<OrderProps> {
-  private constructor(props: OrderProps, id?: UniqueEntityID) {
-    super(props, id);
-  }
-
-  /** ORDER-001 — pedido nasce em rascunho e nunca nasce vazio. */
-  public static create(
-    props: Optional<OrderProps, 'status' | 'createdAt'>,
-  ): Either<EmptyOrderError, Order> {
-    if (props.items.getItems().length === 0) {
-      return failure(new EmptyOrderError());
-    }
-
-    const order = new Order({
-      ...props,
-      status: props.status ?? OrderStatus.Draft,
-      createdAt: props.createdAt ?? new Date(),
-    });
-
-    return success(order);
-  }
-
-  public static reconstitute(props: OrderProps, id: UniqueEntityID): Order {
-    return new Order(props, id);
-  }
-
-  public get customerId(): UniqueEntityID {
-    return this.props.customerId;
-  }
-
-  public get items(): OrderItemList {
-    return this.props.items;
-  }
-
-  public get status(): OrderStatus {
-    return this.props.status;
-  }
-
-  public get createdAt(): Date {
-    return this.props.createdAt;
-  }
-
-  public get updatedAt(): Date | null | undefined {
-    return this.props.updatedAt;
-  }
-
-  private touch(): void {
-    this.props.updatedAt = new Date();
-  }
-
-  /** ORDER-002 — item entra só enquanto o pedido é rascunho. */
-  public addItem(item: OrderItem): Either<OrderNotEditableError, void> {
-    if (this.props.status !== OrderStatus.Draft) {
-      return failure(new OrderNotEditableError(this.props.status));
-    }
-
-    this.props.items.add(item);
-    this.touch();
-
-    return success(undefined);
-  }
-
-  /** ORDER-003 — só rascunho pode ser confirmado. */
-  public confirm(): Either<InvalidOrderStatusTransitionError, void> {
-    if (this.props.status !== OrderStatus.Draft) {
-      return failure(
-        new InvalidOrderStatusTransitionError(this.props.status, OrderStatus.Confirmed),
-      );
-    }
-
-    this.props.status = OrderStatus.Confirmed;
-    this.touch();
-    this.addDomainEvent(new OrderConfirmedEvent(this.id, this.props.customerId));
-
-    return success(undefined);
-  }
-}
-```
+Exemplo completo: model.examples.md#order
 
 - `Order` usa `WatchedList` porque a coleção de itens passa pela árvore de `domain/watched-list.md` (limitada, mutada pelo domínio, com invariante da raiz sobre ela). O getter expõe a lista porque o repositório lê o delta dela (`backend/persistence.md`); a mutação continua passando por `addItem()`.
 - Transição que interessa a outro contexto registra o evento no próprio método (`addDomainEvent(...)`, de `AggregateRoot`); registro e despacho seguem `backend/events.md`.
@@ -274,46 +182,7 @@ if (note !== undefined) {
 
 O value object de referência:
 
-```ts
-import { ValueObject } from '@metri/core/entities';
-import { type Either, failure, success } from '@metri/core/types';
-import { InvalidMoneyAmountError } from '../errors/order.errors';
-
-interface MoneyProps {
-  amountInCents: number;
-}
-
-/** Valor monetário em centavos inteiros; toda operação devolve instância nova. */
-export class Money extends ValueObject<MoneyProps> {
-  private constructor(props: MoneyProps) {
-    super(props);
-  }
-
-  public static create(amountInCents: number): Either<InvalidMoneyAmountError, Money> {
-    if (!Number.isInteger(amountInCents) || amountInCents < 0) {
-      return failure(new InvalidMoneyAmountError(amountInCents));
-    }
-
-    const money = new Money({ amountInCents });
-
-    return success(money);
-  }
-
-  public static zero(): Money {
-    return new Money({ amountInCents: 0 });
-  }
-
-  public add(other: Money): Money {
-    return new Money({
-      amountInCents: this.props.amountInCents + other.toValue(),
-    });
-  }
-
-  public toValue(): number {
-    return this.props.amountInCents;
-  }
-}
-```
+Exemplo completo: model.examples.md#money
 
 - `add()` devolve instância nova, `zero()` dá nome ao caso conhecido, e uma invariante de operação (somar moedas diferentes, por exemplo) falharia aqui dentro. Um VO que só valida e normaliza (um slug, por exemplo) é o mínimo do padrão, não o teto dele.
 

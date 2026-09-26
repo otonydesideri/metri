@@ -1,10 +1,25 @@
+---
+id: domain/domain-services
+description: "o domain service e a domain policy — quando uma regra de domínio sai do value object, da entidade ou do agregado, quando não sai, a forma mínima, a casa, a relação com o caso de uso e o spec."
+use_when:
+  - "escrever regra de domínio fora de value object, entidade ou agregado"
+  - "criar domain service ou domain policy em `domain/`"
+  - "tirar da entidade uma regra que combina mais de um conceito"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/policies/**"
+keywords: [domain service, domain policy, policy, policy object, service de domínio, .policy.ts, .policy.spec.ts, enterprise/policies, função pura, sem IO, calculateLoyaltyDiscount, "abstract class"]
+not_covered:
+  - "value object, entidade, agregado e a mutação por método de domínio → domain/model"
+  - "caso de uso, contrato injetável e orquestração → backend/application"
+  - "variação de comportamento escolhida por dado → domain/strategy"
+  - "regra booleana consumida em memória e em query → domain/specification"
+  - "service de integração com vendor → infrastructure/services"
+  - "interação entre contextos → domain/bounded-contexts"
+  - "a regra concreta de cada projeto (\"Matriz de delegações\") → activation"
+examples: [domain/domain-services.examples.md]
+status: active
+---
 # Domain Service e Policy
-
-Dono de: o domain service e a domain policy — quando uma regra de domínio sai do value object, da entidade ou do agregado, quando não sai, a forma mínima, a casa, a relação com o caso de uso e o spec.
-
-Consultar antes de: escrever regra de domínio fora de value object, entidade ou agregado; criar domain service ou domain policy em `domain/`; tirar da entidade uma regra que combina mais de um conceito.
-
-Não cobre: value object, entidade, agregado e a mutação por método de domínio (`domain/model.md`); caso de uso, contrato injetável e orquestração (`backend/application.md`); variação de comportamento escolhida por dado (`domain/strategy.md`); regra booleana consumida em memória e em query (`domain/specification.md`); service de integração com vendor (`infrastructure/services.md`); interação entre contextos (`domain/bounded-contexts.md`); a regra concreta de cada projeto (`activation.md`, "Matriz de delegações").
 
 Domain service é capacidade condicional: a maioria das regras tem dono natural no modelo, e um projeto pode nunca precisar de um. Quando a regra sem dono aparece, a forma dela já está decidida aqui. Domain service e domain policy são o mesmo artefato neste desenho, uma regra de domínio sem estado e sem IO; o nome acompanha a forma. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -77,31 +92,7 @@ Quando decidir exige um fato que só IO obtém: **Obrigatório.** O caso de uso 
 
 A regra de desconto por fidelidade combina o nível do cliente e o total do pedido:
 
-```ts
-// domain/enterprise/policies/loyalty-discount.policy.ts
-import { CustomerTier } from '../enums/customer-tier.enum';
-import type { Customer } from '../customer.entity';
-import type { Order } from '../order.entity';
-
-const MINIMUM_TOTAL_FOR_DISCOUNT_IN_CENTS = 10000;
-
-const DISCOUNT_RATE_BY_TIER: Record<CustomerTier, number> = {
-  [CustomerTier.Regular]: 0,
-  [CustomerTier.Silver]: 0.05,
-  [CustomerTier.Gold]: 0.1,
-};
-
-/** ORDER-007 — desconto de fidelidade: nível do cliente sobre pedido acima do mínimo. */
-export function calculateLoyaltyDiscount(order: Order, customer: Customer): number {
-  if (order.totalInCents < MINIMUM_TOTAL_FOR_DISCOUNT_IN_CENTS) {
-    return 0;
-  }
-
-  const rate = DISCOUNT_RATE_BY_TIER[customer.tier];
-  const discountInCents = Math.floor(order.totalInCents * rate);
-  return discountInCents;
-}
-```
+Exemplo completo: domain-services.examples.md#calculateloyaltydiscount
 
 O caso de uso carrega os fatos, chama a regra e grava:
 

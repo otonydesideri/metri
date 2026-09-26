@@ -1,10 +1,22 @@
+---
+id: domain/bounded-contexts
+description: "o bounded context — o que ele não é, o contexto único como padrão, os sinais que justificam mais de um, a relação com módulo, app e pacote, e a interação entre contextos."
+use_when:
+  - "dividir o domínio em mais de um modelo"
+  - "tratar um termo que passou a ter dois significados"
+  - "fazer um módulo usar conceito que pertence a outro contexto"
+  - "propor app, pacote ou serviço separado por motivo de domínio"
+keywords: [bounded context, contexto, sinais de divisão, contrato publicado, read model, domain event, tradução, camada de anticorrupção, anticorrupção, layer-first, Customer, OrderConfirmedEvent, comando em linha]
+not_covered:
+  - "módulo, granularidade e comunicação entre módulos do mesmo contexto → backend/modules"
+  - "agregado e fronteira de consistência → domain/model"
+  - "join e composição de leitura entre contextos → backend/reading"
+  - "colocação entre app e pacote → overview"
+  - "o mecanismo de uma reação → backend/operation-routing"
+  - "a divisão concreta de cada projeto (\"Matriz de delegações\") → activation"
+status: active
+---
 # Bounded context
-
-Dono de: o bounded context — o que ele não é, o contexto único como padrão, os sinais que justificam mais de um, a relação com módulo, app e pacote, e a interação entre contextos.
-
-Consultar antes de: dividir o domínio em mais de um modelo; tratar um termo que passou a ter dois significados; fazer um módulo usar conceito que pertence a outro contexto; propor app, pacote ou serviço separado por motivo de domínio.
-
-Não cobre: módulo, granularidade e comunicação entre módulos do mesmo contexto (`backend/modules.md`); agregado e fronteira de consistência (`domain/model.md`); join e composição de leitura entre contextos (`backend/reading.md`); colocação entre app e pacote (`overview.md`); o mecanismo de uma reação (`backend/operation-routing.md`); a divisão concreta de cada projeto (`activation.md`, "Matriz de delegações").
 
 Bounded context é a fronteira dentro da qual os termos do domínio têm um significado só, o modelo é coerente, a propriedade das regras é clara e as invariantes pertencem àquele modelo. É capacidade condicional: um projeto começa com um contexto só, e muitos continuam assim; este documento fixa quando a divisão é necessária e o que muda quando ela existe. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`, `customer`).
 

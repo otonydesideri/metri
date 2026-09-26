@@ -1,12 +1,20 @@
+---
+id: domain/strategy
+description: "a Strategy — a variação de comportamento selecionada por dado: a família de classes puras para variação de regra de domínio, um token de DI por variação de integração e o Template Method para a lógica comum entre variações."
+use_when:
+  - "adicionar o segundo ramo de comportamento a uma mesma operação"
+  - "escolher entre implementações de uma regra ou de uma integração conforme um dado do fluxo"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/strategies/**"
+keywords: [Strategy, Template Method, Record, união fechada, token de DI, variação, aberto para extensão, fechado para modificação, .strategy.ts, enterprise/strategies, ShippingCostCalculator, OrderNotifier, switch, protected, "abstract class"]
+examples: [domain/strategy.examples.md]
+status: active
+---
 # Strategy
-
-Dono de: a Strategy — a variação de comportamento selecionada por dado: a família de classes puras para variação de regra de domínio, um token de DI por variação de integração e o Template Method para a lógica comum entre variações.
-
-Consultar antes de: adicionar o segundo ramo de comportamento a uma mesma operação; escolher entre implementações de uma regra ou de uma integração conforme um dado do fluxo.
 
 A variação de comportamento selecionada por dado: cada variação é uma classe própria sob o mesmo contrato, e a escolha é uma consulta a um `Record` tipado.
 
-Os exemplos usam o domínio didático de pedidos de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos de `backend/modules.md`.
 
 ## O problema
 
@@ -57,53 +65,7 @@ export enum DeliveryMethod {
 }
 ```
 
-```ts
-// domain/enterprise/strategies/shipping-cost.strategy.ts
-import { DeliveryMethod } from '../enums/delivery-method.enum';
-
-export interface ShippingContext {
-  distanceInKm: number;
-  totalWeightInGrams: number;
-}
-
-export abstract class ShippingCostCalculator {
-  /** ORDER-004 — frete em centavos inteiros, por modalidade de entrega. */
-  abstract calculate(context: ShippingContext): number;
-}
-
-class PickupShippingCost extends ShippingCostCalculator {
-  calculate(): number {
-    return 0;
-  }
-}
-
-class StandardShippingCost extends ShippingCostCalculator {
-  calculate(context: ShippingContext): number {
-    const baseInCents = 1200;
-    const weightFeeInCents = Math.ceil(context.totalWeightInGrams / 500) * 100;
-    const totalInCents = baseInCents + weightFeeInCents;
-    return totalInCents;
-  }
-}
-
-class ExpressShippingCost extends ShippingCostCalculator {
-  calculate(context: ShippingContext): number {
-    const baseInCents = 2500;
-    const distanceFeeInCents = context.distanceInKm > 100 ? 1500 : 0;
-    const totalInCents = baseInCents + distanceFeeInCents;
-    return totalInCents;
-  }
-}
-
-export const SHIPPING_COST_CALCULATORS: Record<
-  DeliveryMethod,
-  ShippingCostCalculator
-> = {
-  [DeliveryMethod.Pickup]: new PickupShippingCost(),
-  [DeliveryMethod.Standard]: new StandardShippingCost(),
-  [DeliveryMethod.Express]: new ExpressShippingCost(),
-};
-```
+Exemplo completo: strategy.examples.md#shippingcostcalculator
 
 Quem consome (método de entidade ou caso de uso) seleciona pela tabela e conhece só o contrato:
 
@@ -146,62 +108,7 @@ As implementações vivem em `infra/services/<capacidade>/<nome>.impl.ts` (`noti
 
 O consumidor injeta os contratos das variações, nunca implementação, e monta a tabela de despacho no construtor:
 
-```ts
-// domain/application/use-cases/order/notify-order-confirmation.use-case.ts
-import { Injectable } from '@nestjs/common';
-import { type Either, failure, success } from '@metri/core/types';
-import { NotificationChannel } from '../../../enterprise/enums/notification-channel.enum';
-import { OrderNotFoundError } from '../../../enterprise/errors/order.errors';
-import { OrderRepository } from '../../repositories/order-repository.contract';
-import {
-  EmailOrderNotifier,
-  OrderNotifier,
-  SmsOrderNotifier,
-} from '../../services/notification/order-notifier.contract';
-
-interface NotifyOrderConfirmationInput {
-  orderId: string;
-  channel: NotificationChannel;
-}
-
-type NotifyOrderConfirmationOutput = Either<OrderNotFoundError, { order: Order }>;
-
-/** ORDER-005 — confirmação notifica o cliente pelo canal da preferência dele. */
-@Injectable()
-export class NotifyOrderConfirmationUseCase {
-  private readonly notifiers: Record<NotificationChannel, OrderNotifier>;
-
-  constructor(
-    private readonly orderRepository: OrderRepository,
-    emailNotifier: EmailOrderNotifier,
-    smsNotifier: SmsOrderNotifier,
-  ) {
-    this.notifiers = {
-      [NotificationChannel.Email]: emailNotifier,
-      [NotificationChannel.Sms]: smsNotifier,
-    };
-  }
-
-  async execute({
-    orderId,
-    channel,
-  }: NotifyOrderConfirmationInput): Promise<NotifyOrderConfirmationOutput> {
-    const order = await this.orderRepository.findById(orderId);
-
-    if (!order) {
-      return failure(new OrderNotFoundError(orderId));
-    }
-
-    const notifier = this.notifiers[channel];
-    await notifier.send({
-      orderId: order.id.toValue(),
-      totalInCents: order.totalInCents,
-    });
-
-    return success({ order });
-  }
-}
-```
+Exemplo completo: strategy.examples.md#notifyorderconfirmationusecase
 
 Pontos-chave:
 

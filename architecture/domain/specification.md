@@ -1,12 +1,20 @@
+---
+id: domain/specification
+description: "a Specification — a regra booleana de domínio com mais de um consumidor, respondida pela mesma classe em memória (`isSatisfiedBy()`) e como filtro de query (`toWhere()`)."
+use_when:
+  - "reescrever numa query uma regra que já decide em memória"
+  - "dar a uma regra booleana de domínio um segundo consumidor, como uma listagem ou outro módulo"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/specifications/**"
+keywords: [Specification, specification, "isSatisfiedBy()", "toWhere()", .specification.ts, enterprise/specifications, regra booleana, where, RefundableOrderSpecification, composição de specifications, and/or/not]
+examples: [domain/specification.examples.md]
+status: active
+---
 # Specification
-
-Dono de: a Specification — a regra booleana de domínio com mais de um consumidor, respondida pela mesma classe em memória (`isSatisfiedBy()`) e como filtro de query (`toWhere()`).
-
-Consultar antes de: reescrever numa query uma regra que já decide em memória; dar a uma regra booleana de domínio um segundo consumidor, como uma listagem ou outro módulo.
 
 A regra booleana com mais de um consumidor: uma classe de domínio que sabe responder pela mesma regra em memória e como filtro de query.
 
-Os exemplos usam o domínio didático de pedidos de `backend/modules.md`. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos de `backend/modules.md`.
 
 ## O problema
 
@@ -40,42 +48,7 @@ Os critérios por trás da árvore:
 
 A specification é uma classe de domínio em `enterprise/specifications/<regra>.specification.ts`, nunca `.spec.ts`, que é o glob dos arquivos de teste. O construtor carrega o contexto da avaliação (o instante, os parâmetros); `isSatisfiedBy()` responde em memória; `toWhere()` existe só quando há o lado de query.
 
-```ts
-// domain/enterprise/specifications/refundable-order.specification.ts
-import { OrderStatus } from "../enums/order-status.enum";
-import type { Order } from "../order.entity";
-
-const REFUND_WINDOW_IN_DAYS = 7;
-
-/** ORDER-006 — pedido entregue há até 7 dias pode ser reembolsado. */
-export class RefundableOrderSpecification {
-  private readonly deliveredSince: Date;
-
-  constructor(now: Date) {
-    this.deliveredSince = new Date(
-      now.getTime() - REFUND_WINDOW_IN_DAYS * 24 * 60 * 60 * 1000,
-    );
-  }
-
-  isSatisfiedBy(order: Order): boolean {
-    const isDelivered = order.status === OrderStatus.Delivered;
-    const isWithinWindow =
-      order.deliveredAt !== undefined &&
-      order.deliveredAt >= this.deliveredSince;
-
-    const isRefundable = isDelivered && isWithinWindow;
-    return isRefundable;
-  }
-
-  toWhere() {
-    const where = {
-      status: OrderStatus.Delivered,
-      deliveredAt: { gte: this.deliveredSince },
-    };
-    return where;
-  }
-}
-```
+Exemplo completo: specification.examples.md#refundableorderspecification
 
 O caso de uso decide em memória:
 

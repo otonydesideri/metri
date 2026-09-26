@@ -1,14 +1,25 @@
+---
+id: domain/watched-list
+description: "quando e como uma coleção filha de um agregado usa `WatchedList<T>` — a classe base e a especialização na entidade; a substituição completa da coleção; a coleção de vínculo que guarda ids; o limite do delta, que rastreia pertencimento e não conteúdo."
+use_when:
+  - "dar a um agregado uma coleção de itens filhos"
+  - "implementar um fluxo que substitui uma coleção inteira de uma vez"
+  - "guardar numa coleção os ids de outro agregado"
+applies_to:
+  - "apps/app-api/src/domain/enterprise/*-list.ts"
+  - "apps/app-api/src/domain/enterprise/*-ids.ts"
+keywords: [WatchedList, compareItems, "getItems()", "getNewItems()", "getRemovedItems()", "update()", "add()", "remove()", "exists()", delta, coleção filha, coleção de vínculo, substituição completa, ProductPhotoList, ProductTagIds, OrderItemList, replacePhotos, "-list.ts", "-ids.ts", "@metri/core/entities"]
+not_covered:
+  - "a escrita do delta no repositório → backend/persistence"
+  - "a ordem do arquivo físico em volta da escrita → infrastructure/storage"
+examples: [domain/watched-list.examples.md]
+status: active
+---
 # WatchedList
-
-Dono de: quando e como uma coleção filha de um agregado usa `WatchedList<T>` — a classe base e a especialização na entidade; a substituição completa da coleção; a coleção de vínculo que guarda ids; o limite do delta, que rastreia pertencimento e não conteúdo.
-
-Consultar antes de: dar a um agregado uma coleção de itens filhos; implementar um fluxo que substitui uma coleção inteira de uma vez; guardar numa coleção os ids de outro agregado.
-
-Não cobre: a escrita do delta no repositório (`backend/persistence.md`); a ordem do arquivo físico em volta da escrita (`infrastructure/storage.md`).
 
 A coleção filha com delta rastreado: um agregado dono de uma coleção de itens filhos responde "o que mudou nessa coleção" com uma `WatchedList<T>`.
 
-Os exemplos usam o domínio didático de pedidos de `backend/modules.md`, estendido aqui com um agregado `Product` e a coleção de fotos dele. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos de `backend/modules.md`, estendido aqui com um agregado `Product` e a coleção de fotos dele.
 
 ## O problema
 
@@ -71,92 +82,9 @@ Cada coleção tem a própria subclasse em arquivo próprio na raiz de `enterpri
 
 O que `domain/model.md` ainda não mostra é o método de substituição completa. Ele aplica a invariante antes de tocar a lista e delega o diff ao `update()`:
 
-```ts
-// domain/enterprise/product-photo-list.ts
-import { WatchedList } from '@metri/core/entities';
-import { ProductPhoto } from './product-photo.entity';
+Exemplo completo: watched-list.examples.md#productphotolist
 
-export class ProductPhotoList extends WatchedList<ProductPhoto> {
-  compareItems(a: ProductPhoto, b: ProductPhoto): boolean {
-    return a.equals(b);
-  }
-}
-```
-
-```ts
-// domain/enterprise/product.entity.ts
-import { AggregateRoot, UniqueEntityID } from '@metri/core/entities';
-import { type Either, failure, success } from '@metri/core/types';
-import { ProductPhoto } from './product-photo.entity';
-import { ProductPhotoList } from './product-photo-list';
-import { TooManyProductPhotosError } from './errors/product.errors';
-
-const MAX_PHOTOS = 10;
-
-export interface ProductProps {
-  name: string;
-  photos: ProductPhotoList;
-  createdAt: Date;
-  updatedAt?: Date | null;
-}
-
-export class Product extends AggregateRoot<ProductProps> {
-  private constructor(props: ProductProps, id?: UniqueEntityID) {
-    super(props, id);
-  }
-
-  /** PRODUCT-001 — produto nasce sem foto. */
-  public static create(
-    props: Optional<ProductProps, 'photos' | 'createdAt'>,
-  ): Either<never, Product> {
-    const product = new Product({
-      ...props,
-      photos: props.photos ?? new ProductPhotoList(),
-      createdAt: props.createdAt ?? new Date(),
-    });
-
-    return success(product);
-  }
-
-  public static reconstitute(props: ProductProps, id: UniqueEntityID): Product {
-    return new Product(props, id);
-  }
-
-  public get name(): string {
-    return this.props.name;
-  }
-
-  public get photos(): ProductPhotoList {
-    return this.props.photos;
-  }
-
-  public get createdAt(): Date {
-    return this.props.createdAt;
-  }
-
-  public get updatedAt(): Date | null | undefined {
-    return this.props.updatedAt;
-  }
-
-  private touch(): void {
-    this.props.updatedAt = new Date();
-  }
-
-  /** PRODUCT-002 — a galeria é substituída inteira e nunca passa do limite. */
-  public replacePhotos(
-    photos: ProductPhoto[],
-  ): Either<TooManyProductPhotosError, void> {
-    if (photos.length > MAX_PHOTOS) {
-      return failure(new TooManyProductPhotosError(MAX_PHOTOS));
-    }
-
-    this.props.photos.update(photos);
-    this.touch();
-
-    return success(undefined);
-  }
-}
-```
+Exemplo completo: watched-list.examples.md#product
 
 O mapper monta a lista na reconstituição (`new ProductPhotoList(photos)` dentro do `toDomain()`), exatamente como o `OrderPrismaMapper` de `backend/persistence.md` faz com `OrderItemList`.
 
@@ -166,77 +94,7 @@ O ponto que decide se o padrão funciona: a substituição precisa preservar a i
 
 O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. A chave do item novo chega já resolvida neste exemplo, pra manter o foco no delta; de onde ela vem de verdade (upload direto, registro pendente) é o fluxo de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro".
 
-```ts
-// domain/application/use-cases/product/replace-product-photos.use-case.ts
-import { Injectable } from '@nestjs/common';
-import { type Either, failure, success } from '@metri/core/types';
-import { ProductPhoto } from '../../../enterprise/product-photo.entity';
-import {
-  ProductNotFoundError,
-  ProductPhotoNotFoundError,
-  TooManyProductPhotosError,
-} from '../../../enterprise/errors/product.errors';
-import { ProductRepository } from '../../repositories/product-repository.contract';
-
-interface ReplaceProductPhotosInput {
-  productId: string;
-  photos: Array<{ photoId: string } | { key: string }>;
-}
-
-type ReplaceProductPhotosOutput = Either<
-  ProductNotFoundError | ProductPhotoNotFoundError | TooManyProductPhotosError,
-  { product: Product }
->;
-
-/** PRODUCT-002 — a galeria enviada substitui a atual por completo. */
-@Injectable()
-export class ReplaceProductPhotosUseCase {
-  constructor(private readonly productRepository: ProductRepository) {}
-
-  async execute({
-    productId,
-    photos,
-  }: ReplaceProductPhotosInput): Promise<ReplaceProductPhotosOutput> {
-    const product = await this.productRepository.findById(productId);
-
-    if (!product) {
-      return failure(new ProductNotFoundError(productId));
-    }
-
-    const currentById = new Map(
-      product.photos.getItems().map((photo) => [photo.id.toValue(), photo]),
-    );
-
-    const nextPhotos: ProductPhoto[] = [];
-
-    for (const photo of photos) {
-      if ('photoId' in photo) {
-        const current = currentById.get(photo.photoId);
-
-        if (!current) {
-          return failure(new ProductPhotoNotFoundError(photo.photoId));
-        }
-
-        nextPhotos.push(current);
-        continue;
-      }
-
-      const created = ProductPhoto.create({ key: photo.key });
-      nextPhotos.push(created.value);
-    }
-
-    const replaced = product.replacePhotos(nextPhotos);
-
-    if (replaced.isFailure()) {
-      return failure(replaced.value);
-    }
-
-    await this.productRepository.save(product);
-
-    return success({ product });
-  }
-}
-```
+Exemplo completo: watched-list.examples.md#replaceproductphotosusecase
 
 Pontos-chave:
 

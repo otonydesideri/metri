@@ -1,12 +1,18 @@
+---
+id: domain/builder
+description: "a construção passo a passo de um objeto complexo — onde cada caso que o Builder promete resolver já tem casa, os gatilhos raros em que um builder de verdade entraria e a forma dele quando o gatilho chegar."
+use_when:
+  - "criar um caminho novo de construção para um objeto complexo"
+  - "introduzir um builder com passos encadeados"
+keywords: [Builder, builder, "build()", "withX()", InvoiceDocumentBuilder, InvoiceDocument, Director, type-state, test data builder, objeto de props, spread condicional, passos encadeados, forma acumuladora]
+examples: [domain/builder.examples.md]
+status: active
+---
 # Builder
-
-Dono de: a construção passo a passo de um objeto complexo — onde cada caso que o Builder promete resolver já tem casa, os gatilhos raros em que um builder de verdade entraria e a forma dele quando o gatilho chegar.
-
-Consultar antes de: criar um caminho novo de construção para um objeto complexo; introduzir um builder com passos encadeados.
 
 A construção passo a passo: os casos comuns que o padrão promete resolver já têm casa em outros desenhos, e esta é a referência de onde cada um mora e dos gatilhos raros em que um builder de verdade entraria.
 
-Os exemplos são didáticos e não existem no produto. Quando um caso real não se encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos são didáticos e não existem no produto.
 
 ## O problema que ele promete resolver
 
@@ -46,73 +52,7 @@ Três, nenhum com instância no produto:
 
 O exemplo fixa a forma no primeiro gatilho, a fatura de partes combinatórias. O produto do builder é uma estrutura serializável que um renderizador consome, nunca uma entidade de domínio: entidade continua nascendo só por `create()` (`domain/model.md`).
 
-```ts
-import { type Either, failure, success } from '@metri/core/types';
-
-interface InvoiceLine {
-  description: string;
-  quantity: number;
-  unitPriceInCents: number;
-}
-
-export interface InvoiceDocument {
-  brandName: string | null;
-  lines: InvoiceLine[];
-  discountInCents: number | null;
-  legalFooter: string | null;
-  totalInCents: number;
-}
-
-export class InvoiceDocumentBuilder {
-  private brandName: string | null = null;
-  private lines: InvoiceLine[] = [];
-  private discountInCents: number | null = null;
-  private legalFooter: string | null = null;
-
-  withBrand(brandName: string): this {
-    this.brandName = brandName;
-    return this;
-  }
-
-  addLine(line: InvoiceLine): this {
-    this.lines.push(line);
-    return this;
-  }
-
-  withDiscount(discountInCents: number): this {
-    this.discountInCents = discountInCents;
-    return this;
-  }
-
-  withLegalFooter(legalFooter: string): this {
-    this.legalFooter = legalFooter;
-    return this;
-  }
-
-  build(): Either<EmptyInvoiceDocumentError, InvoiceDocument> {
-    if (this.lines.length === 0) {
-      return failure(new EmptyInvoiceDocumentError());
-    }
-
-    const grossInCents = this.lines.reduce(
-      (total, line) => total + line.quantity * line.unitPriceInCents,
-      0,
-    );
-    const discountInCents = this.discountInCents ?? 0;
-    const totalInCents = grossInCents - discountInCents;
-
-    const document: InvoiceDocument = {
-      brandName: this.brandName,
-      lines: this.lines,
-      discountInCents: this.discountInCents,
-      legalFooter: this.legalFooter,
-      totalInCents,
-    };
-
-    return success(document);
-  }
-}
-```
+Exemplo completo: builder.examples.md#invoicedocumentbuilder
 
 O consumidor chama só os passos que o caso pede, inclusive condicionalmente, que é o que o literal de props não expressa bem quando a montagem atravessa vários pontos do código:
 
