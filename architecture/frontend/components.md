@@ -1,68 +1,32 @@
+---
+id: frontend/components
+description: "a construção de página e componente no `app-web` — a ordem do corpo da página e do modal, o nome que separa estado da fonte e estado da página, a forma da condicional, um arquivo por componente, a composição (compound do pacote e do app) e os estados de leitura (loading, vazio e erro)."
+applies_to:
+  - "apps/app-web/src/pages/**/*.tsx"
+  - "apps/app-web/src/shared/components/**/*.tsx"
+keywords: [página, componente, modal, guard, handler, compound, "import * as", Skeleton, EmptyState, load-error-state, isLoading, isBusy, isPending, estado vazio, erro de leitura, erro de escrita, "@metri/ui"]
+read_first: []
+not_covered:
+  - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
+  - "formulário, schema de form e campo → frontend/forms"
+  - "tokens, tema e vocabulário visual → frontend/design-system"
+  - "a casa e o nome de arquivo → frontend/structure"
+  - "o dado da tela e o feedback de escrita → frontend/data-fetching"
+  - "estado cliente → frontend/state"
+enforced_by: []
+examples: [frontend/components.examples.md]
+adr: []
+status: active
+---
 # Componentes do frontend
 
-Dono de: a construção de página e componente no `app-web` — a ordem do corpo da página e do modal, o nome que separa estado da fonte e estado da página, a forma da condicional, um arquivo por componente, a composição (compound do pacote e do app) e os estados de leitura (loading, vazio e erro).
-
-Consultar antes de: criar página, componente ou estado de tela; extrair um componente; montar um compound; decidir o loading, o vazio ou o erro de uma tela.
-
-Não cobre: grupo de rota, guard, rota × modal e carregamento lazy da página (`frontend/routing.md`); formulário, schema de form e campo (`frontend/forms.md`); tokens, tema e vocabulário visual (`frontend/design-system.md`); a casa e o nome de arquivo (`frontend/structure.md`); o dado da tela e o feedback de escrita (`frontend/data-fetching.md`); estado cliente (`frontend/state.md`).
-
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`). Quando um caso real não encaixar nas regras daqui, não force o encaixe nem infira uma variação por conta própria: pare, sinalize e pergunte antes de implementar.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
 ## O corpo da página segue a ordem das decisões
 
 Página mantém a mesma ordem de leitura independentemente do tamanho do módulo: hooks e estados externos, dados e condições de leitura, guards terminais, handlers, condições do conteúdo e da interação, modo alternativo da tela e JSX principal. Blocos separados por linha em branco bastam; comentário de seção repetiria o que a ordem e os nomes já dizem.
 
-```tsx
-export function OrderPage() {
-  const {
-    data: order,
-    isPending,
-    isError,
-    isFetching,
-    refetch: refetchOrder,
-  } = useOrder();
-  const updateOrder = useUpdateOrder();
-
-  const isLoading = isPending;
-  const hasLoadError = isError && order === undefined;
-  const isRetrying = hasLoadError && isFetching;
-
-  if (isLoading) {
-    return <OrderSkeleton />;
-  }
-
-  if (hasLoadError) {
-    return (
-      <LoadErrorState isRetrying={isRetrying} onRetry={() => refetchOrder()} />
-    );
-  }
-
-  if (!order) {
-    return <OrderUnavailableState />;
-  }
-
-  function handleSave() {
-    updateOrder.mutate();
-  }
-
-  const hasItems = order.items.length > 0;
-  const canEdit = order.status === "draft";
-  const isSaving = updateOrder.isPending;
-
-  if (!hasItems) {
-    return <OrderEmptyState />;
-  }
-
-  return (
-    <OrderDetails
-      order={order}
-      canEdit={canEdit}
-      isSaving={isSaving}
-      onSave={handleSave}
-    />
-  );
-}
-```
+Exemplo completo: components.examples.md#orderpage
 
 Todo hook fica antes do primeiro retorno. Os guards terminam o ciclo de leitura na ordem loading, erro sem dado utilizável e indisponibilidade definitiva. Um modo normal da tela, como criação no lugar da listagem, vem depois dos handlers e das condições de conteúdo; não é misturado aos estados de falha.
 

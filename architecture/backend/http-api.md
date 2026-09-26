@@ -1,10 +1,29 @@
+---
+id: backend/http-api
+description: "a porta HTTP de um módulo — controller por ação, DTO Zod de request, validação de params, query e body na fronteira, presenter e corpo de resposta — e o contrato de API compartilhado com o frontend: a representação canônica única do schema de request e response, da união fechada e do limite que os dois lados consomem."
+applies_to:
+  - "apps/app-api/src/infra/http/controllers/**"
+  - "apps/app-api/src/infra/http/dtos/**"
+  - "apps/app-api/src/infra/http/presenters/**"
+keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, contrato canônico, união fechada, sortBy, sortDirection, ApiErrorType, "@metri/contracts"]
+read_first: []
+not_covered:
+  - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
+  - "o adaptador fino em geral → backend/application"
+  - "o registro global do pipe de validação → infrastructure/runtime"
+  - "a superfície `/api` e same-origin → overview"
+  - "query de exibição e paginação → backend/reading"
+  - "o escopo do dono → backend/access-scope"
+  - "o consumo do contrato no frontend — cliente HTTP, funções de `api/` → frontend/data-fetching"
+  - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
+  - "o schema de form → frontend/forms"
+  - "a colocação de código entre app e pacote → overview"
+enforced_by: []
+examples: []
+adr: []
+status: active
+---
 # API HTTP
-
-Dono de: a porta HTTP de um módulo — controller por ação, DTO Zod de request, validação de params, query e body na fronteira, presenter e corpo de resposta — e o contrato de API compartilhado com o frontend: a representação canônica única do schema de request e response, da união fechada e do limite que os dois lados consomem.
-
-Consultar antes de: criar endpoint ou controller; escrever DTO ou schema de API; mudar a forma de uma resposta; expor um contrato ao frontend; levar ao frontend uma união fechada ou um limite que a API impõe.
-
-Não cobre: `DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado (`backend/errors.md`); o adaptador fino em geral (`backend/application.md`); o registro global do pipe de validação (`infrastructure/runtime.md`); a superfície `/api` e same-origin (`overview.md`); query de exibição e paginação (`backend/reading.md`); o escopo do dono (`backend/access-scope.md`); o consumo do contrato no frontend — cliente HTTP, funções de `api/`, casa de tipos e constantes (`frontend/data-fetching.md`, `frontend/helpers.md`); o schema de form (`frontend/forms.md`); a colocação de código entre app e pacote (`overview.md`).
 
 A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de caso de uso e resultado em resposta, sem decidir nada. Quando o frontend consome o mesmo contrato, a porta passa a ter dois lados, e o que precisa coincidir entre eles é decidido aqui. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -76,7 +95,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 
 ## Aplicação
 
-- Toda resposta de erro da porta sai no envelope único de `backend/errors.md`, "O formato de resposta de erro", com o `type` no `ApiErrorType`: o `ZodValidationPipe` é registrado no grafo de módulos (`infrastructure/runtime.md`), composto com `toInvalidRequestException`, e o filtro global normaliza no mesmo envelope a `HttpException` nativa do framework (rota inexistente, throttler).
+- Toda resposta de erro da porta sai no envelope único de `backend/errors.md`, "O formato de resposta de erro", com o `type` no `ApiErrorType`.
 - Controller e caso de uso entram nas listas de `http.module.ts`, agrupados por comentário de área (`backend/modules.md`).
 - O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
