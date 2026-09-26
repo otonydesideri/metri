@@ -20,8 +20,10 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1).
 
 ## ▶ Agora: Fase 1, fundação do repositório
 
-- [ ] 1.1 Salvar a metodologia em `methodology/METHODOLOGY.md` e este arquivo em `SETUP.md` (manual)
-- [ ] 1.2 `git init` (se ainda não houver) e primeiro commit do estado atual
+- [x] 1.1 Salvar a metodologia em `methodology/METHODOLOGY.md` e este arquivo em `SETUP.md` (manual)
+  - Este arquivo estava em `methodology/SETUP.md`; movido para a raiz no commit do 1.2.
+- [x] 1.2 `git init` (se ainda não houver) e primeiro commit do estado atual
+  - O repo já existia com o commit `initial commit` (ede1f30), mantido; `git init` não foi rodado.
 - [ ] 1.3 Criar a estrutura de pastas do source (metodologia, seção 5.3), **sem mover as regras ainda**: `catalog/`, `defaults/`, `methodology/templates/`, `template/`, `adr/`, `skills/`, `CHANGELOG.md`
 - [ ] 1.4 `AGENTS.md` deste repositório (até ~15 linhas): o que é este repo, onde está a metodologia, que o progresso está em `SETUP.md`
 
