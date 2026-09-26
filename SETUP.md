@@ -46,7 +46,8 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
   - Mapeamento: METHODOLOGY 7.2
 - [x] 2.3 Piloto de refinamento: http-api e components
   - use_when = Consultar antes de; chave vazia não é escrita; Caminhos do projeto no INDEX
-- [ ] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
+- [x] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
+  - `not_covered` mantém a seção citada no tema (`<tema> ("<Seção>") → <id>`); `activation` e `overview` valem como id até o 2.5.
 - [ ] 2.5 Extrair as regras do `overview.md` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation.md` → template de INDEX de projeto (3.4), `authoring.md` → absorvido pela metodologia (apagar no fim da fase)
 - [ ] 2.6 Pontos em aberto → ADRs `proposed` (D8)
 - [ ] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
