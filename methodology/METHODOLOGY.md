@@ -566,7 +566,7 @@ subtasks: [registro no mounter, renderização no site]
 | `pattern` | Primeiro exemplar de um padrão novo, ou atualização da versão do source                                              | Única exceção em que o builder escreve em `docs/architecture/`. **Revisão humana obrigatória** antes de liberar os tickets que ele bloqueia |
 | `tracer`  | Entrega de um UC ou parte dele                                                                                       | Serve a um UC com `horizon: now`                                                                                                            |
 | `task`    | Trabalho que não entrega um UC, mas desbloqueia outros (criar conta, credencial, painel de terceiro, preparar dados) | Com `mode: afk`, o agente faz sozinho. Com `mode: hitl`, o agente prepara um roteiro passo a passo e o ticket fecha com confirmação humana  |
-| `release` | Levar entregas para produção                                                                                         | Segue `docs/architecture/infra/release.md`                                                                                                  |
+| `release` | Levar entregas para produção                                                                                         | Segue `docs/architecture/infrastructure/release.md`                                                                                         |
 
 ### 9.4 Regras da matriz
 
@@ -696,7 +696,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 
 - **Objetivo:** levar para produção com segurança.
 - **Quando:** por feature, por `milestone` ou por lote de entregas. Nunca por ticket.
-- **Entrada:** ticket `release` + `docs/architecture/infra/release.md` (regras do projeto).
+- **Entrada:** ticket `release` + `docs/architecture/infrastructure/release.md` (regras do projeto).
 - **Processo:** checklist curto:
   - migrações (expand–contract);
   - variáveis e segredos;
@@ -1152,7 +1152,7 @@ keywords: [<keyword>, <keyword>]
 ```markdown
 # ADR-NNNN <título>
 
-status: accepted | superseded by ADR-NNNN
+status: proposed | accepted | superseded by ADR-NNNN
 area: <área>
 kind: decision | exception | default-change
 

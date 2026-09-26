@@ -39,7 +39,7 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.1).
   - D7 Exemplos didáticos no global; `examples` aponta para `<tema>.examples.md` e, quando existir, para `template/`; nas regras de projeto, para código real.
   - D8 Pontos em aberto viram ADR `proposed`; "o que a decisão não é" vira alternativas do ADR.
   - D9 Temas faltantes (migrações, CI/deploy, segurança HTTP, error boundary, acessibilidade) não são criados agora.
-  - D10 Arquivo principal: meta ~100 linhas, lint barra acima de 170, sem contar a árvore de decisão; código além da forma essencial (~15 linhas) → `<tema>.examples.md`; dividir só partes independentes.
+  - D10 Arquivo principal: meta ~100 linhas; lint (seção 6.13): no máximo 170 linhas, sem contar a `## Árvore de decisão`; código além da forma essencial (~15 linhas) → `<tema>.examples.md`; dividir só partes independentes.
   - D11 `@metri/*` são pacotes do template (globais), não nomes de projeto.
   - D12 Escrita para agentes: imperativo, uma ideia por linha, sem introdução, narrativa nem explicação didática, sem repetir outro arquivo (`read_first`/`not_covered`), termos do vocabulário.
 - [x] 2.2 Formato final enxuto (metodologia v1.1.1, seção 7) e mapeamento do formato atual para ele
