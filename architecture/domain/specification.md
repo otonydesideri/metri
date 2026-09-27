@@ -83,7 +83,7 @@ Pontos-chave:
 
 - A classe é a casa única da regra: a janela mudar de 7 para 14 dias é uma edição num arquivo, e os dois consumidores acompanham. `isSatisfiedBy()` e `toWhere()` são duas expressões da mesma regra; não existe tradução automática entre elas, e o que as mantém juntas é morarem no mesmo arquivo, cobertas pelo mesmo spec unitário e pelo e2e da listagem.
 - `toWhere()` devolve objeto puro, sem nenhum import de Prisma no domínio (`backend/boundaries.md`). O tipo fecha no `where` da query, que é quem pode falar Prisma (`backend/reading.md`): shape divergente do schema vira erro de compilação no ponto de consumo. É também o que mantém a query dentro da regra "Não toma decisão nem executa comportamento de domínio" de `backend/reading.md`: ela aplica o filtro pronto, nunca reimplementa a regra.
-- O construtor carrega o instante para os dois lados avaliarem o mesmo momento, a mesma razão de `isPending(now)` receber `now` de quem chama.
+- O construtor carrega o instante para os dois lados avaliarem o mesmo momento.
 - A specification nunca carrega dado: não injeta repositório, não consulta nada. Para regra multi-agregado sem entidade dona, `isSatisfiedBy(order, customer)` recebe os agregados que o caso de uso já carregou.
 - Entidade dona que já tinha o método delega para a specification quando o segundo consumidor aparecer, nunca duplica.
 - O escopo de acesso não entra na specification: organização, usuário ou outro vínculo continua obrigação do `where` da query (`backend/access-scope.md`), fora do `toWhere()` da regra.

@@ -19,7 +19,7 @@ status: active
 ---
 # Módulos
 
-Os exemplos de código usam um domínio didático de pedidos (`order`, `invoice`): módulo real raramente tem todos os casos que um padrão precisa mostrar, e exemplo espelhando código real convida a tratar o arquivo atual como canônico. Divisão de módulos e forma de cada agregado são decisão por app, registradas como decisão de projeto do app, nunca aqui (`methodology/authoring.md`, "Decisões específicas de projeto").
+Os exemplos de código usam o domínio didático de pedidos (`order`, `invoice`) de `methodology/authoring.md`, "Domínio didático". Divisão de módulos e forma de cada agregado são decisão por app, registradas como decisão de projeto do app, nunca aqui (`methodology/authoring.md`, "Decisões específicas de projeto").
 
 ## A pergunta que precede tudo: isso merece ser um módulo?
 

@@ -29,7 +29,7 @@ export function createOrder(input: CreateOrderInput): Promise<{ order: Order }> 
   return httpClient('/orders', { method: 'POST', body: input });
 }
 
-export function cancelOrder(id: string): Promise<void> {
+export function cancelOrder(id: string): Promise<{ order: Order }> {
   return httpClient(`/orders/${id}/cancel`, { method: 'POST' });
 }
 ```

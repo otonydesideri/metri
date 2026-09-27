@@ -4,7 +4,7 @@ Dono de: o consumo do design system pelo app — o vocabulário visual que as te
 
 Consultar antes de: montar header, superfície, tabela, paginação, status em `StatusBadge`, lista de propriedades, layout de formulário ou ação de uma tela.
 
-Não cobre: o desenho do sistema de tokens e dos componentes, que é do `@metri/ui`; o uso de token e tema no código (`frontend/theming.md`); composição de página e componente e estados de leitura (`frontend/components.md`); comportamento de formulário e acessibilidade de campo (`frontend/forms.md`); rota, modal de tarefa e fallback de carregamento (`frontend/routing.md`); a casa da config de navegação e da constante (`frontend/structure.md`, `frontend/helpers.md`); a promoção de peça ao pacote (`overview.md`).
+Não cobre: o desenho do sistema de tokens e dos componentes, que é do `@metri/ui`; o uso de token e tema no código (`frontend/theming.md`); composição de página e componente e estados de leitura (`frontend/components.md`); comportamento de formulário e acessibilidade de campo (`frontend/forms.md`); rota, modal de tarefa e fallback de carregamento (`frontend/routing.md`); a casa da config de navegação e da constante (`frontend/structure.md`, `frontend/helpers.md`); a promoção de peça ao pacote (`general/code-placement.md`).
 
 O `@metri/ui` é o dono do design system do monorepo; este documento fixa só como o `app-web` o consome, sem inventar valor nem vocabulário próprio. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -12,7 +12,7 @@ O `@metri/ui` é o dono do design system do monorepo; este documento fixa só co
 
 | Ferramenta | Status | Decisão |
 | --- | --- | --- |
-| `@metri/ui` (tokens na config do Tailwind, vocabulário AlignUI) | DECIDIDA | `overview.md`, "Stack" |
+| `@metri/ui` (tokens na config do Tailwind, vocabulário AlignUI) | DECIDIDA | `defaults/stack.md`, "Stack" |
 
 ## Regras
 
@@ -49,4 +49,4 @@ Forma canônica:
 - `frontend/routing.md`: o fallback de carregamento que usa o token do canvas.
 - `frontend/structure.md`: a casa de `shared/config/` e `shared/components/`.
 - `frontend/helpers.md`: a casa da constante.
-- `overview.md`: a promoção de peça ao pacote.
+- `general/code-placement.md`: a promoção de peça ao pacote.

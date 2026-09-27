@@ -61,7 +61,7 @@ Casos:
 - Filtros: `?status=ACTIVE&category=premium`.
 - Tabs: `?tab=details`.
 - Busca: `?q=customer+name`.
-- Ordenação: `?sortBy=date&sortOrder=desc`.
+- Ordenação: `?sortBy=date&sortDirection=desc`.
 
 No react-router isso não precisa de wrapper próprio: `useSearchParams` devolve o par leitura/escrita, e o updater funcional cobre merge e remoção de chave.
 

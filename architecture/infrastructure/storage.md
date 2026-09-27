@@ -202,9 +202,9 @@ A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada fo
 
 ## Quando o binário do usuário passa pelo backend
 
-O que decide é tamanho e volume. Asset pequeno e de baixa frequência, como a foto de um produto, passa pelo backend: o corpo cabe no limite do servidor e o custo de banda e de memória é desprezível. Três peças deixam de existir junto: o registro pendente, o `stat` da confirmação e a limpeza agendada. Asset grande ou de alto volume, um vídeo ou uma importação recorrente, sobe direto por URL assinada, porque aí o corpo inteiro atravessando o processo é custo real e essas três peças se pagam.
+O que decide é tamanho e volume. Asset pequeno e de baixa frequência, como o avatar de um cliente, passa pelo backend: o corpo cabe no limite do servidor e o custo de banda e de memória é desprezível. Três peças deixam de existir junto: o registro pendente, o `stat` da confirmação e a limpeza agendada. Asset grande ou de alto volume, um vídeo ou uma importação recorrente, sobe direto por URL assinada, porque aí o corpo inteiro atravessando o processo é custo real e essas três peças se pagam.
 
-O peso da conta não é a validação, é a limpeza: o upload direto obriga a uma tarefa agendada varrendo órfãos, e num app sem fila isso é criar uma capacidade inteira de agendamento para subir uma foto.
+O peso da conta não é a validação, é a limpeza: o upload direto obriga a uma tarefa agendada varrendo órfãos, e num app sem fila isso é criar uma capacidade inteira de agendamento para subir um avatar.
 
 O passthrough é também o único formato em que a verdade dos bytes é alcançável: o upload direto entrega tamanho e `Content-Type` declarado, e nada mais, porque `stat` responde sobre o objeto que o storage recebeu, não sobre o que os bytes são. É benefício de quem já está deste lado pelo tamanho, não critério de escolha.
 

@@ -56,16 +56,6 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
 
-Lacunas conhecidas, citações que nenhum arquivo sustenta (revisão do 2.4; a citação fica até existir o texto):
-
-- `domain/specification.md`, "A forma": `isPending(now)` como precedente de receber `now` de quem chama; nenhum arquivo mostra `isPending(now)`.
-- `frontend/data-fetching.md`, "Comando de biblioteca externa fica no handler": id em `useState` para a linha em voo; "O estado em voo cobre a ação inteira" usa o `variables` da mutation e proíbe flag manual.
-- `frontend/components.md`, "Estados de leitura": a exceção "salvo quando a tela ramifica por código e mostra estado próprio" não está em `frontend/data-fetching.md`, "Erro e sucesso".
-
-Lacunas conhecidas, exemplo que diverge dentro do próprio dono (revisão do 2.5/2.6):
-
-- `infrastructure/storage.md`: a foto de produto passa pelo backend em "Quando o binário do usuário passa pelo backend", mas o contrato `ProductPhotoStorage` ("Contrato por asset: dois eixos"), "Arquivo físico segue o destino do registro" e `domain/watched-list.md` a tratam por upload direto com registro pendente.
-
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
 - [ ] 3.1 `methodology/VOCABULARY.md`
@@ -108,7 +98,7 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 - [ ] 5.2 Adaptar do Matt: `grilling`, `tdd`, `research`, `domain-language` (a partir de `domain-modeling`)
 - [ ] 5.3 Escrever `guardrail`
 - [ ] 5.4 Escrever `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`
-- [ ] 5.5 Decidir como as skills chegam aos projetos (copiar ou vincular de `.metri/skills/`)
+- [ ] 5.5 Decidir como as skills e os scripts chegam aos projetos
 - [ ] 5.6 Teste a seco de cada skill com um exemplo pequeno
 
 ## Fase 6: release do source
