@@ -1,5 +1,5 @@
-// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras
-// e a lista de áreas abaixo do marcador do INDEX.md raiz (METHODOLOGY 6.11).
+// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras,
+// a lista de áreas abaixo do marcador do INDEX.md raiz e, no source, o catalog/INDEX.md (METHODOLOGY 6.11).
 // Uso: rules-index [<raiz>] [--check]   (raiz padrão: architecture)
 // --check não escreve nada e sai com código 1 se algum INDEX estiver desatualizado.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 
 const HEADER = 'Gerado por rules-index. Não edite.';
+const CATALOG = 'catalog';
 const MARKER = '<!-- rules-index -->';
 
 type Rule = { id: string; description: string; useWhen: string[]; entry?: string };
@@ -90,6 +91,17 @@ for (const [area, rules] of areas) {
   expected.set(join(root, area, 'INDEX.md'), areaIndex(rules));
 }
 expected.set(rootPath, rootIndex(existsSync(rootPath) ? readFileSync(rootPath, 'utf8') : '', areas));
+
+// O catálogo do source tem um INDEX.md só, na mesma tabela das áreas; o projeto não tem catalog/.
+if (existsSync(CATALOG)) {
+  const capabilities = readdirSync(CATALOG)
+    .filter(isRuleFile)
+    .map((name) => readRule(join(CATALOG, name)))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  if (capabilities.length > 0) {
+    expected.set(join(CATALOG, 'INDEX.md'), areaIndex(capabilities));
+  }
+}
 
 const stale = [...expected].filter(
   ([path, content]) => !existsSync(path) || readFileSync(path, 'utf8') !== content,

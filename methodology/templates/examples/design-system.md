@@ -1,10 +1,20 @@
+---
+id: frontend/design-system
+description: "o consumo do design system pelo app — o vocabulário visual que as telas falam: navegação, página, superfície, tabela, paginação, status, lista de propriedades, formulário, ação em voo e ação irreversível."
+use_when:
+  - "montar header, superfície, tabela, paginação, status, lista de propriedades, layout de formulário ou ação de uma tela"
+not_covered:
+  - "o desenho do sistema de tokens e dos componentes, que é do `@metri/ui` → defaults/ui"
+  - "o uso de token e tema no código → frontend/theming"
+  - "composição de página e componente e estados de leitura → frontend/components"
+  - "comportamento de formulário e acessibilidade de campo → frontend/forms"
+  - "rota, modal de tarefa e fallback de carregamento → frontend/routing"
+  - "a casa da config de navegação → frontend/structure"
+  - "a casa da constante → frontend/helpers"
+  - "a promoção de peça ao pacote → general/code-placement"
+status: active
+---
 # Design system no frontend
-
-Dono de: o consumo do design system pelo app — o vocabulário visual que as telas falam: navegação, página, superfície, tabela, paginação, status, lista de propriedades, formulário, ação em voo e ação irreversível.
-
-Consultar antes de: montar header, superfície, tabela, paginação, status, lista de propriedades, layout de formulário ou ação de uma tela.
-
-Não cobre: o desenho do sistema de tokens e dos componentes, que é do `@metri/ui`; o uso de token e tema no código (`frontend/theming.md`); composição de página e componente e estados de leitura (`frontend/components.md`); comportamento de formulário e acessibilidade de campo (`frontend/forms.md`); rota, modal de tarefa e fallback de carregamento (`frontend/routing.md`); a casa da config de navegação e da constante (`frontend/structure.md`, `frontend/helpers.md`); a promoção de peça ao pacote (`general/code-placement.md`).
 
 O `@metri/ui` é o dono do design system do monorepo; este documento fixa só como o `app-web` o consome, sem inventar valor nem vocabulário próprio. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -12,7 +22,7 @@ O `@metri/ui` é o dono do design system do monorepo; este documento fixa só co
 
 | Ferramenta | Status | Decisão |
 | --- | --- | --- |
-| `@metri/ui` (shadcn/ui, tokens na config do Tailwind) | DECIDIDA | `defaults/stack.md`, "Stack" |
+| `@metri/ui` (shadcn/ui, tokens na config do Tailwind) | DECIDIDA | `defaults/ui.md` |
 
 ## Regras
 

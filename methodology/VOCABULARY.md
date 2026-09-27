@@ -42,4 +42,6 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 
 **Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (METHODOLOGY 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:architecture/INDEX`.
 
+**Frontmatter de capacidade do catálogo** (`catalog/<capacidade>.md`). Só `id` (`catalog/<capacidade>`), `description` e `use_when`, as três obrigatórias.
+
 Modalidades do corpo de uma regra (**Obrigatório.**, **Proibido.** e as demais): `methodology/authoring.md`, "Modalidades".

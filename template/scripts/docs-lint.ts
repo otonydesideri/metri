@@ -1,5 +1,5 @@
 // docs-lint: lint estrutural do source (METHODOLOGY 6.13).
-// Checa o frontmatter das regras, as citações em architecture/, methodology/ e adr/,
+// Checa o frontmatter das regras e do catálogo, as citações em architecture/, catalog/, methodology/ e adr/,
 // a presença de cada regra em "Como ler" do architecture/INDEX.md e o rules-index:check.
 // Uso: docs-lint   (roda na raiz do source)
 // Saída: arquivo:linha: mensagem (aviso com o prefixo "aviso:"). Sai com código 1 se houver erro.
@@ -11,7 +11,8 @@ import { dirname, join, normalize, relative } from 'node:path';
 import { parse } from 'yaml';
 
 const ARCHITECTURE = 'architecture';
-const CITATION_ROOTS = ['architecture', 'methodology', 'adr'];
+const CATALOG = 'catalog';
+const CITATION_ROOTS = ['architecture', 'catalog', 'methodology', 'adr'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
 const REQUIRED_KEYS = ['id', 'description', 'use_when', 'status'];
 const KNOWN_KEYS = [
@@ -25,6 +26,8 @@ const KNOWN_KEYS = [
   'adr',
 ];
 const STATUSES = ['active', 'draft', 'deprecated'];
+// Frontmatter de capacidade do catálogo: só estas chaves, todas obrigatórias.
+const CATALOG_KEYS = ['id', 'description', 'use_when'];
 const PROJECT_TARGETS = [
   'project:AGENTS',
   'project:CONTEXT',
@@ -257,21 +260,27 @@ function lintTarget(path: string, line: number, key: string, target: string): vo
   }
 }
 
-function lintFrontmatter(path: string): void {
+function readFrontmatter(path: string): { frontmatter: Record<string, unknown>; lines: string[] } | undefined {
   const source = readFileSync(path, 'utf8');
   const match = /^---\n([\s\S]*?)\n---\n/.exec(source);
   if (!match) {
     report(path, 1, 'frontmatter: ausente');
-    return;
+    return undefined;
   }
-  const lines = source.split('\n');
-  let frontmatter: Record<string, unknown>;
   try {
-    frontmatter = parse(match[1]) ?? {};
+    return { frontmatter: parse(match[1]) ?? {}, lines: source.split('\n') };
   } catch (error) {
     report(path, 1, `frontmatter: YAML inválido (${(error as Error).message.split('\n')[0]})`);
+    return undefined;
+  }
+}
+
+function lintFrontmatter(path: string): void {
+  const read = readFrontmatter(path);
+  if (!read) {
     return;
   }
+  const { frontmatter, lines } = read;
   for (const key of REQUIRED_KEYS) {
     if (!(key in frontmatter)) {
       report(path, 1, `frontmatter: falta a chave obrigatória ${key}`);
@@ -318,6 +327,35 @@ function lintFrontmatter(path: string): void {
     if (!adrExists(id)) {
       report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em adr/`);
     }
+  }
+}
+
+function lintCatalogFrontmatter(path: string): void {
+  const read = readFrontmatter(path);
+  if (!read) {
+    return;
+  }
+  const { frontmatter, lines } = read;
+  for (const key of CATALOG_KEYS) {
+    if (!(key in frontmatter)) {
+      report(path, 1, `frontmatter: falta a chave obrigatória ${key}`);
+    }
+  }
+  for (const [key, value] of Object.entries(frontmatter)) {
+    const line = keyLine(lines, key);
+    if (!CATALOG_KEYS.includes(key)) {
+      report(path, line, `frontmatter: chave ${key} fora do frontmatter de capacidade (${CATALOG_KEYS.join(', ')})`);
+    }
+    if (isEmpty(value)) {
+      report(path, line, `frontmatter: chave ${key} vazia`);
+    }
+  }
+  const expectedId = relative('.', path).replace(/\.md$/, '');
+  if (frontmatter.id !== expectedId) {
+    report(path, keyLine(lines, 'id'), `frontmatter: id ${String(frontmatter.id)} diferente do caminho ${expectedId}`);
+  }
+  if ('use_when' in frontmatter && !Array.isArray(frontmatter.use_when)) {
+    report(path, keyLine(lines, 'use_when'), 'frontmatter: use_when não é lista');
   }
 }
 
@@ -373,6 +411,9 @@ function lintPlanned(): void {
 const rules = ruleFiles();
 for (const path of rules) {
   lintFrontmatter(path);
+}
+for (const path of listMarkdown(CATALOG).filter(isRuleFile)) {
+  lintCatalogFrontmatter(path);
 }
 for (const path of CITATION_ROOTS.flatMap(listMarkdown)) {
   lintCitations(path);

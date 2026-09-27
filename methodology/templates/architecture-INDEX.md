@@ -32,12 +32,6 @@ flowchart TD
 - Use case fala com o banco só pelo contrato; repositório concreto e mapper vivem em `infra/persistence`.
 - Endpoint de leitura de exibição substitui use case e repositório de agregado por um contrato de query da aplicação, implementado em infra e injetado no controller (`backend/reading.md`); guards, pipe e formato de erro são os mesmos.
 
-## Áreas ativas
-
-| área    | índice           |
-| ------- | ---------------- |
-| backend | backend/INDEX.md |
-
 ## Caminhos do projeto
 
 (Globs que dependem de decisão de projeto, como o pacote do contrato de API; o `rules-for` os soma ao `applies_to` da regra.)
@@ -111,7 +105,7 @@ Quando o gatilho de uma delegação aparece depois da ativação inicial, como o
 
 **Obrigatório.** A Project Architecture registra quais capacidades GLOBAL_CONDITIONAL foram ativadas e o valor escolhido para cada delegação resolvida.
 
-Quando a delegação resolvida cumpre a condição da coluna "ADR quando" da matriz, que aplica a ela o critério de `methodology/authoring.md`: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
+Quando a delegação resolvida cumpre a condição de "ADR quando", na matriz ou no arquivo da capacidade do catálogo, que aplica a ela o critério de `methodology/authoring.md`: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
 
 #### Necessidade sem cobertura
 
@@ -127,7 +121,9 @@ parar → ARCHITECTURE DECISION REQUIRED → decidir → atualizar a Source (reg
 
 **Obrigatório.** Toda decisão que a Source delega ao projeto tem uma linha na matriz abaixo, que é forma canônica, com nove campos: assunto, classe da capacidade, gatilho, owner global, o que o projeto decide, restrições que a Source já fixou, default (só quando a Source o declara), registro e condição de ADR.
 
-Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** A linha dela entra na matriz na mesma edição.
+Quando a decisão é de uma capacidade do catálogo: **Obrigatório.** Ela mora no arquivo da capacidade, não na matriz: `catalog/design-system`, `catalog/async-jobs`, `catalog/mail`, `catalog/storage`, `catalog/cache` e `catalog/observability` (`catalog/INDEX.md`).
+
+Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** A linha dela entra na matriz, ou no arquivo da capacidade do catálogo, na mesma edição.
 
 | Assunto | Classe | Gatilho | Owner global | O projeto decide | Restrições da Source | Default | Registro | ADR quando |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -139,11 +135,6 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 | Módulos e agregados | PROJECT_SPECIFIC | O primeiro módulo; antes do primeiro contrato de cada agregado | `backend/modules.md`, `domain/model.md` | A divisão de módulos; a propriedade e a forma de cada agregado | Módulo por conceito de negócio; as formas de `domain/model.md` | Agregado do app | Project Architecture | A tabela é escrita por sistema externo, com o acordo da integração |
 | Apps e pacotes | PROJECT_SPECIFIC | Ativação inicial; capacidade nova | `general/code-placement.md` | Os apps e pacotes reais; o pacote dono de cada capacidade | Colocação por ownership (`general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app"); nenhum pacote catch-all | O artefato fica no app enquanto o ownership compartilhado não é inequívoco | Project Architecture | App ou pacote novo muda a estrutura do monorepo |
 | Pacote do contrato de API | PROJECT_SPECIFIC | Frontend e backend consomem o mesmo contrato | `backend/http-api.md`, `general/code-placement.md` | O pacote dono de cada contrato | Uma representação canônica; nunca `@metri/contracts`; o schema de form fica no frontend | — | Project Architecture | O contrato cria pacote novo |
-| Cache | GLOBAL_CONDITIONAL | Necessidade medida, pelo critério de `infrastructure/cache.md` | `infrastructure/cache.md` | Ativar ou não; o provider; a validade e a invalidação concretas de cada fluxo | Semântica no fluxo dono; escopo do dono na chave; cache fora da fonte de verdade; falha degrada para a fonte | Sem cache | Project Architecture, com a necessidade medida | O cache vira dependência de disponibilidade, ou o provider é infraestrutura nova |
-| Fila e jobs | GLOBAL_CONDITIONAL | `backend/operation-routing.md` leva uma operação a job ou tarefa agendada | `backend/async-jobs.md` | A ferramenta de fila; o processo em que os workers rodam | Contrato de fila, worker fino, idempotência e dead letter; pg-boss é ilustração; worker em app próprio ainda sem desenho | — | Project Architecture | Na escolha da ferramenta, que decide entre enfileiramento transacional e outbox |
-| E-mail | GLOBAL_CONDITIONAL | O projeto envia e-mail | `infrastructure/mail.md` | O vendor; a configuração; o domínio e o remetente | Classe de infra única com o nome do vendor; contrato por fluxo; Resend é ilustração | — | Project Architecture | O vendor não comporta a forma de `infrastructure/mail.md` |
-| Storage | GLOBAL_CONDITIONAL | O projeto guarda arquivos ou assets | `infrastructure/storage.md` | O provider; os dois buckets; o domínio público | Dois buckets por visibilidade, chave canônica, contrato por asset e escopo do dono; R2 é referência | — | Project Architecture | O provider não comporta a forma de `infrastructure/storage.md` |
-| Observabilidade | GLOBAL_CONDITIONAL | Pergunta operacional que pede métrica, alerta ou reconciliação | `infrastructure/observability.md` | A ferramenta; as métricas concretas; os thresholds; os destinos; as reconciliações concretas | Métrica com pergunta e cardinalidade controlada; alerta acionável; reconciliação idempotente a partir da fonte de verdade | — | Project Architecture | A ferramenta é infraestrutura nova, ou uma dimensão de identificador é aceita |
 | Destino do log | GLOBAL | O runtime roda num ambiente com coletor de log | `infrastructure/logging.md` | O destino das linhas (coletor, agregador); a confiança no `x-request-id` de um proxy | `nestjs-pino`, nível por ambiente, redação e contexto de `infrastructure/logging.md` | JSON no stdout | Project Architecture | O `x-request-id` de um proxy passa a ser aceito |
 | Topologia de deploy | PROJECT_SPECIFIC | Antes da primeira entrega executável | `infrastructure/runtime.md` | A hospedagem; o runtime; o processo de worker; a topologia; o deploy por ambiente | Same-origin sob `/api` (`general/http-surface.md`, "Superfície HTTP"); env por `EnvService`; shutdown gracioso quando o runtime depende dele | — | Project Architecture | A topologia é estrutural |
 
@@ -160,9 +151,9 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - Capacidade GLOBAL_CONDITIONAL ativada segue o owner, com só os valores PROJECT_SPECIFIC resolvidos?
 - Todo valor PROJECT_SPECIFIC foi resolvido antes do primeiro ponto que depende dele, sem default que a Source não declarou?
 - A Project Architecture guarda as capacidades ativadas e os valores escolhidos?
-- Delegação que cumpre a condição da coluna "ADR quando" tem ADR?
+- Delegação que cumpre a condição de "ADR quando" tem ADR?
 - Necessidade sem cobertura parou como ARCHITECTURE DECISION REQUIRED, sem valor, mecanismo ou exceção improvisados?
-- Toda decisão que a Source delega ao projeto tem linha na matriz, com os nove campos?
+- Toda decisão que a Source delega ao projeto tem linha na matriz, com os nove campos, ou está no arquivo da capacidade do catálogo?
 
 ### Referências
 
@@ -176,7 +167,14 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - `backend/operation-routing.md`, `backend/async-jobs.md`: fila e jobs.
 - `infrastructure/runtime.md`, `infrastructure/logging.md`: runtime, deploy e log.
 - `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `infrastructure/observability.md`: capacidades condicionais de infraestrutura.
+- `catalog/INDEX.md`: as capacidades do catálogo, com a pergunta de ativação e o que fica para o projeto.
 
 ## Verificação
 
 `<comando verify>`
+
+## Áreas ativas
+
+(Lista gerada pelo `rules-index` abaixo do marcador: área → `INDEX.md` da área.)
+
+<!-- rules-index -->

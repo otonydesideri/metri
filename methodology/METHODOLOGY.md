@@ -183,7 +183,7 @@ docs/
     INDEX.md                    parte escrita à mão + lista gerada abaixo de <!-- rules-index -->: área → INDEX.md da área
     general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
     defaults/                   escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
-  catalog/<capacidade>.md       slices reutilizáveis (inclui design-system)
+  catalog/<capacidade>.md       slices reutilizáveis (inclui design-system) (+ INDEX.md gerado)
   methodology/
     VOCABULARY.md               vocabulário da metodologia (chaves canônicas)
     authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
@@ -300,6 +300,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
 - Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Quando as entradas têm `entry` (as slices, A.7), a tabela ganha a coluna `entry`, que é o ponto de entrada que o roteamento lê. Não há segunda fonte.
 - O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada: área → caminho do `INDEX.md` da área, com o número de regras.
+- O `catalog/INDEX.md` do source é gerado do mesmo jeito, uma linha por capacidade.
 - **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
 
 ### 6.12 Fonte única por conceito e escada de regras
@@ -340,7 +341,8 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
   - os arquivos citados em `examples` existem, e os ids de `adr` existem em `adr/`.
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
-- **Citações** (no source, em `architecture/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido.
+- **Catálogo:** o frontmatter de `catalog/<capacidade>.md` tem só as chaves de capacidade de `methodology/VOCABULARY.md`, nenhuma vazia, e `id` igual a `catalog/<capacidade>`.
+- **Citações** (no source, em `architecture/`, `catalog/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido.
 - **Arquivos planejados:** `template/scripts/docs-lint.planned.json` lista cada arquivo que ainda não existe e o passo do `SETUP.md` que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe é erro ("tire da lista"), para a lista não ficar velha.
 - **`applies_to` sem casamento** (no projeto): glob que não casa com nenhum arquivo gera aviso, não erro; a regra é candidata a poda (seção 15.6).
 - **Saída:** `arquivo:linha: mensagem`, com o prefixo `aviso:` no aviso; o lint sai com código 1 só quando há erro.
@@ -948,68 +950,19 @@ Os resultados alimentam a v1.2 desta metodologia.
 
 ## Apêndice A: Templates
 
-Os templates definitivos moram em `.metri/methodology/templates/`. Abaixo, a forma de cada um.
+Os templates moram em `.metri/methodology/templates/`; cada seção abaixo aponta para o dele.
 
 ### A.1 `AGENTS.md`
 
-```markdown
-# AGENTS.md
-
-## How to work here
-
-- New request: if it fits a slice in docs/architecture/slices/INDEX.md, in one ticket, with no new rule and outside sensitive areas, do it directly. Otherwise use /shape or /look-across.
-- Find before you create: `rules-for <paths>` for rules; grep SOT keywords and CONTEXT.md identifiers for code. Assume it already exists.
-- Follow each rule's canonical example. When a rule does not fit, record a pattern proposal (PP-n) in the matrix and stop; while building, you never edit docs/architecture/, docs/adr/, CONTEXT.md or DESIGN.md (only /shape, /look-across, /accept and pattern tickets do).
-- When a real case doesn't fit the rules, don't force it or invent a variation: stop, flag it and ask before implementing.
-- Anything deferred: `GAP-<n>` in code and a line under Gaps in the matrix.
-- UI: base library components, styled only through theme tokens.
-- Before handing off: `<verify command>` green.
-- Git: commit only on your ticket/<id> branch or worktree, with the ticket id.
-
-## Where things live (read only when needed)
-
-- Product intent and scope → docs/PRODUCT.md (when discussing requirements)
-- Domain terms and code identifiers → docs/CONTEXT.md (whenever you name something)
-- Visual identity → docs/DESIGN.md (when a frontend rule points to it)
-- Plan, UCs, tickets, checks → docs/plan/MATRIX.md (read only your ticket's section)
-- Architecture rules → `rules-for` (never read the whole tree)
-- Slice contract → docs/architecture/slices/<slice>.md
-- Decisions and exceptions → docs/adr/ (when a rule or ticket cites one)
-```
+Template em `methodology/templates/AGENTS.md`.
 
 ### A.2 `docs/PRODUCT.md`
 
-```markdown
-# <Produto>
-
-## Para quem e qual problema
-
-## Resultado esperado
-
-## Escopo
-
-## Fora de escopo
-```
+Template em `methodology/templates/PRODUCT.md`.
 
 ### A.3 `docs/CONTEXT.md`
 
-```markdown
-# Contexto: <Produto>
-
-## Termos
-
-**Pedido** · `Order`
-Solicitação de compra confirmada pelo cliente.
-_Evitar:_ Encomenda, Purchase, Request
-
-## Relações
-
-Um `Order` tem um ou mais `OrderItem`; pertence a um `Customer`.
-
-## Ambiguidades resolvidas
-
-"Conta" era usada para `Account` e `Customer`: são coisas diferentes.
-```
+Template em `methodology/templates/CONTEXT.md`.
 
 ### A.4 `docs/DESIGN.md`
 
@@ -1021,46 +974,7 @@ Template em `methodology/templates/architecture-INDEX.md`.
 
 ### A.6 Regra (global ou do projeto)
 
-````markdown
----
-id: <área>/<tema>
-description: <o texto do "Dono de": o que a regra decide (seção 7.2)>
-use_when: [<situação em que o agente lê a regra>]
-applies_to: [<globs>]                  # opcional
-keywords: [<SOT keywords>]             # opcional
-read_first: [<ids>]                    # opcional
-not_covered: ["<tema> → <id>"]         # opcional
-enforced_by: [<ids dos checks>]        # opcional
-examples: [<arquivos>]                 # opcional
-adr: [<ids>]                           # opcional
-status: active
----
-# <Tema>
-
-<Uma frase de propósito.>
-
-## <Seção temática>
-
-**Obrigatório.** <Norma.>
-
-> **Por quê.** <Motivo, quando não for óbvio.>
-
-- **Exceção.** <Condição>: <efeito> (ADR-NNNN).
-
-## Árvore de decisão
-
-```mermaid
-flowchart TD
-  Q1{<Pergunta 1>} -->|sim| A[<Caminho A>]
-  Q1 -->|não| Q2{<Pergunta 2>}
-  Q2 -->|sim| B[<Caminho B>]
-  Q2 -->|não| C[<Caminho C>]
-```
-
-## Verificação
-
-- <Pergunta de sim ou não que confere a norma>? (check: <id>)
-````
+Template em `methodology/templates/rule.md`.
 
 Chave marcada `# opcional` só é escrita quando tem valor (`methodology/VOCABULARY.md`).
 
@@ -1068,58 +982,12 @@ Chave marcada `# opcional` só é escrita quando tem valor (`methodology/VOCABUL
 
 ### A.7 `docs/architecture/slices/<slice>.md`
 
-```markdown
----
-id: slices/<nome>
-description: "<o que a slice garante, numa frase>"
-use_when:
-  - "<situação em que o agente lê o contrato da slice>"
-horizon: now | planned
-entry: <caminho do ponto de entrada>
-keywords: [<keyword>, <keyword>]
----
-
-# <Nome da slice>
-
-## Responsabilidade
-
-## Contrato
-
-(Interface pública e invariantes.)
-
-## Consumidores
-
-(Features, outras slices e agentes que usam esta slice.)
-
-## Checks da slice
-
-## Previsto
-
-(O que o contrato já acomoda, mas não está construído.)
-```
+Template em `methodology/templates/slice.md`.
 
 ### A.8 ADR
 
-```markdown
-# ADR-NNNN <título>
-
-status: proposed | accepted | superseded by ADR-NNNN
-area: <área>
-kind: decision | exception | default-change
-
-## Contexto
-
-## Decisão
-
-## Alternativas consideradas
-
-## Consequências
-
-## Imposto por
-
-(Check ou lint que garante a decisão, ou "não imposto".)
-```
+Template em `methodology/templates/adr.md`.
 
 ### A.9 `docs/plan/MATRIX.md`
 
-Ver seção 9.1.
+Template em `methodology/templates/MATRIX.md`; formato na seção 9.1.
