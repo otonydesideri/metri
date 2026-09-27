@@ -9,16 +9,17 @@
 
 - Frontmatter das regras com `description`, `read_first` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (seções 4.3 e 7.2).
 - ADR com status `proposed`; ponto em aberto vira ADR `proposed` (seção 6.5 e A.8).
-- Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `defaults/stack.md` + ADR global (seção 6.2).
+- Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `architecture/defaults/stack.md` + ADR global (seção 6.2).
 - Release segue `docs/architecture/infrastructure/release.md` (seções 9.3 e 10).
 - Regras existentes são refinadas, não reescritas (7.2); sem limite de linhas; sem marca check/manual por regra.
 - "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (seções 4.3, 6.11, 6.13, 7.2 e A.5).
+- O source é montado nos projetos em `.metri/`; os defaults ficam em `architecture/defaults/`, com os mesmos ids; `INDEX.md` de área gerado pelo `rules-index` e `INDEX.md` raiz com parte escrita à mão acima do marcador `<!-- rules-index -->` (seções 5, 6.2, 6.11 e 6.13).
 
 **O que mudou da v1.0 para a v1.1**
 
 - Política de idioma: chaves, ids, skills e código em inglês; documentos humanos em português (seção 4).
 - Vocabulário da metodologia com chaves canônicas em inglês, no global (seção 4).
-- Estrutura de pastas definida: `docs/` + `.architecture-source/` + `AGENTS.md` na raiz, com lugares reservados (seção 5).
+- Estrutura de pastas definida: `docs/` + `.metri/` + `AGENTS.md` na raiz, com lugares reservados (seção 5).
 - `CONTEXT.md` separado do `PRODUCT.md`, com a ponte PT ↔ EN (seção 6.7).
 - Formato rico e estruturado para os arquivos de regra (seção 7).
 - Interface e Design System: `DESIGN.md`, shadcn/ui como default global, triagem de design no `/shape` (seção 8).
@@ -58,7 +59,7 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `docs/architecture/`    | Regras só deste projeto, por área, e contratos das slices              |
 | `docs/adr/`             | Decisões, trade-offs e exceções                                        |
 | `docs/plan/MATRIX.md`   | Plano único: features, casos de uso, slices, tickets e checks          |
-| `.architecture-source/` | Regras de padronização globais, somente leitura, só em desenvolvimento |
+| `.metri/`               | Regras de padronização globais, somente leitura, só em desenvolvimento |
 | Código                  | Padrões, cabeçalhos inline, SOT keywords, tokens e checks              |
 
 **O humano decide em poucos pontos:** direção, plano, padrões novos e diffs sensíveis, aceite, e passos de release que só ele pode fazer. O resto é trabalho do agente.
@@ -117,7 +118,7 @@ Referências:
 
 | O quê                                                                                               | Idioma                            |
 | --------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Código, identificadores, nomes de arquivos de código                                                | `defaults/stack.md`, "Stack"     |
+| Código, identificadores, nomes de arquivos de código                                                | `architecture/defaults/stack.md`, "Stack" |
 | Chaves de frontmatter, campos da matriz, ids, status, tipos                                         | Inglês, fixos, validados por lint |
 | Skills e `AGENTS.md`                                                                                | Inglês                            |
 | `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz | Português                         |
@@ -184,7 +185,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 
 | Natureza                                     | Exemplo                                      | Onde                                             |
 | -------------------------------------------- | -------------------------------------------- | ------------------------------------------------ |
-| **Consumido** (não é produzido pelo projeto) | Regras globais, templates, skills            | `.architecture-source/` na raiz, somente leitura |
+| **Consumido** (não é produzido pelo projeto) | Regras globais, templates, skills            | `.metri/` na raiz, somente leitura               |
 | **Conhecimento durável**                     | Contexto, produto, design, arquitetura, ADRs | `docs/`                                          |
 | **Plano temporário**                         | Matriz, technical design                     | `docs/plan/`                                     |
 | **Saída gerada** (reservado)                 | Evidências de teste                          | `.evidence/` (fora do git)                       |
@@ -193,7 +194,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 
 ```
 AGENTS.md                     procedimentos + ponteiros (CLAUDE.md = uma linha apontando para ele)
-.architecture-source/         global, somente leitura, versão fixada, fora do código entregue
+.metri/                       global, somente leitura, versão fixada, fora do código entregue
 docs/
   CONTEXT.md                  linguagem compartilhada do domínio
   PRODUCT.md                  intenção, escopo, fora de escopo
@@ -211,25 +212,27 @@ docs/
 
 - **Os arquivos que agentes já reconhecem pelo nome ficam em maiúsculas:** `AGENTS.md`, `CONTEXT.md` (nome do Matt), `DESIGN.md` (nome do spec). O nome funciona como palavra-guia.
 - **`AGENTS.md` fica na raiz**, porque as ferramentas o procuram lá.
-- **Arquivos gerados** (`INDEX.md`) levam o cabeçalho "gerado, não edite", e o lint confere se estão atualizados.
+- **Arquivos gerados** (`INDEX.md` de área) têm como primeira linha "Gerado por rules-index. Não edite."; no `INDEX.md` raiz, só a lista abaixo do marcador `<!-- rules-index -->` é gerada. O `rules-index:check` confere se estão atualizados.
 - **O lint estrutural** aceita exatamente essa árvore, incluindo as pastas reservadas (seção 6.13).
 
 ### 5.3 Árvore do Architecture Source
 
 ```
-architecture-source/            repositório próprio, versionado por tags (vX.Y)
-  INDEX.md                      áreas → índice de cada área
-  general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
+architecture-source/            repositório próprio, versionado por tags (vX.Y); montado nos projetos em .metri/
+  architecture/
+    INDEX.md                    parte escrita à mão + lista gerada abaixo de <!-- rules-index -->: área → INDEX.md da área
+    general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
+    defaults/                   escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
   catalog/<capacidade>.md       slices reutilizáveis (inclui design-system)
-  defaults/                     escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui)
   methodology/
     VOCABULARY.md               vocabulário da metodologia (seção 4.3)
     authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
     templates/                  modelos de AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX
-  template/                     código executável: block, registry, adapters, regras de lint, scripts
+  template/                     código executável: block, registry, adapters, regras de lint, scripts (template/scripts/)
   adr/                          decisões globais (inclusive as que sustentam os defaults)
   skills/                       as skills da metodologia
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
+  package.json                  scripts do source (pnpm): rules-index, rules-index:check
 ```
 
 `general/` guarda as regras que valem para mais de uma área (princípios transversais, colocação de código entre app e pacote). As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
@@ -242,7 +245,7 @@ architecture-source/            repositório próprio, versionado por tags (vX.Y
 
 | Camada               | Onde                    | Conteúdo                                                         | Quem escreve                            | Quando é lido                          |
 | -------------------- | ----------------------- | ---------------------------------------------------------------- | --------------------------------------- | -------------------------------------- |
-| Architecture Source  | `.architecture-source/` | Padronização, catálogo, defaults, vocabulário, templates, skills | Você, por PR no repositório do source   | Via `rules-for`, catálogo e defaults   |
+| Architecture Source  | `.metri/`               | Padronização, catálogo, defaults, vocabulário, templates, skills | Você, por PR no repositório do source   | Via `rules-for`, catálogo e defaults   |
 | Project Architecture | `docs/architecture/`    | Regras só do projeto; registro e contratos das slices            | Look across, ticket de padrão, Aprender | Via `rules-for` e ponteiros do ticket  |
 | ADRs                 | `docs/adr/`             | Decisões, trade-offs, exceções                                   | Moldar, Look across, Aprender           | Quando uma regra ou ticket cita o ADR  |
 | Linguagem            | `docs/CONTEXT.md`       | Termos do domínio, PT ↔ EN                                       | Moldar, Look across                     | Ao nomear qualquer coisa               |
@@ -254,11 +257,11 @@ architecture-source/            repositório próprio, versionado por tags (vX.Y
 
 ### 6.2 Architecture Source (global)
 
-**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `defaults/`: escolhas tecnológicas padrão, cada uma sustentada por um ADR global, usadas quando o projeto não decide nada diferente.
+**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, cada uma sustentada por um ADR global, usadas quando o projeto não decide nada diferente.
 
-**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (seção 8.1): `defaults/stack.md` + ADR global. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
+**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (seção 8.1): `architecture/defaults/stack.md` + ADR global. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
 
-**Entrada no projeto:** submódulo ou pacote em `.architecture-source/`, **somente leitura e com versão fixada**. É dependência só de desenvolvimento: **não vai para o código entregue** (fica fora de build, exportação e pacote final).
+**Entrada no projeto:** submódulo ou pacote em `.metri/`, **somente leitura e com versão fixada**. É dependência só de desenvolvimento: **não vai para o código entregue** (fica fora de build, exportação e pacote final).
 
 ### 6.3 Project Architecture (projeto)
 
@@ -334,7 +337,8 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 - **`rules-for <caminhos | --ticket T2.1>`** é um script do template, independente de ferramenta. Ele devolve só as regras aplicáveis (global, depois projeto, mais os ADRs citados).
 - Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no `applies_to` global: fica na seção "Caminhos do projeto" do `docs/architecture/INDEX.md` (glob → id), e o `rules-for` soma esses caminhos ao `applies_to` da regra.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
-- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`) e listam `id`, `description` e `use_when` de cada regra. Não há segunda fonte.
+- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Não há segunda fonte.
+- O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada: área → caminho do `INDEX.md` da área, com o número de regras.
 - **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
 
 ### 6.12 Fonte única por conceito e escada de regras
@@ -345,7 +349,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 | Termos do domínio (PT ↔ EN)                    | `CONTEXT.md`                              | `PRODUCT.md`, código solto                     |
 | Vocabulário da metodologia                     | `methodology/VOCABULARY.md` (global)      | projeto                                        |
 | Padronização (como construímos)                | Architecture Source                       | projeto                                        |
-| Escolha padrão de tecnologia                   | `defaults/` (global) + ADR global         | projeto                                        |
+| Escolha padrão de tecnologia                   | `architecture/defaults/` (global) + ADR global | projeto                                        |
 | Regras só do projeto                           | `docs/architecture/<área>/`               | global, README                                 |
 | Contrato de uma slice                          | `docs/architecture/slices/<slice>.md`     | matriz                                         |
 | Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
@@ -375,7 +379,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
   - os arquivos citados em `examples` existem.
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
-- **Gerados:** `INDEX.md` atualizados.
+- **Gerados:** `INDEX.md` atualizados; o `rules-index:check` sai com código 1 se algum estiver desatualizado.
 - **Matriz:** esquema da seção 9 (chaves em inglês, ids válidos, valores de enum válidos); todo ticket tem slice, tipo e checks; todo tracer aponta para um UC; nada órfão; todo `GAP-n` do código existe na matriz e vice-versa.
 - **Opcional:** sinônimos proibidos do `CONTEXT.md` ausentes dos identificadores; nenhum valor fixo de cor ou espaçamento fora do tema.
 
@@ -418,7 +422,7 @@ Não é uma etapa própria do fluxo. É uma **triagem** dentro do `/shape`, um *
 
 Quando o projeto não decide nada diferente:
 
-- **Biblioteca de componentes:** **shadcn/ui**, registrada em `architecture-source/defaults/ui.md` com um ADR global.
+- **Biblioteca de componentes:** **shadcn/ui**, registrada em `architecture-source/architecture/defaults/ui.md` com um ADR global.
 - **Estratégia:** **instala a biblioteca e estiliza por cima** conforme o `DESIGN.md`, via tokens de tema. Os componentes prontos da biblioteca são usados como base; ninguém recria componentes do zero.
 - **Base visual:** um `DESIGN.md` neutro do próprio global.
 
@@ -453,7 +457,7 @@ Quando a dúvida é "como deve parecer", usa-se um **protótipo descartável** c
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Identidade visual, princípios, uso de componentes                           | `docs/DESIGN.md`                                                                  |
 | Valores dos tokens                                                          | Tema no código                                                                    |
-| Biblioteca padrão                                                           | `defaults/ui.md` + ADR global                                                     |
+| Biblioteca padrão                                                           | `architecture/defaults/ui.md` + ADR global                                        |
 | Troca da biblioteca                                                         | ADR do projeto + regra em `docs/architecture/frontend/`                           |
 | Como construímos componentes (global vs. rota, slots, variantes, só tokens) | Regras globais em `frontend/`                                                     |
 | Design system como capacidade                                               | Slice `design-system` no catálogo; entra na slice 0 de todo projeto com interface |
@@ -876,7 +880,7 @@ Entra por PR no repositório do source, com nova versão e registro no `CHANGELO
 | `research`           | Pesquisa em fontes primárias, em segundo plano; conclusão curta com fontes; efêmera                                                   |
 | `writing-for-agents` | Como escrever e podar skills, `AGENTS.md` e regras                                                                                    |
 
-**Scripts no template** (código, não skill): `verify`, `rules-for`, `rules-index` (gera os INDEX), `docs-lint` (lint estrutural + formato da matriz).
+**Scripts no template** (código, não skill; TypeScript rodando com `tsx`, sem build): `verify`, `rules-for`, `rules-index` (gera os INDEX; `rules-index:check` confere), `docs-lint` (lint estrutural + formato da matriz).
 
 ### 16.2 Como as skills são escritas (estilo Matt)
 
@@ -954,12 +958,12 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
    - frontmatter e refinamento das regras existentes (seção 7.2);
    - `INDEX.md` gerados;
    - `methodology/VOCABULARY.md` e `methodology/templates/`;
-   - `defaults/ui.md` (shadcn/ui) com ADR global e o `DESIGN.md` base neutro;
+   - `architecture/defaults/ui.md` (shadcn/ui) com ADR global e o `DESIGN.md` base neutro;
    - `catalog/` com as slices reutilizáveis, incluindo `design-system`;
    - `CHANGELOG.md` e tags;
    - scripts no `template/`: `verify`, `rules-for`, `rules-index`, `docs-lint`.
 2. **Skills:** escrever as 11 skills (seção 16) em inglês, no estilo definido.
-3. **Distribuição:** o source entra no projeto como submódulo ou pacote em `.architecture-source/`, somente leitura, com versão fixada, fora do código entregue.
+3. **Distribuição:** o source entra no projeto como submódulo ou pacote em `.metri/`, somente leitura, com versão fixada, fora do código entregue.
 
 ### Fase 2: Validação e melhoria (piloto)
 

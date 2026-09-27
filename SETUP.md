@@ -51,7 +51,8 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
   - overview → `backend/layers`, `general/{overview,code-placement,http-surface,principles}`, `defaults/stack` e o template de INDEX; activation → `methodology/templates/architecture-INDEX.md`; authoring → `methodology/authoring.md`; design-system → `methodology/templates/examples/`; destinos `project:` no frontmatter.
 - [x] 2.6 Pontos em aberto → ADRs `proposed` (D8)
   - ADR-0001 a ADR-0019, um por ponto; na regra fica "Em aberto: <título> (ADR-NNNN)" e o id vai em `adr`.
-- [ ] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
+- [x] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
+  - Source montado em `.metri/`; `defaults/` → `architecture/defaults/` (ids iguais); `general/overview` e `architecture/README` absorvidos pela parte à mão de `architecture/INDEX.md`; token e tema → `frontend/theming`; `INDEX.md` gerados (4.0 e 4.1 adiantados).
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
 
@@ -68,14 +69,16 @@ Lacunas conhecidas, exemplo que diverge dentro do próprio dono (revisão do 2.5
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
 - [ ] 3.1 `methodology/VOCABULARY.md`
-- [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `defaults/ui.md` + `DESIGN.md` base neutro; `defaults/stack.md` + ADR `stack` (os dois ADRs pegam os próximos números livres de `adr/`)
+- [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; `architecture/defaults/stack.md` + ADR `stack` (os dois ADRs pegam os próximos números livres de `adr/`)
 - [ ] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
 - [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX (com "Caminhos do projeto"), regra, slice, ADR, MATRIX
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
-- [ ] 4.0 Decidir a linguagem dos scripts (sugestão: TypeScript/Node)
-- [ ] 4.1 `rules-index`: gera os `INDEX.md` a partir do frontmatter
+- [x] 4.0 Decidir a linguagem dos scripts (sugestão: TypeScript/Node)
+  - TypeScript com tsx, sem build; `package.json` na raiz, com pnpm; scripts em `template/scripts/`.
+- [x] 4.1 `rules-index`: gera os `INDEX.md` a partir do frontmatter
+  - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
 - [ ] 4.2 `rules-for`: devolve as regras aplicáveis a caminhos ou a um ticket; soma os "Caminhos do projeto" do INDEX ao `applies_to`
 - [ ] 4.3 `docs-lint`: árvore permitida, frontmatter das regras, formato da matriz
 - [ ] 4.4 `verify`: agrega os checks
@@ -105,7 +108,7 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 - [ ] 5.2 Adaptar do Matt: `grilling`, `tdd`, `research`, `domain-language` (a partir de `domain-modeling`)
 - [ ] 5.3 Escrever `guardrail`
 - [ ] 5.4 Escrever `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`
-- [ ] 5.5 Decidir como as skills chegam aos projetos (copiar ou vincular de `.architecture-source/skills/`)
+- [ ] 5.5 Decidir como as skills chegam aos projetos (copiar ou vincular de `.metri/skills/`)
 - [ ] 5.6 Teste a seco de cada skill com um exemplo pequeno
 
 ## Fase 6: release do source
@@ -115,7 +118,7 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 
 ## Fase 7: projeto piloto (outro repositório)
 
-- [ ] 7.1 Criar o repositório e adicionar o source em `.architecture-source/` (submódulo ou pacote, versão fixada)
+- [ ] 7.1 Criar o repositório e adicionar o source em `.metri/` (submódulo ou pacote, versão fixada)
 - [ ] 7.2 Aplicar os templates e criar o `AGENTS.md`
 - [ ] 7.3 `/shape` (com triagem de design) → `/look-across`
 - [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui

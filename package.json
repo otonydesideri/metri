@@ -1,0 +1,15 @@
+{
+  "name": "architecture-source",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "rules-index": "tsx template/scripts/rules-index.ts",
+    "rules-index:check": "tsx template/scripts/rules-index.ts --check"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "tsx": "^4.23.15",
+    "yaml": "^2.9.1"
+  }
+}
