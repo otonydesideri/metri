@@ -131,7 +131,7 @@ export function useOrders(filters: FetchOrdersFilters) {
 // app/index.tsx
 import { QueryClientProvider } from '@tanstack/react-query';
 import { NotificationProvider } from '@metri/ui/components/providers/notification-provider';
-import { Toaster } from '@metri/ui/components/ui/toast';
+import * as Sonner from '@metri/ui/components/ui/sonner';
 import { BrowserRouter } from 'react-router';
 import { queryClient } from './providers/query-client';
 import { AppRoutes } from './router/routes';
@@ -142,7 +142,7 @@ export function App() {
       <BrowserRouter>
         <AppRoutes />
         <NotificationProvider />
-        <Toaster />
+        <Sonner.Toaster />
       </BrowserRouter>
     </QueryClientProvider>
   );

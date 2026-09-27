@@ -78,7 +78,11 @@ O compound é a exceção, e não contraria o parágrafo acima: as partes de um 
 
 ## Composição e o que sobe pro pacote
 
-Compound component (`Input.Root`, `Label.Asterisk`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
+Compound component (`Tabs.List`, `Field.Label`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
+
+**Obrigatório.** Primitivo do `@metri/ui` entra por `import * as`, com o nome do componente, e é usado pelas partes: `import * as Tabs from '@metri/ui/components/ui/tabs'`, depois `Tabs.Root` e `Tabs.List`. É o único formato de import de componente no projeto, para o primitivo do pacote e para o compound de `shared/components/`. A forma compound do primitivo vem do re-export do pacote (`defaults/ui.md`).
+
+**Proibido.** Import nomeado de primitivo do `@metri/ui` (`import { Tabs, TabsList } from '@metri/ui/components/ui/tabs'`).
 
 O padrão de composição também vale pra peça do app: componente de `shared/components/` cujas partes as telas montam em ordens e combinações próprias — um cabeçalho de página com ícone, título, descrição e ações opcionais — é compound como os do pacote, um arquivo com as fatias exportadas num bloco `export { X as Root, ... }` e consumido via `import * as`. Cada página monta as partes inline, na ordem que a tela pede, sem variável de render e sem uma prop nova no componente pra cada variação de anatomia.
 
@@ -100,3 +104,4 @@ O erro de leitura não apaga a tela inteira: o chrome que não depende do dado q
 - O arquivo declara um componente só, com as peças da tela em arquivos próprios na pasta da página?
 - Nenhum componente existe só pra repassar prop pro primitivo do pacote, e peça compartilhada de anatomia variável é compound consumido via `import * as`?
 - Peça mais global subiu pro pacote pela regra de colocação, sem redefinir o compound do `@metri/ui`?
+- Todo primitivo do `@metri/ui` entra por `import * as` e é usado pelas partes, sem import nomeado?

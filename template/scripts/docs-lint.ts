@@ -147,7 +147,7 @@ function hasAnchor(path: string, anchor: string): boolean {
 }
 
 function citationCandidates(from: string, cited: string): string[] {
-  const path = cited.replace(/^(architecture-source|\.metri)\//, '');
+  const path = cited.replace(/^\.metri\//, '');
   return [path, join(ARCHITECTURE, path), join(dirname(from), path)].map((candidate) =>
     normalize(candidate),
   );
@@ -156,7 +156,7 @@ function citationCandidates(from: string, cited: string): string[] {
 // Resolve o caminho citado: raiz do source, architecture/ e a pasta do arquivo que cita.
 // Devolve null para arquivo do projeto, que o source não tem como conferir.
 function resolveCitation(from: string, cited: string): string | null | undefined {
-  const path = cited.replace(/^(architecture-source|\.metri)\//, '');
+  const path = cited.replace(/^\.metri\//, '');
   if (path.startsWith('docs/') || PROJECT_FILES.includes(path)) {
     return null;
   }
@@ -168,10 +168,11 @@ function plannedStep(from: string, cited: string): string | undefined {
   return match === undefined ? undefined : planned[match];
 }
 
-// Citação: o caminho .md, a âncora opcional e, depois do caminho entre crases, as seções entre aspas
+// Citação: o caminho .md (com ou sem o prefixo .metri/), a âncora opcional e, depois do caminho entre crases,
+// as seções entre aspas
 // (`x.md`, "A" e "B" ou `x.md` ("A", ...)).
 const CITATION =
-  /(?<![\w./<>*{}-])(`?)([A-Za-z0-9_][\w./-]*\.md)(#[\w-]+)?(`?)((?:(?:,| e|,? \(|) ?"[^"]+")*)/g;
+  /(?<![\w./<>*{}-])(`?)((?:\.metri\/)?[A-Za-z0-9_][\w./-]*\.md)(#[\w-]+)?(`?)((?:(?:,| e|,? \(|) ?"[^"]+")*)/g;
 
 // Fora de crase, só conta o que tem cara de caminho: pasta, âncora ou arquivo de exemplos.
 // O resto é prosa que termina em .md (o nome de um site, por exemplo).

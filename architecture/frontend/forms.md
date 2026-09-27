@@ -9,7 +9,7 @@ use_when:
 applies_to:
   - "apps/app-web/src/shared/schemas/**"
   - "apps/app-web/src/shared/components/inputs/**"
-keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", Input.Wrapper, Input.Input, Textarea, react-phone-number-input, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label.Root, Label.Sub, aria-label, "@metri/ui"]
+keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", InputGroup.Root, InputGroup.Input, InputGroup.Addon, input-group-control, Textarea, react-phone-number-input, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label.Root, Field.Error, aria-label, "@metri/ui"]
 not_covered:
   - "o modal de tarefa que contém o form e a regra de Esc e clique fora → frontend/routing"
   - "a mutation que o form dispara, o estado em voo e a notificação → frontend/data-fetching"
@@ -105,11 +105,11 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 
 **Obrigatório.** O campo de partida é o primitivo do pacote com a semântica certa, `Input` ou `Textarea`, não sempre o `Input`.
 
-Quando o campo precisa de uma dependência externa que o pacote não tem: **Obrigatório.** A peça externa entra como filho comum de `Input.Wrapper`, no lugar do `Input.Input`.
+Quando o campo precisa de uma dependência externa que o pacote não tem: **Obrigatório.** A peça externa entra como filho comum de `InputGroup.Root`, no lugar do `InputGroup.Input`, com `data-slot="input-group-control"`.
 
-> **Por quê.** Isso só funciona porque ela não compõe select próprio, e por isso não briga com o `recursiveCloneChildren` do compound.
+> **Por quê.** É esse atributo que dá à peça externa o estado de foco do grupo, como o `InputGroup.Input` tem.
 
-Quando o campo precisa de um comportamento próprio sobre o campo do pacote: **Obrigatório.** O compound entrega o campo e os afixos, e o app acrescenta o controle que falta como irmão do `Input.Input` dentro do `Input.Wrapper` (a senha, com o botão que alterna o `type`).
+Quando o campo precisa de um comportamento próprio sobre o campo do pacote: **Obrigatório.** O compound entrega o campo e os afixos, e o app acrescenta o controle que falta num `InputGroup.Addon`, ao lado do `InputGroup.Input` (a senha, com o `InputGroup.Button` que alterna o `type`).
 
 Quando o campo tem semântica de domínio com lib dedicada: **Obrigatório.** Ele usa a lib dedicada, que entrega máscara, parsing e formato canônico numa peça só: o telefone sai do `react-phone-number-input/input` já em E.164, sem conversão no submit nem na hidratação do form.
 
@@ -141,12 +141,12 @@ Quando o controle da linha é botão: **Obrigatório.** O título é `div` com a
 
 Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** Ele leva `aria-label` com o alvo junto, começando pelo rótulo visível.
 
-**Obrigatório.** `Label.Sub` é qualificador inline, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
+**Obrigatório.** O primitivo de qualificador de rótulo do `@metri/ui` é qualificador inline, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
 
 ## Aplicação
 
-- Base UI, shadcn e MUI resolvem a ligação de descrição com uma raiz de campo; é essa peça que ainda falta no `@metri/ui`.
-- O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `Hint` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
+- Base UI e MUI resolvem a ligação de descrição com uma raiz de campo; o `Field` do shadcn não faz essa ligação, e é essa peça que ainda falta no `@metri/ui`.
+- O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `Field.Error` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
 - O layout do formulário (seções, campo, par Cancelar/submissão) é o do vocabulário visual (`docs/DESIGN.md`).
 - O tipo de cada schema vem do `z.infer`, nunca redeclarado à mão (`frontend/helpers.md`, "Zod schema vs. type plain"), e o tipo de valores do form (`<Nome>Values`) fica no próprio arquivo de schema (`frontend/helpers.md`, "Tipos compartilhados").
 - Campo reusado por mais de um app tem a casa reavaliada pela colocação de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app".

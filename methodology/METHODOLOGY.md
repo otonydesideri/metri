@@ -131,7 +131,7 @@ A regra que evita deriva: **a conversa pode ser em português, mas toda chave, c
 | Glossário                      | Conteúdo                                   | Onde mora                                               |
 | ------------------------------ | ------------------------------------------ | ------------------------------------------------------- |
 | **Linguagem do domínio**       | Termos do produto (ex.: Pedido → `Order`)  | `docs/CONTEXT.md`, por projeto (seção 6.7)              |
-| **Vocabulário da metodologia** | Termos do processo (ex.: toca → `touches`) | `architecture-source/methodology/VOCABULARY.md`, global |
+| **Vocabulário da metodologia** | Termos do processo (ex.: toca → `touches`) | `.metri/methodology/VOCABULARY.md`, global |
 
 ### 4.3 Vocabulário da metodologia (chaves canônicas)
 
@@ -218,7 +218,7 @@ docs/
 ### 5.3 Árvore do Architecture Source
 
 ```
-architecture-source/            repositório próprio, versionado por tags (vX.Y); montado nos projetos em .metri/
+.metri/                         repositório próprio, versionado por tags (vX.Y), montado nos projetos nesta pasta
   architecture/
     INDEX.md                    parte escrita à mão + lista gerada abaixo de <!-- rules-index -->: área → INDEX.md da área
     general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
@@ -295,7 +295,7 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 
 **Também viram ADR:** toda **exceção a uma regra global** e toda **troca de um default global**.
 
-**Onde:** as decisões globais ficam em `architecture-source/adr/`; as do projeto, em `docs/adr/`.
+**Onde:** as decisões globais ficam em `.metri/adr/`; as do projeto, em `docs/adr/`.
 
 **Status:** `proposed`, `accepted` ou `superseded by ADR-NNNN`. Nunca se apaga um ADR.
 
@@ -428,7 +428,7 @@ Não é uma etapa própria do fluxo. É uma **triagem** dentro do `/shape`, um *
 
 Quando o projeto não decide nada diferente:
 
-- **Biblioteca de componentes:** **shadcn/ui**, registrada em `architecture-source/architecture/defaults/ui.md` com um ADR global.
+- **Biblioteca de componentes:** **shadcn/ui**, registrada em `.metri/architecture/defaults/ui.md` com um ADR global.
 - **Estratégia:** **instala a biblioteca e estiliza por cima** conforme o `DESIGN.md`, via tokens de tema. Os componentes prontos da biblioteca são usados como base; ninguém recria componentes do zero.
 - **Base visual:** um `DESIGN.md` neutro do próprio global.
 
@@ -988,7 +988,7 @@ Os resultados alimentam a v1.2 desta metodologia.
 
 ## Apêndice A: Templates
 
-Os templates definitivos moram em `architecture-source/methodology/templates/`. Abaixo, a forma de cada um.
+Os templates definitivos moram em `.metri/methodology/templates/`. Abaixo, a forma de cada um.
 
 ### A.1 `AGENTS.md`
 

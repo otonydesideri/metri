@@ -58,10 +58,6 @@ Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:ch
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
 
-Lacunas conhecidas, decisão pendente (não seguram a fase):
-
-- `infrastructure/cache.md`, "Spec": o spec da impl de cache usa stub local da classe de infra pela ramificação própria (degradar a falha), mas a exceção de `infrastructure/services.md`, "Testes", só cobre a impl que compõe ou escolhe entre vendors.
-
 ## ▶ Agora: Fase 3, vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
 - [ ] 3.1 `methodology/VOCABULARY.md`
@@ -98,6 +94,7 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 - frontend/components: handler local `handle*` e prop de callback `on*`
 - frontend/components: booleanos com prefixo `is`, `has`, `can` ou `should`
 - frontend/components: `EmptyState` exige ação de saída no tipo das props
+- frontend/components: nenhum import nomeado de `@metri/ui/components/ui/*`; só `import * as`
 
 ## Fase 5: skills (seção 16)
 

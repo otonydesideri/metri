@@ -71,7 +71,7 @@ A classe de infra entra em `providers` mas não em `exports`: nada fora das impl
 
 ## Testes
 
-Dublê por contrato, nunca da classe de infra. O dublê vive em `test/services/<capacidade>/fake-<contrato>.impl.ts`, implementa o contrato e acumula os inputs recebidos numa lista pública `items`. Quando o e2e troca o provider do contrato pelo dublê segue `backend/testing.md`. A classe de infra não tem dublê em `test/`: nada fora da própria pasta a injeta. A exceção é a impl que compõe, encadeando outra capacidade ou escolhendo entre vendors: ela tem ramificação própria, ganha spec unitário ao lado do arquivo pelo critério de `backend/testing.md`, e é o único lugar que substitui a classe de infra, por um stub local ao spec. Impl que só delega não tem spec próprio, e o e2e da rota com o dublê do contrato é a prova dela.
+Dublê por contrato, nunca da classe de infra. O dublê vive em `test/services/<capacidade>/fake-<contrato>.impl.ts`, implementa o contrato e acumula os inputs recebidos numa lista pública `items`. Quando o e2e troca o provider do contrato pelo dublê segue `backend/testing.md`. A classe de infra não tem dublê em `test/`: nada fora da própria pasta a injeta. A exceção é a impl com ramificação própria: a que compõe, encadeando outra capacidade ou escolhendo entre vendors, e a que tem lógica própria além de repassar ao client, como a do cache, que monta a chave pelo dono e degrada a falha do mecanismo para a fonte (`infrastructure/cache.md`, "Spec"). Ela ganha spec unitário ao lado do arquivo pelo critério de `backend/testing.md`, e é o único lugar que substitui a classe de infra, por um stub local ao spec. Impl que só delega não tem spec próprio, e o e2e da rota com o dublê do contrato é a prova dela.
 
 ## Verificação rápida
 
@@ -81,4 +81,4 @@ Dublê por contrato, nunca da classe de infra. O dublê vive em `test/services/<
 - Providers no `ServicesModule`, com a classe de infra fora de `exports`, salvo a que o health check injeta?
 - A subpasta de `services/` nomeia a capacidade, sem reusar nome de módulo com agregado?
 - Impl que precisa de outra capacidade injeta o contrato dela, nunca a classe de vendor dela?
-- Dublê por contrato acumulando em `items`, e a classe de infra substituída só no spec da impl que compõe?
+- Dublê por contrato acumulando em `items`, e a classe de infra substituída só no spec da impl com ramificação própria?
