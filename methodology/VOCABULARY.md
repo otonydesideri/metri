@@ -33,6 +33,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
 | ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
 | não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
+| ponto de entrada                          | `entry`                                          | Caminho do ponto de entrada de uma slice; coluna do `INDEX.md` gerado que o roteamento lê     |
 | id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
 | ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita                                                                 |
 | status da regra                           | `status: active \| draft \| deprecated`          | Estado de uma regra                                                                           |
@@ -41,6 +42,8 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
 
 **Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (METHODOLOGY 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:architecture/INDEX`.
+
+**Frontmatter de slice** (`docs/architecture/slices/<slice>.md`): as chaves de `methodology/templates/slice.md`.
 
 **Frontmatter de capacidade do catálogo** (`catalog/<capacidade>.md`). Só `id` (`catalog/<capacidade>`), `description` e `use_when`, as três obrigatórias.
 

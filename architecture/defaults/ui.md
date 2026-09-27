@@ -8,6 +8,7 @@ use_when:
   - "mexer nas CSS variables de tema do `@metri/ui`"
 applies_to:
   - "packages/ui/components.json"
+  - "packages/ui/src/styles/globals.css"
   - "packages/ui/src/shadcn/**"
   - "packages/ui/src/components/ui/**"
 keywords: [shadcn/ui, shadcn, components.json, "shadcn@latest add", CLI, re-export, compound, Root, "@metri/ui", CSS variables, "@theme inline", ":root", ".dark", globals.css, token, tema]
@@ -33,7 +34,7 @@ status: active
 - O alias `ui` do `components.json` do `@metri/ui` aponta para `packages/ui/src/shadcn/`: é lá que a CLI grava o arquivo gerado.
 - O arquivo gerado não é editado: a CLI continua dona dele e o atualiza.
 - A forma compound vem de um arquivo de re-export por componente, em `packages/ui/src/components/ui/`, com o nome do arquivo gerado.
-- Nome da parte: o export com o nome do componente vira `Root`; os demais perdem o prefixo do componente (`TabsList` → `List`).
+- Nome da parte: o export com o nome do componente vira `Root`; os demais perdem o prefixo do componente (`TabsList` → `List`); export sem o prefixo mantém o nome (`Toaster` → `Sonner.Toaster`).
 
 ```ts
 // packages/ui/src/components/ui/tabs.ts
@@ -63,8 +64,7 @@ export {
 
 ## O que é do projeto
 
-- `docs/DESIGN.md`: identidade visual, valores dos tokens, princípios e uso dos componentes.
-- Depois da slice de design system, os valores moram no `globals.css` do `@metri/ui`, e o `DESIGN.md` aponta para ele (METHODOLOGY 8.3).
+- `docs/DESIGN.md` (METHODOLOGY 8.5); os valores dos tokens migram para o `globals.css` do `@metri/ui` com a slice de design system (METHODOLOGY 8.3).
 
 ## Verificação
 

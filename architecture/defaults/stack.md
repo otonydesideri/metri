@@ -32,7 +32,7 @@ Frontend (`app-web`):
 - Dado do servidor: React Query (frontend/data-fetching).
 - Cliente HTTP: `@better-fetch/fetch` (frontend/data-fetching).
 - Formulários: React Hook Form + Zod; `react-phone-number-input` e `use-mask-input` (sobre o Inputmask) (frontend/forms).
-- UI: consome `@metri/ui` (kit de componentes shadcn/ui, tokens e tema), com os tokens na config do Tailwind (defaults/ui, frontend/components, frontend/theming).
+- UI: consome `@metri/ui` (kit de componentes shadcn/ui, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
 - Estado global cliente: Zustand (frontend/state, ADR-0012).
 
 Testes:

@@ -4,7 +4,7 @@
 
 ### F<n> · <feature>
 
-horizon: now | planned | fog | out · milestone: <versão> · slices: [S<n>] · tech_design: none
+horizon: now | planned | fog | out · slices: [S<n>]
 outcome: <resultado de valor para o usuário>
 
 #### UC<f>.<n> · <caso de uso>

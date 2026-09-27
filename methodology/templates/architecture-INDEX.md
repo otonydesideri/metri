@@ -123,6 +123,8 @@ parar → ARCHITECTURE DECISION REQUIRED → decidir → atualizar a Source (reg
 
 Quando a decisão é de uma capacidade do catálogo: **Obrigatório.** Ela mora no arquivo da capacidade, não na matriz: `catalog/design-system`, `catalog/async-jobs`, `catalog/mail`, `catalog/storage`, `catalog/cache` e `catalog/observability` (`catalog/INDEX.md`).
 
+Capacidade do catálogo é GLOBAL_CONDITIONAL. No arquivo dela, o gatilho vira a pergunta de "Ativação", o owner global vira "Regras", as restrições viram "Entrega", e o que o projeto decide, o default, o registro e a condição de ADR ficam em "O que fica para o projeto".
+
 Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** A linha dela entra na matriz, ou no arquivo da capacidade do catálogo, na mesma edição.
 
 | Assunto | Classe | Gatilho | Owner global | O projeto decide | Restrições da Source | Default | Registro | ADR quando |
@@ -167,7 +169,7 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - `backend/operation-routing.md`, `backend/async-jobs.md`: fila e jobs.
 - `infrastructure/runtime.md`, `infrastructure/logging.md`: runtime, deploy e log.
 - `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `infrastructure/observability.md`: capacidades condicionais de infraestrutura.
-- `catalog/INDEX.md`: as capacidades do catálogo, com a pergunta de ativação e o que fica para o projeto.
+- `catalog/<capacidade>.md` (lista em `catalog/INDEX.md`): a pergunta de ativação e o que fica para o projeto em cada capacidade do catálogo.
 
 ## Verificação
 

@@ -60,10 +60,24 @@ Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy
 
 ## ▶ Agora: Fase 3, vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
-- [ ] 3.1 `methodology/VOCABULARY.md`
-- [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; ADR `stack` para `architecture/defaults/stack.md`, que já existe (os dois ADRs pegam os próximos números livres de `adr/`)
-- [ ] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
-- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX (o de architecture INDEX, com "Caminhos do projeto", já existe desde o 2.5); aqui se decide o formato de `methodology/templates/examples/design-system.md`
+Passos feitos; a fase segue aberta pelas decisões pendentes abaixo.
+
+- [x] 3.1 `methodology/VOCABULARY.md`
+  - Texto da 4.3 movido sem reescrever; a 4.3 virou ponteiro; modalidades ficam em `methodology/authoring.md`.
+- [x] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; ADR `stack` para `architecture/defaults/stack.md`, que já existe (os dois ADRs pegam os próximos números livres de `adr/`)
+  - ADR-0020 (shadcn/ui dentro do `@metri/ui`, compound por re-export, um só formato de import; AlignUI sai) e ADR-0021; o `DESIGN.md` base é o próprio `methodology/templates/DESIGN.md`, no formato da especificação do Google.
+- [x] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
+  - design-system, async-jobs, mail, storage, cache e observability; `catalog/INDEX.md` gerado; as linhas delas saíram da matriz de ativação.
+- [x] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX (o de architecture INDEX, com "Caminhos do projeto", já existe desde o 2.5); aqui se decide o formato de `methodology/templates/examples/design-system.md`
+  - `examples/design-system.md` é regra de projeto de exemplo, com frontmatter; o Apêndice A aponta para os arquivos.
+
+Decisões pendentes (seguram a fase):
+
+- Notificação: `notification()` e `NotificationProvider` são a API do AlignUI (`frontend/data-fetching.md`, exemplos e `frontend/testing.md`); o shadcn usa o `toast()` do Sonner.
+- Sonner: o `sonner.tsx` gerado pelo shadcn importa `useTheme` de `next-themes`; sem editar o gerado, o toast fica em `system` e o `@metri/ui` depende de `next-themes`.
+- Style do shadcn: `new-york` (o do `DESIGN.md`) ou `base-nova` (o da doc de monorepo), fixado no `defaults/ui.md` junto com `baseColor` e os `exports` do `@metri/ui`.
+- Tipografia e espaçamento do `DESIGN.md`: nenhuma regra os leva ao `@theme` do `@metri/ui`.
+- Ajuste visual que o token não resolve: onde entra, se o arquivo gerado não é editado.
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
