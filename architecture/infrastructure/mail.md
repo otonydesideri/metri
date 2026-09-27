@@ -13,6 +13,7 @@ not_covered:
   - "a regra transversal de organização — classe de infra sem contrato, contrato por fluxo, registro no `ServicesModule`, dublê por contrato → infrastructure/services"
   - "o mecanismo que dispara o envio, chamada direta, evento ou job → backend/operation-routing"
 examples: [infrastructure/mail.examples.md]
+adr: [ADR-0017]
 status: active
 ---
 # E-mail
@@ -98,4 +99,6 @@ Pontos-chave:
 - A falha que o SDK devolve como valor, em vez de lançar, está checada inline em cada sender?
 - Registro e dublê seguem `infrastructure/services.md` (sender no `ServicesModule`, fake por contrato, sem dublê da classe de infra)?
 
-**Pontos em aberto:** o vendor de e-mail segue aberto como delegação de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações"), resolvida com o primeiro fluxo real; até lá, `ResendMailService` e a checagem do campo `error` valem como ilustração da forma. Quando o vendor escolhido pede forma que este documento não tem, a forma entra aqui antes do código.
+**Pontos em aberto:**
+
+- Em aberto: Vendor de e-mail (ADR-0017)

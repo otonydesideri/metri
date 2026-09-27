@@ -19,6 +19,7 @@ not_covered:
   - "o mecanismo da tarefa agendada que limpa os órfãos → backend/async-jobs"
   - "o provider, os buckets e o domínio público de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
 examples: [infrastructure/storage.examples.md]
+adr: [ADR-0018, ADR-0019]
 status: active
 ---
 # Storage
@@ -259,4 +260,7 @@ O e2e de asset que passa pelo backend monta o adapter HTTP com o mesmo limite de
 - Nenhum TTL, bucket ou convenção de chave vazou pra contrato ou caso de uso?
 - Dublê por contrato de asset, com `stat` configurável, sem dublê da classe de infra?
 
-**Pontos em aberto:** o detalhamento do cron de limpeza de uploads órfãos (fila, periodicidade) fecha com o primeiro asset de upload direto, seguindo `backend/async-jobs.md`. A redação de logs que contenham URL assinada (a assinatura é bearer token em query string) entra na lista de `redact` de `infrastructure/logging.md` quando existir asset com leitura assinada: o bucket público deriva a URL da chave, sem assinatura. Um limite de taxa mais restrito no endpoint de `requestUpload` fecha junto, pelo mesmo motivo. Os métodos de URL assinada e o bucket privado da classe de infra nascem com o primeiro asset que precisar deles. Quando fecharem, viram seção deste documento, editadas no lugar, e saem desta lista.
+**Pontos em aberto:**
+
+- Em aberto: Cron de limpeza de uploads órfãos (ADR-0018)
+- Em aberto: Asset com leitura assinada: redação de log, limite de `requestUpload` e bucket privado (ADR-0019)

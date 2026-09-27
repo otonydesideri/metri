@@ -49,7 +49,8 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - [x] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
 - [x] 2.5 Extrair as regras do `overview` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation` → template de INDEX de projeto (3.4), `authoring` → absorvido pela metodologia (apagar no fim da fase)
   - overview → `backend/layers`, `general/{overview,code-placement,http-surface,principles}`, `defaults/stack` e o template de INDEX; activation → `methodology/templates/architecture-INDEX.md`; authoring → `methodology/authoring.md`; design-system → `methodology/templates/examples/`; destinos `project:` no frontmatter.
-- [ ] 2.6 Pontos em aberto → ADRs `proposed` (D8)
+- [x] 2.6 Pontos em aberto → ADRs `proposed` (D8)
+  - ADR-0001 a ADR-0019, um por ponto; na regra fica "Em aberto: <título> (ADR-NNNN)" e o id vai em `adr`.
 - [ ] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
@@ -67,7 +68,7 @@ Lacunas conhecidas, citações que nenhum arquivo sustenta (revisão do 2.4; a c
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
 - [ ] 3.1 `methodology/VOCABULARY.md`
-- [ ] 3.2 `adr/0001-default-ui-library.md` (shadcn/ui) + `defaults/ui.md` + `DESIGN.md` base neutro; `defaults/stack.md` + ADR da stack padrão
+- [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `defaults/ui.md` + `DESIGN.md` base neutro; `defaults/stack.md` + ADR `stack` (os dois ADRs pegam os próximos números livres de `adr/`)
 - [ ] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
 - [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX (com "Caminhos do projeto"), regra, slice, ADR, MATRIX
 

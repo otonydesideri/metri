@@ -12,6 +12,7 @@ keywords: [domain event, evento, subscriber, DomainEvent, DomainEvents, EventHan
 not_covered:
   - "a escolha entre evento, chamada direta, transação e job → backend/operation-routing"
 examples: [backend/events.examples.md]
+adr: [ADR-0006]
 status: active
 ---
 # Eventos de domínio
@@ -150,4 +151,6 @@ O formato do spec de subscriber (dublês, `waitFor`, limpeza de handlers no `bef
 - Fato que acontece dentro de um sistema externo entrou pela porta dele chamando um caso de uso, não por evento?
 - O spec de subscriber limpa os handlers no `beforeEach` e usa `waitFor`?
 
-**Pontos em aberto:** bus distribuído não tem gatilho concreto; a decisão de transporte acontece quando a necessidade aparecer. Quando fecharem, viram seção deste documento ou dos documentos próprios, editadas no lugar, e saem desta lista.
+**Pontos em aberto:**
+
+- Em aberto: Bus distribuído (ADR-0006)

@@ -6,6 +6,7 @@ use_when:
   - "introduzir um builder com passos encadeados"
 keywords: [Builder, builder, "build()", "withX()", InvoiceDocumentBuilder, InvoiceDocument, Director, type-state, test data builder, objeto de props, spread condicional, passos encadeados, forma acumuladora]
 examples: [domain/builder.examples.md]
+adr: [ADR-0008]
 status: active
 ---
 # Builder
@@ -90,4 +91,6 @@ Pontos-chave:
 - Classe de config com `build()` continua composição única, sem `withX()` encadeado?
 - Gatilho real (documento combinatório, mais de uma representação, ordem por tipo): parou e decidiu antes de implementar, com a decisão virando edição da seção?
 
-**Pontos em aberto:** A forma acumuladora já está fixada; ficam em aberto, para o primeiro gatilho real, a casa do arquivo, a separação entre receita e passos (Director) e a variante type-state quando a ordem dos passos importar. Quando fecharem, viram edição das seções deste documento e saem desta lista.
+**Pontos em aberto:**
+
+- Em aberto: Casa do arquivo, Director e type-state do builder (ADR-0008)

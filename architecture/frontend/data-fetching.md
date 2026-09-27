@@ -19,6 +19,7 @@ not_covered:
   - "o estado que vive só no navegador → frontend/state"
   - "o contrato da API do lado do backend → backend/http-api"
 examples: [frontend/data-fetching.examples.md]
+adr: [ADR-0011]
 status: active
 ---
 # Busca de dados no frontend
@@ -383,4 +384,6 @@ export function useOrderProcessing(id: string) {
 - O `QueryClient` é o singleton de `app/providers/query-client.ts`, montado no provider de `app/index.tsx`?
 - Todo evento que troca o dono do dado chama `queryClient.clear()`, e nada do cache é persistido em storage?
 
-**Pontos em aberto:** o `refetchOnWindowFocus: true` é escolha de UX de backoffice; segue sem revisão até uma tela concreta mostrar que é chatty demais.
+**Pontos em aberto:**
+
+- Em aberto: `refetchOnWindowFocus` no backoffice (ADR-0011)

@@ -15,6 +15,7 @@ keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossSe
 not_covered:
   - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
 examples: [backend/async-jobs.examples.md]
+adr: [ADR-0001, ADR-0002, ADR-0003, ADR-0004]
 status: active
 ---
 # Jobs assíncronos
@@ -197,4 +198,9 @@ Para caso de uso que enfileira, a asserção nos `items` entra no spec unitário
 - Tarefa agendada computa por estado, tolerando tick perdido?
 - Quem enfileira tem spec assertando o dublê da fila?
 
-**Pontos em aberto:** a ferramenta de fila segue aberta como delegação de projeto (nota da abertura), e o formato do e2e com fila real fecha com a primeira ferramenta escolhida. `failure` esperado que exija intervenção humana (log e conclui) ganha desenho se um caso real precisar ir para a dead letter em vez do log. O enfileiramento transacional depende da família da ferramenta: no Postgres é o adapter `executeSql`, cujo detalhe fecha na primeira implementação; fora dele, vira desenho de outbox. App de worker dedicado (processo separado do HTTP) não tem gatilho concreto. Quando fecharem, viram seção deste documento, editadas no lugar, e saem desta lista.
+**Pontos em aberto:**
+
+- Em aberto: Ferramenta de fila e formato do e2e com fila real (ADR-0001)
+- Em aberto: `failure` esperado que exige intervenção humana (ADR-0002)
+- Em aberto: Forma do enfileiramento transacional (ADR-0003)
+- Em aberto: App de worker dedicado (ADR-0004)
