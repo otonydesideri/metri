@@ -196,7 +196,7 @@ export type OrderListItem = Pick<
 >;
 ```
 
-Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/http-api.md` ("Contrato de API compartilhado"), no pacote dono do conceito e sem `@metri/contracts` (`backend/http-api.md`, "Aplicação"); tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
+Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/http-api.md` ("Contrato de API compartilhado"), no pacote dono do conceito (`backend/http-api.md`, "Aplicação"); tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
 
 ## Zod schema vs. type plain
 

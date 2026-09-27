@@ -22,7 +22,7 @@ Quando o artefato é uma capacidade claramente compartilhada, com ownership pró
 
 **Proibido.** Promover porque talvez seja reutilizado no futuro.
 
-**Proibido.** Pacote catch-all que junte domínios diferentes, inclusive `@metri/contracts` como agregador global de contratos.
+**Proibido.** Pacote catch-all que junte domínios diferentes, inclusive um agregador global de contratos de API.
 
 Quando aparece um segundo consumidor real: **Obrigatório.** Reavaliar a casa pelo critério de ownership. O segundo consumidor é gatilho de reavaliação, não promoção automática; o que sobe leva a decisão registrada na casa de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
 

@@ -211,7 +211,7 @@ Exemplo completo: testing.examples.md#makeorder
 
 ## Nada de helper de render compartilhado
 
-Não existe `renderWithProviders` em `test/`. `QueryClientProvider` e `MemoryRouter` são o runtime sem o qual o componente não existe, não um passo sob prova, e a resposta consistente para esse caso já está escrita no backend: todo e2e monta o app inteiro no próprio arquivo, "nunca vira um `createTestApp()` compartilhado" (`backend/testing.md`).
+Um helper de render compartilhado em `test/` não entra: `QueryClientProvider` e `MemoryRouter` são o runtime sem o qual o componente não existe, não um passo sob prova, e a resposta consistente para esse caso já está escrita no backend: todo e2e monta o app inteiro no próprio arquivo, "nunca vira um `createTestApp()` compartilhado" (`backend/testing.md`).
 
 O que continua permitido é helper local ao arquivo. Uma `function renderPage()` no topo de um spec que renderiza a mesma página em muitas variações monta providers e não esconde passo nenhum; é a mesma carve-out que o backend abre para utilitário puro sem semântica de fluxo. O que ele não pode fazer é executar interação, montar estado de domínio ou escolher a rota de entrada.
 

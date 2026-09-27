@@ -11,7 +11,7 @@ applies_to:
   - "apps/app-api/src/infra/http/controllers/**"
   - "apps/app-api/src/infra/http/dtos/**"
   - "apps/app-api/src/infra/http/presenters/**"
-keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, contrato canônico, união fechada, sortBy, sortDirection, ApiErrorType, "@metri/contracts"]
+keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, contrato canônico, união fechada, sortBy, sortDirection, ApiErrorType]
 not_covered:
   - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
   - "o adaptador fino em geral → backend/application"
@@ -102,7 +102,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
 - O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`, como parte do contrato de API; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
-- O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes (`@metri/contracts`): é o catch-all que `general/code-placement.md` proíbe.
+- O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes: é o catch-all que `general/code-placement.md` proíbe.
 - Qual pacote é dono de cada contrato é decisão de projeto (`docs/architecture/INDEX.md`, "Delegações").
 - O limite que a API impõe sai do contrato canônico, e o schema de request o usa; o schema de form do frontend importa o mesmo valor, e pode ser mais estrito que ele (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 
@@ -124,7 +124,7 @@ export const createOrderBodySchema = z.object({
 - Toda resposta de erro, inclusive a recusa nativa do framework, sai no envelope único com `type` no `ApiErrorType`?
 - Path param entra como objeto, texto tem `.max()`, e id é `z.uuid()`?
 - A resposta nomeia o que carrega, com o agregado passado por presenter, e sem chave genérica fora do envelope de paginação?
-- Contrato que frontend e backend consomem tem uma representação canônica só, no pacote dono do conceito, sem `@metri/contracts` e sem cópia mantida à mão em nenhum lado?
+- Contrato que frontend e backend consomem tem uma representação canônica só, no pacote dono do conceito, sem cópia mantida à mão em nenhum lado?
 - Parâmetro de conjunto fechado usa a união do contrato canônico, com o mesmo nome do query param na URL do app?
 - Limite que a API impõe vem do contrato canônico, sem constante redeclarada no frontend?
 
