@@ -68,6 +68,8 @@ Só no projeto:
     - nenhuma chave vazia;
     - obrigatórias: horizon na feature; status no UC e, fora de draft e antes da poda, mode e checks; type,
       mode, status, checks, what (1 a 3 linhas) e criteria (com ao menos um item "- ") no ticket T;
+    - UC fora de draft e antes da poda: checks com ao menos um comando além de pnpm verify, o teste ou padrão
+      de teste que prova os critérios (a poda cita o arquivo dele em status: done → <arquivo de teste>);
     - nada órfão: UC fora de draft tem slice; ticket T pertence a uma slice; slice now serve a uma feature now
       (a feature a lista em slices ou tem um UC com ela em slice);
     - slices, slice e blocked_by apontam para um id que existe na matriz (blocked_by: UC, T ou slice);

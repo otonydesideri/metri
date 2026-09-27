@@ -23,6 +23,8 @@ const REQUIRED: Record<Kind, string[]> = {
 };
 // Obrigatórias no UC fora de draft e ainda não podado (status: done → <testes>); slice sai em lintOrphans.
 const UC_TICKET_REQUIRED = ['mode', 'checks'];
+// O check que todo ticket roda; o UC leva, além dele, o teste que prova os critérios.
+const VERIFY = 'pnpm verify';
 const WHAT_MAX_LINES = 3;
 const CONTRACT_KEYS = ['responsibility', 'interface', 'invariants', 'consumers', 'planned'];
 const CONTRACT_REQUIRED = ['responsibility', 'interface', 'invariants', 'consumers'];
@@ -147,6 +149,21 @@ function lintFields(
   }
   if (block.kind === 'ticket') {
     lintTicket(block, report);
+  }
+  if (isUcInPlay(block)) {
+    lintUcChecks(block, report);
+  }
+}
+
+// UC em jogo: checks com ao menos um comando além de pnpm verify, o teste que a poda cita.
+function lintUcChecks(block: Block, report: (line: number, message: string) => void): void {
+  const checks = fieldOf(block, 'checks');
+  const commands = listOf(checks?.value ?? '');
+  if (!checks || !commands || commands.length === 0) {
+    return;
+  }
+  if (commands.every((command) => command.replaceAll('`', '').trim() === VERIFY)) {
+    report(checks.line, `checks de ${block.id}: só ${VERIFY}; falta o teste ou padrão de teste que prova os critérios`);
   }
 }
 

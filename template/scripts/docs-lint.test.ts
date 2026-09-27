@@ -165,7 +165,7 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(lintChanged(inMatrix('slice: S1 · mode: afk · ', 'slice: S1 · ')).output).toContain(
       'UC1.1: falta a chave mode (UC fora de draft)',
     );
-    expect(lintChanged(inMatrix('checks: [`pnpm verify`]\n\n- BR1', '- BR1')).output).toContain(
+    expect(lintChanged(inMatrix('checks: [`pnpm verify`, `pnpm test orders-page`]\n\n- BR1', '- BR1')).output).toContain(
       'UC1.1: falta a chave checks (UC fora de draft)',
     );
     const pruned = lintChanged((dir) =>
@@ -174,6 +174,17 @@ describe('docs-lint', { timeout: 30_000 }, () => {
       ),
     );
     expect(pruned).toEqual({ status: 0, output: '' });
+  });
+
+  it('MATRIX: UC fora de draft tem em checks um teste além de pnpm verify', () => {
+    const checks = 'checks: [`pnpm verify`, `pnpm test orders-page`]';
+    const onlyVerify = lintChanged(inMatrix(checks, 'checks: [`pnpm verify`]'));
+    expect(onlyVerify.status).toBe(1);
+    expect(onlyVerify.output).toContain(
+      'checks de UC1.1: só pnpm verify; falta o teste ou padrão de teste que prova os critérios',
+    );
+    const testFile = 'checks: [`pnpm verify`, `pnpm vitest run apps/app-web/src/pages/orders/orders-page.test.tsx`]';
+    expect(lintChanged(inMatrix(checks, testFile))).toEqual({ status: 0, output: '' });
   });
 
   it('MATRIX: what e criteria obrigatórios no ticket T', () => {

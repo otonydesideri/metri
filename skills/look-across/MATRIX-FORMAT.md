@@ -74,9 +74,10 @@ The UC is the tracer ticket: its title, BRs and criteria are its what and its do
 
 - `actor` and `status`: `draft` when /shape writes it; `open` when /look-across plans it and fills its ticket keys; then `in_progress`, `blocked` and `done`. A UC in `draft` is never built.
 - Ticket keys, outside `draft`: `slice` (required: its main slice; the other slices it crosses show in `areas` and `touches`), `mode` and `checks` (required), and `blocked_by`, `areas`, `touches`, `sensitive`, `subtasks`, `notes` and `metrics`.
+- `checks`: besides `pnpm verify`, at least one command that runs the test or test pattern proving its criteria (`pnpm test order-confirmation`).
 - Its BRs (`- BR<n>: ...`, with `(sensitive)` after the id when it is) and its criteria (`- [ ] ...`) come after the keys.
 - A UC that doesn't fit a clean session with about 5 rules (`pnpm rules-for --ticket <id>`) is split into smaller UCs, each visible to the user and verifiable. A UC never has a partial ticket.
-- Done and pruned, the UC keeps its title and one line: `status: done → <test file>`.
+- Done and pruned, the UC keeps its title and one line: `status: done → <test file>`, the file of the test its `checks` name.
 
 ## T block
 
@@ -189,7 +190,7 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 6. **Checks are immutable for /build.** It may add tests, never remove or loosen a check. Changing a check means going back to look across.
 7. **Same `touches`, no parallelism.** Schema changes follow expand–contract or stay in a foundation ticket.
 8. **Criteria written once, in the UC.** Its `checks` prove them; a T, which has no UC, carries its own `criteria`.
-9. **Pruning:** the contract leaves the matrix for the header of the `entry` when the slice's first ticket is built ("Contrato de slice", below); a done UC collapses into one line pointing to the tests its checks run (`status: done → <test file>`); a done slice collapses, its T included, into one line with its `entry` (`status: done · entry: <path>`). A done slice that takes a new or reopened UC, or a new T, goes back to `horizon: now` with its `entry`, until it collapses again. Git keeps the history. The matrix stays small.
+9. **Pruning:** the contract leaves the matrix for the header of the `entry` when the slice's first ticket is built ("Contrato de slice", below); a done UC collapses into one line pointing to the test its checks name (`status: done → <test file>`); a done slice collapses, its T included, into one line with its `entry` (`status: done · entry: <path>`). A done slice that takes a new or reopened UC, or a new T, goes back to `horizon: now` with its `entry`, until it collapses again. Git keeps the history. The matrix stays small.
 
 ## Contrato de slice
 

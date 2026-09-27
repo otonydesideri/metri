@@ -11,7 +11,7 @@ outcome: O operador acompanha os pedidos da organização.
 
 actor: operador · status: in_progress · slice: S1 · mode: afk · sensitive: false
 areas: [frontend/components, frontend/data-fetching, frontend/order-list] · touches: [router:orders]
-checks: [`pnpm verify`]
+checks: [`pnpm verify`, `pnpm test orders-page`]
 
 - BR1: Só aparecem pedidos da organização do operador.
 - [ ] A lista mostra os pedidos mais recentes primeiro.
