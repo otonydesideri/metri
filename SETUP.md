@@ -116,7 +116,8 @@ Decisões da fase (aplicadas):
 - [x] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
   - A parte do source está feita; o aviso de `applies_to` sem casamento (METHODOLOGY 6.13) entra aqui.
   - Modo pela presença de `.metri/`; a lista de checagens saiu da 6.13 para o `--help`. O aviso de `applies_to` sem casamento vale para as regras do projeto e para "Caminhos do projeto"; `docs/plan/tech/` fica fora da árvore até ser usada; slice em construção (`horizon` com `entry`, sem `contract`) é válida (A.7).
-- [ ] 4.4 `verify`: roda os checks do projeto
+- [x] 4.4 `verify`: roda os checks do projeto
+  - docs-lint e rules-index:check pelos scripts irmãos (não dependem do `package.json`); typecheck, lint e test por `pnpm run`, se existirem; a saída do check que falha vem abaixo da linha dele.
 
 Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 

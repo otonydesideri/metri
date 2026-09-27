@@ -200,7 +200,7 @@ docs/
   skills/                       as skills da metodologia
   AGENTS.md, CLAUDE.md          instruções do agente neste repositório
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
-  package.json                  scripts do source (pnpm): rules-index, rules-index:check, docs-lint, rules-for, test (+ pnpm-workspace.yaml, pnpm-lock.yaml)
+  package.json                  scripts do source (pnpm): rules-index, rules-index:check, docs-lint, rules-for, verify, test (+ pnpm-workspace.yaml, pnpm-lock.yaml)
 ```
 
 `general/` guarda as regras que valem para mais de uma área (princípios transversais, colocação de código entre app e pacote). As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).

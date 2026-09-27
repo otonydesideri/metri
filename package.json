@@ -8,7 +8,8 @@
     "rules-index:check": "tsx template/scripts/rules-index.ts --check",
     "docs-lint": "tsx template/scripts/docs-lint.ts",
     "rules-for": "tsx template/scripts/rules-for.ts",
-    "test": "vitest run template/scripts"
+    "test": "vitest run template/scripts",
+    "verify": "tsx template/scripts/verify.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",
