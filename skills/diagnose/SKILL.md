@@ -118,13 +118,13 @@ Tool preference:
 
 ## Phase 5: Fix + regression test
 
-Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
+Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
 
 - A bug that breaks a criterion of a UC reopens that UC in its own ticket file: `status: in_progress`, what broke in "Notas"; its `slice`, `mode`, `areas`, `touches` and `sensitive` stay from before, since the file was never pruned or collapsed.
 - Any other bug becomes a T, its own new file in the slice whose code the fix changes, with the next free id of that slice: `type: task`, `mode: afk`, `status: in_progress`, "O que entrega" and "Critérios" for the fix, the `areas` and `touches` of that code, and `sensitive` by the criterion of MATRIX-FORMAT.md.
 - Their `checks` get the regression check: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
 
-Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `.metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
+Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `node_modules/metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
 
 Write the regression test **before the fix**, but only if there is a **correct seam** for it (call the Skill tool with "tdd"). A Phase 1 test that already sits at a correct seam, minimised, is that regression test.
 
@@ -153,6 +153,6 @@ Required before declaring done:
 
 ## Phase 7: Why didn't the guardrail catch it?
 
-Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`.metri/` is read-only). Then set the ticket's `status: done` and commit, with its id.
+Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`node_modules/metri/` is read-only). Then set the ticket's `status: done` and commit, with its id.
 
 Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main.

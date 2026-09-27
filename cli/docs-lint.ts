@@ -2,71 +2,78 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, normalize, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import picomatch from 'picomatch';
 import { parse } from 'yaml';
+import { linkTargetOf, packageLinks } from './lib/links.ts';
 import {
   asList,
+  BIN,
   frontmatterOf,
   layoutOf,
   MATRIX,
   PROJECT_INDEX,
+  PROJECT_RULES,
   projectFiles,
   ruleFiles,
   sectionItems,
   takeOption,
   TICKETS_DIR,
 } from './lib/layout.ts';
-import { blankMatrixView, fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
+import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
 import { CONTRACT_LABELS, matrixProblems } from './lib/matrix-lint.ts';
 import { ticketProblems } from './lib/ticket-lint.ts';
 
 const HELP = `docs-lint: lint estrutural. Roda na raiz (ou em --root <dir>) e detecta o modo:
-com .metri/ na raiz, é projeto; sem .metri/, é o source.
+na raiz do pacote metri, é o source; em qualquer outra, é projeto.
 
-Uso: docs-lint [--root <dir>]
+Uso: metri docs-lint [--root <dir>]
 Saída: arquivo:linha: mensagem, com o prefixo "aviso:" no aviso. Sai com código 1 só quando há erro.
 
 Nos dois modos:
-  - Regras: o frontmatter de cada <área>/<tema>.md (architecture/ no source, docs/architecture/ no projeto):
+  - Regras: o frontmatter de cada <área>/<tema>.md (architecture/ no source, .metri/rules/ no projeto):
     - as quatro chaves obrigatórias de VOCABULARY.md (id, description, use_when, status), nenhuma
       chave vazia, nenhuma chave fora dele, status com um valor dele e activation, quando existe, em texto;
     - id igual ao caminho <área>/<tema>;
     - os ids de read_first e not_covered existem ou são destinos project: da lista fechada de
       VOCABULARY.md, e a seção que not_covered cita existe na regra;
-    - os arquivos citados em examples existem, e os ids de adr existem em adr/ (docs/adr/ no projeto).
+    - os arquivos citados em examples existem, e os ids de adr existem em adr/ (docs/adr/ ou os globais no
+      projeto).
     Arquivos *.examples.md não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo
     nem número de linhas.
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
 
 Só no source:
-  - README: regra (architecture/) e skill (skills/, com os formatos e templates de cada uma) não citam o README.md,
-    que é para humano, nem em frontmatter nem em bloco de código; citação a ele é erro, e o texto cita o dono.
-  - Citações (em architecture/, adr/, skills/, VOCABULARY.md e README.md, fora de bloco de código): todo caminho
-    .md citado existe;
+  - README: regra (architecture/), skill (skills/, com os formatos de cada uma) e template (cli/templates/) não
+    citam o README.md, que é para humano, nem em frontmatter nem em bloco de código; citação a ele é erro, e o
+    texto cita o dono.
+  - Citações (em architecture/, adr/, skills/, cli/templates/, VOCABULARY.md e README.md, fora de bloco de
+    código): todo caminho .md citado existe;
     quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
     \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
-    toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., AGENTS.md, CONTEXT.md,
-    PRODUCT.md, DESIGN.md, MATRIX.md) não é conferido; na skill, .metri/<caminho> é <caminho> do source.
-  - Arquivos planejados: template/scripts/docs-lint.planned.json lista cada arquivo que ainda não existe e o
-    que o cria (a versão ou o ticket). Citação a arquivo planejado é aviso, não erro; arquivo planejado que já
-    existe é erro ("tire da lista"), para a lista não ficar velha.
+    toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., .metri/..., AGENTS.md,
+    CONTEXT.md, PRODUCT.md, DESIGN.md, MATRIX.md) não é conferido; node_modules/metri/<caminho> é <caminho> do
+    source.
+  - Arquivos planejados: cli/docs-lint.planned.json lista cada arquivo que ainda não existe e o que o cria
+    (a versão ou o ticket). Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe é
+    erro ("tire da lista"), para a lista não ficar velha.
   - "Como ler": todo id de regra do source aparece em "Como ler" do architecture/INDEX.md.
   - Skills: cada pasta de skills/ tem SKILL.md, com frontmatter: name igual ao nome da pasta e description.
 
 Só no projeto:
-  - Árvore fechada de docs/: PRODUCT.md, CONTEXT.md, DESIGN.md, architecture/INDEX.md,
-    architecture/<área>/<tema>.md (com frontmatter), architecture/<área>/INDEX.md (gerado),
-    adr/NNNN-<slug>.md e plan/MATRIX.md. Qualquer outro arquivo em docs/ é erro.
+  - Árvores fechadas (qualquer outro arquivo nelas é erro):
+    - docs/: PRODUCT.md, CONTEXT.md, DESIGN.md e adr/NNNN-<slug>.md;
+    - .metri/: ARCHITECTURE.md, rules/<área>/<tema>.md (com frontmatter), rules/<área>/INDEX.md (gerado),
+      MATRIX.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
+  - Links: .claude/skills/<nome> para cada skill do pacote, e .claude/agents/<nome>.md para cada agent, apontando
+    para node_modules/metri/skills/<nome> e node_modules/metri/agents/<nome>.md (metri init cria).
   - AGENTS.md com mais de 30 linhas: aviso.
   - applies_to sem casamento: glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum
     arquivo gera aviso, não erro; a regra é candidata a poda.
+  - Tickets e MATRIX citam só ids (UC, T, S, F, ADR-NNNN, id de regra): caminho de arquivo .md neles é erro.
   - MATRIX.md, só o plano:
-    - a seção gerada pelo matrix-view, entre <!-- matrix-view --> e <!-- /matrix-view --> logo abaixo do
-      título, não é conferida aqui (matrix-view:check confere se está atualizada, no verify);
     - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
     - ids: ### F<n> em Features, ### S<n> em Slices, GAP-<n> e PP-<n> nas listas; sem id repetido;
-    - chaves de VOCABULARY.md por bloco (feature: horizon, slices, outcome, ucs, milestone, tech_design;
+    - chaves de VOCABULARY.md por bloco (feature: horizon, slices, outcome, ucs, milestone;
       slice: horizon, blocked_by, contract, entry, status), sem chave repetida; valores de horizon dentro do
       permitido; listas em [a, b]; nenhuma chave vazia;
     - obrigatória: horizon na feature;
@@ -76,7 +83,7 @@ Só no projeto:
       dois; slice done tem entry;
     - o entry existe e tem o cabeçalho de contrato (/** ... */) com os rótulos ${CONTRACT_LABELS.join(', ')};
     - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
-  - Tickets (docs/plan/tickets/<id>.md, um UC ou um T; formato: skills/look-across/MATRIX-FORMAT.md,
+  - Tickets (.metri/tickets/<id>.md, um UC ou um T; formato: skills/look-across/MATRIX-FORMAT.md,
     "Ticket files"):
     - o nome do arquivo é UC<f>.<n>.md ou T<s>.<n>.md, e o frontmatter id é igual a ele;
     - frontmatter válido: as chaves de VOCABULARY.md (id, title, status e, no UC, feature; no T, slice, type,
@@ -97,18 +104,20 @@ if (args.includes('--help') || args.includes('-h')) {
   console.log(HELP);
   process.exit(0);
 }
-process.chdir(resolve(takeOption(args, '--root') ?? '.'));
+const root = resolve(takeOption(args, '--root') ?? '.');
+process.chdir(root);
 
 const layout = layoutOf();
-const SCRIPTS = dirname(fileURLToPath(import.meta.url));
-// Pastas de regra e de ADR onde um id é procurado: o projeto primeiro, depois o global montado em .metri/.
-const RULE_DIRS = layout.isProject ? ['docs/architecture', '.metri/architecture'] : ['architecture'];
-const ADR_DIRS = layout.isProject ? ['docs/adr', '.metri/adr'] : ['adr'];
+// Pastas de regra e de ADR onde um id é procurado: o projeto primeiro, depois o global do pacote.
+const RULE_DIRS = layout.isProject ? [PROJECT_RULES, layout.globalDir] : ['architecture'];
+const ADR_DIRS = layout.isProject ? ['docs/adr', layout.globalAdrDir] : ['adr'];
 const ARCHITECTURE = 'architecture';
-const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'VOCABULARY.md', 'README.md'];
-// Onde o README não é citado: as regras e as skills (com os formatos e templates de cada uma).
-const NO_README_ROOTS = ['architecture', 'skills'];
-const README_CITATION = /`(?:\.metri\/)?README\.md`/;
+const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'cli/templates', 'VOCABULARY.md', 'README.md'];
+// Onde o README não é citado: as regras, as skills (com os formatos de cada uma) e os templates.
+const NO_README_ROOTS = ['architecture', 'skills', 'cli/templates'];
+// Prefixo de um arquivo do pacote citado a partir do projeto; no source, é o caminho sem ele.
+const PACKAGE_PREFIX = /^node_modules\/metri\//;
+const README_CITATION = /`(?:node_modules\/metri\/)?README\.md`/;
 const SKILLS = 'skills';
 // Pastas fora da varredura de markdown do source: a fixture de teste é um projeto.
 const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
@@ -131,11 +140,14 @@ const PROJECT_TARGETS = [
   'project:CONTEXT',
   'project:PRODUCT',
   'project:DESIGN',
-  'project:architecture/INDEX',
+  'project:ARCHITECTURE',
 ];
 // Arquivos do projeto citados pelo nome: moram no projeto, não no source.
-const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md'];
-const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md', PROJECT_INDEX, MATRIX];
+const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md', 'ARCHITECTURE.md'];
+const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md'];
+const METRI_FILES = [PROJECT_INDEX, MATRIX];
+// Caminho de arquivo .md: ticket e MATRIX citam só ids.
+const MD_PATH = /(?<![\w/.-])[\w./-]*[\w-]\.md(?![\w-])/g;
 const AGENTS_MAX_LINES = 30;
 const ADR_STATUS = /^(accepted|superseded by (ADR-\d{4}))$/;
 const ADR_KINDS = ['decision', 'exception', 'default-change'];
@@ -144,7 +156,7 @@ const ADR_SECTIONS = ['Contexto', 'Decisão', 'Alternativas consideradas', 'Cons
 type Problem = { file: string; line: number; message: string; isWarning?: boolean };
 type Heading = { text: string; slug: string };
 
-const PLANNED_PATH = 'template/scripts/docs-lint.planned.json';
+const PLANNED_PATH = 'cli/docs-lint.planned.json';
 const planned: Record<string, string> = layout.isProject ? {} : JSON.parse(readFileSync(PLANNED_PATH, 'utf8'));
 
 const problems: Problem[] = [];
@@ -247,7 +259,7 @@ function citationCandidates(from: string, cited: string): string[] {
   if (layout.isProject) {
     return [cited, join(dirname(from), cited)].map((candidate) => normalize(candidate));
   }
-  const path = cited.replace(/^\.metri\//, '');
+  const path = cited.replace(PACKAGE_PREFIX, '');
   return [path, join(ARCHITECTURE, path), join(dirname(from), path)].map((candidate) =>
     normalize(candidate),
   );
@@ -256,8 +268,7 @@ function citationCandidates(from: string, cited: string): string[] {
 // Resolve o caminho citado: raiz do source, architecture/ e a pasta do arquivo que cita.
 // Devolve null para arquivo do projeto, que o source não tem como conferir.
 function resolveCitation(from: string, cited: string): string | null | undefined {
-  const path = cited.replace(/^\.metri\//, '');
-  if (!layout.isProject && (path.startsWith('docs/') || PROJECT_FILES.includes(path))) {
+  if (!layout.isProject && (/^(docs|\.metri)\//.test(cited) || PROJECT_FILES.includes(cited))) {
     return null;
   }
   return citationCandidates(from, cited).find((candidate) => existsSync(candidate));
@@ -268,9 +279,8 @@ function plannedBy(from: string, cited: string): string | undefined {
   return match === undefined ? undefined : planned[match];
 }
 
-// Citação: o caminho .md (com ou sem o prefixo .metri/), a âncora opcional e, depois do caminho entre crases,
-// as seções entre aspas
-// (`x.md`, "A" e "B" ou `x.md` ("A", ...)).
+// Citação: o caminho .md (do source, do pacote em node_modules/metri/ ou do projeto em .metri/), a âncora
+// opcional e, depois do caminho entre crases, as seções entre aspas (`x.md`, "A" e "B" ou `x.md` ("A", ...)).
 const CITATION =
   /(?<![\w./<>*{}-])(`?)((?:\.metri\/)?[A-Za-z0-9_][\w./-]*\.md)(#[\w-]+)?(`?)((?:(?:,| e|,? \(|) ?"[^"]+")*)/g;
 
@@ -459,12 +469,8 @@ function lintReadingOrder(rules: string[]): void {
   }
 }
 
-function lintGenerated(dir: string): void {
-  const result = spawnSync(
-    process.execPath,
-    [...process.execArgv, join(SCRIPTS, 'rules-index.ts'), dir, '--check'],
-    { encoding: 'utf8' },
-  );
+function lintGenerated(): void {
+  const result = spawnSync(process.execPath, [BIN, 'rules-index', '--check', '--root', root], { encoding: 'utf8' });
   for (const text of result.stderr.split('\n')) {
     const stale = /^desatualizado: (.+)$/.exec(text)?.[1];
     if (stale) {
@@ -472,7 +478,7 @@ function lintGenerated(dir: string): void {
     }
   }
   if (result.status !== 0 && !problems.some(({ message }) => message.startsWith('rules-index:check'))) {
-    report(join(SCRIPTS, 'rules-index.ts'), 1, `rules-index:check: falhou (${result.stderr.trim()})`);
+    report(layout.rootIndex, 1, `rules-index:check: falhou (${result.stderr.trim()})`);
   }
 }
 
@@ -542,7 +548,7 @@ function lintSource(): void {
   lintReadingOrder(rules);
   lintSkills();
   lintPlanned();
-  lintGenerated(ARCHITECTURE);
+  lintGenerated();
 }
 
 function lintDocsTree(): void {
@@ -550,20 +556,56 @@ function lintDocsTree(): void {
     if (DOCS_FILES.includes(path)) {
       continue;
     }
-    if (/^docs\/architecture\/[^/]+\/INDEX\.md$/.test(path)) {
-      if (!readFileSync(path, 'utf8').startsWith(GENERATED_HEADER)) {
-        report(path, 1, `árvore de docs/: INDEX de área é gerado ("${GENERATED_HEADER}")`);
-      }
-    } else if (/^docs\/architecture\/[^/]+\/[a-z0-9-]+\.md$/.test(path)) {
-      lintFrontmatter(path, 'docs/architecture');
-    } else if (/^docs\/adr\/\d{4}-[a-z0-9-]+\.md$/.test(path)) {
+    if (/^docs\/adr\/\d{4}-[a-z0-9-]+\.md$/.test(path)) {
       lintAdr(path);
-    } else if (path.startsWith(`${TICKETS_DIR}/`)) {
-      continue; // checado em lintTickets, que também confere o nome do arquivo.
     } else {
       report(path, 1, 'árvore de docs/: arquivo fora da lista fechada (docs-lint --help)');
     }
   }
+}
+
+function lintMetriTree(): void {
+  for (const path of existsSync('.metri') ? projectFiles('.metri') : []) {
+    if (METRI_FILES.includes(path)) {
+      continue;
+    }
+    if (/^\.metri\/rules\/[^/]+\/INDEX\.md$/.test(path)) {
+      if (!readFileSync(path, 'utf8').startsWith(GENERATED_HEADER)) {
+        report(path, 1, `árvore de .metri/: INDEX de área é gerado ("${GENERATED_HEADER}")`);
+      }
+    } else if (/^\.metri\/rules\/[^/]+\/[a-z0-9-]+\.md$/.test(path)) {
+      lintFrontmatter(path, PROJECT_RULES);
+    } else if (/^\.metri\/tickets\/[^/]+\.md$/.test(path)) {
+      continue; // checado em lintTickets, que também confere o nome do arquivo.
+    } else if (/^\.metri\/tickets\/(?:UC|T)\d+\.\d+\/[^/]+\.png$/.test(path)) {
+      continue;
+    } else {
+      report(path, 1, 'árvore de .metri/: arquivo fora da lista fechada (docs-lint --help)');
+    }
+  }
+}
+
+// .claude/skills/<nome> e .claude/agents/<nome>.md: um link para cada skill e agent do pacote.
+function lintLinks(): void {
+  for (const { path, target } of packageLinks()) {
+    const current = linkTargetOf(path);
+    if (current === undefined) {
+      report(path, 1, `link: falta o link para ${target} (rode metri init)`);
+    } else if (current !== target) {
+      report(path, 1, `link: aponta para ${current}, não para ${target} (rode metri init)`);
+    }
+  }
+}
+
+// Ticket e MATRIX citam só ids: caminho de arquivo .md neles é erro.
+function lintIdsOnly(path: string): void {
+  readFileSync(path, 'utf8')
+    .split('\n')
+    .forEach((text, index) => {
+      for (const [cited] of text.matchAll(MD_PATH)) {
+        report(path, index + 1, `citação: ${cited} é caminho de arquivo; ticket e MATRIX citam só ids (UC, T, S, F, ADR-NNNN, id de regra)`);
+      }
+    });
 }
 
 // Ids da feature (F<n>) e da slice (S<n>) presentes na matriz, e o valor de "ucs" de cada feature.
@@ -585,9 +627,9 @@ function matrixIds(matrixSource: string): {
   return { featureIds, sliceIds, featureUcs, featureSlices };
 }
 
-// Tickets (docs/plan/tickets/<id>.md): frontmatter, corpo e referências para a MATRIX.
+// Tickets (.metri/tickets/<id>.md): frontmatter, corpo e referências para a MATRIX.
 function lintTickets(): void {
-  const matrixSource = existsSync(MATRIX) ? blankMatrixView(readFileSync(MATRIX, 'utf8')) : '';
+  const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
   const { featureIds, sliceIds, featureUcs, featureSlices } = matrixIds(matrixSource);
   const files = existsSync(TICKETS_DIR)
     ? readdirSync(TICKETS_DIR)
@@ -600,6 +642,7 @@ function lintTickets(): void {
     const path = join(TICKETS_DIR, name);
     const expectedId = name.replace(/\.md$/, '');
     const source = readFileSync(path, 'utf8');
+    lintIdsOnly(path);
     const problems = ticketProblems(path, source, expectedId, { featureIds, sliceIds, ticketIds, featureUcs });
     for (const { line, message } of problems) {
       report(path, line, message);
@@ -644,7 +687,7 @@ function lintAdr(path: string): void {
   if (!status || !statusMatch) {
     report(path, status?.line ?? 1, 'ADR: status accepted ou superseded by ADR-NNNN');
   } else if (statusMatch[2] && !adrPath(statusMatch[2])) {
-    report(path, status.line, `ADR: ${statusMatch[2]} não existe em docs/adr/`);
+    report(path, status.line, `ADR: ${statusMatch[2]} não existe em ${ADR_DIRS[0]}/`);
   }
   if (!field('area')) {
     report(path, 1, 'ADR: falta area');
@@ -663,7 +706,8 @@ function lintMatrix(): void {
   if (!existsSync(MATRIX)) {
     return;
   }
-  for (const { line, message } of matrixProblems(blankMatrixView(readFileSync(MATRIX, 'utf8')))) {
+  lintIdsOnly(MATRIX);
+  for (const { line, message } of matrixProblems(readFileSync(MATRIX, 'utf8'))) {
     report(MATRIX, line, message);
   }
 }
@@ -672,7 +716,7 @@ function lintMatrix(): void {
 function lintAppliesTo(): void {
   const files = projectFiles();
   const globs: { glob: string; file: string; line: number }[] = [];
-  for (const path of ruleFiles('docs/architecture')) {
+  for (const path of ruleFiles(PROJECT_RULES)) {
     const source = readFileSync(path, 'utf8');
     let frontmatter: Record<string, unknown> | undefined;
     try {
@@ -702,13 +746,13 @@ function lintAppliesTo(): void {
 
 function lintProject(): void {
   lintDocsTree();
+  lintMetriTree();
+  lintLinks();
   lintAgents();
   lintMatrix();
   lintTickets();
   lintAppliesTo();
-  if (existsSync(PROJECT_INDEX)) {
-    lintGenerated('docs/architecture');
-  }
+  lintGenerated();
 }
 
 if (layout.isProject) {

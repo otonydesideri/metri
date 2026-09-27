@@ -15,7 +15,7 @@ applies_to:
 keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
 not_covered:
   - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
-  - "a ferramenta de fila e o processo em que os workers rodam, que são decisão de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
+  - "a ferramenta de fila e o processo em que os workers rodam, que são decisão de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
 examples: [backend/async-jobs.examples.md]
 status: active
 ---
@@ -25,7 +25,7 @@ Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o con
 
 Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
-**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
+**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`.metri/ARCHITECTURE.md`, "Capacidades ativas"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
 
 ## Worker é adaptador de entrada
 
@@ -144,7 +144,7 @@ O ciclo de vida da falha, com os papéis de cada peça:
 
 - **Erro permanente** (`failure` esperado do caso de uso): sem retry. O worker loga e conclui (seção "O worker"). Queimar cinco tentativas num "pedido não encontrado" só atrasa a fila.
 - **Erro transitório** (exceção técnica): o throw marca o job como failed e o pg-boss retenta com backoff exponencial (`retryDelay: 5` com `retryBackoff: true` espera 5s, 10s, 20s, 40s, 80s). O backoff espalha a nova carga no tempo; falha transitória costuma chegar em rajada, e retry em onda sincronizada amplifica o problema que o causou.
-- **Tentativas esgotadas**: o job vai para a dead letter da fila (`<fila>-dlq`), carregando a origem e o erro. Dead letter é instrumento de diagnóstico com dono, não lixeira: profundidade maior que zero é incidente a investigar, e o `redrive` do pg-boss devolve o job à fila de origem depois da causa corrigida. O alerta de profundidade segue `infrastructure/observability.md`, com janela, severidade e destino decididos pelo projeto (`docs/architecture/INDEX.md`).
+- **Tentativas esgotadas**: o job vai para a dead letter da fila (`<fila>-dlq`), carregando a origem e o erro. Dead letter é instrumento de diagnóstico com dono, não lixeira: profundidade maior que zero é incidente a investigar, e o `redrive` do pg-boss devolve o job à fila de origem depois da causa corrigida. O alerta de profundidade segue `infrastructure/observability.md`, com janela, severidade e destino decididos pelo projeto (`.metri/ARCHITECTURE.md`).
 - **Job ativo que trava**: `expireInSeconds` (default de 15 minutos) devolve à fila o job cujo worker morreu sem concluir. Handler que legitimamente demora mais que isso declara o próprio limite na definição da fila.
 
 Parâmetros de retry são por fila, na constante do worker, decididos pelo custo de reexecutar aquele comando; os valores do exemplo são ponto de partida, não regra.

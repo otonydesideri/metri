@@ -15,7 +15,7 @@ Shared reference that two user-invoked skills both need can live in neither: wit
 
 ## Dependencies between skills
 
-A step that runs a model-invoked skill says so as a call of the Skill tool with the named skill (`Call the Skill tool with "grilling"`); a step that needs two skills is two calls (`Call the Skill tool twice, for "grilling" and "domain-language"`). A user-invoked skill can never be reached this way: when a step's precondition is one, phrase it as an instruction for the human ("tell the user to run `/setup`"). A format owned by a user-invoked skill is reached from another skill by its path (`.metri/skills/<name>/<ARTIFACT>-FORMAT.md`), never copied.
+A step that runs a model-invoked skill says so as a call of the Skill tool with the named skill (`Call the Skill tool with "grilling"`); a step that needs two skills is two calls (`Call the Skill tool twice, for "grilling" and "domain-language"`). A user-invoked skill can never be reached this way: when a step's precondition is one, phrase it as an instruction for the human ("tell the user to run `/look-across`"). A format owned by a user-invoked skill is reached from another skill by its path (`node_modules/metri/skills/<name>/<ARTIFACT>-FORMAT.md`), never copied.
 
 ## Splitting by invocation
 

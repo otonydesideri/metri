@@ -1,14 +1,12 @@
 # Arquitetura do projeto
 
-source: .metri@v0.0
-
 ## Stack
 
 - Sem desvio.
 
 ## Caminho linear
 
-Padrão: `.metri/architecture/backend/layers.md`, "O caminho de uma request".
+Padrão: `node_modules/metri/architecture/backend/layers.md`, "O caminho de uma request".
 
 - Sem desvio.
 
@@ -33,4 +31,4 @@ Padrão: `.metri/architecture/backend/layers.md`, "O caminho de uma request".
 
 <!-- rules-index -->
 
-- `frontend` → `frontend/INDEX.md` (1 regra)
+- `frontend` → `rules/frontend/INDEX.md` (1 regra)

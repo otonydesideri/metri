@@ -75,7 +75,7 @@ Pontos-chave:
 
 ## Nível e formato por ambiente
 
-`LoggerModule` é configurado com `forRootAsync`, lendo o ambiente do `EnvService`. Nível por ambiente numa tabela declarativa: `info` em produção, `warn` em teste (erro continua visível, o `LoggerErrorInterceptor` loga em `error`, sem inundar a saída dos e2e com a linha automática de request), `debug` em `local`/`development`. Transport `pino-pretty` (devDependency) só onde um humano lê o terminal (`local`/`development`); em produção e teste a saída é o JSON do pino direto no stdout, e o destino das linhas (coletor, agregador) é decisão de projeto (`docs/architecture/INDEX.md`, "Delegações"), fora deste documento.
+`LoggerModule` é configurado com `forRootAsync`, lendo o ambiente do `EnvService`. Nível por ambiente numa tabela declarativa: `info` em produção, `warn` em teste (erro continua visível, o `LoggerErrorInterceptor` loga em `error`, sem inundar a saída dos e2e com a linha automática de request), `debug` em `local`/`development`. Transport `pino-pretty` (devDependency) só onde um humano lê o terminal (`local`/`development`); em produção e teste a saída é o JSON do pino direto no stdout, e o destino das linhas (coletor, agregador) é decisão de projeto (`.metri/ARCHITECTURE.md`, "Delegações"), fora deste documento.
 
 ```ts
 // app.module.ts
@@ -127,7 +127,7 @@ O id default do Fastify é "req-N", incremental por processo, ambíguo com mais 
 Pontos-chave:
 
 - O header `X-Request-Id` na resposta localiza no log a request exata que um cliente reportou, sem depender de timestamp.
-- `x-request-id` vindo na request é ignorado: aceitar id de cliente arbitrário permite forjar o id de correlação no log. Aceitar só passa a fazer sentido com um proxy confiável na frente assinando o header, decisão que acompanha a topologia de deploy do projeto (`docs/architecture/INDEX.md`).
+- `x-request-id` vindo na request é ignorado: aceitar id de cliente arbitrário permite forjar o id de correlação no log. Aceitar só passa a fazer sentido com um proxy confiável na frente assinando o header, decisão que acompanha a topologia de deploy do projeto (`.metri/ARCHITECTURE.md`).
 
 Os campos entram progressivamente, conforme cada fronteira produz o fato que ela resolve: um interceptor global (`APP_INTERCEPTOR` no `AppModule`, depois do `LoggerErrorInterceptor`, ver "Bootstrap") chama `logger.assign(...)` com o que já se sabe naquele ponto, e cada fronteira posterior acrescenta o que ela resolveu. `assignResponse: true` na config do `LoggerModule` (ao lado de `pinoHttp`, ver "Nível e formato por ambiente") estende os campos à linha automática de response.
 

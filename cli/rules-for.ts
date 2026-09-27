@@ -18,31 +18,31 @@ import {
 const HELP = `rules-for: lista as regras de arquitetura que valem para caminhos ou para um ticket.
 
 Uso:
-  rules-for <caminho | glob>...         regras dos arquivos
-  rules-for --ticket <UC<f>.<n> | T<s>.<n>>   regras do ticket: um UC (o tracer) ou um ticket T
-  rules-for ... --root <dir>            outra raiz (padrão: a pasta atual)
+  metri rules-for <caminho | glob>...         regras dos arquivos
+  metri rules-for --ticket <UC<f>.<n> | T<s>.<n>>   regras do ticket: um UC (o tracer) ou um ticket T
+  metri rules-for ... --root <dir>            outra raiz (padrão: a pasta atual)
 
 Modo:
-  - Com .metri/ na raiz, é projeto: regras globais em .metri/architecture/, do projeto em docs/architecture/.
-  - Sem .metri/, é o source: regras em architecture/.
+  - No projeto: regras globais na pasta do pacote metri (node_modules/metri/architecture/), do projeto em
+    .metri/rules/.
+  - No source (a raiz do pacote metri): regras em architecture/.
 
 Entrada:
   - Caminho: relativo à raiz. Casa com o applies_to das regras globais e das do projeto, e com a seção
-    "Caminhos do projeto" do docs/architecture/INDEX.md ("- <glob> → <id>"), que soma o glob ao applies_to da regra.
-    Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no applies_to global:
-    fica em "Caminhos do projeto".
-  - Glob: expandido contra os arquivos da raiz (fora de node_modules, .git e .metri); glob sem arquivo gera aviso.
-  - --ticket: lê o frontmatter de docs/plan/tickets/<id>.md (um UC ou um ticket T) e usa os ids de "areas".
+    "Caminhos do projeto" do .metri/ARCHITECTURE.md ("- <glob> → <id>"), que soma o glob ao applies_to da regra.
+    Caminho que depende de decisão de projeto não entra no applies_to global: fica em "Caminhos do projeto".
+  - Glob: expandido contra os arquivos da raiz (fora de node_modules e .git); glob sem arquivo gera aviso.
+  - --ticket: lê o frontmatter de .metri/tickets/<id>.md (um UC ou um ticket T) e usa os ids de "areas".
   - Nos dois casos, entram também as regras de read_first, em cadeia. Destino project: sai numa linha "ler antes:".
 
 Capacidades condicionais:
   - No projeto, regra com activation só entra se o id dela estiver em "Capacidades ativas" do
-    docs/architecture/INDEX.md ("- <id>: <valores>"). As que ficam de fora saem numa linha de aviso.
+    .metri/ARCHITECTURE.md ("- <id>: <valores>"). As que ficam de fora saem numa linha de aviso.
   - No source, todas entram.
 
 Saída (não imprime o conteúdo das regras):
   - Uma linha por regra: "<id> — <description> (<caminho>)", as do projeto primeiro, cada grupo em ordem de id.
-  - Depois, as linhas de "Exceções e defaults trocados" do INDEX do projeto que citam algum id devolvido,
+  - Depois, as linhas de "Exceções e defaults trocados" do ARCHITECTURE.md que citam algum id devolvido,
     com o prefixo "exceção:".
   - Avisos com o prefixo "aviso:". Mais de 5 regras gera o aviso "ticket grande demais ou applies_to largo";
     não é erro.

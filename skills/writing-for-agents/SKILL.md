@@ -9,7 +9,7 @@ Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / 
 
 When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills.
 
-When the document you're writing is an architecture rule (`.metri/architecture/` or `docs/architecture/`), read [`RULE-FORMAT.md`](RULE-FORMAT.md) for its frontmatter, its body and the authoring contract.
+When the document you're writing is an architecture rule (`node_modules/metri/architecture/` or `.metri/rules/`), read [`RULE-FORMAT.md`](RULE-FORMAT.md) for its frontmatter, its body and the authoring contract.
 
 ## Context pointers
 
@@ -64,7 +64,7 @@ Splitting one document into two spends one of the two loads, so split only when 
 
 ## Leading words
 
-A **leading word** is a compact concept already living in the model's pretraining that the agent thinks with while running the document (_lesson_, _fog of war_, _tracer bullets_). Repeated as a token, never as a sentence, it accumulates a distributed definition and anchors a whole region of behaviour in the fewest tokens, by recruiting priors the model already holds. Coining your own works if you define it clearly, but a made-up word recruits no priors: you pay in definition tokens what a pretrained word gives free; reach for an existing word first. This method's own leading words are the canonical keys of `.metri/VOCABULARY.md`: write them exactly as there.
+A **leading word** is a compact concept already living in the model's pretraining that the agent thinks with while running the document (_lesson_, _fog of war_, _tracer bullets_). Repeated as a token, never as a sentence, it accumulates a distributed definition and anchors a whole region of behaviour in the fewest tokens, by recruiting priors the model already holds. Coining your own works if you define it clearly, but a made-up word recruits no priors: you pay in definition tokens what a pretrained word gives free; reach for an existing word first. This method's own leading words are the canonical keys of `node_modules/metri/VOCABULARY.md`: write them exactly as there.
 
 It anchors twice. In the body, _execution_: the agent reaches for the same behaviour every time the word appears, and inside flat reference it focuses attention on a class of thing to look for. In a pointer, _invocation_: when the same word lives in your prompts, your docs, and your codebase, the agent links that shared language to the material and reaches it more reliably.
 

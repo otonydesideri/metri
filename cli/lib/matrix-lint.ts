@@ -1,5 +1,5 @@
-// Checagens do docs/plan/MATRIX.md no modo projeto do docs-lint: só o plano (features, slices, Fog, Gaps,
-// Pattern proposals). O que valida cada ticket (UC ou T), em docs/plan/tickets/<id>.md, está em ticket-lint.ts.
+// Checagens do .metri/MATRIX.md no modo projeto do docs-lint: só o plano (features, slices, Fog, Gaps,
+// Pattern proposals). O que valida cada ticket (UC ou T), em .metri/tickets/<id>.md, está em ticket-lint.ts.
 // A lista está no --help do docs-lint.
 import { existsSync, readFileSync } from 'node:fs';
 import { type Block, fieldOf, type Kind, listOf, parseMatrix } from './matrix.ts';
@@ -7,10 +7,8 @@ import { type Block, fieldOf, type Kind, listOf, parseMatrix } from './matrix.ts
 export type MatrixProblem = { line: number; message: string };
 
 const SECTIONS = ['Features', 'Slices', 'Fog', 'Gaps', 'Pattern proposals'];
-// Campos reservados: opcionais em qualquer bloco, só escritos quando têm valor.
-const RESERVED = ['milestone', 'tech_design'];
 const KEYS: Record<Kind, string[]> = {
-  feature: ['horizon', 'slices', 'outcome', 'ucs', ...RESERVED],
+  feature: ['horizon', 'slices', 'outcome', 'ucs', 'milestone'],
   slice: ['horizon', 'blocked_by', 'contract', 'entry', 'status'],
 };
 const REQUIRED: Record<Kind, string[]> = {

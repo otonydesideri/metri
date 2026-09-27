@@ -1,4 +1,4 @@
-// Checagens de um ticket (docs/plan/tickets/<id>.md): frontmatter, corpo (O que entrega / Critérios do T) e
+// Checagens de um ticket (.metri/tickets/<id>.md): frontmatter, corpo (O que entrega / Critérios do T) e
 // referências cruzadas com a MATRIX (feature, slice, blocked_by). Chamado pelo docs-lint, um arquivo por vez.
 import { parse } from 'yaml';
 import { sectionItems, sectionLines } from './layout.ts';
@@ -11,7 +11,7 @@ export type TicketContext = {
   featureUcs: Map<string, string[]>;
 };
 
-const COMMON_KEYS = ['id', 'title', 'slice', 'status', 'mode', 'blocked_by', 'areas', 'touches', 'sensitive', 'checks', 'subtasks', 'metrics', 'evidence'];
+const COMMON_KEYS = ['id', 'title', 'slice', 'status', 'mode', 'blocked_by', 'areas', 'touches', 'sensitive', 'checks', 'subtasks', 'metrics'];
 const UC_KEYS = [...COMMON_KEYS, 'feature', 'actor'];
 const T_KEYS = [...COMMON_KEYS, 'type'];
 const REQUIRED_ALWAYS = ['id', 'title', 'status'];
@@ -158,7 +158,7 @@ export function ticketProblems(path: string, source: string, expectedId: string,
   if (kind === 'uc' && !isDraft) {
     const ucs = ctx.featureUcs.get(String(frontmatter.feature)) ?? [];
     if (!ucs.includes(expectedId)) {
-      report(1, `${expectedId}: fora da lista ucs da feature ${String(frontmatter.feature)} em ${'docs/plan/MATRIX.md'}`);
+      report(1, `${expectedId}: fora da lista ucs da feature ${String(frontmatter.feature)} em .metri/MATRIX.md`);
     }
   }
 

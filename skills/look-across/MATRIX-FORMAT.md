@@ -1,10 +1,10 @@
 # MATRIX.md Format
 
-`docs/plan/MATRIX.md` is the project's single plan: features, slices and their contracts, Fog, Gaps and Pattern
-proposals. Each ticket, a UC or a T, lives in its own file, `docs/plan/tickets/<id>.md` ("Ticket files", below); the
+`.metri/MATRIX.md` is the project's single plan: features, slices and their contracts, Fog, Gaps and Pattern
+proposals. Each ticket, a UC or a T, lives in its own file, `.metri/tickets/<id>.md` ("Ticket files", below); the
 MATRIX is not the source of the ticket's content, only of the plan around it. A board of our own, in the future, is
 a view that reads and writes the MATRIX and the ticket files through their strict format. Keys, values and section
-titles are fixed, in English, as `.metri/VOCABULARY.md` defines them; the prose is in Portuguese. `pnpm docs-lint`
+titles are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; the prose is in Portuguese. `pnpm docs-lint`
 checks the format.
 
 ## Skeleton
@@ -52,9 +52,9 @@ status: done · entry: <arquivo de entrada, com o contrato no cabeçalho>
 Ids are numbered across the whole plan (MATRIX.md and the ticket files), except that a UC carries its feature's
 number and a T its slice's (`UC<f>.<n>`, `T<s>.<n>`): the next BR, GAP or PP takes the highest number in the plan
 plus one. An id (F, UC, BR, S, T, GAP, PP) is never renumbered or reused; a split UC keeps its id on one part and
-the others take the next free numbers. A key without a value is not written. The reserved fields `milestone` and
-`tech_design` are optional on a feature and appear only with a value; a value never holds ` · `, the field
-separator.
+the others take the next free numbers. A key without a value is not written. The reserved field `milestone` is
+optional on a feature and appears only with a value; a value never holds ` · `, the field separator. The MATRIX and
+the ticket files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` path.
 
 - `ucs`: the ids of the feature's UCs, draft included; every UC outside `draft` appears here.
 - `sensitive: true` when the ticket touches authentication, data scope, payments, a destructive migration or a
@@ -64,7 +64,7 @@ separator.
 
 ## Ticket files
 
-Every ticket, a UC (the tracer) or a T, is its own file at `docs/plan/tickets/<id>.md` (`UC1.1`, `T2.0`): the
+Every ticket, a UC (the tracer) or a T, is its own file at `.metri/tickets/<id>.md` (`UC1.1`, `T2.0`): the
 filename, without the extension, is the ticket's id, and must match the `id` key of its frontmatter. A ticket's
 `checks` and `metrics` are the only reserved field this file carries; `notes` is a body section, not a frontmatter
 key. The frontmatter is YAML, in the format of a rule's frontmatter (`VOCABULARY.md`): required keys always error
@@ -182,7 +182,7 @@ metrics: <tokens> tokens, <n> regras
 
 ### F1 · Formulários no site
 
-horizon: now · milestone: v1 · slices: [S2, S3] · tech_design: none
+horizon: now · milestone: v1 · slices: [S2, S3]
 outcome: O editor publica formulários em páginas do site e recebe respostas.
 ucs: [UC1.1, UC1.2]
 
@@ -216,7 +216,7 @@ contract:
 - PP-1 · de UC1.1 · o endpoint de upload precisa de streaming; backend/http-api não cobre → próximo look across
 ```
 
-`docs/plan/tickets/UC1.1.md`:
+`.metri/tickets/UC1.1.md`:
 
 ```markdown
 ---
@@ -249,7 +249,7 @@ subtasks: [registro no mounter, renderização no site]
 ## Notas
 ```
 
-`docs/plan/tickets/UC1.2.md`, done and pruned only in the sense that it stays in its own file:
+`.metri/tickets/UC1.2.md`, done and pruned only in the sense that it stays in its own file:
 
 ```markdown
 ---
@@ -273,7 +273,7 @@ checks: ["`pnpm verify`", "`pnpm test forms-submit`"]
 ## Notas
 ```
 
-`docs/plan/tickets/T2.0.md`:
+`.metri/tickets/T2.0.md`:
 
 ```markdown
 ---
@@ -297,7 +297,7 @@ A regra de montagem pelo registry, com o exemplo canônico e o check que barra c
 
 ## Critérios
 
-- [ ] A regra está em `docs/architecture/frontend/`, com o exemplo em `examples` e o check em `enforced_by`.
+- [ ] A regra frontend/component-mounting existe, com o exemplo em `examples` e o check em `enforced_by`.
 - [ ] Montar um componente que não está no registry faz o check falhar.
 
 ## Notas
@@ -318,9 +318,9 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 
 | `type` | When | Particularity |
 | --- | --- | --- |
-| `pattern` | The first instance of a new pattern, or an update of the Source version | The only case where the builder writes in `docs/architecture/`. **Mandatory human review** before the tickets it blocks are released |
+| `pattern` | The first instance of a new pattern, or an update of the Source version | The only case where the builder writes in `.metri/rules/`. **Mandatory human review** before the tickets it blocks are released |
 | `task` | Work that delivers no UC but unblocks others (create an account, a credential, a third-party panel, prepare data), and each batch of an expand–contract | With `mode: afk`, the agent does it alone. With `mode: hitl`, the agent prepares a step-by-step script and the ticket closes on the human's confirmation |
-| `release` | Take deliveries to production | Follows `docs/architecture/infrastructure/release.md` |
+| `release` | Take deliveries to production | Follows `.metri/rules/infrastructure/release.md` |
 
 ## Matrix rules
 
@@ -375,5 +375,5 @@ the block for `entry: <path>` on its `horizon` line:
  */
 ```
 
-The labels follow the language of the code comments (`.metri/architecture/defaults/stack.md`, "Stack"); the ones
+The labels follow the language of the code comments (`node_modules/metri/architecture/defaults/stack.md`, "Stack"); the ones
 above are the default's. `pnpm docs-lint` checks that the `entry` exists and has every label.

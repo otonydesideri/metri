@@ -5,14 +5,14 @@ Once per project with an interface, while `docs/DESIGN.md` doesn't exist. Four q
 | Question | Example answers | Default |
 | --- | --- | --- |
 | Visual reference | A `DESIGN.md` from getdesign.md, a site URL, images, the brand | The Source's neutral base |
-| Component library | shadcn/ui, Coss UI, another | shadcn/ui (`.metri/architecture/defaults/ui.md`) |
+| Component library | shadcn/ui, Coss UI, another | shadcn/ui (`node_modules/metri/architecture/defaults/ui.md`) |
 | Icons, density, tone, light/dark | — | The library's and the neutral base's |
 | Constraints | Accessibility, languages, devices | None beyond the global rules |
 
 ## Result
 
 - `docs/DESIGN.md`: start from [DESIGN-TEMPLATE.md](DESIGN-TEMPLATE.md), the neutral base, and adapt it to the answers; a ready reference (a `DESIGN.md` from getdesign.md) is pasted and adapted the same way.
-- A library other than the default: an ADR of `kind: default-change` (call the Skill tool with "domain-language"); its project rule in `docs/architecture/frontend/` comes as a `pattern` ticket from /look-across.
+- A library other than the default: an ADR of `kind: default-change` (call the Skill tool with "domain-language"); its project rule in `.metri/rules/frontend/` comes as a `pattern` ticket from /look-across.
 
 ## The format of docs/DESIGN.md
 
@@ -26,7 +26,7 @@ Once per project with an interface, while `docs/DESIGN.md` doesn't exist. Four q
 | --- | --- |
 | Visual identity, principles, component usage | `docs/DESIGN.md` |
 | Token values | The theme in the code |
-| Default library | `.metri/architecture/defaults/ui.md` and its global ADR |
-| Swapping the library | Project ADR and a rule in `docs/architecture/frontend/` |
+| Default library | `node_modules/metri/architecture/defaults/ui.md` and its global ADR |
+| Swapping the library | Project ADR and a rule in `.metri/rules/frontend/` |
 | How components are built (global vs. route, slots, variants, tokens only) | The global `frontend/` rules |
 | The design system as a capability | The `activation` of `defaults/ui`; its slice enters slice 0 of every project with an interface |

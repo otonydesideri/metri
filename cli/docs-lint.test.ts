@@ -1,13 +1,15 @@
+import { rmSync, symlinkSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { copyFixture, copySource, edit, FIXTURE, REPO, removeCopies, run, write } from './lib/testing.ts';
+import { copyFixture, copySource, edit, REPO, removeCopies, run, write } from './lib/testing.ts';
 
 afterAll(removeCopies);
 
-const MATRIX = 'docs/plan/MATRIX.md';
-const TICKETS = 'docs/plan/tickets';
+const MATRIX = '.metri/MATRIX.md';
+const TICKETS = '.metri/tickets';
 
 function lint(dir: string): { status: number | null; lines: string[] } {
-  return run('docs-lint.ts', ['--root', dir]);
+  return run('docs-lint', ['--root', dir]);
 }
 
 // Roda o docs-lint numa cópia da fixture depois da mudança e devolve a saída.
@@ -28,8 +30,8 @@ function inTicket(id: string, from: string, to: string): (dir: string) => void {
 
 describe('docs-lint', { timeout: 30_000 }, () => {
   it('passa: a fixture de projeto e este repositório (modo source)', () => {
-    expect(lint(FIXTURE)).toEqual({ status: 0, lines: [] });
-    // No source, só sai aviso de citação a arquivo planejado (template/scripts/docs-lint.planned.json).
+    expect(lint(copyFixture())).toEqual({ status: 0, lines: [] });
+    // No source, só sai aviso de citação a arquivo planejado (cli/docs-lint.planned.json).
     const source = lint(REPO);
     expect(source.status).toBe(0);
     expect(source.lines.filter((line) => !/: aviso: citação: .+ é arquivo planejado/.test(line))).toEqual([]);
@@ -62,17 +64,47 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(output).toContain('docs/notes.md:1: árvore de docs/: arquivo fora da lista fechada');
   });
 
-  it('árvore fechada de docs/: INDEX de área não gerado é erro', () => {
+  it('árvore fechada de .metri/: arquivo fora da lista é erro; evidência do ticket entra', () => {
+    const { status, output } = lintChanged((dir) => write(dir, '.metri/notes.md', '# Notas\n'));
+    expect(status).toBe(1);
+    expect(output).toContain('.metri/notes.md:1: árvore de .metri/: arquivo fora da lista fechada');
+    expect(lintChanged((dir) => write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png')).status).toBe(0);
+    expect(lintChanged((dir) => write(dir, '.metri/tickets/UC1.1/notas.txt', 'x')).output).toContain(
+      '.metri/tickets/UC1.1/notas.txt:1: árvore de .metri/: arquivo fora da lista fechada',
+    );
+  });
+
+  it('árvore fechada de .metri/: INDEX de área não gerado é erro', () => {
     const { status, output } = lintChanged((dir) =>
-      edit(dir, 'docs/architecture/frontend/INDEX.md', (source) => source.replace('Gerado por', 'Feito por')),
+      edit(dir, '.metri/rules/frontend/INDEX.md', (source) => source.replace('Gerado por', 'Feito por')),
     );
     expect(status).toBe(1);
-    expect(output).toContain('docs/architecture/frontend/INDEX.md:1: árvore de docs/: INDEX de área é gerado');
+    expect(output).toContain('.metri/rules/frontend/INDEX.md:1: árvore de .metri/: INDEX de área é gerado');
+  });
+
+  it('links: cada skill do pacote tem o seu em .claude/skills, apontando para node_modules/metri', () => {
+    const missing = lintChanged((dir) => rmSync(join(dir, '.claude/skills/build')));
+    expect(missing.status).toBe(1);
+    expect(missing.output).toContain('.claude/skills/build:1: link: falta o link para ../../node_modules/metri/skills/build');
+    const wrong = lintChanged((dir) => {
+      rmSync(join(dir, '.claude/skills/build'));
+      symlinkSync('../../elsewhere/build', join(dir, '.claude/skills/build'));
+    });
+    expect(wrong.output).toContain('link: aponta para ../../elsewhere/build');
+  });
+
+  it('ticket e MATRIX citam só ids: caminho de arquivo .md é erro', () => {
+    const ticket = lintChanged(inTicket('UC1.1', '## Notas', '## Notas\n\nVer docs/DESIGN.md.'));
+    expect(ticket.status).toBe(1);
+    expect(ticket.output).toContain('citação: docs/DESIGN.md é caminho de arquivo; ticket e MATRIX citam só ids');
+    expect(lintChanged(inMatrix('- Como relatórios', '- Ver `frontend/components.md`. Como relatórios')).output).toContain(
+      'citação: frontend/components.md é caminho de arquivo',
+    );
   });
 
   it('regra do projeto: frontmatter checado como no source', () => {
     const { status, output } = lintChanged((dir) =>
-      edit(dir, 'docs/architecture/frontend/order-list.md', (source) =>
+      edit(dir, '.metri/rules/frontend/order-list.md', (source) =>
         source.replace('read_first: [frontend/state]', 'read_first: [frontend/nope]'),
       ),
     );
@@ -82,7 +114,7 @@ describe('docs-lint', { timeout: 30_000 }, () => {
 
   it('gerados: INDEX do projeto desatualizado é erro', () => {
     const { status, output } = lintChanged((dir) =>
-      edit(dir, 'docs/architecture/frontend/order-list.md', (source) =>
+      edit(dir, '.metri/rules/frontend/order-list.md', (source) =>
         source.replace('paginação no servidor e filtros na URL.', 'paginação no servidor.'),
       ),
     );
@@ -100,7 +132,7 @@ describe('docs-lint', { timeout: 30_000 }, () => {
 
   it('applies_to sem casamento: aviso, sem erro', () => {
     const { status, output } = lintChanged((dir) =>
-      edit(dir, 'docs/architecture/INDEX.md', (source) =>
+      edit(dir, '.metri/ARCHITECTURE.md', (source) =>
         source.replace('packages/orders-contract/src/**', 'packages/billing-contract/src/**'),
       ),
     );
@@ -166,11 +198,11 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     );
   });
 
-  it('Tickets: a árvore aceita docs/plan/tickets/<id>.md, e o nome do arquivo tem que ser um id de UC ou T', () => {
+  it('Tickets: a árvore aceita .metri/tickets/<id>.md, e o nome do arquivo tem que ser um id de UC ou T', () => {
     const { status, output } = lintChanged((dir) => write(dir, `${TICKETS}/notes.md`, '---\nid: notes\n---\n# Notas\n'));
     expect(status).toBe(1);
     expect(output).toContain('nome de arquivo: notes.md fora do formato UC<f>.<n>.md ou T<s>.<n>.md');
-    expect(output).not.toContain('árvore de docs/: arquivo fora da lista fechada');
+    expect(output).not.toContain('árvore de .metri/: arquivo fora da lista fechada');
   });
 
   it('Tickets: o frontmatter id bate com o nome do arquivo', () => {
@@ -244,7 +276,7 @@ describe('docs-lint', { timeout: 30_000 }, () => {
   it('Tickets: todo UC fora de draft aparece em ucs da feature dele', () => {
     const { status, output } = lintChanged(inMatrix('ucs: [UC1.1, UC1.2]', 'ucs: [UC1.2]'));
     expect(status).toBe(1);
-    expect(output).toContain('UC1.1: fora da lista ucs da feature F1 em docs/plan/MATRIX.md');
+    expect(output).toContain('UC1.1: fora da lista ucs da feature F1 em .metri/MATRIX.md');
     // Draft não precisa aparecer em ucs (nem a chave precisa existir).
     expect(lintChanged(inMatrix('ucs: [UC2.1]\n', '')).status).toBe(0);
   });

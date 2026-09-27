@@ -6,11 +6,11 @@ description: "Keep code findable and guarded while writing it: find before you c
 ## While writing code
 
 1. **Find before you create.** Assume it already exists: grep the SOT keywords and the identifiers of `docs/CONTEXT.md`, list the files, open only the relevant ones, and reuse what you find.
-2. **Third-party before own code.** What the project and its stack (`.metri/architecture/defaults/stack.md`) lack comes from a well-known library before code of your own. A library that swaps a stack item or carries lock-in (database, auth, queue, UI kit) is a decision: stop, flag it and ask (AGENTS.md, "How to work here").
+2. **Third-party before own code.** What the project and its stack (`node_modules/metri/architecture/defaults/stack.md`) lack comes from a well-known library before code of your own. A library that swaps a stack item or carries lock-in (database, auth, queue, UI kit) is a decision: stop, flag it and ask (AGENTS.md, "How to work here").
 3. **Copy the canonical example.** Each rule names its example in `examples`: follow it, and go through the pattern's central points (the block, the registry), never around them.
 4. **Name with the glossary.** Identifiers are the English identifiers of `docs/CONTEXT.md`.
-5. **Context in code.** Every new code file opens with an inline header: what it is, why it exists, where it connects and how to use it, then its SOT keywords (the words a grep for this concept would use) and the ids of the ADRs and BRs it follows. In a slice `entry`, the header is the slice contract (`.metri/skills/look-across/MATRIX-FORMAT.md`, "Contrato de slice"). A module's barrel (`index`) is its map.
-6. **Flag the gaps.** What you leave for later is a `GAP-n` comment at the spot plus its line in the Gaps section of `docs/plan/MATRIX.md`: nothing stays incomplete in silence.
+5. **Context in code.** Every new code file opens with an inline header: what it is, why it exists, where it connects and how to use it, then its SOT keywords (the words a grep for this concept would use) and the ids of the ADRs and BRs it follows. In a slice `entry`, the header is the slice contract (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`, "Contrato de slice"). A module's barrel (`index`) is its map.
+6. **Flag the gaps.** What you leave for later is a `GAP-n` comment at the spot plus its line in the Gaps section of `.metri/MATRIX.md`: nothing stays incomplete in silence.
 
 Done when every new code file has its header with SOT keywords, every new identifier of a domain term is its English identifier in `docs/CONTEXT.md` (never a synonym under `_Evitar:_`), and every deferral has its `GAP-n` in the code and in the matrix.
 

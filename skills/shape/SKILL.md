@@ -14,7 +14,7 @@ Understand the problem, the outcome and the limits, and align the language. Don'
 
 ### 1. Read
 
-`docs/PRODUCT.md`, `docs/CONTEXT.md`, `docs/DESIGN.md` when it exists, and the Features section of `docs/plan/MATRIX.md`.
+`docs/PRODUCT.md`, `docs/CONTEXT.md`, `docs/DESIGN.md` when it exists, and the Features section of `.metri/MATRIX.md`.
 
 ### 2. Interview
 
@@ -34,7 +34,7 @@ Do NOT interview the user again; synthesize what the interview settled:
 
 - `docs/PRODUCT.md`, in the format of [PRODUCT-FORMAT.md](PRODUCT-FORMAT.md);
 - an ADR for each hard decision already taken (domain-language, which also kept `docs/CONTEXT.md` current during the interview);
-- the candidate features in the Features section of `docs/plan/MATRIX.md`, each with `horizon`, `outcome` and `ucs` (the ids of its UCs); each UC of a candidate feature as its own file, `docs/plan/tickets/UC<f>.<n>.md`, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its BRs and its criteria. /look-across plans it and opens it.
+- the candidate features in the Features section of `.metri/MATRIX.md`, each with `horizon`, `outcome` and `ucs` (the ids of its UCs); each UC of a candidate feature as its own file, `.metri/tickets/UC<f>.<n>.md`, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its BRs and its criteria. /look-across plans it and opens it.
 
 ### 5. Direction gate
 

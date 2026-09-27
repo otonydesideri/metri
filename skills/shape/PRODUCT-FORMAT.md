@@ -14,4 +14,4 @@
 ## Fora de escopo
 ```
 
-It holds no domain language (that goes to `docs/CONTEXT.md`), no feature list (that goes to `docs/plan/MATRIX.md`) and no implementation detail.
+It holds no domain language (that goes to `docs/CONTEXT.md`), no feature list (that goes to `.metri/MATRIX.md`) and no implementation detail.

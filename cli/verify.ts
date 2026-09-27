@@ -1,19 +1,17 @@
 // verify: roda os checks e soma o resultado. A explicação está no --help.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { layoutOf, MATRIX, takeOption } from './lib/layout.ts';
+import { resolve } from 'node:path';
+import { BIN, takeOption } from './lib/layout.ts';
 
 const HELP = `verify: roda os checks e soma o resultado.
 
-Uso: verify [--root <dir>]
+Uso: metri verify [--root <dir>]
 
 Ordem (todos rodam, mesmo depois de uma falha):
   1. docs-lint;
-  2. rules-index:check (rules-index --check em docs/architecture/ no projeto, em architecture/ no source);
-  3. matrix-view:check (só com docs/plan/MATRIX.md: a visão gerada no topo dela está atualizada);
-  4. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
+  2. rules-index:check (rules-index --check);
+  3. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
      (pnpm run <nome>).
 
 Saída: uma linha por check, "ok <nome>" ou "falha <nome>"; a saída do check que falhou vem logo abaixo da
@@ -29,23 +27,15 @@ if (args.includes('--help') || args.includes('-h')) {
   console.log(HELP);
   process.exit(0);
 }
-process.chdir(resolve(takeOption(args, '--root') ?? '.'));
+const root = resolve(takeOption(args, '--root') ?? '.');
+process.chdir(root);
 
-const layout = layoutOf();
-const SCRIPTS = dirname(fileURLToPath(import.meta.url));
-const tsx = (script: string, ...rest: string[]) => [...process.execArgv, join(SCRIPTS, script), ...rest];
+const metri = (...rest: string[]) => [BIN, ...rest, '--root', root];
 
 const checks: Check[] = [
-  { name: 'docs-lint', command: process.execPath, args: tsx('docs-lint.ts') },
-  {
-    name: 'rules-index:check',
-    command: process.execPath,
-    args: tsx('rules-index.ts', layout.projectDir ?? layout.globalDir, '--check'),
-  },
+  { name: 'docs-lint', command: process.execPath, args: metri('docs-lint') },
+  { name: 'rules-index:check', command: process.execPath, args: metri('rules-index', '--check') },
 ];
-if (existsSync(MATRIX)) {
-  checks.push({ name: 'matrix-view:check', command: process.execPath, args: tsx('matrix-view.ts', '--check') });
-}
 const scripts: Record<string, string> = existsSync('package.json')
   ? (JSON.parse(readFileSync('package.json', 'utf8')).scripts ?? {})
   : {};

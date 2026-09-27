@@ -1,10 +1,19 @@
-// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras e, abaixo do marcador do
-// INDEX.md raiz, a lista de áreas e a tabela "Capacidades condicionais" das regras com activation.
-// Uso: rules-index [<raiz>] [--check]   (raiz padrão: architecture)
-// --check não escreve nada e sai com código 1 se algum INDEX estiver desatualizado.
+// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras e, abaixo do marcador do índice
+// raiz, a lista de áreas e a tabela "Capacidades condicionais" das regras com activation.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { parse } from 'yaml';
+import { layoutOf, takeOption } from './lib/layout.ts';
+
+const HELP = `rules-index: gera os INDEX.md das regras a partir do frontmatter.
+
+Uso: metri rules-index [--root <dir>] [--check]
+
+- No source: architecture/<área>/INDEX.md e, abaixo do marcador <!-- rules-index --> de architecture/INDEX.md,
+  a lista de áreas e a tabela "Capacidades condicionais" (as regras com activation).
+- No projeto: .metri/rules/<área>/INDEX.md e, abaixo do marcador de .metri/ARCHITECTURE.md, o mesmo.
+- --check não escreve nada e sai com código 1 se algum INDEX estiver desatualizado.
+`;
 
 const HEADER = 'Gerado por rules-index. Não edite.';
 const MARKER = '<!-- rules-index -->';
@@ -12,8 +21,15 @@ const MARKER = '<!-- rules-index -->';
 type Rule = { id: string; description: string; useWhen: string[]; activation?: string };
 
 const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(HELP);
+  process.exit(0);
+}
 const isCheck = args.includes('--check');
-const root = args.find((arg) => !arg.startsWith('--')) ?? 'architecture';
+process.chdir(resolve(takeOption(args, '--root') ?? '.'));
+const layout = layoutOf();
+const rulesDir = layout.projectDir ?? layout.globalDir;
+const rootPath = layout.rootIndex;
 
 function readRule(path: string): Rule {
   const source = readFileSync(path, 'utf8');
@@ -52,12 +68,13 @@ function areaIndex(rules: Rule[]): string {
 function rootIndex(current: string, areas: Map<string, Rule[]>): string {
   const markerAt = current.indexOf(MARKER);
   if (markerAt === -1) {
-    throw new Error(`${join(root, 'INDEX.md')}: sem o marcador ${MARKER}`);
+    throw new Error(`${rootPath}: sem o marcador ${MARKER}`);
   }
   const handWritten = current.slice(0, markerAt + MARKER.length);
   const lines = [...areas].map(([area, rules]) => {
     const count = rules.length === 1 ? '1 regra' : `${rules.length} regras`;
-    return `- \`${area}\` → \`${area}/INDEX.md\` (${count})`;
+    const link = relative(dirname(rootPath), join(rulesDir, area, 'INDEX.md'));
+    return `- \`${area}\` → \`${link}\` (${count})`;
   });
   if (lines.length === 0) {
     return `${handWritten}\n`;
@@ -75,8 +92,8 @@ function rootIndex(current: string, areas: Map<string, Rule[]>): string {
 }
 
 const areas = new Map<string, Rule[]>();
-for (const area of readdirSync(root).sort()) {
-  const dir = join(root, area);
+for (const area of existsSync(rulesDir) ? readdirSync(rulesDir).sort() : []) {
+  const dir = join(rulesDir, area);
   if (!statSync(dir).isDirectory()) {
     continue;
   }
@@ -89,12 +106,13 @@ for (const area of readdirSync(root).sort()) {
   }
 }
 
-const rootPath = join(root, 'INDEX.md');
 const expected = new Map<string, string>();
 for (const [area, rules] of areas) {
-  expected.set(join(root, area, 'INDEX.md'), areaIndex(rules));
+  expected.set(join(rulesDir, area, 'INDEX.md'), areaIndex(rules));
 }
-expected.set(rootPath, rootIndex(existsSync(rootPath) ? readFileSync(rootPath, 'utf8') : '', areas));
+if (existsSync(rootPath) || areas.size > 0) {
+  expected.set(rootPath, rootIndex(existsSync(rootPath) ? readFileSync(rootPath, 'utf8') : '', areas));
+}
 
 const stale = [...expected].filter(
   ([path, content]) => !existsSync(path) || readFileSync(path, 'utf8') !== content,

@@ -32,7 +32,7 @@ status: active
 - O `components.json` do `@metri/ui` fixa `"style": "new-york"` e `"tailwind": { "baseColor": "neutral" }`.
 - Os componentes do shadcn são a base; nenhum componente é recriado do zero.
 - O visual vem dos tokens do `DESIGN.md` do projeto.
-- Kit diferente num projeto: ADR do projeto + regra em `docs/architecture/frontend/`.
+- Kit diferente num projeto: ADR do projeto + regra em `.metri/rules/frontend/`.
 
 ## Componente novo
 

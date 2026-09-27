@@ -1,6 +1,6 @@
 # ADR Format
 
-ADRs live in `docs/adr/` (the project's decisions) and in `.metri/adr/` (the Source's global decisions), with sequential numbering: `0001-<slug>.md`, `0002-<slug>.md`, etc.
+ADRs live in `docs/adr/` (the project's decisions) and in `node_modules/metri/adr/` (the Source's global decisions), with sequential numbering: `0001-<slug>.md`, `0002-<slug>.md`, etc.
 
 Create the `docs/adr/` directory lazily: only when the first ADR is needed.
 
@@ -48,7 +48,7 @@ If a decision is easy to reverse, skip it: you'll just reverse it. If it's not s
 
 Always an ADR, on top of the three: every exception to a global rule and every swap of a global default.
 
-Never an ADR: an open question. It stays in the owner rule, in "Em aberto" (`.metri/skills/writing-for-agents/RULE-FORMAT.md`, "Ponto em aberto").
+Never an ADR: an open question. It stays in the owner rule, in "Em aberto" (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Ponto em aberto").
 
 ### What qualifies
 

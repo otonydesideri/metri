@@ -20,7 +20,7 @@ not_covered:
   - "a superfície HTTP sob `/api` → general/http-surface"
   - "o contrato de escopo do dono → backend/access-scope"
   - "o formato do e2e → backend/testing"
-  - "a topologia de deploy de cada projeto (\"Delegações\") → project:architecture/INDEX"
+  - "a topologia de deploy de cada projeto (\"Delegações\") → project:ARCHITECTURE"
 status: active
 ---
 # Runtime da aplicação
@@ -104,7 +104,7 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 
 ## Em aberto
 
-- **CI e deploy.** A Source não tem regra de pipeline de CI nem de deploy. A topologia de deploy é delegação de projeto (`docs/architecture/INDEX.md`, "Delegações"), e a entrega em produção segue a regra de release do projeto (`docs/architecture/infrastructure/release.md`).
+- **CI e deploy.** A Source não tem regra de pipeline de CI nem de deploy. A topologia de deploy é delegação de projeto (`.metri/ARCHITECTURE.md`, "Delegações"), e a entrega em produção segue a regra de release do projeto (`.metri/rules/infrastructure/release.md`).
 
 ## Referências
 

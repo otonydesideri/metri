@@ -17,7 +17,7 @@ not_covered:
   - "o escopo do dono → backend/access-scope"
   - "a regra dos níveis de service de infra → infrastructure/services"
   - "o mecanismo de uma invalidação que reage a outro fluxo → backend/operation-routing"
-  - "o provider e os valores concretos de cada fluxo, que são delegação de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
+  - "o provider e os valores concretos de cada fluxo, que são delegação de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
 status: active
 ---
 # Cache
@@ -32,7 +32,7 @@ Cache é capacidade condicional: o padrão é não ter. Quando uma necessidade m
 
 Quando existe necessidade concreta e medida — custo de leitura relevante, latência mensurável, limite imposto pela origem, cálculo caro, alto volume de leitura, redução de chamadas exigida: **Permitido.** Cache, pelas regras deste documento.
 
-**Obrigatório.** A necessidade medida que justifica cada cache é registrada na ativação dele (`docs/architecture/INDEX.md`).
+**Obrigatório.** A necessidade medida que justifica cada cache é registrada na ativação dele (`.metri/ARCHITECTURE.md`).
 
 **Proibido.** Cache preventivo, por analogia com aplicação grande, para esconder query ruim não investigada, para corrigir problema de modelagem, ou sem estratégia de invalidação ou expiração.
 
@@ -223,4 +223,4 @@ async execute(input: FetchOrdersQueryInput): Promise<PaginatedResult<OrderListIt
 - `backend/operation-routing.md`: o mecanismo de uma invalidação que reage a outro fluxo.
 - `infrastructure/logging.md`: o log da falha do cache.
 - `skills/writing-for-agents/RULE-FORMAT.md`: casa do ADR de exceção.
-- `docs/architecture/INDEX.md`: provider e valores concretos como decisão de projeto.
+- `.metri/ARCHITECTURE.md`: provider e valores concretos como decisão de projeto.

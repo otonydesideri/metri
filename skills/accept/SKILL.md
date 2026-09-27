@@ -27,7 +27,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 2. Gather the inputs
 
-- **Contract**: the contract header at the top of the file named by the slice's `entry`; in `docs/plan/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
+- **Contract**: the contract header at the top of the file named by the slice's `entry`; in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
 - **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns sub-agent and say so.
 
 ### 3. Spawn the sub-agents in parallel
@@ -38,7 +38,7 @@ They may read the repository at `slice/<id>`, nothing else of this session.
 
 - The diff command and the commit list.
 - The contract, the UCs and the T tickets, pasted in full.
-- The brief: "Report: (a) contract items, UC criteria, or T `what` and `criteria` that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `docs/plan/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the UC's `checks` proves. Quote the contract, UC or T line for each finding. Under 400 words."
+- The brief: "Report: (a) contract items, UC criteria, or T `what` and `criteria` that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `.metri/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the UC's `checks` proves. Quote the contract, UC or T line for each finding. Under 400 words."
 
 **Patterns sub-agent prompt** includes:
 
@@ -60,15 +60,15 @@ Walk the human through:
 - the QA of its UCs, which the human runs from the steps you give per UC criterion, with visual conformity to `docs/DESIGN.md`; and of the feature, when this is its last slice (every other slice in the feature's `slices` is done);
 - the diff of every ticket with `sensitive: true` or `type: pattern`.
 
-A finding to fix reopens its UC (`in_progress`, with the finding in its ticket file's "Notas"), or becomes a T of the slice when no UC covers it (`.metri/skills/look-across/MATRIX-FORMAT.md`). With a reopened UC or a new T, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
+A finding to fix reopens its UC (`in_progress`, with the finding in its ticket file's "Notas"), or becomes a T of the slice when no UC covers it (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`). With a reopened UC or a new T, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
 
 ### 6. Knowledge gate
 
-Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each with its evidence. When the slice hurt (many findings, proposals or fixes), an architecture survey in a sub-agent brings back only its conclusion, as one more lesson. Call the Skill tool with "guardrail" and put each lesson through its knowledge gate. The human approves the destination of each; write the approved ones in their destination, on `slice/<id>`. A lesson for the Source goes as a PR to the Source's repository: `.metri/` is read-only.
+Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each with its evidence. When the slice hurt (many findings, proposals or fixes), an architecture survey in a sub-agent brings back only its conclusion, as one more lesson. Call the Skill tool with "guardrail" and put each lesson through its knowledge gate. The human approves the destination of each; write the approved ones in their destination, on `slice/<id>`. A lesson for the Source goes as a PR to the Source's repository: `node_modules/metri/` is read-only.
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs and new T tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

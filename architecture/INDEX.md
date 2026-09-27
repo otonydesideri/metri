@@ -12,7 +12,7 @@ O como construir cada artefato vive no documento correspondente (`backend/layers
 
 ### Observabilidade
 
-O log estruturado (`nestjs-pino`) tem desenho em `infrastructure/logging.md`, e a captura de erro inesperado (filtro global, corpo padronizado), em `backend/errors.md`. Métrica, alerta e reconciliação são capacidades condicionais, com desenho em `infrastructure/observability.md`; ferramenta e valores concretos são decisão de projeto (`docs/architecture/INDEX.md`).
+O log estruturado (`nestjs-pino`) tem desenho em `infrastructure/logging.md`, e a captura de erro inesperado (filtro global, corpo padronizado), em `backend/errors.md`. Métrica, alerta e reconciliação são capacidades condicionais, com desenho em `infrastructure/observability.md`; ferramenta e valores concretos são decisão de projeto (`.metri/ARCHITECTURE.md`).
 
 ### Testes
 
@@ -32,7 +32,7 @@ Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 ## O que mora aqui, o que mora em outro lugar
 
 - Aqui: a referência completa de arquitetura. O quê, o porquê, os limites e os padrões de construção de cada área, com exemplos de código.
-- Instruções de projeto de cada pacote: o que `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `docs/architecture/` certo.
+- Instruções de projeto de cada pacote: o que `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `.metri/rules/` certo.
 - Precedência: ADR > regra do projeto > regra global > default global.
 
 Em divergência entre um documento daqui e o código, o documento vale: o desenho evolui primeiro no documento, o código segue. Instrução de projeto que contradiz um documento daqui sem ADR que a sustente é bug de documentação, corrigido na instrução de projeto.
@@ -43,7 +43,7 @@ Como a Source é escrita e mantida — owner de cada decisão, anatomia de docum
 
 ## Ativação
 
-A pergunta de ativação de cada capacidade condicional é a chave `activation` da regra dona, listada em "Capacidades condicionais", abaixo; a resposta do projeto fica no `docs/architecture/INDEX.md`, "Capacidades ativas".
+A pergunta de ativação de cada capacidade condicional é a chave `activation` da regra dona, listada em "Capacidades condicionais", abaixo; a resposta do projeto fica no `.metri/ARCHITECTURE.md`, "Capacidades ativas".
 
 ## Decisões transversais
 

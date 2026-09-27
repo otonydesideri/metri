@@ -15,7 +15,7 @@ not_covered:
   - "regra booleana de domínio com mais de um consumidor → domain/specification"
   - "service de integração com vendor → infrastructure/services"
   - "interação entre contextos → domain/bounded-contexts"
-  - "a regra concreta de cada projeto (\"Delegações\") → project:architecture/INDEX"
+  - "a regra concreta de cada projeto (\"Delegações\") → project:ARCHITECTURE"
 examples: [domain/domain-services.examples.md]
 status: active
 ---
@@ -152,4 +152,4 @@ await this.orderRepository.save(order);
 - `backend/operation-routing.md`: o mecanismo da escrita que o caso de uso escolhe.
 - `backend/testing.md`: factories dos fatos no spec.
 - `infrastructure/services.md`: o sentido de `services/` na aplicação.
-- `docs/architecture/INDEX.md`: a regra concreta como decisão de projeto.
+- `.metri/ARCHITECTURE.md`: a regra concreta como decisão de projeto.

@@ -1,23 +1,68 @@
-// Raiz, modo e leitura comum aos scripts.
-// Modo: com .metri/ na raiz, é projeto (regras globais em .metri/architecture, do projeto em docs/architecture);
-// sem .metri/, é o source (regras globais em architecture/).
-import { existsSync, lstatSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+// Raiz, modo e leitura comum aos comandos.
+// Modo: na raiz do pacote metri (package.json com "name": "metri"), é o source (regras globais em architecture/);
+// em qualquer outra raiz, é projeto: regras globais na pasta do pacote, regras do projeto em .metri/rules/.
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 
-export type Layout = { isProject: boolean; globalDir: string; projectDir?: string };
+export type Layout = {
+  isProject: boolean;
+  // Regras e ADRs globais, como caminho legível a partir da raiz.
+  globalDir: string;
+  globalAdrDir: string;
+  // Regras do projeto e o arquivo que leva o marcador do rules-index.
+  projectDir?: string;
+  rootIndex: string;
+};
 
-export const PROJECT_INDEX = 'docs/architecture/INDEX.md';
-export const MATRIX = 'docs/plan/MATRIX.md';
-export const TICKETS_DIR = 'docs/plan/tickets';
+// A pasta do pacote metri: de onde vêm regras, ADRs, skills e agents globais.
+export const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+export const PACKAGE_NAME = 'metri';
+// O bin do pacote: os comandos que chamam outros comandos rodam por ele.
+export const BIN = join(PACKAGE_ROOT, 'cli/metri.mjs');
+
+export const PROJECT_INDEX = '.metri/ARCHITECTURE.md';
+export const PROJECT_RULES = '.metri/rules';
+export const MATRIX = '.metri/MATRIX.md';
+export const TICKETS_DIR = '.metri/tickets';
 
 // Pastas que a varredura de arquivos do projeto não percorre.
-const SKIPPED_DIRS = ['node_modules', '.git', '.metri'];
+const SKIPPED_DIRS = ['node_modules', '.git'];
+
+function isSource(root: string): boolean {
+  const path = join(root, 'package.json');
+  if (!existsSync(path)) {
+    return false;
+  }
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')).name === PACKAGE_NAME;
+  } catch {
+    return false;
+  }
+}
+
+// Caminho de um arquivo do pacote visto da raiz: node_modules/metri/... quando o projeto tem o pacote instalado,
+// senão o caminho absoluto.
+export function packagePath(root: string, path: string): string {
+  const installed = join(root, 'node_modules', PACKAGE_NAME);
+  if (existsSync(installed) && realpathSync(installed) === realpathSync(PACKAGE_ROOT)) {
+    return join('node_modules', PACKAGE_NAME, path);
+  }
+  return join(PACKAGE_ROOT, path);
+}
 
 export function layoutOf(root = '.'): Layout {
-  return existsSync(join(root, '.metri'))
-    ? { isProject: true, globalDir: '.metri/architecture', projectDir: 'docs/architecture' }
-    : { isProject: false, globalDir: 'architecture' };
+  if (isSource(root)) {
+    return { isProject: false, globalDir: 'architecture', globalAdrDir: 'adr', rootIndex: 'architecture/INDEX.md' };
+  }
+  return {
+    isProject: true,
+    globalDir: packagePath(root, 'architecture'),
+    globalAdrDir: packagePath(root, 'adr'),
+    projectDir: PROJECT_RULES,
+    rootIndex: PROJECT_INDEX,
+  };
 }
 
 // Tira "<nome> <valor>" de args e devolve o valor.
@@ -54,6 +99,11 @@ export function ruleFiles(dir: string): string[] {
     );
 }
 
+// Id de uma regra pelo caminho: <área>/<tema>.
+export function ruleIdOf(dir: string, path: string): string {
+  return relative(dir, path).replace(/\.md$/, '');
+}
+
 export function frontmatterOf(source: string): Record<string, unknown> | undefined {
   const match = /^---\n([\s\S]*?)\n---\n/.exec(source);
   return match ? (parse(match[1]) ?? {}) : undefined;
@@ -86,7 +136,7 @@ export function sectionLines(source: string, title: string): { text: string; lin
   return items;
 }
 
-// Todos os arquivos sob a raiz, em caminho relativo, fora de node_modules, .git e .metri.
+// Todos os arquivos sob a raiz, em caminho relativo, fora de node_modules e .git.
 export function projectFiles(dir = '.'): string[] {
   return readdirSync(dir)
     .sort()
