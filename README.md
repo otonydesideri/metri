@@ -117,7 +117,7 @@ docs/
   PRODUCT.md                  intenção, escopo, fora de escopo
   DESIGN.md                   identidade visual e design system (se houver interface)
   architecture/
-    INDEX.md                  base (source@vX.Y), desvios de stack, caminho linear, capacidades ativas, delegações, caminhos do projeto, exceções, áreas ativas
+    INDEX.md                  base (source@vX.Y.Z), desvios de stack, caminho linear, capacidades ativas, delegações, caminhos do projeto, exceções, áreas ativas
     <área>/*.md               regras só do projeto          (+ INDEX.md gerado)
   adr/NNNN-*.md
   plan/
@@ -134,7 +134,7 @@ docs/
 ### Árvore do Architecture Source
 
 ```
-.metri/                         repositório próprio, versionado por tags (vX.Y), montado nos projetos nesta pasta
+.metri/                         repositório próprio, versionado por tags (vX.Y.Z), montado nos projetos nesta pasta
   architecture/
     INDEX.md                    parte escrita à mão + gerado abaixo de <!-- rules-index -->: área → INDEX.md da área e a tabela "Capacidades condicionais"
     general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)

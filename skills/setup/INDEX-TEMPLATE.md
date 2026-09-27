@@ -1,6 +1,6 @@
 # Arquitetura do projeto
 
-source: .metri@vX.Y
+source: .metri@vX.Y.Z
 
 ## Stack
 

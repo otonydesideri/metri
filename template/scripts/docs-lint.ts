@@ -46,8 +46,8 @@ Só no source:
     toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., AGENTS.md, CONTEXT.md,
     PRODUCT.md, DESIGN.md, MATRIX.md) não é conferido; na skill, .metri/<caminho> é <caminho> do source.
   - Arquivos planejados: template/scripts/docs-lint.planned.json lista cada arquivo que ainda não existe e o
-    passo do SETUP.md que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe
-    é erro ("tire da lista"), para a lista não ficar velha.
+    que o cria (a versão ou o ticket). Citação a arquivo planejado é aviso, não erro; arquivo planejado que já
+    existe é erro ("tire da lista"), para a lista não ficar velha.
   - "Como ler": todo id de regra do source aparece em "Como ler" do architecture/INDEX.md.
   - Skills: cada pasta de skills/ tem SKILL.md, com frontmatter: name igual ao nome da pasta e description.
 
@@ -253,7 +253,7 @@ function resolveCitation(from: string, cited: string): string | null | undefined
   return citationCandidates(from, cited).find((candidate) => existsSync(candidate));
 }
 
-function plannedStep(from: string, cited: string): string | undefined {
+function plannedBy(from: string, cited: string): string | undefined {
   const match = citationCandidates(from, cited).find((candidate) => candidate in planned);
   return match === undefined ? undefined : planned[match];
 }
@@ -286,11 +286,11 @@ function lintCitations(path: string): void {
         continue;
       }
       if (target === undefined) {
-        const step = plannedStep(path, cited);
-        if (step === undefined) {
+        const by = plannedBy(path, cited);
+        if (by === undefined) {
           report(path, line, `citação: ${cited} não existe`);
         } else {
-          warn(path, line, `citação: ${cited} é arquivo planejado (passo ${step} do SETUP)`);
+          warn(path, line, `citação: ${cited} é arquivo planejado (${by})`);
         }
         continue;
       }
