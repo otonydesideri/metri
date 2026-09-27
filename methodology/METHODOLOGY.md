@@ -200,7 +200,7 @@ docs/
   skills/                       as skills da metodologia
   AGENTS.md, CLAUDE.md          instruções do agente neste repositório
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
-  package.json                  scripts do source (pnpm): rules-index, rules-index:check, docs-lint (+ pnpm-workspace.yaml, pnpm-lock.yaml)
+  package.json                  scripts do source (pnpm): rules-index, rules-index:check, docs-lint, rules-for, test (+ pnpm-workspace.yaml, pnpm-lock.yaml)
 ```
 
 `general/` guarda as regras que valem para mais de uma área (princípios transversais, colocação de código entre app e pacote). As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
@@ -302,8 +302,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 ### 6.11 Carregamento sob demanda (regras por caminho)
 
 - A **fonte da verdade do escopo** de uma regra é o `applies_to` no frontmatter.
-- **`rules-for <caminhos | --ticket T2.1>`** é um script do template, independente de ferramenta. Ele devolve só as regras aplicáveis (global, depois projeto, mais os ADRs citados).
-- Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no `applies_to` global: fica na seção "Caminhos do projeto" do `docs/architecture/INDEX.md` (glob → id), e o `rules-for` soma esses caminhos ao `applies_to` da regra.
+- **`rules-for`** (`template/scripts/rules-for.ts`) devolve as regras de caminhos ou de um ticket, sem o conteúdo delas; entrada, modo, capacidades condicionais, saída e avisos: `pnpm rules-for --help`.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
 - Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Não há segunda fonte.
 - O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada (área → caminho do `INDEX.md` da área, com o número de regras) e a tabela gerada "Capacidades condicionais" (`id | activation`), uma linha por regra com `activation`: a pergunta de ativação de cada capacidade condicional mora na regra dona.

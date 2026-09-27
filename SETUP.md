@@ -111,7 +111,8 @@ Decisões da fase (aplicadas):
   - TypeScript com tsx, sem build; `package.json` na raiz, com pnpm; scripts em `template/scripts/`.
 - [x] 4.1 `rules-index`: gera os `INDEX.md` a partir do frontmatter
   - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
-- [ ] 4.2 `rules-for`: `applies_to` e "Caminhos do projeto" do INDEX; cerca de 5 regras por ticket
+- [x] 4.2 `rules-for`: `applies_to` e "Caminhos do projeto" do INDEX; cerca de 5 regras por ticket
+  - Testes em Vitest com a fixture `template/scripts/__fixtures__/project/`, cujo `.metri/architecture` é symlink para o `architecture/` deste repositório; substituição de regra global: linha em "Exceções e defaults trocados" com o id, "substitu" e o ADR.
 - [ ] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
   - A parte do source está feita; o aviso de `applies_to` sem casamento (METHODOLOGY 6.13) entra aqui.
 - [ ] 4.4 `verify`: roda os checks do projeto
