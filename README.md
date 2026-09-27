@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.1.3.** Este repositório é o Architecture Source da metodologia. O agente trabalha pelas skills (`skills/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.1.0.** Este repositório é o Architecture Source da metodologia. O agente trabalha pelas skills (`skills/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
