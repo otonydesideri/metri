@@ -81,12 +81,24 @@ Let them edit before writing.
   "matrix-view:check": "tsx .metri/template/scripts/matrix-view.ts --check"
   ```
 
+- **.gitignore.** When the project has none yet, create it with:
+
+  ```gitignore
+  node_modules/
+  .env*
+  !.env.example
+  dist/
+  .turbo/
+  coverage/
+  ```
+
 ### 5. Done
 
 Done when:
 
 - `.metri/` is at the pinned tag, and every `.claude/skills/<name>` resolves to `.metri/skills/<name>/SKILL.md`;
 - every conditional capability with a trigger is answered in `docs/architecture/INDEX.md`, and the "Check" list of [ACTIVATION.md](ACTIVATION.md) holds;
+- `.gitignore` exists;
 - `pnpm verify` is green.
 
 Tell the user the setup is complete, to commit it (the agent never commits on main), and to run /shape next (after /reload-skills when `.claude/skills/` didn't exist when the session started): /shape defines the product, the domain terms and, when the project has an interface, the visual style (`docs/DESIGN.md`).
