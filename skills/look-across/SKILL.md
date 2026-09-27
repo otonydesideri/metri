@@ -26,7 +26,7 @@ Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill 
 
 ### 2. Features → use cases
 
-Keep the `horizon` the direction gate confirmed for each feature and, when it makes sense, give it its `milestone`. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`.
+Keep the `horizon` the direction gate confirmed for each feature and, when it makes sense, give it its `milestone`. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action.
 
 ### 3. Look across
 
@@ -42,7 +42,7 @@ Give each new or changed slice its `contract` block, designed to accommodate wha
 
 ### 5. Architectural coverage
 
-For each slice, name the areas and rules it needs (the area indexes, `pnpm rules-for <paths>`). A missing rule is a `type: pattern` ticket, the first of its slice. Each `PP-n` bound for the next look across becomes a `pattern` ticket or a change to the plan, or is dropped with the user; its line leaves Pattern proposals. Each `GAP-n` whose arrow points to a done ticket gets the ticket (UC or T) that closes it, and its arrow points there.
+For each slice, name the areas and rules it needs (the area indexes, `pnpm rules-for <paths>`). A missing rule is a `type: pattern` ticket, the first of its slice. A screen of a new type, with no canonical screen in `docs/DESIGN.md`, gets before its UC a `pattern` T, "Padrão de tela: <tipo>" (`node_modules/metri/skills/build/TICKET-TYPES.md`, "pattern"). Each `PP-n` bound for the next look across becomes a `pattern` ticket or a change to the plan, or is dropped with the user; its line leaves Pattern proposals. Each `GAP-n` whose arrow points to a done ticket gets the ticket (UC or T) that closes it, and its arrow points there.
 
 ### 6. Draft tickets
 
@@ -65,7 +65,7 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 ### 7. Slice 0
 
-- **New project**: the foundation slice. The template of the Source version is instantiated and `pnpm verify` is green; with an interface, the `design-system` slice installs the library and styles it by `docs/DESIGN.md`.
+- **New project**: the foundation slice. The template of the Source version is instantiated and `pnpm verify` is green; with an interface, the `design-system` slice installs the library, builds the theme from `docs/DESIGN.md` and the app shell, and closes on the human's visual approval.
 - **Existing project**: the mapping of step 0.
 
 ### 8. Quiz the user

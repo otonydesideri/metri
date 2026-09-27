@@ -303,4 +303,23 @@ describe('docs-lint', { timeout: 30_000 }, () => {
       lintChanged((dir) => edit(dir, adr, (source) => source.replace('## Imposto por\n\nnão imposto\n', ''))).output,
     ).toContain('ADR: seções Contexto, Decisão, Alternativas consideradas, Consequências, Imposto por, nessa ordem');
   });
+
+  it('evidência: ticket done de frontend tem desktop e mobile por critério, até a poda da slice', () => {
+    const done = inTicket('UC1.1', 'status: in_progress', 'status: done');
+    const missing = lintChanged(done);
+    expect(missing.status).toBe(1);
+    expect(missing.output).toContain('evidência: falta .metri/tickets/UC1.1/1-desktop.png (frontend/experience)');
+    expect(missing.output).toContain('evidência: falta .metri/tickets/UC1.1/1-mobile.png');
+    const withEvidence = lintChanged((dir) => {
+      done(dir);
+      write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png');
+      write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
+    });
+    expect(withEvidence).toEqual({ status: 0, output: '' });
+    const pruned = lintChanged((dir) => {
+      done(dir);
+      inMatrix('horizon: now · entry: apps/app-web/src/pages/orders/orders-page.tsx', 'status: done · entry: apps/app-web/src/pages/orders/orders-page.tsx')(dir);
+    });
+    expect(pruned.output).not.toContain('evidência');
+  });
 });

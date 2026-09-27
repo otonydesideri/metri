@@ -18,7 +18,7 @@ Classify each decision by the grilling skill ("Defined, inferred, ask"), in this
 | Decision | Home |
 | --- | --- |
 | Visual identity, principles, component usage | `docs/DESIGN.md` |
-| Token values | The theme in the code |
+| Token values | `docs/DESIGN.md`; the theme follows it |
 | Default library | `node_modules/metri/architecture/defaults/ui.md` and its global ADR |
 | Swapping the library | Project ADR and a rule in `.metri/rules/frontend/` |
 | How components are built (global vs. route, slots, variants, tokens only) | The global `frontend/` rules |

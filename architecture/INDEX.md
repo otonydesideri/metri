@@ -27,7 +27,7 @@ Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 3. **Os padrões de domínio.** Sob demanda, quando o caso aparece: `backend/operation-routing.md` (qual mecanismo executa a operação), `backend/events.md`, `backend/transactions.md`, `domain/watched-list.md`, `domain/strategy.md`, `domain/specification.md`, `domain/domain-services.md` (regra de domínio sem dono natural), `domain/builder.md` e, quando o domínio pede mais de um modelo, `domain/bounded-contexts.md`.
 4. **A infraestrutura.** `infrastructure/runtime.md` (bootstrap, providers globais, env), `infrastructure/services.md` (a regra dos níveis para serviço compartilhado), e as capacidades: `infrastructure/logging.md`, `infrastructure/observability.md` (métrica, alerta e reconciliação), `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `backend/async-jobs.md`.
 5. **O teste.** `backend/testing.md` fecha o backend.
-6. **O frontend.** `frontend/structure.md` primeiro, depois `frontend/routing.md` e `frontend/components.md`; o resto (`frontend/forms.md`, `frontend/state.md`, `frontend/data-fetching.md`, `frontend/helpers.md`, `frontend/theming.md`, `defaults/ui.md` (o kit de UI), `frontend/testing.md`) sob demanda.
+6. **O frontend.** `frontend/structure.md` primeiro, depois `frontend/routing.md`, `frontend/components.md` e `frontend/experience.md` (a experiência de uma tela); o resto (`frontend/forms.md`, `frontend/state.md`, `frontend/data-fetching.md`, `frontend/helpers.md`, `frontend/theming.md`, `defaults/ui.md` (o kit de UI), `frontend/testing.md`) sob demanda.
 
 ## O que mora aqui, o que mora em outro lugar
 
@@ -74,7 +74,7 @@ Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/sta
 - `backend` → `backend/INDEX.md` (14 regras)
 - `defaults` → `defaults/INDEX.md` (2 regras)
 - `domain` → `domain/INDEX.md` (7 regras)
-- `frontend` → `frontend/INDEX.md` (9 regras)
+- `frontend` → `frontend/INDEX.md` (10 regras)
 - `general` → `general/INDEX.md` (3 regras)
 - `infrastructure` → `infrastructure/INDEX.md` (7 regras)
 

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import { BIN, takeOption } from './lib/layout.ts';
+import { BIN, layoutOf, takeOption } from './lib/layout.ts';
 
 const HELP = `verify: roda os checks e soma o resultado.
 
@@ -12,13 +12,14 @@ Uso: metri verify [--root <dir>]
 Ordem (todos rodam, mesmo depois de uma falha):
   1. docs-lint;
   2. rules-index:check (rules-index --check);
-  3. api:drift, só com o script api:generate no package.json da raiz: roda o gerador do contrato de API
+  3. design-tokens, só no projeto: o tema do código segue os tokens do docs/DESIGN.md; sem os dois, fica pendente;
+  4. api:drift, só com o script api:generate no package.json da raiz: roda o gerador do contrato de API
      (backend/http-api) e falha se ele mudar algum arquivo; precisa de git;
-  4. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
+  5. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
      (pnpm run <nome>).
 
-Saída: uma linha por check, "ok <nome>" ou "falha <nome>"; a saída do check que falhou vem logo abaixo da
-linha dele, recuada. Sai com código 1 se algum check falhar.
+Saída: uma linha por check, "ok <nome>", "pendente <nome>: <motivo>" ou "falha <nome>"; a saída do check que
+falhou vem logo abaixo da linha dele, recuada. Sai com código 1 se algum check falhar.
 `;
 
 const PROJECT_SCRIPTS = ['typecheck', 'lint', 'test'];
@@ -95,6 +96,9 @@ const checks: Check[] = [
   { name: 'docs-lint', run: metri('docs-lint') },
   { name: 'rules-index:check', run: metri('rules-index', '--check') },
 ];
+if (layoutOf().isProject) {
+  checks.push({ name: 'design-tokens', run: metri('design-tokens') });
+}
 if (GENERATE_SCRIPT in scripts) {
   checks.push({ name: 'api:drift', run: apiDrift });
 }
@@ -106,7 +110,8 @@ let hasFailed = false;
 for (const { name, run } of checks) {
   const { status, output } = run();
   if (status === 0) {
-    console.log(`ok ${name}`);
+    const pending = /^pendente: (.+)$/m.exec(output)?.[1];
+    console.log(pending ? `pendente ${name}: ${pending}` : `ok ${name}`);
     continue;
   }
   hasFailed = true;

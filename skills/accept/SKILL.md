@@ -46,7 +46,7 @@ They may read the repository at `slice/<id>`, nothing else of this session.
 - The unchecked verification items, pasted with their rule id.
 - The brief: "Report, per file/hunk, every verification item the diff fails: cite the rule id and the item, quote the hunk, and put it in one group, Corrigir agora, Virar T or Aceitar como está, with your recommendation. Under 400 words."
 
-**Consumer sub-agent**, only when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): an agent that knows only the public interface (the contract's `interface`) tries to use it, and reports where it got stuck.
+**Consumer sub-agent**, only when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): an agent that knows only the public interface (the contract's `interface`) tries to use it, and reports where it got stuck. The consumer test also runs on the interface: for each UC with UI, an agent that gets only the UC's goal and the app's URL tries it with a browser tool; with no browser tool in the session, skip it and say so in the report.
 
 ### 4. Aggregate
 
@@ -73,7 +73,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file, and their evidence folders leave the tree), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs are in the matrix; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

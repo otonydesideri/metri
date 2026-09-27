@@ -93,7 +93,9 @@ Só no projeto:
       depois da letra do id batendo com o da feature ou da slice;
     - blocked_by aponta para um ticket ou uma slice que existe;
     - todo UC fora de draft aparece em ucs da feature dele, em MATRIX.md;
-    - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]").
+    - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]");
+    - ticket done com área frontend/* tem, para cada critério n, tickets/<id>/<n>-desktop.png e <n>-mobile.png
+      (frontend/experience), até a poda da slice (slice com status: done na MATRIX) tirá-los da árvore.
   - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
     superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
     Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.
@@ -146,6 +148,7 @@ const PROJECT_TARGETS = [
 const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md', 'ARCHITECTURE.md'];
 const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md'];
 const METRI_FILES = [PROJECT_INDEX, MATRIX];
+const EVIDENCE_DEVICES = ['desktop', 'mobile'];
 // Caminho de arquivo .md: ticket e MATRIX citam só ids.
 const MD_PATH = /(?<![\w/.-])[\w./-]*[\w-]\.md(?![\w-])/g;
 const AGENTS_MAX_LINES = 30;
@@ -637,6 +640,11 @@ function lintTickets(): void {
         .sort()
     : [];
   const ticketIds = new Set(files.map((name) => name.replace(/\.md$/, '')));
+  const collapsed = new Set(
+    parseMatrix(matrixSource)
+      .blocks.filter((block) => block.kind === 'slice' && fieldOf(block, 'status')?.value === 'done')
+      .map((block) => block.id),
+  );
   const servedSlices = new Set([...featureSlices.values()].flat());
   for (const name of files) {
     const path = join(TICKETS_DIR, name);
@@ -647,9 +655,12 @@ function lintTickets(): void {
     for (const { line, message } of problems) {
       report(path, line, message);
     }
-    const slice = frontmatterOf(source)?.slice;
-    if (typeof slice === 'string') {
-      servedSlices.add(slice);
+    const frontmatter = frontmatterOf(source);
+    if (typeof frontmatter?.slice === 'string') {
+      servedSlices.add(frontmatter.slice);
+    }
+    if (!collapsed.has(String(frontmatter?.slice))) {
+      lintEvidence(path, expectedId, frontmatter, source);
     }
   }
   const matrix = parseMatrix(matrixSource);
@@ -658,6 +669,22 @@ function lintTickets(): void {
       report(MATRIX, block.line, `${block.id}: slice now que nenhuma feature now serve (slices da feature ou slice de um ticket)`);
     }
   }
+}
+
+// Ticket done de frontend tem, por critério, a evidência em desktop e em mobile (frontend/experience).
+function lintEvidence(path: string, id: string, frontmatter: Record<string, unknown> | undefined, source: string): void {
+  const isFrontend = asList(frontmatter?.areas).some((area) => area.startsWith('frontend/'));
+  if (frontmatter?.status !== 'done' || !isFrontend) {
+    return;
+  }
+  sectionItems(source, 'Critérios').forEach(({ line }, index) => {
+    for (const device of EVIDENCE_DEVICES) {
+      const evidence = `${TICKETS_DIR}/${id}/${index + 1}-${device}.png`;
+      if (!existsSync(evidence)) {
+        report(path, line, `evidência: falta ${evidence} (frontend/experience)`);
+      }
+    }
+  });
 }
 
 function lintAgents(): void {

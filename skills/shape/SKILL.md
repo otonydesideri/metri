@@ -22,7 +22,7 @@ Call the Skill tool twice, for "grilling" and "domain-language".
 
 - Explore approaches with the user: help them understand the path, without generating the plan.
 - When a decision depends on a fact outside the repository, call the Skill tool with "research".
-- When the doubt is about form or behaviour, answer it with a throwaway prototype; what it settles goes to `docs/DESIGN.md` (visual) or to a `frontend/` rule (implementation), and the prototype is discarded.
+- When the doubt is about behaviour, answer it with a throwaway prototype; what it settles goes to a `frontend/` rule, and the prototype is discarded. The form of a new type of screen is settled by its "Padrão de tela" ticket, in /look-across.
 
 ### 3. Design triage
 

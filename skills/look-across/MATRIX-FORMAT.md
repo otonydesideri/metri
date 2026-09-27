@@ -88,8 +88,8 @@ when missing or empty, the rest are written only with a value.
 - `metrics`: only the numbers the tool reports, as `metrics: <tokens> tokens, <n> regras`.
 
 A ticket file is never pruned or collapsed: done, it keeps its title, its frontmatter and its body, with
-`status: done`, in its own file (the "Pruning" rule of "Matrix rules" below applies to the MATRIX, not to ticket
-files).
+`status: done`, in its own file (the "Pruning" rule of "Matrix rules" below collapses the MATRIX and removes the
+evidence folders, never a ticket file).
 
 ### UC block
 
@@ -338,12 +338,12 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 7. **Same `touches`, no parallelism.** Schema changes follow expand–contract or stay in a foundation ticket.
 8. **Criteria written once, in the ticket file.** A UC's `checks` prove its "Critérios"; a T's "Critérios" are its
    own, since it has no UC.
-9. **Pruning, on the MATRIX only:** the contract leaves the MATRIX for the header of the `entry` when the slice's
+9. **Pruning:** the contract leaves the MATRIX for the header of the `entry` when the slice's
    first ticket is built ("Contrato de slice", below); a done slice collapses, all its tickets included, into one
    line with its `entry` (`status: done · entry: <path>`). A done slice that takes a new or reopened UC, or a new
    T, goes back to `horizon: now` with its `entry`, until it collapses again. A ticket file is never collapsed: it
-   stays `status: done` in its own file, and its id stays in its feature's `ucs`. Git keeps the history. The
-   MATRIX stays small.
+   stays `status: done` in its own file, and its id stays in its feature's `ucs`; its evidence folder
+   (`.metri/tickets/<id>/`) leaves the tree. Git keeps the history. The MATRIX stays small.
 
 ## Contrato de slice
 

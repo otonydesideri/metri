@@ -26,14 +26,17 @@
     "rules-for": "node cli/metri.mjs rules-for",
     "rules-index": "node cli/metri.mjs rules-index",
     "rules-index:check": "node cli/metri.mjs rules-index --check",
+    "design-tokens": "node cli/metri.mjs design-tokens",
     "test": "vitest run cli"
   },
   "dependencies": {
+    "culori": "^4.0.2",
     "picomatch": "^4.0.7",
     "tsx": "^4.23.15",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
+    "@types/culori": "^4.0.1",
     "@types/node": "^26.6.3",
     "@types/picomatch": "^4.0.3",
     "vitest": "^5.0.2"

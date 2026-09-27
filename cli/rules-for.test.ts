@@ -14,7 +14,7 @@ describe('rules-for', () => {
   it('caminho: casa com o applies_to global e do projeto, projeto primeiro, com read_first e exceção', () => {
     const { status, lines } = run('rules-for', ['--root', FIXTURE, PAGE]);
     expect(status).toBe(0);
-    expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/state']);
+    expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/experience', 'frontend/state']);
     expect(lines[0]).toBe(
       'frontend/order-list — a lista de pedidos do painel — paginação no servidor e filtros na URL. (.metri/rules/frontend/order-list.md)',
     );
@@ -28,6 +28,7 @@ describe('rules-for', () => {
     expect(ids(run('rules-for', ['--root', FIXTURE, 'apps/**/*.tsx']).lines)).toEqual([
       'frontend/order-list',
       'frontend/components',
+      'frontend/experience',
       'frontend/state',
     ]);
     expect(run('rules-for', ['--root', FIXTURE, 'libs/**']).lines).toContain(

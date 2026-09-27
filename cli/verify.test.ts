@@ -14,14 +14,14 @@ describe('verify', { timeout: 60_000 }, () => {
   it('passa quando todos os checks passam', () => {
     expect(run('verify', ['--root', projectWithTest(0)])).toEqual({
       status: 0,
-      lines: ['ok docs-lint', 'ok rules-index:check', 'ok test'],
+      lines: ['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'ok test'],
     });
   });
 
   it('um check que falha faz o verify falhar, e os outros continuam rodando', () => {
     const { status, lines } = run('verify', ['--root', projectWithTest(1)]);
     expect(status).toBe(1);
-    expect(lines.slice(0, 3)).toEqual(['ok docs-lint', 'ok rules-index:check', 'falha test']);
+    expect(lines.slice(0, 4)).toEqual(['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'falha test']);
   });
 
   it('falha do docs-lint aparece com a saída dele', () => {
@@ -33,6 +33,7 @@ describe('verify', { timeout: 60_000 }, () => {
       'falha docs-lint',
       '  docs/notes.md:1: árvore de docs/: arquivo fora da lista fechada (docs-lint --help)',
       'ok rules-index:check',
+      'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css',
       'ok test',
     ]);
   });
@@ -44,7 +45,7 @@ describe('verify', { timeout: 60_000 }, () => {
     write(dir, 'openapi.json', 'v1');
     write(dir, '.gitignore', 'node_modules/\npnpm-lock.yaml\n');
     execSync('git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm fixture', { cwd: dir });
-    expect(run('verify', ['--root', dir])).toEqual({ status: 0, lines: ['ok docs-lint', 'ok rules-index:check', 'ok api:drift'] });
+    expect(run('verify', ['--root', dir])).toEqual({ status: 0, lines: ['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'ok api:drift'] });
 
     write(dir, 'package.json', JSON.stringify({ scripts: { 'api:generate': generate('v2') } }));
     const { status, lines } = run('verify', ['--root', dir]);

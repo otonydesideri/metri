@@ -10,9 +10,10 @@ Comandos:
   rules-for     lista as regras de arquitetura de caminhos ou de um ticket
   rules-index   gera os INDEX.md das regras (--check confere)
   docs-lint     lint estrutural do source e do projeto
+  design-tokens confere se o tema do código segue os tokens do docs/DESIGN.md
 `;
 
-const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint'];
+const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens'];
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === undefined || command === '--help' || command === '-h') {

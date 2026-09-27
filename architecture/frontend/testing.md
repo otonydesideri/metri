@@ -59,11 +59,28 @@ O caminho feliz de cada tela isolada é o que o fluxo já atravessa; repeti-lo v
 | Spec de transição entre fluxos | `src/app/router/<módulo>-transitions.spec.tsx` |
 | Spec de estrutura | `src/structure.spec.ts` |
 | Spec de config do dev server | `dev-server-proxy.spec.ts`, na raiz do app |
+| E2e de critério de UI | `e2e/<módulo>/<ação>.e2e.ts`, com `e2e/evidence.ts` |
 | Setup da suíte | `test/setup.ts` |
 | Servidor MSW | `test/msw/server.ts` |
 | Builder de payload | `test/factories/make-<recurso>.factory.ts` |
 
-Paths de `src/` e `test/` são relativos ao app frontend (`apps/app-web/`).
+Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/`).
+
+### E2e de critério de UI
+
+Fora da pirâmide, cada critério de UI de um UC tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento (`frontend/experience.md`). O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina salvando a evidência do critério:
+
+```ts
+// e2e/order/confirm-order.e2e.ts
+test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo) => {
+  await page.goto('/orders/1042');
+  await page.getByRole('button', { name: 'Confirmar pedido' }).click();
+  await expect(page.getByText('Pedido confirmado')).toBeVisible();
+  await page.screenshot({ path: evidencePath('UC1.2', 1, testInfo), fullPage: true });
+});
+```
+
+O `evidencePath` de `e2e/evidence.ts` devolve `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório.
 
 O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção, e a raiz do app para o que prova o config dele. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`, e aqui essa fronteira não tem rede de segurança automática, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos. A verificação é o grep da última seção.
 
