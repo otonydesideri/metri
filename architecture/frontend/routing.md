@@ -148,6 +148,10 @@ O modal de tarefa montado por estado na página que o dispara:
 - Página entra no router via `React.lazy`, com o `Suspense` no layout ao redor do `<Outlet />`?
 - Segmento de rota está em inglês e kebab-case, com recurso identificado por id?
 
+## Em aberto
+
+- **Error boundary.** A Source não tem regra de error boundary: onde fica o limite que pega erro de render ou de carregamento de página, fora dos estados de leitura (`frontend/components.md`, "Estados de leitura: loading, vazio e erro"), e o que ele mostra.
+
 ## Referências
 
 - `frontend/components.md`: o corpo da página e do modal.

@@ -17,3 +17,7 @@ Same-origin é decisão, não acaso: sem origem cruzada não há CORS a configur
 ## Verificação rápida
 
 - O endpoint novo entrou sob `/api`, com DTO Zod na fronteira e tradução de erro pela tabela de `backend/errors.md`?
+
+## Em aberto
+
+- **Segurança HTTP.** A Source não tem regra de segurança HTTP além do same-origin desta regra e do throttler global (`infrastructure/runtime.md`): headers de segurança (CSP, HSTS) e proteção de CSRF além do `SameSite` seguem sem desenho.

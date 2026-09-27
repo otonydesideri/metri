@@ -102,6 +102,10 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?
 - Hook, guard, interceptor e filter ficaram fora do `ServicesModule`, em `infra/common/<fronteira>/`, com o contexto viajando na request?
 
+## Em aberto
+
+- **CI e deploy.** A Source não tem regra de pipeline de CI nem de deploy. A topologia de deploy é delegação de projeto (`docs/architecture/INDEX.md`, "Delegações"), e a entrega em produção segue a regra de release do projeto (`docs/architecture/infrastructure/release.md`).
+
 ## Referências
 
 - `backend/errors.md`: o pipe de validação e o filtro de erro inesperado.

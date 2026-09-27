@@ -39,6 +39,21 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 
 **O humano decide em poucos pontos:** direção, plano, padrões novos e diffs sensíveis, aceite, e passos de release que só ele pode fazer. O resto é trabalho do agente.
 
+## Começar um projeto
+
+Na raiz do repositório do projeto, monte o source em `.metri/` numa tag (submódulo, somente leitura) e ligue a skill `setup`:
+
+```bash
+git submodule add <url-do-source> .metri
+git -C .metri checkout v1.0.0
+git add .metri
+mkdir -p .claude/skills && ln -s ../../.metri/skills/setup .claude/skills/setup
+```
+
+No Claude Code, na raiz do projeto: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, depois `/setup`. O `/setup` liga as demais skills e os scripts e termina com `pnpm verify` verde. Trocar de versão: `.metri/CHANGELOG.md`.
+
+As skills entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
+
 ## Princípios
 
 1. **Confiar em erros, não em contexto.** Toda regra desce pela _escada de regras_ (`skills/guardrail/SKILL.md`, "The rules ladder") até o degrau mais barato que funcione. O que pode ser verificado no código vira check, não texto.
@@ -357,13 +372,25 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
 
 ### Validação e melhoria (piloto)
 
-Uma iniciativa real de 2–3 slices, medindo:
+Uma iniciativa real de 2–3 slices, num repositório novo:
 
-- regras carregadas por ticket (meta ≤ 5);
-- propostas de padrão surgidas na construção (se forem muitas, o look across está fraco);
-- achados de padrão no aceite que um lint poderia ter pego (se forem muitos, a escada não está sendo usada);
-- vezes em que o agente precisou de contexto fora da cadeia de ponteiros;
-- lições aprovadas por slice (se forem muitas, o portão de conhecimento está frouxo);
-- tokens por ticket e retrabalho após o aceite.
+1. "Começar um projeto" e `/setup`.
+2. `/shape`, com a triagem de design, e `/look-across`.
+3. Slice 0, a fundação: se o source ainda não tem template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter, e os `.examples.md` viram ponteiro.
+4. 2–3 slices até o `/accept` e um release.
 
-Os resultados alimentam a v1.2 desta metodologia.
+Anotar:
+
+- regras por ticket, pelo `pnpm rules-for --ticket <id>` (meta ≤ 5);
+- tokens por ticket, quando a ferramenta mostrar (`metrics` do ticket);
+- retrabalho no `/accept`: achados que reabrem UC ou viram T, e os de padrão que um lint teria pego;
+- propostas de padrão na construção, contexto buscado fora da cadeia de ponteiros e lições aprovadas por slice;
+- os três gatilhos do board próprio: conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, e linhas ativas da MATRIX depois da poda (o board começa acima de ~300).
+
+Decisões que ficam para o piloto:
+
+- caminho para bug urgente: release logo após o `/accept` de uma correção `sensitive`;
+- redação de dados de outro tenant no `/diagnose`;
+- orçamento de ~5 regras para UC de backend que atravessa camadas.
+
+Os resultados alimentam a v1.2 desta metodologia; o que passar no portão de conhecimento vai ao source (template de código, capacidades condicionais, regras e checks, estes a partir dos itens de "Verificação" sem `(check: <id>)`).

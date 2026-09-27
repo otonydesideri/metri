@@ -102,9 +102,14 @@ O erro de leitura não apaga a tela inteira: o chrome que não depende do dado q
 ## Verificação rápida
 
 - O corpo segue hooks e leitura, guards terminais, handlers, condições declarativas, modo alternativo e JSX, com o vocabulário booleano canônico?
+- Handler nomeado começa com `handle`, e a prop que o recebe, com `on`?
 - O corpo do modal segue a mesma ordem, com o dado próprio dele carregado nele?
 - Loading de lista usa skeleton com a forma do conteúdo, e todo estado vazio ou de erro oferece uma saída (inclusive "limpar filtro" quando o vazio é do filtro)?
 - O arquivo declara um componente só, com as peças da tela em arquivos próprios na pasta da página?
 - Nenhum componente existe só pra repassar prop pro primitivo do pacote, e peça compartilhada de anatomia variável é compound consumido via `import * as`?
 - Peça mais global subiu pro pacote pela regra de colocação, sem redefinir o compound do `@metri/ui`?
 - Todo primitivo do `@metri/ui` entra por `import * as` e é usado pelas partes, sem import nomeado nem import do arquivo gerado?
+
+## Em aberto
+
+- **Acessibilidade.** A Source não tem regra geral de acessibilidade (teclado, foco, contraste, leitor de tela); o que existe é pontual: o nome acessível do controle em `frontend/forms.md`, "Rótulo, descrição e o nome acessível do controle".

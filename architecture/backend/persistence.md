@@ -176,6 +176,10 @@ O outcome de persistência chega ao caso de uso como valor comum. Dentro de uma 
 - SQL cru usa template tag, sem `$queryRawUnsafe` fora do adapter da fila, e identificador variável é união fechada?
 - Escrita com condição que só o banco avalia devolve o outcome declarado (`false` ou a união que nomeia cada resultado), com o código do driver lido só na implementação, sem `Either`, `DomainError` nem tipo genérico de resultado?
 
+## Em aberto
+
+- **Migrações de banco.** A Source não tem regra de migração de banco: como a migração é gerada, revisada, aplicada e revertida, e como sai uma migração destrutiva. Até ter, schema e migrações seguem as instruções de projeto de `packages/db` (`backend/layers.md`, "Onde cada arquivo mora").
+
 ## Referências
 
 - `backend/transactions.md`: contrato de transação, concorrência e locking.

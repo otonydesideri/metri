@@ -12,7 +12,7 @@ description: "Keep code findable and guarded while writing it: find before you c
 5. **Context in code.** Every new code file opens with an inline header: what it is, why it exists, where it connects and how to use it, then its SOT keywords (the words a grep for this concept would use) and the ids of the ADRs and BRs it follows. In a slice `entry`, the header is the slice contract (`.metri/skills/look-across/MATRIX-FORMAT.md`, "Contrato de slice"). A module's barrel (`index`) is its map.
 6. **Flag the gaps.** What you leave for later is a `GAP-n` comment at the spot plus its line in the Gaps section of `docs/plan/MATRIX.md`: nothing stays incomplete in silence.
 
-Done when every new code file has its header with SOT keywords and every deferral has its `GAP-n` in the code and in the matrix.
+Done when every new code file has its header with SOT keywords, every new identifier of a domain term is its English identifier in `docs/CONTEXT.md` (never a synonym under `_Evitar:_`), and every deferral has its `GAP-n` in the code and in the matrix.
 
 ## Trust errors and checks, not text
 

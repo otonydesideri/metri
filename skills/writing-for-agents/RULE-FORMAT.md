@@ -51,7 +51,7 @@ flowchart TD
 
 Chave marcada `# opcional` só é escrita quando tem valor (`.metri/VOCABULARY.md`). Exemplo do formato: `.metri/architecture/frontend/components.md`.
 
-`(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
+`(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`. Item sem ele é candidato a check.
 
 ## Refinar uma regra existente (sem reescrever)
 
