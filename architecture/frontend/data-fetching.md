@@ -1,20 +1,20 @@
 ---
 id: frontend/data-fetching
-description: "a busca e o envio de dado do `app-web` ao app-api — o cliente HTTP same-origin e as funções de `api/`; os hooks de query e de mutation do React Query, com a key factory, o `staleTime`, a paginação e a sincronização de cache; o erro, o sucesso e o estado em voo de uma ação; o provider e os defaults."
+description: "a busca e o envio de dado do `app-web` ao app-api — o cliente HTTP same-origin e as funções de `api/`, geradas do OpenAPI; os hooks de query e de mutation do React Query, com a key factory, o `staleTime`, a paginação e a sincronização de cache; o erro, o sucesso e o estado em voo de uma ação; o provider e os defaults."
 use_when:
-  - "adicionar uma chamada à API ou uma função de `api/` no `app-web`"
+  - "consumir no `app-web` um endpoint do app-api"
   - "criar hook de query ou de mutation do React Query"
   - "decidir se uma escrita atualiza ou invalida o cache"
   - "nomear o erro, o sucesso e o estado em voo de uma ação que chama a API"
   - "configurar o provider de dado ou os defaults do React Query"
 applies_to:
-  - "apps/app-web/src/api/**"
+  - "apps/app-web/orval.config.ts"
   - "apps/app-web/src/hooks/**"
   - "apps/app-web/src/lib/http/**"
   - "apps/app-web/src/app/providers/query-client.ts"
   - "apps/app-web/src/app/index.tsx"
   - "apps/app-web/vite.config.ts"
-keywords: [httpClient, "@better-fetch/fetch", createFetch, BetterFetchError, toUserFacingMessage, "/api", proxy, React Query, useQuery, useMutation, key factory, keys.ts, staleTime, gcTime, refetchInterval, queryOptions, setQueryData, invalidateQueries, resetQueries, placeholderData, prefetchQuery, mutateAsync, useTransition, isSubmitting, variables, Sonner.toast, toast, LoadErrorState, QueryClient, QueryClientProvider, queryClient.clear, persistQueryClient, optimistic update, polling]
+keywords: [httpClient, ApiError, orval, orval.config.ts, "api/model.zod.ts", toUserFacingMessage, "/api", proxy, React Query, useQuery, useMutation, key factory, keys.ts, staleTime, gcTime, refetchInterval, queryOptions, setQueryData, invalidateQueries, resetQueries, placeholderData, prefetchQuery, mutateAsync, useTransition, isSubmitting, variables, Sonner.toast, toast, LoadErrorState, QueryClient, QueryClientProvider, queryClient.clear, persistQueryClient, optimistic update, polling]
 not_covered:
   - "o estado que vive só no navegador → frontend/state"
   - "o contrato da API do lado do backend → backend/http-api"
@@ -69,23 +69,37 @@ Se o comando muda um fato que uma query da tela também lê, o `onSuccess` sincr
 
 ## O cliente HTTP
 
-Um cliente só, em `lib/http/client.ts`, uma instância `createFetch` do `@better-fetch/fetch`. É facade de dependência externa (`frontend/structure.md`, casa `lib/`): não conhece domínio. Ele trabalha sempre na origem da página, sob `/api`.
+Um cliente só, `httpClient` em `lib/http/client.ts`, sobre o `fetch`. É o mutator que as funções geradas de `api/` chamam, e facade de dependência externa (`frontend/structure.md`, casa `lib/`): não conhece domínio. Ele trabalha sempre na origem da página: os paths do OpenAPI já trazem o `/api`.
 
 ```ts
 // lib/http/client.ts
-import { createFetch } from '@better-fetch/fetch';
+import type { ApiErrorType } from '@metri/core/errors';
 
-export const httpClient = createFetch({
-  // A origem é lida no momento da chamada, nunca de uma env: o frontend é
-  // servido pela mesma origem que atende /api (general/http-surface.md, "Superfície HTTP").
-  baseURL: `${window.location.origin}/api`,
-  // erro de HTTP vira exceção, não valor de retorno: o React Query só
-  // popula o estado de erro se a queryFn/mutationFn lançar.
-  throw: true,
-});
+export type ApiErrorBody = { code: string; message: string; type: ApiErrorType };
+
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly body: ApiErrorBody | undefined,
+  ) {
+    super(body?.message ?? `HTTP ${status}`);
+  }
+}
+
+// O mutator do Orval: url relativa à origem da página, nunca de uma env
+// (general/http-surface.md, "Superfície HTTP"). Erro de HTTP vira exceção:
+// o React Query só popula o estado de erro se a queryFn/mutationFn lançar.
+export async function httpClient<T>(url: string, init: RequestInit): Promise<T> {
+  const response = await fetch(url, init);
+  const body = response.status === 204 ? undefined : await response.json();
+  if (!response.ok) {
+    throw new ApiError(response.status, body);
+  }
+  return body as T;
+}
 ```
 
-O prefixo `/api` pertence ao facade, não às funções de `api/`: elas continuam recebendo `/orders`, `/orders/:id` e demais paths de recurso. Como a chamada sai na própria origem, o browser envia o cookie sem configuração cross-origin, e não existe env de URL da API no frontend — trocar de ambiente não troca nada no bundle.
+Como a chamada sai na própria origem, o browser envia o cookie sem configuração cross-origin, e não existe env de URL da API no frontend — trocar de ambiente não troca nada no bundle.
 
 Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy usa a forma objeto, aponta para `http://127.0.0.1:3000`, mantém `changeOrigin: false` e não reescreve domínio de cookie. Assim o backend recebe o `Host` da página, não o host interno do target. Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao futuro IaC, não ao bundle do frontend.
 
@@ -102,13 +116,11 @@ server: {
 },
 ```
 
-Por que better-fetch e não `fetch` cru: valida a resposta contra um schema Zod pelo `output`, e carrega o corpo de erro parseado no `BetterFetchError`. A escolha é reversível sem tocar `api/`, porque tudo passa por este facade; se um dia outro mecanismo bastar, só o `client.ts` muda.
-
 A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro"); este arquivo não redefine o formato, lê ele.
 
 ```ts
 // lib/http/to-user-facing-message.ts
-import { BetterFetchError } from '@better-fetch/fetch';
+import { ApiError } from './client';
 
 /**
  * A mensagem que a notificação mostra, a partir da falha da requisição. Vem do
@@ -116,25 +128,44 @@ import { BetterFetchError } from '@better-fetch/fetch';
  * resposta, como rede indisponível, não tem mensagem nenhuma para exibir.
  */
 export function toUserFacingMessage(error: unknown): string {
-  if (error instanceof BetterFetchError && error.error?.message) {
-    return error.error.message;
+  if (error instanceof ApiError && error.body?.message) {
+    return error.body.message;
   }
 
   return 'Tente novamente em instantes.';
 }
 ```
 
-Só a mensagem sai daqui. O título da notificação é a ação que falhou, e quem sabe qual é ela é a tela, não o servidor: o mesmo código de erro chega igual venha de onde vier. Tela que precisa ramificar por código lê `error.error.code` no próprio ponto de uso, sem tabela intermediária.
+Só a mensagem sai daqui. O título da notificação é a ação que falhou, e quem sabe qual é ela é a tela, não o servidor: o mesmo código de erro chega igual venha de onde vier. Tela que precisa ramificar por código lê `error.body?.code` no próprio ponto de uso, sem tabela intermediária.
 
 ## Funções de API
 
-Cada operação REST do app-api é uma função em `api/<módulo>.ts` (`frontend/structure.md`, casa `api/`): usa o `httpClient`, não tem lógica de UI e não conhece React Query. Leitura valida a resposta com o schema do contrato canônico, importado do pacote dono do conceito (`backend/http-api.md`, "Contrato de API compartilhado"), passado como `output`, garantindo em runtime que o backend devolveu o formato esperado. Escrita recebe o input já tipado. Nos exemplos, `@metri/<pacote-dono>` é esse pacote, cuja escolha segue a colocação de `general/code-placement.md`.
+As funções de `api/` são geradas pelo Orval a partir do `openapi.json` do app-api (`backend/http-api.md`, "Contrato de API: o backend é a fonte"): uma função por endpoint em `api/<módulo>.ts`, e os schemas Zod, os tipos e as constantes de limite em `api/model.zod.ts`. Elas chamam o `httpClient`, não têm lógica de UI e não conhecem React Query. A pasta inteira é do gerador: muda por `pnpm api:generate`.
 
-Exemplo completo: data-fetching.examples.md#apiorderts
+```ts
+// apps/app-web/orval.config.ts
+import { defineConfig } from 'orval';
 
-O tipo da resposta é o que o contrato canônico exporta, derivado do schema por `z.infer` e nomeado lá, e é importado do pacote, nunca redeclarado à mão nem escrito como `z.infer<typeof schema>` na própria assinatura (`frontend/helpers.md`, "Tipos compartilhados" e "Zod schema vs. type plain"). Escrita também tem corpo (`backend/http-api.md`, "Presenter e corpo de resposta") e passa `output` do mesmo jeito. O corpo nomeia o que carrega (`{ order }`): a função de `api/` desembrulha o envelope e devolve o recurso; quando o corpo carrega mais de um (`{ order, invoice }`), devolve o corpo como vem.
+export default defineConfig({
+  appApi: {
+    input: { target: '../app-api/openapi.json' },
+    output: {
+      mode: 'tags',
+      target: 'src/api',
+      schemas: { path: 'src/api/model.zod.ts', type: 'zod', mode: 'single' },
+      client: 'fetch',
+      clean: true,
+      override: {
+        mutator: { path: 'src/lib/http/client.ts', name: 'httpClient' },
+        fetch: { includeHttpResponseReturnType: false },
+        zod: { version: 4 },
+      },
+    },
+  },
+});
+```
 
-O input segue a mesma regra: o tipo do filtro de listagem e o do payload de escrita vêm do contrato canônico, não declarados em `api/<módulo>.ts`. A key factory consome o tipo do filtro, e com ele declarado em `api/` a fronteira inverte — `hooks/` passa a importar de `api/` um tipo que não é da chamada HTTP. O retorno de cada função é anotado explicitamente (`Promise<OrderList>`): a assinatura é o contrato que o hook lê, não uma inferência que muda quando o corpo muda.
+O tipo da resposta, do filtro e do payload é o gerado, importado de `@/api/model.zod`, nunca redeclarado à mão (`frontend/helpers.md`, "Tipos compartilhados"). A função gerada devolve o corpo como o backend o nomeia (`{ order }`, `backend/http-api.md`, "Presenter e corpo de resposta"): quem desembrulha é a `queryFn` do hook.
 
 Parâmetro de conjunto fechado e o nome do query param na URL do app seguem `backend/http-api.md`, "União fechada e limite do contrato".
 
@@ -144,7 +175,7 @@ Cada módulo tem uma key factory em `hooks/<módulo>/keys.ts`: um objeto hierár
 
 ```ts
 // hooks/order/keys.ts
-import type { FetchOrdersFilters } from '@metri/<pacote-dono>';
+import type { FetchOrdersFilters } from '@/api/model.zod';
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -171,7 +202,7 @@ import { orderKeys } from './keys';
 export function useOrder(id: string) {
   return useQuery({
     queryKey: orderKeys.detail(id),
-    queryFn: () => fetchOrder(id),
+    queryFn: () => fetchOrder(id).then(({ order }) => order),
   });
 }
 ```
@@ -179,7 +210,7 @@ export function useOrder(id: string) {
 ```ts
 // hooks/order/use-orders.ts
 import { useQuery } from '@tanstack/react-query';
-import type { FetchOrdersFilters } from '@metri/<pacote-dono>';
+import type { FetchOrdersFilters } from '@/api/model.zod';
 import { fetchOrders } from '@/api/order';
 import { orderKeys } from './keys';
 
@@ -191,7 +222,7 @@ export function useOrders(filters?: FetchOrdersFilters) {
 }
 ```
 
-O hook devolve o objeto do `useQuery` inteiro (`data`, `isPending`, `isError`, ...); a página consome os estados dele e monta o loading/erro com os componentes do `@metri/ui`. Hook que compõe mais de uma fonte não tem objeto pra devolver: entrega o dado com nome de domínio mais `isPending`, `hasLoadError`, `isRetrying` e `refetch`, já derivados, que é o que a tela consome (`frontend/components.md`, "Estados de leitura"). A `queryFn` fica fina: a chamada e o parse moram em `api/`, o hook só amarra key e função.
+O hook devolve o objeto do `useQuery` inteiro (`data`, `isPending`, `isError`, ...); a página consome os estados dele e monta o loading/erro com os componentes do `@metri/ui`. Hook que compõe mais de uma fonte não tem objeto pra devolver: entrega o dado com nome de domínio mais `isPending`, `hasLoadError`, `isRetrying` e `refetch`, já derivados, que é o que a tela consome (`frontend/components.md`, "Estados de leitura"). A `queryFn` fica fina: a chamada mora em `api/`, e o hook só amarra key e função e desembrulha o corpo.
 
 ## Freshness: `staleTime` é decisão do hook
 
@@ -274,7 +305,7 @@ A página e os filtros moram na URL, não em `useState`, e chegam como parâmetr
 
 ## Erro e sucesso: quem dispara a ação nomeia o resultado
 
-O erro percorre um caminho fixo. O `httpClient` lança em falha de HTTP (`throw: true`); a `queryFn`/`mutationFn` propaga; o React Query põe no estado de erro do hook. Não há handler global de notificação no `QueryClient`: quem transforma a falha em algo visível é sempre quem disparou a ação, no ponto em que ela acontece.
+O erro percorre um caminho fixo. O `httpClient` lança `ApiError` em falha de HTTP; a `queryFn`/`mutationFn` propaga; o React Query põe no estado de erro do hook. Não há handler global de notificação no `QueryClient`: quem transforma a falha em algo visível é sempre quem disparou a ação, no ponto em que ela acontece.
 
 **Leitura vira estado de tela, não toast.** Falha de leitura que impede a tela de existir mostra o `LoadErrorState` com a saída de tentar de novo (`frontend/components.md`, "Estados de leitura"); leitura acessória, cuja falha não trava nada, não mostra nada. Nos dois casos o toast seria uma segunda cópia do mesmo fato, ou uma interrupção por algo que não interrompe.
 
@@ -365,9 +396,8 @@ export function useOrderProcessing(id: string) {
 - Toda chamada REST passa pelo `httpClient` sob `/api`, na origem da página, sem URL de API configurada no frontend?
 - Em desenvolvimento, o proxy de `/api` preserva o `Host` e não reescreve o domínio do cookie?
 - Leitura de estado servidor e escrita REST estão em React Query, sem cópia do dado em `useState`/contexto/store?
-- A operação HTTP é uma função em `api/<módulo>.ts`, usando o `httpClient`, sem lógica de UI, com o retorno anotado explicitamente?
-- Leitura valida a resposta com o schema do contrato canônico (`output`), sem cópia local?
-- Tipo de resposta, de filtro e de payload vem do contrato canônico, não declarado em `api/` nem redeclarado no app?
+- A operação HTTP é a função gerada de `api/<módulo>.ts`, sem edição à mão, sobre o `httpClient`?
+- Tipo de resposta, de filtro e de payload vem de `api/model.zod.ts`, não redeclarado no app?
 - O componente consome um custom hook de `hooks/<módulo>/`, nunca `useQuery`/`useMutation` direto?
 - As query keys saem da factory em `hooks/<módulo>/keys.ts`, não são digitadas à mão no hook?
 - A mutation sincroniza o cache pela regra (atualiza mudança simples, invalida mudança calculada pelo backend, descarta o que um guard lê pra decidir rota)?

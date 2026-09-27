@@ -31,7 +31,7 @@ apps/app-web/src/
 │   ├── <tela>/             # uma pasta por rota, com as peças dela
 │   └── components/         # peça de mais de uma página do módulo
 ├── hooks/<módulo>/         # hook React (um arquivo por hook)
-├── api/                    # funções de chamada ao app-api, por módulo
+├── api/                    # gerado do OpenAPI do app-api: funções por módulo e model.zod.ts
 ├── lib/<integração>/       # facade de biblioteca/serviço externo
 └── shared/
     ├── components/         # componente React reutilizado entre áreas
@@ -53,11 +53,11 @@ Propósito e fronteira de cada casa:
 | `app/` | providers, router, guards, layouts | composição da aplicação |
 | `pages/<módulo>/` | uma pasta por rota, mais as peças de cada uma | monta a tela; delega lógica às casas abaixo |
 | `hooks/<módulo>/` | hook React | React (estado, efeito, hook de lib) |
-| `api/` | funções de chamada ao app-api, por módulo | usa o client de `lib/`; sem lógica de UI |
+| `api/` | gerado do OpenAPI do app-api: funções por módulo e `model.zod.ts` | só o gerador escreve; chama o client de `lib/http/` |
 | `lib/<integração>/` | facade de biblioteca ou serviço externo | só o wrapper da dependência; uma subpasta por integração |
 | `shared/components/` | componente React reutilizado entre áreas | UI, sem chamada de rede direta |
 | `shared/config/` | configuração compartilhada do app | composição de configuração, não valor fixo isolado |
-| `shared/schemas/` | schema Zod do app, como o de form | valida em runtime; o schema de API vem do contrato canônico (`backend/http-api.md`) |
+| `shared/schemas/` | schema Zod do app, como o de form | valida em runtime; o schema de API é o gerado em `api/model.zod.ts` (`backend/http-api.md`) |
 | `shared/rules/` | decisão de UI por domínio (`orderRules.canEdit`) | função pura, sem React nem fetch |
 | `shared/constants/` | valor fixo | constante |
 | `shared/stores/` | estado cliente lido por telas diferentes | store Zustand, sem Provider |
@@ -119,7 +119,7 @@ A casa é o propósito, não a pasta: ela pode estar declarada aqui sem ter caso
 
 ## O que sobe pro pacote
 
-A colocação entre app e pacote segue `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app". No frontend, o pacote dono é o `@metri/utils` para função pura agnóstica, o `@metri/ui` para UI compartilhável (helper, hook, componente, provider) o `@metri/core/errors` para vocabulário de erro e o pacote dono do conceito para o contrato de API que o frontend e o backend consomem (`backend/http-api.md`, "Contrato de API compartilhado"). `shared/utils/` do `app-web` guarda só função pura que conhece algo deste app — e por isso tende a ser pequena ou nem existir. O detalhe da escolha de casa está em `frontend/helpers.md`, "Nível 3".
+A colocação entre app e pacote segue `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app". No frontend, o pacote dono é o `@metri/utils` para função pura agnóstica, o `@metri/ui` para UI compartilhável (helper, hook, componente, provider) e o `@metri/core/errors` para vocabulário de erro. `shared/utils/` do `app-web` guarda só função pura que conhece algo deste app — e por isso tende a ser pequena ou nem existir. O detalhe da escolha de casa está em `frontend/helpers.md`, "Nível 3".
 
 ## Verificação rápida
 

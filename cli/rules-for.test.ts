@@ -107,8 +107,11 @@ describe('rules-for', () => {
   });
 
   it('Caminhos do projeto: o glob do INDEX soma ao applies_to da regra', () => {
-    const { lines } = run('rules-for', ['--root', FIXTURE, 'packages/orders-contract/src/order.schema.ts']);
-    expect(ids(lines)).toEqual(['backend/http-api']);
+    const legacy = 'apps/app-api/src/legacy/order-export.ts';
+    expect(ids(run('rules-for', ['--root', FIXTURE, legacy]).lines)).toContain('backend/http-api');
+    const dir = copyFixture();
+    edit(dir, '.metri/ARCHITECTURE.md', (source) => source.replace('- `apps/app-api/src/legacy/**` → backend/http-api\n', ''));
+    expect(ids(run('rules-for', ['--root', dir, legacy]).lines)).not.toContain('backend/http-api');
   });
 
   it('sem caminho nem ticket é erro', () => {

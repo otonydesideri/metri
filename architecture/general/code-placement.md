@@ -18,11 +18,11 @@ O critério de colocação é ownership — o que o código conhece e de quem el
 
 Quando o ownership compartilhado do artefato não é inequívoco: **Padrão.** Ele permanece no app que é dono dele.
 
-Quando o artefato é uma capacidade claramente compartilhada, com ownership próprio e independente do app (função pura agnóstica em `@metri/utils`; helper, hook e componente de UI em `@metri/ui`; vocabulário de erro em `@metri/core/errors`; contrato de API que frontend e backend consomem, `backend/http-api.md`): **Permitido.** Ele nascer no pacote dono do conceito, mesmo com um consumidor atual só.
+Quando o artefato é uma capacidade claramente compartilhada, com ownership próprio e independente do app (função pura agnóstica em `@metri/utils`; helper, hook e componente de UI em `@metri/ui`; vocabulário de erro em `@metri/core/errors`): **Permitido.** Ele nascer no pacote dono do conceito, mesmo com um consumidor atual só.
 
 **Proibido.** Promover porque talvez seja reutilizado no futuro.
 
-**Proibido.** Pacote catch-all que junte domínios diferentes, inclusive um agregador global de contratos de API.
+**Proibido.** Pacote catch-all que junte domínios diferentes.
 
 Quando aparece um segundo consumidor real: **Obrigatório.** Reavaliar a casa pelo critério de ownership. O segundo consumidor é gatilho de reavaliação, não promoção automática; o que sobe leva a decisão registrada na casa de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
 
@@ -39,7 +39,7 @@ A reavaliação percorre esta árvore, sempre pelo ownership:
    └─ SIM → passo 3
 
 3. Existe uma capacidade compartilhada com dono claro, independente do app?
-   (contrato entre apps; infraestrutura técnica reutilizável; componente de UI;
+   (infraestrutura técnica reutilizável; componente de UI;
    helper puro agnóstico de domínio; config de tooling)
    ├─ SIM → packages/, no pacote dono do conceito
    └─ NÃO → fica no app; parar e perguntar se parece compartilhado

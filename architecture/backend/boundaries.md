@@ -71,7 +71,7 @@ Exceções de teste: `test/setup-e2e.ts` importa `@metri/db` para criar o banco 
 
 ## Zod é fronteira, não vocabulário interno
 
-Schema Zod vive em três lugares: `infra/http/dtos/<módulo>/` (formato HTTP), `infra/common/env/env.validation.ts` (env) e, quando o contrato de API é consumido também pelo frontend, o pacote dono do conceito (`backend/http-api.md`, "Contrato de API compartilhado"). O pipe global é registrado no grafo de módulos (`infrastructure/runtime.md`). `src/domain` nunca importa `zod` nem `nestjs-zod`; o request/response do use case é tipo próprio (`backend/application.md`, "Casos de uso").
+Schema Zod vive em dois lugares: `infra/http/dtos/<módulo>/` (formato HTTP e contrato de API, `backend/http-api.md`, "Contrato de API: o backend é a fonte") e `infra/common/env/env.validation.ts` (env). O pipe global é registrado no grafo de módulos (`infrastructure/runtime.md`). `src/domain` nunca importa `zod` nem `nestjs-zod`; o request/response do use case é tipo próprio (`backend/application.md`, "Casos de uso").
 
 ## Produção nunca importa `test/`
 

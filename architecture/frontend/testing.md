@@ -83,7 +83,7 @@ Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Tu
 
 Toda rede do app desemboca no mesmo `globalThis.fetch`: o `httpClient` (`frontend/data-fetching.md`, "O cliente HTTP") e o client de qualquer biblioteca externa que fale com o backend usam a mesma primitiva por baixo. Dublar nesse nível é o que cobre todos os caminhos com um mecanismo só.
 
-Mock do módulo `api/` cobre só o caminho REST, e deixa de fora o client de qualquer biblioteca que faça rede por conta própria — que é justamente a parte cujo ciclo de estado decide os ramos de tela. Um fake do `httpClient` tem a mesma lacuna e ainda pula o `output:` do better-fetch, tirando os schemas Zod da fronteira onde eles existem para atuar. O MSW, além de cobrir tudo, entrega o erro real do wire, com o `code` do envelope do backend, que é de onde dependem a tradução de erro e todo ramo de tela que liga num código específico.
+Mock do módulo `api/` cobre só o caminho REST, e deixa de fora o client de qualquer biblioteca que faça rede por conta própria — que é justamente a parte cujo ciclo de estado decide os ramos de tela. Um fake do `httpClient` tem a mesma lacuna e ainda pula o `ApiError` que ele monta do corpo de erro. O MSW, além de cobrir tudo, entrega o erro real do wire, com o `code` do envelope do backend, que é de onde dependem a tradução de erro e todo ramo de tela que liga num código específico.
 
 Regras de uso:
 
@@ -222,11 +222,11 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 - **Componente sem ramo de render**, cuja única variação é repassar prop para a biblioteca de baixo: a regra que ele carrega é provada na página onde ela é observável. Componente com estado ou condicional próprio ganha spec.
 - **Constante e tipo**: não tem comportamento. Mapa exaustivo anotado com `Record<Uniao, T>` também não, porque a exaustividade é do compilador, não de um teste (mesmo critério de `backend/testing.md`).
 - **Página que só compõe componentes já provados**, sem estado, sem escrita e sem ramo.
-- **O contrato com o backend**: nenhum teste daqui garante que o servidor devolve o que o contrato canônico declara. Campo novo ou estado novo do servidor chega como falha de parse, e o que se prova é o raio de alcance dessa falha, com um caso de payload desconhecido no ponto que consome o schema.
+- **O contrato com o backend**: quem garante que o servidor devolve o que o contrato declara é o próprio servidor (`@ZodResponse`) e o client gerado, atualizado pelo `api:drift` do `verify` (`backend/http-api.md`).
 
-## Limite do contrato compartilhado
+## Limite do contrato
 
-Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no contrato canônico, e o frontend a importa. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
+Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no DTO do backend, e o frontend importa a constante gerada. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
 
 Schema de form mais estrito que o do backend não é divergência, é decisão de produto (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes"). Nesse caso o spec do frontend leva um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
 

@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { afterAll, describe, expect, it } from 'vitest';
 import { copyFixture, removeCopies, run, write } from './lib/testing.ts';
 
@@ -34,5 +35,21 @@ describe('verify', { timeout: 60_000 }, () => {
       'ok rules-index:check',
       'ok test',
     ]);
+  });
+
+  it('api:drift: o gerador do contrato não pode mudar nenhum arquivo', () => {
+    const dir = copyFixture();
+    const generate = (content: string) => `node -e "require('fs').writeFileSync('openapi.json', '${content}')"`;
+    write(dir, 'package.json', JSON.stringify({ scripts: { 'api:generate': generate('v1') } }));
+    write(dir, 'openapi.json', 'v1');
+    write(dir, '.gitignore', 'node_modules/\npnpm-lock.yaml\n');
+    execSync('git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm fixture', { cwd: dir });
+    expect(run('verify', ['--root', dir])).toEqual({ status: 0, lines: ['ok docs-lint', 'ok rules-index:check', 'ok api:drift'] });
+
+    write(dir, 'package.json', JSON.stringify({ scripts: { 'api:generate': generate('v2') } }));
+    const { status, lines } = run('verify', ['--root', dir]);
+    expect(status).toBe(1);
+    expect(lines).toContain('falha api:drift');
+    expect(lines).toContain('  mudou: openapi.json');
   });
 });

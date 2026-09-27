@@ -77,7 +77,7 @@ pages/order/
 ```ts
 // pages/order/order.helpers.ts
 import { formatBRL } from '@metri/utils/currency';
-import type { Order } from '@metri/<pacote-dono>';
+import type { Order } from '@/api/model.zod';
 
 export function buildOrderSummary(
   order: Pick<Order, 'items' | 'totalInCents'>,
@@ -128,7 +128,7 @@ Diferente de helper (agnóstico de domínio), rule é função específica de do
 
 ```ts
 // shared/rules/order.rule.ts
-import type { Order } from '@metri/<pacote-dono>';
+import type { Order } from '@/api/model.zod';
 
 export const orderRules = {
   canEdit(order: Pick<Order, 'status'>): boolean {
@@ -154,7 +154,7 @@ Não criar rule pra condição trivial de uso único: `{order.status === 'DRAFT'
 
 Valor usado num arquivo só fica inline nele. Só vai pra `shared/constants/<módulo>.constant.ts` o valor que se repetiria em mais de um arquivo do app.
 
-Limite que a API impõe não vira constante do app: vem do contrato canônico (`backend/http-api.md`, "União fechada e limite do contrato").
+Limite que a API impõe não vira constante do app: vem da constante gerada em `api/model.zod.ts` (`backend/http-api.md`, "União fechada e limite do contrato").
 
 O agrupamento é por módulo, um arquivo por módulo, nunca um arquivo por constante (`shared/constants/<módulo>.constant.ts` reúne as constantes do módulo), mesmo critério de `shared/schemas/<módulo>.schema.ts`. Isso evita a proliferação de arquivo de uma linha só.
 
@@ -173,13 +173,13 @@ Se um módulo precisar de tamanho diferente, o override é local àquele caso.
 
 ## Tipos compartilhados
 
-Tipo do contrato de API vem do contrato canônico, no pacote dono (fim desta seção). Tipo do app com pelo menos um consumidor fica em `shared/types/<módulo>.type.ts`, nomeado, e é importado de lá. O limiar é um, não dois: esperar o segundo consumidor significa que o primeiro já declarou o tipo inline, e o segundo declara outro igual em vez de achar o que existe. Antes de escrever um tipo novo, ler o arquivo do módulo em `shared/types/` e reusar o que já estiver lá.
+Tipo do contrato de API vem do client gerado, `api/model.zod.ts` (fim desta seção). Tipo do app com pelo menos um consumidor fica em `shared/types/<módulo>.type.ts`, nomeado, e é importado de lá. O limiar é um, não dois: esperar o segundo consumidor significa que o primeiro já declarou o tipo inline, e o segundo declara outro igual em vez de achar o que existe. Antes de escrever um tipo novo, ler o arquivo do módulo em `shared/types/` e reusar o que já estiver lá.
 
 A exceção é o tipo de formulário (`<Nome>Values`), que continua exportado no próprio `shared/schemas/<módulo>.schema.ts`: ele é companion do schema de form (`frontend/forms.md`), nasce e morre com ele, e nenhum outro schema deriva dele. A outra exceção é o tipo que só descreve a forma de um mock, que mora no próprio arquivo de `shared/mocks/` (`frontend/structure.md`, "Casa com fronteira").
 
 A fonte do tipo depende de onde o dado vem:
 
-- Dado validado em runtime (resposta de API, input de form) tem o tipo derivado do schema Zod por `z.infer`, não redeclarado à mão.
+- Dado da API tem o tipo gerado em `api/model.zod.ts`; dado que o app valida em runtime (input de form, parâmetro de URL) tem o tipo derivado do schema Zod por `z.infer`, não redeclarado à mão.
 - Dado que chega pelo client de uma integração externa, sem passar por schema do app, deriva do próprio client (`Awaited<ReturnType<typeof client.<método>>>`), reduzido com `Pick` pros campos que o app consome. Redeclarar à mão criaria uma segunda descrição da mesma linha, que diverge sem nada acusar quando o pacote renomeia um campo. A derivação depende do formato exato da chamada: opção que muda o tipo de retorno (um `throw` que troca a união `{ data, error }` pelo dado) entra na derivação, senão ela colapsa pra `any` em silêncio, e o `Pick` não acusa isso.
 - Categoria de erro da API é o `ApiErrorType` de `@metri/core/errors`, importado direto do pacote, nunca recriado no app nem trocado pelo `DomainErrorType` (`backend/errors.md`, "O formato de resposta de erro").
 - Tipo interno ao frontend, sem validação em runtime, é `type` puro.
@@ -196,11 +196,11 @@ export type OrderListItem = Pick<
 >;
 ```
 
-Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/http-api.md` ("Contrato de API compartilhado"), no pacote dono do conceito (`backend/http-api.md`, "Aplicação"); tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
+Tipo que cruza a fronteira com o backend é o gerado em `api/model.zod.ts` (`backend/http-api.md`, "Contrato de API: o backend é a fonte"); tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
 
 ## Zod schema vs. type plain
 
-`z.infer` de um schema Zod quando o valor precisa ser validado em runtime: resposta de API, input de form, parsing de parâmetro de URL. O parse tem custo, então não se paga por ele onde não há validação.
+`z.infer` de um schema Zod quando o app precisa validar o valor em runtime: input de form, parsing de parâmetro de URL. O parse tem custo, então não se paga por ele onde não há validação.
 
 `type` puro quando o tipo é interno ao frontend e só existe em tempo de compilação, sem nada pra validar em runtime.
 
@@ -215,7 +215,7 @@ Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/
 - Rule está em `shared/rules/<módulo>.rule.ts`, é função pura e usa `Pick` do tipo?
 - Rule é mais permissiva que o backend, nunca mais restritiva, e não duplica regra de negócio?
 - Condição trivial de uso único ficou inline, sem virar rule?
-- Constante só subiu pra `shared/constants/<módulo>.constant.ts` por repetição entre arquivos, e limite da API vem do contrato canônico?
+- Constante só subiu pra `shared/constants/<módulo>.constant.ts` por repetição entre arquivos, e limite da API vem da constante gerada?
 - Valor genérico repetido usa nome genérico, não um por domínio?
-- Tipo do contrato de API vem do pacote dono, e tipo do app compartilhado está em `shared/types/<módulo>.type.ts`, derivado de schema (`z.infer`) quando há validação em runtime, e estendido com `&`/`Pick` em vez de duplicado?
+- Tipo do contrato de API vem de `api/model.zod.ts`, e tipo do app compartilhado está em `shared/types/<módulo>.type.ts`, derivado de schema (`z.infer`) quando há validação em runtime, e estendido com `&`/`Pick` em vez de duplicado?
 - `ApiErrorType` vem de `@metri/core/errors`, não redeclarado no app nem substituído pelo `DomainErrorType`?

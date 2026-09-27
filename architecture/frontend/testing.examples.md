@@ -70,7 +70,7 @@ describe('useConfirmOrder', () => {
 ```ts
 // test/factories/make-order.factory.ts
 import { faker } from '@faker-js/faker';
-import type { OrderStatus } from '@metri/<pacote-dono>';
+import type { OrderStatus } from '@/api/model.zod';
 
 interface OrderPayload {
   id: string;

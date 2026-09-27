@@ -133,11 +133,11 @@ describe('docs-lint', { timeout: 30_000 }, () => {
   it('applies_to sem casamento: aviso, sem erro', () => {
     const { status, output } = lintChanged((dir) =>
       edit(dir, '.metri/ARCHITECTURE.md', (source) =>
-        source.replace('packages/orders-contract/src/**', 'packages/billing-contract/src/**'),
+        source.replace('apps/app-api/src/legacy/**', 'apps/app-api/src/old/**'),
       ),
     );
     expect(status).toBe(0);
-    expect(output).toContain('aviso: applies_to: packages/billing-contract/src/** não casa com nenhum arquivo');
+    expect(output).toContain('aviso: applies_to: apps/app-api/src/old/** não casa com nenhum arquivo');
   });
 
   it('MATRIX: títulos de seção fixos', () => {

@@ -21,7 +21,7 @@ Padrão: `node_modules/metri/architecture/backend/layers.md`, "O caminho de uma 
 
 ## Caminhos do projeto
 
-- `packages/orders-contract/src/**` → backend/http-api
+- `apps/app-api/src/legacy/**` → backend/http-api
 
 ## Exceções e defaults trocados
 
