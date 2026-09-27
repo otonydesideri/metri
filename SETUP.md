@@ -71,6 +71,7 @@ Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy
   - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
 - [ ] 4.2 `rules-for`: devolve as regras aplicáveis a caminhos ou a um ticket; soma os "Caminhos do projeto" do INDEX ao `applies_to`
 - [ ] 4.3 `docs-lint`: árvore permitida, frontmatter das regras, formato da matriz
+  - Parte do source feita; faltam a árvore do projeto e o formato da matriz.
 - [ ] 4.4 `verify`: agrega os checks
 - [ ] 4.5 Rodar tudo neste repositório até ficar verde
 

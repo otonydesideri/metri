@@ -372,13 +372,15 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 ### 6.13 Lint estrutural (parte do `verify`)
 
 - **Árvore permitida:** `AGENTS.md`, `CLAUDE.md`, `docs/{CONTEXT,PRODUCT,DESIGN}.md`, `docs/architecture/**`, `docs/adr/**`, `docs/plan/MATRIX.md`, `docs/plan/tech/**` (reservado). Nada mais em `docs/`.
-- **Regras:** o `docs-lint` checa só o frontmatter:
-  - as quatro chaves obrigatórias da seção 4.3 (`id`, `description`, `use_when`, `status`) e nenhuma chave vazia;
+- **Regras:** o `docs-lint` checa o frontmatter:
+  - as quatro chaves obrigatórias da seção 4.3 (`id`, `description`, `use_when`, `status`), nenhuma chave vazia, nenhuma chave fora da seção 4.3 e `status` com um valor dela;
   - `id` igual ao caminho `<área>/<tema>`;
-  - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada da seção 4.3;
-  - os arquivos citados em `examples` existem.
+  - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada da seção 4.3, e a seção que `not_covered` cita existe na regra;
+  - os arquivos citados em `examples` existem, e os ids de `adr` existem em `adr/`.
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
+- **Citações** (no source, em `architecture/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido.
+- **"Como ler":** todo id de regra do source aparece em "Como ler" do `architecture/INDEX.md`.
 - **Gerados:** `INDEX.md` atualizados; o `rules-index:check` sai com código 1 se algum estiver desatualizado.
 - **Matriz:** esquema da seção 9 (chaves em inglês, ids válidos, valores de enum válidos); todo ticket tem slice, tipo e checks; todo tracer aponta para um UC; nada órfão; todo `GAP-n` do código existe na matriz e vice-versa.
 - **Opcional:** sinônimos proibidos do `CONTEXT.md` ausentes dos identificadores; nenhum valor fixo de cor ou espaçamento fora do tema.
@@ -392,7 +394,7 @@ Serve para o global e para o projeto.
 ### 7.1 Formato
 
 - Toda regra começa com frontmatter, com as chaves da seção 4.3. É a única parte de formato fixo e a única que os scripts leem.
-- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades de `methodology/authoring.md`, "Por quê", "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
+- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades de `methodology/authoring.md`, blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
 ### 7.2 Refinar uma regra existente (sem reescrever)

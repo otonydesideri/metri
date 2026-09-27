@@ -5,7 +5,8 @@
   "packageManager": "pnpm@11.20.0",
   "scripts": {
     "rules-index": "tsx template/scripts/rules-index.ts",
-    "rules-index:check": "tsx template/scripts/rules-index.ts --check"
+    "rules-index:check": "tsx template/scripts/rules-index.ts --check",
+    "docs-lint": "tsx template/scripts/docs-lint.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

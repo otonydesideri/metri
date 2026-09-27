@@ -142,7 +142,7 @@ O critério entre as duas formas: item com conteúdo próprio (a foto, o item de
 
 ## O repositório persiste o delta
 
-A escrita upsert com `createMany` dos novos e `deleteMany` dos removidos na mesma transação da raiz, e o despacho de eventos depois dela, já são o padrão de `backend/persistence.md` ("Escrita canônica do agregado", com o upsert em persistence.examples.md#orderprismarepositoryimpl) e de `backend/events.md` ("A entidade registra, o repositório despacha"); esta seção não muda nada dele, só fixa um limite. O `save()` de `Product` segue aquele desenho com `ProductPhotoPrismaMapper`.
+A escrita upsert com `createMany` dos novos e `deleteMany` dos removidos na mesma transação da raiz, e o despacho de eventos depois dela, já são o padrão de `backend/persistence.md` ("Escrita canônica do agregado", com o upsert em backend/persistence.examples.md#orderprismarepositoryimpl) e de `backend/events.md` ("A entidade registra, o repositório despacha"); esta seção não muda nada dele, só fixa um limite. O `save()` de `Product` segue aquele desenho com `ProductPhotoPrismaMapper`.
 
 O limite que este documento fixa: o delta rastreia pertencimento, não conteúdo. Um item que permaneceu na coleção mas mudou um campo interno não aparece em `getNewItems()` nem em `getRemovedItems()`, e a escrita canônica do agregado não persiste essa edição. Fluxo que precisa editar item filho no lugar ainda não tem instância nem desenho decidido; quando aparecer, parar e decidir antes de implementar (ver "Pontos em aberto").
 
