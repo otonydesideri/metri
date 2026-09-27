@@ -4,9 +4,6 @@ description: "as camadas do backend (layer-first) — `domain/` e `infra/` como 
 use_when:
   - "decidir em qual camada do backend uma regra entra"
   - "criar arquivo novo no app backend"
-applies_to:
-  - "apps/app-api/src/**"
-  - "apps/app-api/test/**"
 not_covered:
   - "fronteiras de import → backend/boundaries"
   - "estrutura de módulo e comunicação entre módulos → backend/modules"

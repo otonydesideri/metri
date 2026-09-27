@@ -5,8 +5,6 @@ use_when:
   - "decidir em que pasta (casa) do `app-web` um arquivo de código novo entra"
   - "nomear um arquivo do frontend"
   - "abrir uma casa nova no `app-web`"
-applies_to:
-  - "apps/app-web/src/**"
 keywords: [estrutura de pastas, casa, app/, pages/, hooks/, api/, lib/, shared/, shared/components, shared/mocks, nomeação de arquivo, kebab-case, pasta do dono, arquivo de entrada, "<tela>-page.tsx", "<área>-layout.tsx", casa nova, "@metri/utils", "@metri/ui"]
 status: active
 ---

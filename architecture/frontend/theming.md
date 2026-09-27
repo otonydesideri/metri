@@ -1,6 +1,6 @@
 ---
 id: frontend/theming
-description: "o uso de token e tema no código do app — cor, espaçamento e tipografia vêm dos tokens do `@metri/ui`, sem valor arbitrário cravado no componente; o tema como contrato de classe (`light`/`dark`) no `documentElement`, do pacote, e o provider de tema do `@metri/ui` (next-themes); o script inline antes do primeiro paint; dois valores, sem `system`, e `light` para quem nunca escolheu."
+description: "o uso de token e tema no código do app — cor, espaçamento e tipografia vêm dos tokens do `@metri/ui`, sem valor arbitrário cravado no componente; o tema como contrato de classe (`light`/`dark`) no `documentElement`, do pacote, e o provider de tema do `@metri/ui` (next-themes); o script inline e o fundo do `index.html` (`html` e `html.dark`) antes do primeiro paint; dois valores, sem `system`, e `light` para quem nunca escolheu."
 use_when:
   - "escolher cor, espaçamento ou tipografia"
   - "mexer em tema ou no provider de tema"
@@ -9,7 +9,7 @@ applies_to:
   - "apps/app-web/src/app/index.tsx"
   - "packages/ui/src/styles/globals.css"
   - "packages/ui/src/components/providers/theme-provider.tsx"
-keywords: [token, tokens de UI, design system, "@metri/ui", Tailwind, valor arbitrário, tema, light, dark, documentElement, "@custom-variant dark", ThemeProvider, theme-provider, next-themes, enableSystem, useTheme, script inline, primeiro paint, prefers-color-scheme, system]
+keywords: [token, tokens de UI, design system, "@metri/ui", Tailwind, valor arbitrário, tema, light, dark, documentElement, "@custom-variant dark", ThemeProvider, theme-provider, next-themes, enableSystem, useTheme, script inline, primeiro paint, html.dark, "--background", prefers-color-scheme, system]
 not_covered:
   - "o kit, a entrada de componente no pacote e as CSS variables de tema → defaults/ui"
   - "valores e vocabulário visual → project:DESIGN"
@@ -41,6 +41,12 @@ Quando falta um token: **Obrigatório.** Checar primeiro se ele já existe no `@
 Quando o `ThemeProvider` passa a usar outra chave: **Obrigatório.** O script inline troca de chave na mesma edição.
 
 > **Por quê.** O next-themes aplica a classe num `useEffect`, depois do primeiro paint, e o script que ele renderiza só roda em HTML que vem do servidor: no app Vite, o React cria esse script sem executá-lo. Sem o script do `index.html`, o primeiro frame sai no tema errado para quem escolheu o escuro.
+
+**Obrigatório.** O fundo que o `index.html` pinta antes de o React montar (`frontend/routing.md`) segue a classe que o script inline aplica: um `<style>` inline pinta `html` com o valor claro do token `--background` e `html.dark` com o valor escuro, os dois de `packages/ui/src/styles/globals.css` (`:root` e `.dark`).
+
+Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do `index.html` muda na mesma edição.
+
+> **Por quê.** O `<style>` inline pinta antes de o CSS do `@metri/ui` carregar, então não lê a variável; com um valor só, quem escolheu o escuro vê o fundo claro até o tema entrar.
 
 **Obrigatório.** O tema tem dois valores; a preferência do sistema operacional não entra: sem `system` (`enableSystem={false}`), e a `prefers-color-scheme` não decide o tema nem no provider nem no script inline.
 
@@ -86,6 +92,11 @@ export { useTheme } from 'next-themes';
 
 ```html
 <!-- apps/app-web/index.html, no <head> -->
+<style>
+  /* --background de :root e de .dark, em packages/ui/src/styles/globals.css */
+  html { background: oklch(1 0 0); }
+  html.dark { background: oklch(0.145 0 0); }
+</style>
 <script>
   document.documentElement.classList.add(localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
 </script>
@@ -97,6 +108,7 @@ export { useTheme } from 'next-themes';
 
 - As classes de UI usam token do `@metri/ui`, sem valor arbitrário (`bg-[#...]`, `p-[16px]`)?
 - Tema: app Vite monta o `ThemeProvider` do `@metri/ui` (next-themes com `attribute="class"` e `enableSystem={false}`), com a classe aplicada pelo script inline antes do primeiro paint, dois valores e default `light`?
+- O `<style>` inline do `index.html` pinta `html` e `html.dark` com o valor claro e o escuro do `--background` do `globals.css`?
 - Componente do pacote ramifica por `dark?`, não pelo `useTheme()` do pacote?
 
 ## Referências

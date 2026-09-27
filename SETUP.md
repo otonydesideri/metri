@@ -115,6 +115,7 @@ Fase 4 fechada: `rules-for`, `docs-lint` no projeto e `verify`, com testes em Vi
   - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
 - [x] 4.2 `rules-for`: `applies_to` e "Caminhos do projeto" do INDEX; cerca de 5 regras por ticket
   - Testes em Vitest com a fixture `template/scripts/__fixtures__/project/`, cujo `.metri/architecture` é symlink para o `architecture/` deste repositório; substituição de regra global: linha em "Exceções e defaults trocados" com o id, "substitu" e o ADR.
+  - Depois (Fase 5): `backend/layers` e `frontend/structure` sem `applies_to`, lidas pela `use_when` quando o ticket cria arquivo ou módulo; `backend/boundaries` mantém o dela até o check de fronteiras ("Em aberto").
 - [x] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
   - A parte do source está feita; o aviso de `applies_to` sem casamento (METHODOLOGY 6.13) entra aqui.
   - Modo pela presença de `.metri/`; a lista de checagens saiu da 6.13 para o `--help`. O aviso de `applies_to` sem casamento vale para as regras do projeto e para "Caminhos do projeto"; `docs/plan/tech/` fica fora da árvore até ser usada; slice em construção (`horizon` com `entry`, sem `contract`) é válida (A.7).

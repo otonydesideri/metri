@@ -14,7 +14,7 @@ describe('rules-for', () => {
   it('caminho: casa com o applies_to global e do projeto, projeto primeiro, com read_first e exceção', () => {
     const { status, lines } = run('rules-for.ts', ['--root', FIXTURE, PAGE]);
     expect(status).toBe(0);
-    expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/state', 'frontend/structure']);
+    expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/state']);
     expect(lines[0]).toBe(
       'frontend/order-list — a lista de pedidos do painel — paginação no servidor e filtros na URL. (docs/architecture/frontend/order-list.md)',
     );
@@ -29,11 +29,17 @@ describe('rules-for', () => {
       'frontend/order-list',
       'frontend/components',
       'frontend/state',
-      'frontend/structure',
     ]);
     expect(run('rules-for.ts', ['--root', FIXTURE, 'libs/**']).lines).toContain(
       'aviso: libs/** não casa com nenhum arquivo',
     );
+  });
+
+  it('regra sem applies_to não sai por caminho: backend/layers e frontend/structure; backend/boundaries sai', () => {
+    expect(ids(run('rules-for.ts', ['--root', FIXTURE, PAGE]).lines)).not.toContain('frontend/structure');
+    const backend = ids(run('rules-for.ts', ['--root', FIXTURE, MAIL]).lines);
+    expect(backend).toContain('backend/boundaries');
+    expect(backend).not.toContain('backend/layers');
   });
 
   it('ticket: usa os ids de areas e expande read_first', () => {

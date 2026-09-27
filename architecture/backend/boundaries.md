@@ -106,6 +106,6 @@ grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spe
 
 ## Em aberto
 
-- **Enforcement automatizado das fronteiras de dependência.** Enforcement automatizado destas regras (regra de lint de imports restritos ou ferramenta dedicada de grafo de dependência) não tem desenho fechado; a verificação é manual, pelos comandos acima.
+- **Enforcement automatizado das fronteiras de dependência.** Enforcement automatizado destas regras (regra de lint de imports restritos ou ferramenta dedicada de grafo de dependência) não tem desenho fechado; a verificação é manual, pelos comandos acima. Até o check de fronteiras existir, esta regra mantém o `applies_to`, e o `rules-for` a entrega em todo arquivo do backend; com o check, o id dele entra em `enforced_by` e o `applies_to` sai.
   - Regra de lint de imports restritos
   - Ferramenta dedicada de grafo de dependência
