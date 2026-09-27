@@ -6,7 +6,6 @@ use_when:
   - "introduzir um builder com passos encadeados"
 keywords: [Builder, builder, "build()", "withX()", InvoiceDocumentBuilder, InvoiceDocument, Director, type-state, test data builder, objeto de props, spread condicional, passos encadeados, forma acumuladora]
 examples: [domain/builder.examples.md]
-adr: [ADR-0008]
 status: active
 ---
 # Builder
@@ -80,7 +79,7 @@ Pontos-chave:
 - `build()` é o único ponto de saída: valida a invariante da montagem (`Either`, nunca `throw`) e é onde o derivado nasce (`totalInCents`), como derivado nasce dentro do `create()` em `domain/model.md`.
 - Passo opcional ausente vira `null` explícito na estrutura, e quem renderiza decide o que fazer com a ausência; o builder não inventa default de apresentação.
 - Quando a ordem dos passos importar (terceiro gatilho), a forma evolui: cada passo devolve um tipo que só expõe o próximo passo legal (type-state), em vez de `this`. A forma acumuladora acima basta enquanto a ordem for livre.
-- A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra de escape do AGENTS.md; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo"). A decisão fecha o ADR-0008.
+- A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra de escape do AGENTS.md; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo"). A decisão fecha o item de "Em aberto".
 
 ## Verificação rápida
 
@@ -89,8 +88,8 @@ Pontos-chave:
 - Nenhum `build()` lançando para campo faltante; falha esperada é `Either`, com derivado nascendo no `build()`?
 - Nenhum builder de cenário de teste (Arrange inline, `backend/testing.md`)?
 - Classe de config com `build()` continua composição única, sem `withX()` encadeado?
-- Gatilho real (documento combinatório, mais de uma representação, ordem por tipo): parou e decidiu antes de implementar, com a decisão fechando o ADR-0008?
+- Gatilho real (documento combinatório, mais de uma representação, ordem por tipo): parou e decidiu antes de implementar, com a decisão fechando o item de "Em aberto"?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Casa do arquivo, Director e type-state do builder (ADR-0008)
+- **Casa do arquivo, Director e type-state do builder.** A forma acumuladora já está fixada; ficam em aberto, para o primeiro gatilho real, a casa do arquivo, a separação entre receita e passos (Director) e a variante type-state quando a ordem dos passos importar.

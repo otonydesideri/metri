@@ -13,7 +13,6 @@ applies_to:
 keywords: [import, grafo de dependência, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
 not_covered:
   - "as regras próprias do frontend → frontend/structure"
-adr: [ADR-0005]
 status: active
 ---
 # Fronteiras de dependência
@@ -105,6 +104,8 @@ grep -rhoP "from '[^'.][^']*'" packages/utils/src --include="*.ts" | grep -v "no
 grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spec.ts" --exclude="*.e2e-spec.ts"
 ```
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Enforcement automatizado das fronteiras de dependência (ADR-0005)
+- **Enforcement automatizado das fronteiras de dependência.** Enforcement automatizado destas regras (regra de lint de imports restritos ou ferramenta dedicada de grafo de dependência) não tem desenho fechado; a verificação é manual, pelos comandos acima.
+  - Regra de lint de imports restritos
+  - Ferramenta dedicada de grafo de dependência

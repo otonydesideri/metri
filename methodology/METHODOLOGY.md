@@ -56,11 +56,11 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `docs/CONTEXT.md`       | Linguagem compartilhada do domínio (PT ↔ identificador EN)             |
 | `docs/PRODUCT.md`       | Intenção e escopo                                                      |
 | `docs/DESIGN.md`        | Identidade visual e design system (se houver interface)                |
-| `docs/architecture/`    | Regras só deste projeto, por área, e contratos das slices              |
+| `docs/architecture/`    | Estado da ativação (`INDEX.md`) e regras só deste projeto, por área    |
 | `docs/adr/`             | Decisões, trade-offs e exceções                                        |
-| `docs/plan/MATRIX.md`   | Plano único: features, casos de uso, slices, tickets e checks          |
+| `docs/plan/MATRIX.md`   | Plano único: features, casos de uso, slices e contratos, tickets e checks |
 | `.metri/`               | Regras de padronização globais, somente leitura, só em desenvolvimento |
-| Código                  | Padrões, cabeçalhos inline, SOT keywords, tokens e checks              |
+| Código                  | Padrões, cabeçalhos inline (e o contrato da slice construída), SOT keywords, tokens e checks |
 
 **O humano decide em poucos pontos:** direção, plano, padrões novos e diffs sensíveis, aceite, e passos de release que só ele pode fazer. O resto é trabalho do agente.
 
@@ -162,7 +162,6 @@ docs/
   architecture/
     INDEX.md                  base (source@vX.Y), desvios de stack, caminho linear, capacidades ativas, delegações, caminhos do projeto, exceções, áreas ativas
     <área>/*.md               regras só do projeto          (+ INDEX.md gerado)
-    slices/*.md               contratos das slices          (+ INDEX.md gerado)
   adr/NNNN-*.md
   plan/
     MATRIX.md                 plano vivo
@@ -180,10 +179,9 @@ docs/
 ```
 .metri/                         repositório próprio, versionado por tags (vX.Y), montado nos projetos nesta pasta
   architecture/
-    INDEX.md                    parte escrita à mão + lista gerada abaixo de <!-- rules-index -->: área → INDEX.md da área
+    INDEX.md                    parte escrita à mão + gerado abaixo de <!-- rules-index -->: área → INDEX.md da área e a tabela "Capacidades condicionais"
     general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
     defaults/                   escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
-  catalog/<capacidade>.md       slices reutilizáveis (inclui design-system) (+ INDEX.md gerado)
   methodology/
     METHODOLOGY.md              a metodologia (Apêndice A: formatos de regra, slice e ADR; ponteiros para o starter)
     VOCABULARY.md               vocabulário da metodologia (chaves canônicas)
@@ -206,8 +204,8 @@ docs/
 
 | Camada               | Onde                    | Conteúdo                                                         | Quem escreve                            | Quando é lido                          |
 | -------------------- | ----------------------- | ---------------------------------------------------------------- | --------------------------------------- | -------------------------------------- |
-| Architecture Source  | `.metri/`               | Padronização, catálogo, defaults, vocabulário, templates, skills | Você, por PR no repositório do source   | Via `rules-for`, catálogo e defaults   |
-| Project Architecture | `docs/architecture/`    | Regras só do projeto; registro e contratos das slices            | Look across, ticket de padrão, Aprender | Via `rules-for` e ponteiros do ticket  |
+| Architecture Source  | `.metri/`               | Padronização, capacidades condicionais, defaults, vocabulário, templates, skills | Você, por PR no repositório do source   | Via `rules-for`, `INDEX.md` e defaults |
+| Project Architecture | `docs/architecture/`    | Estado da ativação e regras só do projeto                        | Look across, ticket de padrão, Aprender | Via `rules-for` e ponteiros do ticket  |
 | ADRs                 | `docs/adr/`             | Decisões, trade-offs, exceções                                   | Moldar, Look across, Aprender           | Quando uma regra ou ticket cita o ADR  |
 | Linguagem            | `docs/CONTEXT.md`       | Termos do domínio, PT ↔ EN                                       | Moldar, Look across                     | Ao nomear qualquer coisa               |
 | Produto              | `docs/PRODUCT.md`       | Intenção e escopo                                                | Moldar                                  | Ao discutir requisitos                 |
@@ -218,9 +216,9 @@ docs/
 
 ### 6.2 Architecture Source (global)
 
-**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, cada uma sustentada por um ADR global, usadas quando o projeto não decide nada diferente.
+**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é sustentada por ADR global (ADR-0001), e a stack tem o `architecture/defaults/stack.md` como registro.
 
-**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (seção 8.1): `architecture/defaults/stack.md` + ADR global. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
+**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (seção 8.1): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
 
 **Entrada no projeto:** submódulo ou pacote em `.metri/`, **somente leitura e com versão fixada**. É dependência só de desenvolvimento: **não vai para o código entregue** (fica fora de build, exportação e pacote final).
 
@@ -247,7 +245,7 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 
 ### 6.5 ADRs
 
-**Critério para criar** (os três ao mesmo tempo, como no Matt):
+**Critério para criar** (só decisão tomada, com os três ao mesmo tempo, como no Matt):
 
 1. **difícil de reverter;**
 2. **surpreendente sem contexto;**
@@ -257,9 +255,9 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 
 **Onde:** as decisões globais ficam em `.metri/adr/`; as do projeto, em `docs/adr/`.
 
-**Status:** `proposed`, `accepted` ou `superseded by ADR-NNNN`. Nunca se apaga um ADR.
+**Status:** `accepted` ou `superseded by ADR-NNNN`. Nunca se apaga um ADR.
 
-**Ponto em aberto** (pergunta ainda sem decisão) vira ADR `proposed`, nunca seção de regra; a regra aponta para ele em `adr`. Decidido, o ADR passa a `accepted` e a regra é editada no lugar. O que uma decisão explicitamente não é entra no ADR como alternativa considerada.
+**Pergunta em aberto** fica na regra dona, na seção "Em aberto", um item por pergunta (`- **<título>.** <texto>`); nunca vira ADR. Decidida, sai de lá: a regra é editada no lugar e, se a decisão cumpre o critério, ganha ADR. O que uma decisão explicitamente não é entra no ADR como alternativa considerada.
 
 ### 6.6 `PRODUCT.md`
 
@@ -287,7 +285,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 ### 6.10 O código como fonte
 
 - **Exemplo canônico:** todo padrão tem um arquivo de código de referência, apontado pela regra.
-- **Cabeçalho inline:** no topo de cada módulo relevante, _o quê / por quê / onde se conecta / como usar_ + **SOT keywords** + ids de ADR ou BR quando houver.
+- **Cabeçalho inline:** no topo de cada módulo relevante, _o quê / por quê / onde se conecta / como usar_ + **SOT keywords** + ids de ADR ou BR quando houver; no `entry` de uma slice construída, o cabeçalho é o contrato dela (A.7).
 - **Barrels (`index`)** funcionam como mapa do módulo para o agente.
 - **Lacuna sinalizada:** `GAP-<n>` no código, verificado por lint contra a seção Gaps da matriz.
 - **Tokens de design** (cores, tipografia, espaçamento, raio) vivem no tema do código; nenhum valor fixo em componente.
@@ -298,9 +296,9 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 - **`rules-for <caminhos | --ticket T2.1>`** é um script do template, independente de ferramenta. Ele devolve só as regras aplicáveis (global, depois projeto, mais os ADRs citados).
 - Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no `applies_to` global: fica na seção "Caminhos do projeto" do `docs/architecture/INDEX.md` (glob → id), e o `rules-for` soma esses caminhos ao `applies_to` da regra.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
-- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Quando as entradas têm `entry` (as slices, A.7), a tabela ganha a coluna `entry`, que é o ponto de entrada que o roteamento lê. Não há segunda fonte.
+- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Não há segunda fonte.
 - O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada: área → caminho do `INDEX.md` da área, com o número de regras.
-- O `catalog/INDEX.md` do source é gerado do mesmo jeito, uma linha por capacidade.
+- Abaixo da lista vem a tabela gerada "Capacidades condicionais" (`id | activation`), uma linha por regra com `activation`: a pergunta de ativação de cada capacidade condicional mora na regra dona.
 - **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
 
 ### 6.12 Fonte única por conceito e escada de regras
@@ -311,9 +309,9 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 | Termos do domínio (PT ↔ EN)                    | `CONTEXT.md`                              | `PRODUCT.md`, código solto                     |
 | Vocabulário da metodologia                     | `methodology/VOCABULARY.md` (global)      | projeto                                        |
 | Padronização (como construímos)                | Architecture Source                       | projeto                                        |
-| Escolha padrão de tecnologia                   | `architecture/defaults/` (global) + ADR global | projeto                                        |
+| Escolha padrão de tecnologia                   | `architecture/defaults/` (global)         | projeto                                        |
 | Regras só do projeto                           | `docs/architecture/<área>/`               | global, README                                 |
-| Contrato de uma slice                          | `docs/architecture/slices/<slice>.md`     | matriz                                         |
+| Contrato de uma slice                          | Bloco `contract` na matriz; construída, cabeçalho do `entry` | arquivo próprio em `docs/`                     |
 | Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | Código (tema)                             | `DESIGN.md` (depois da slice de design system) |
@@ -335,14 +333,14 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 - **Árvore permitida:** `AGENTS.md`, `CLAUDE.md`, `docs/{CONTEXT,PRODUCT,DESIGN}.md`, `docs/architecture/**`, `docs/adr/**`, `docs/plan/MATRIX.md`, `docs/plan/tech/**` (reservado). Nada mais em `docs/`.
 - **Regras:** o `docs-lint` checa o frontmatter:
-  - as quatro chaves obrigatórias de `methodology/VOCABULARY.md` (`id`, `description`, `use_when`, `status`), nenhuma chave vazia, nenhuma chave fora dele e `status` com um valor dele;
+  - as quatro chaves obrigatórias de `methodology/VOCABULARY.md` (`id`, `description`, `use_when`, `status`), nenhuma chave vazia, nenhuma chave fora dele, `status` com um valor dele e `activation`, quando existe, em texto;
   - `id` igual ao caminho `<área>/<tema>`;
   - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada de `methodology/VOCABULARY.md`, e a seção que `not_covered` cita existe na regra;
   - os arquivos citados em `examples` existem, e os ids de `adr` existem em `adr/`.
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
-- **Catálogo:** o frontmatter de `catalog/<capacidade>.md` tem só as chaves de capacidade de `methodology/VOCABULARY.md`, nenhuma vazia, e `id` igual a `catalog/<capacidade>`.
-- **Citações** (no source, em `architecture/`, `catalog/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido. `template/` fica fora: é o starter do projeto, e as citações dele são caminhos do projeto (`docs/`, `AGENTS.md`); nem o `docs-lint` nem o `rules-index` o processam no source.
+- **METHODOLOGY:** regra (`architecture/`) e template (`template/**/*.md`) não citam a METHODOLOGY, nem em frontmatter nem em bloco de código; citação a ela é erro, e o texto cita a regra dona.
+- **Citações** (no source, em `architecture/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido. `template/` fica fora: é o starter do projeto, e as citações dele são caminhos do projeto (`docs/`, `AGENTS.md`); nem o `docs-lint` nem o `rules-index` o processam no source.
 - **Arquivos planejados:** `template/scripts/docs-lint.planned.json` lista cada arquivo que ainda não existe e o passo do `SETUP.md` que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe é erro ("tire da lista"), para a lista não ficar velha.
 - **`applies_to` sem casamento** (no projeto): glob que não casa com nenhum arquivo gera aviso, não erro; a regra é candidata a poda (seção 15.6).
 - **Saída:** `arquivo:linha: mensagem`, com o prefixo `aviso:` no aviso; o lint sai com código 1 só quando há erro.
@@ -353,7 +351,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 ### 6.14 Ativação da arquitetura
 
-O projeto registra o resultado no `docs/architecture/INDEX.md` (starter em `template/docs/architecture/INDEX.md`): "Capacidades ativas", "Delegações" e "Exceções e defaults trocados".
+O projeto registra o resultado no `docs/architecture/INDEX.md` (starter em `template/docs/architecture/INDEX.md`): em "Capacidades ativas", uma linha por id da tabela "Capacidades condicionais" do `architecture/INDEX.md` que o projeto ativou, com os valores que o `not_covered` da regra deixa ao projeto; em "Delegações", uma linha por delegação resolvida da matriz abaixo; em "Stack", só o que difere de `architecture/defaults/stack.md`; em "Caminho linear", as camadas na ordem em que uma requisição passa; e em "Exceções e defaults trocados", o ADR de cada desvio.
 
 Dono de: a ativação da arquitetura num projeto — as três classes de decisão (GLOBAL, GLOBAL_CONDITIONAL, PROJECT_SPECIFIC), o que a ativação pergunta e o que não pergunta, a ordem de ativação, o registro do que ela resolve, o encaminhamento de uma necessidade sem cobertura como ARCHITECTURE DECISION REQUIRED e a matriz das decisões delegadas ao projeto.
 
@@ -410,7 +408,7 @@ Quando o gatilho de uma delegação aparece depois da ativação inicial, como o
 
 **Obrigatório.** A Project Architecture registra quais capacidades GLOBAL_CONDITIONAL foram ativadas e o valor escolhido para cada delegação resolvida.
 
-Quando a delegação resolvida cumpre a condição de "ADR quando", na matriz ou no arquivo da capacidade do catálogo, que aplica a ela o critério de `methodology/authoring.md`: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
+Quando a delegação resolvida cumpre a condição de "ADR quando" da matriz, que aplica a ela o critério de `methodology/authoring.md`, ou, numa capacidade condicional, esse critério direto: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
 
 ##### Necessidade sem cobertura
 
@@ -426,11 +424,9 @@ parar → ARCHITECTURE DECISION REQUIRED → decidir → atualizar a Source (reg
 
 **Obrigatório.** Toda decisão que a Source delega ao projeto tem uma linha na matriz abaixo, que é forma canônica, com nove campos: assunto, classe da capacidade, gatilho, owner global, o que o projeto decide, restrições que a Source já fixou, default (só quando a Source o declara), registro e condição de ADR.
 
-Quando a decisão é de uma capacidade do catálogo: **Obrigatório.** Ela mora no arquivo da capacidade, não na matriz: `catalog/design-system`, `catalog/async-jobs`, `catalog/mail`, `catalog/storage`, `catalog/cache` e `catalog/observability` (`catalog/INDEX.md`).
+Quando a decisão é de uma capacidade condicional (`architecture/INDEX.md`, "Capacidades condicionais"): **Obrigatório.** Ela mora na regra dona, não na matriz: o gatilho é a chave `activation`, e o que o projeto decide é uma entrada `not_covered` com destino `project:architecture/INDEX`.
 
-Capacidade do catálogo é GLOBAL_CONDITIONAL. No arquivo dela, o gatilho vira a pergunta de "Ativação", o owner global vira "Regras", as restrições viram "Entrega", e o que o projeto decide, o default, o registro e a condição de ADR ficam em "O que fica para o projeto".
-
-Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** A linha dela entra na matriz, ou no arquivo da capacidade do catálogo, na mesma edição.
+Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** A linha dela entra na matriz, ou na regra dona da capacidade condicional, na mesma edição.
 
 | Assunto | Classe | Gatilho | Owner global | O projeto decide | Restrições da Source | Default | Registro | ADR quando |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -460,7 +456,7 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - A Project Architecture guarda as capacidades ativadas e os valores escolhidos?
 - Delegação que cumpre a condição de "ADR quando" tem ADR?
 - Necessidade sem cobertura parou como ARCHITECTURE DECISION REQUIRED, sem valor, mecanismo ou exceção improvisados?
-- Toda decisão que a Source delega ao projeto tem linha na matriz, com os nove campos, ou está no arquivo da capacidade do catálogo?
+- Toda decisão que a Source delega ao projeto tem linha na matriz, com os nove campos, ou está na regra dona da capacidade condicional, em `activation` e `not_covered`?
 
 #### Referências
 
@@ -474,7 +470,7 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - `backend/operation-routing.md`, `backend/async-jobs.md`: fila e jobs.
 - `infrastructure/runtime.md`, `infrastructure/logging.md`: runtime, deploy e log.
 - `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `infrastructure/observability.md`: capacidades condicionais de infraestrutura.
-- `catalog/<capacidade>.md` (lista em `catalog/INDEX.md`): a pergunta de ativação e o que fica para o projeto em cada capacidade do catálogo.
+- `architecture/INDEX.md`, "Capacidades condicionais": a pergunta de ativação de cada capacidade condicional.
 
 ---
 
@@ -496,7 +492,7 @@ Numa regra existente, muda só isto:
 2. Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, idêntico, com um ponteiro no texto. Trecho curto que ilustra uma regra fica onde está.
 3. Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
 4. A cópia da regra de escape sai (ela vive no `AGENTS.md`, "How to work here").
-5. "Pontos em aberto" vira ADR `proposed`.
+5. "Pontos em aberto" fica na regra, na seção "Em aberto" (6.5).
 6. Citação que não se sustenta, em que o arquivo e a seção citados não dizem o que foi citado: a frase vai para o arquivo dono, usando um texto que já existe em outro arquivo. Se esse texto não existe em lugar nenhum, vira dúvida.
 
 Todo o resto fica como está: texto, ordem das seções, diagramas e tabelas.
@@ -509,7 +505,7 @@ Segue o mesmo formato. O texto novo segue a skill `writing-for-agents`.
 
 ## 8. Interface e Design System
 
-Não é uma etapa própria do fluxo. É uma **triagem** dentro do `/shape`, um **artefato** (`DESIGN.md`) e uma **slice** no catálogo.
+Não é uma etapa própria do fluxo. É uma **triagem** dentro do `/shape`, um **artefato** (`DESIGN.md`) e uma **capacidade condicional** (`defaults/ui`).
 
 ### 8.1 Default global
 
@@ -553,7 +549,7 @@ Quando a dúvida é "como deve parecer", usa-se um **protótipo descartável** c
 | Biblioteca padrão                                                           | `architecture/defaults/ui.md` + ADR global                                        |
 | Troca da biblioteca                                                         | ADR do projeto + regra em `docs/architecture/frontend/`                           |
 | Como construímos componentes (global vs. rota, slots, variantes, só tokens) | Regras globais em `frontend/`                                                     |
-| Design system como capacidade                                               | Slice `design-system` no catálogo; entra na slice 0 de todo projeto com interface |
+| Design system como capacidade                                               | `activation` de `defaults/ui`; a slice entra na slice 0 de todo projeto com interface |
 
 **Verificação:** o lint "sem cores ou espaçamentos fixos fora do tema" garante o uso dos tokens. A conformidade visual é conferida no QA do aceite.
 
@@ -595,7 +591,13 @@ horizon: planned · milestone: v2
 
 ### S2 · Montagem de componentes
 
-horizon: now · contract: docs/architecture/slices/mounter.md · blocked_by: [S0]
+horizon: now · blocked_by: [S0]
+contract:
+  responsibility: Monta numa página os componentes registrados no registry.
+  interface: `mountComponent(page, key, props)`; registry `components`.
+  invariants: Só componente registrado é montado; as props passam pelo schema do registro.
+  consumers: [F1, F2]
+  planned: Enquetes (F2) montadas pelo mesmo registry.
 
 #### T2.0 · Padrão de montagem de componentes
 
@@ -651,7 +653,7 @@ subtasks: [registro no mounter, renderização no site]
 4. **Checks são imutáveis para o `/build`.** Ele pode acrescentar testes, nunca remover ou afrouxar. Mudar um check exige voltar ao look across.
 5. **Mesmo `touches`, sem paralelismo.** Mudanças de schema seguem expand–contract ou ficam num ticket de fundação.
 6. **Critérios escritos uma vez, no UC.** O ticket lista só os checks que os provam.
-7. **Poda:** UC concluído colapsa em uma linha apontando para os testes; slice concluída colapsa numa linha. O git guarda o histórico. A matriz fica pequena.
+7. **Poda:** o contrato sai da matriz para o cabeçalho do `entry` quando o primeiro ticket da slice é construído (A.7); UC concluído colapsa em uma linha apontando para os testes; slice concluída colapsa numa linha com o `entry`. O git guarda o histórico. A matriz fica pequena.
 
 ---
 
@@ -673,7 +675,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 ### Etapa 0: Rotear
 
 - **Objetivo:** escolher o caminho mais barato. A maior economia de tokens acontece aqui.
-- **Entrada:** o pedido + `docs/architecture/slices/INDEX.md`.
+- **Entrada:** o pedido + a seção Slices da matriz (o `entry` de cada slice).
 - **Saída:** uma de três rotas.
   - **Direta:** cabe numa slice existente e em um ticket, sem regra nova, fora de área sensível.
   - **Bug:** vai para Diagnosticar.
@@ -682,7 +684,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 - **Skill/processo:** regra de roteamento no `AGENTS.md`. Não é uma skill.
 - **Agente separado:** nunca.
 - **Condição de saída da rota direta:** se durante o trabalho surgir regra nova, área sensível ou uma segunda slice, reclassifica.
-- **Como a próxima etapa acha o contexto:** a rota direta segue para Construir com o ponto de entrada da slice (do INDEX).
+- **Como a próxima etapa acha o contexto:** a rota direta segue para Construir com o ponto de entrada da slice (o `entry`, na matriz).
 
 ### Etapa 1: Moldar
 
@@ -703,16 +705,16 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 ### Etapa 2: Look across
 
 - **Objetivo:** transformar features em capacidades e capacidades em slices; garantir cobertura arquitetural; gerar tickets verificáveis.
-- **Entrada:** `PRODUCT.md`, `CONTEXT.md`, features em rascunho, `docs/architecture/slices/INDEX.md`, **catálogo do Architecture Source**, `INDEX.md` das áreas (global e projeto) e código via grep.
+- **Entrada:** `PRODUCT.md`, `CONTEXT.md`, features em rascunho, a seção Slices da matriz, **a tabela "Capacidades condicionais" do `.metri/architecture/INDEX.md`**, `INDEX.md` das áreas (global e projeto) e código via grep.
 - **Passos da skill:**
   1. **Features → casos de uso**, com critérios verificáveis e BRs (marcando as sensíveis). Definir `horizon` e, se fizer sentido, `milestone`.
-  2. **Look across:** para cada UC, identificar as capacidades necessárias e perguntar, nesta ordem: já existe no projeto (reusar)? Existe no catálogo global (instanciar)? É nova (criar slice)?
-  3. **Contrato** de cada slice nova ou alterada em `docs/architecture/slices/<slice>.md`, desenhado para acomodar o que está `planned`.
+  2. **Look across:** para cada UC, identificar as capacidades necessárias e perguntar, nesta ordem: já existe no projeto (reusar)? É capacidade condicional do global, na tabela "Capacidades condicionais" (ativar e instanciar)? É nova (criar slice)?
+  3. **Contrato** de cada slice nova ou alterada, no bloco `contract` dela na matriz (A.7), desenhado para acomodar o que está `planned`; em slice construída, a mudança entra por ticket, no cabeçalho do `entry`.
   4. **Cobertura arquitetural:** para cada slice, quais áreas e regras ela precisa. **Regra faltando vira ticket `type: pattern`**, o primeiro da slice.
   5. **Tickets:** tracer bullets por UC `now`, com tipo, modo, áreas, `touches`, `sensitive`, checks executáveis, bloqueios e, quando der para paralelizar, subtarefas. Refatoração ampla segue expand–contract. Incluir `task` e `release` onde houver.
-  6. **Slice 0:** em projeto novo, **fundação** (instanciar o template da versão X do source, `verify` verde e, se houver interface, a slice `design-system` com a biblioteca instalada e estilizada pelo `DESIGN.md`). Em projeto existente, **mapeamento** (survey do código gera o registro de slices e as regras do projeto, com revisão humana).
+  6. **Slice 0:** em projeto novo, **fundação** (instanciar o template da versão X do source, `verify` verde e, se houver interface, a slice `design-system` com a biblioteca instalada e estilizada pelo `DESIGN.md`). Em projeto existente, **mapeamento** (survey do código gera a seção Slices da matriz, com o `entry` de cada slice, e as regras do projeto, com revisão humana).
 - **Critério de conclusão:** todo UC `now` tem ticket; todo ticket tem slice, tipo e checks; toda slice `now` tem as regras de que precisa ou um ticket `pattern` que as cria; nada órfão; a matriz passa no lint.
-- **Saída:** matriz atualizada, `docs/architecture/slices/*.md`, ADRs, termos novos no `CONTEXT.md`.
+- **Saída:** matriz atualizada, com os contratos das slices, ADRs, termos novos no `CONTEXT.md`.
 - **Skill:** `/look-across`.
 - **Agente separado:** opcional, um **crítico sem contexto** em iniciativas grandes. Ele lê só `PRODUCT.md` e a matriz e procura feature sem slice, consumidor esquecido e UC sem critério. No mapeamento de projeto existente, o survey roda em agente separado.
 - **Portão humano:** aprovar granularidade, ordem, contratos e cobertura.
@@ -721,7 +723,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 ### Etapa 3: Construir
 
 - **Objetivo:** levar **um** ticket ao verde.
-- **Entrada:** id do ticket → seção do ticket + UC + contrato da slice + `rules-for --ticket` + exemplo canônico + grep por SOT keywords.
+- **Entrada:** id do ticket → seção do ticket + UC + contrato da slice (bloco na matriz ou cabeçalho do `entry`) + `rules-for --ticket` + exemplo canônico + grep por SOT keywords.
 - **Disciplina (skill `guardrail`):**
   - **Procurar antes de criar:** assumir que já existe e buscar pelas keywords.
   - Seguir o exemplo canônico e passar pelo block / pelos pontos centrais do padrão.
@@ -733,7 +735,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
   - **Não edita** `docs/architecture/`, ADRs, `CONTEXT.md` nem `DESIGN.md`. Se a regra não serve, **para e registra uma proposta de padrão** (`PP-n`). A única exceção é o ticket `pattern`.
   - **Não altera nem afrouxa** os checks planejados.
 - **Ticket `pattern`:** entrega a regra (arquivo em `docs/architecture/`, ou uma proposta para o global), o exemplo canônico e o enforcement (lint, tipo ou check). Fica aguardando revisão humana antes de liberar os tickets dependentes.
-- **Saída:** código + testes, commit na branch/worktree do ticket com o id, status atualizado (e `metrics` preenchido quando a ferramenta expõe o dado).
+- **Saída:** código + testes, commit na branch/worktree do ticket com o id, status atualizado (e `metrics` preenchido quando a ferramenta expõe o dado); no primeiro ticket construído da slice, o contrato movido para o cabeçalho do `entry`.
 - **Skill:** `/build` (usa `guardrail`, `tdd`).
 - **Agente separado:** **sim, por isolamento de contexto.** Cada ticket roda em sessão nova ou num worker. Paralelismo para tickets e subtarefas desbloqueados, sem `touches` em comum (seção 12).
 - **Como a próxima etapa acha o contexto:** os checks listados no ticket.
@@ -751,7 +753,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 ### Etapa 5: Aceitar
 
 - **Objetivo:** julgar o que check nenhum julga. Aceitar a **slice** e, quando ela é a última de uma feature, a **feature**.
-- **Entrada:** diff desde o início da branch da slice + contrato + regras resolvidas para os caminhos tocados (com seus **itens de verificação sem check**) + UCs envolvidos. **Nada da conversa do construtor.**
+- **Entrada:** diff desde o início da branch da slice + contrato (cabeçalho do `entry`) + regras resolvidas para os caminhos tocados (com seus **itens de verificação sem check**) + UCs envolvidos. **Nada da conversa do construtor.**
 - **Processo:**
   - **Dois revisores em paralelo:**
     - **Contrato e UCs:** faltou algo, sobrou algo, implementou errado, os checks cobrem os critérios?
@@ -795,7 +797,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 - **Saída:** check/lint, alteração de regra, ADR, termo no `CONTEXT.md`, ajuste no `DESIGN.md`, PR para o global, ou **nada** (o resultado mais comum).
 - **Skill:** não é separada; vive dentro de `/accept` e `/diagnose`.
 - **Agente separado:** só num survey de arquitetura, quando uma slice "doeu" (varredura ampla da qual interessa só a conclusão).
-- **Como a próxima etapa acha o contexto:** o próximo look across encontra as capacidades e regras novas pelo catálogo, pelo registro de slices e pelo `rules-for`.
+- **Como a próxima etapa acha o contexto:** o próximo look across encontra as capacidades e regras novas pela tabela "Capacidades condicionais", pela seção Slices da matriz e pelo `rules-for`.
 
 ### ↺ Diagnosticar (bugs)
 
@@ -815,7 +817,7 @@ Tudo se encontra por ponteiro. Nada depende da conversa anterior.
 ```
 id do ticket
   → docs/plan/MATRIX.md (só a seção do ticket): uc, slice, type, areas, touches, sensitive, checks
-  → docs/architecture/slices/<slice>.md: contrato
+  → contrato da slice: bloco contract na matriz ou cabeçalho do entry
   → rules-for --ticket: regras globais + regras do projeto + ADRs citados
   → exemplo canônico de cada regra (+ DESIGN.md, se a regra de frontend apontar)
   → grep por SOT keywords e identificadores do CONTEXT.md → só os arquivos relevantes
@@ -868,7 +870,7 @@ Todo o resto é trabalho do agente.
 | Passagem                   | Risco                                                 | Como é fechado                                                                        |
 | -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Planejamento → arquitetura | A slice precisa de um padrão que não existe           | Cobertura arquitetural no look across + ticket `pattern` primeiro, com revisão humana |
-| Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato em `docs/architecture/slices/`; a matriz só aponta                           |
+| Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato na matriz enquanto é plano; construído, no cabeçalho do `entry`              |
 | Planejamento → execução    | Regra de negócio discutida some entre sessões         | UCs e BRs gravados na matriz desde o Moldar; depois migram para testes                |
 | Planejamento → execução    | Agentes nomeiam o mesmo conceito de formas diferentes | `CONTEXT.md` com identificador EN; chaves da metodologia fixas e validadas            |
 | Arquitetura → execução     | O agente lê regras demais ou de menos                 | `applies_to` + `rules-for` + orçamento de ~5 regras por ticket                        |
@@ -1052,7 +1054,6 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
    - `INDEX.md` gerados;
    - `methodology/VOCABULARY.md` e o starter em `template/`;
    - `architecture/defaults/ui.md` (shadcn/ui) com ADR global e o `DESIGN.md` base neutro;
-   - `catalog/` com as slices reutilizáveis, incluindo `design-system`;
    - `CHANGELOG.md` e tags;
    - scripts no `template/`: `verify`, `rules-for`, `rules-index`, `docs-lint`.
 2. **Skills:** escrever as 11 skills (seção 16) em inglês, no estilo definido.
@@ -1102,7 +1103,7 @@ Starter em `template/docs/architecture/INDEX.md`; como preencher: seção 6.14.
 ````markdown
 ---
 id: <área>/<tema>
-description: <o texto do "Dono de": o que a regra decide (METHODOLOGY 7.2)>
+description: <o que a regra decide>
 use_when: [<situação em que o agente lê a regra>]
 applies_to: [<globs>]                  # opcional
 keywords: [<SOT keywords>]             # opcional
@@ -1140,48 +1141,48 @@ flowchart TD
 - <Pergunta de sim ou não que confere a norma>? (check: <id>)
 ````
 
-Chave marcada `# opcional` só é escrita quando tem valor (`methodology/VOCABULARY.md`).
+Chave marcada `# opcional` só é escrita quando tem valor (`methodology/VOCABULARY.md`). Exemplo do formato: `frontend/components.md`.
 
 `(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
 
-### A.7 `docs/architecture/slices/<slice>.md`
+### A.7 Contrato de slice
+
+Enquanto a slice é plano, o contrato é o bloco `contract` da slice na matriz:
 
 ```markdown
----
-id: slices/<nome>
-description: "<o que a slice garante, numa frase>"
-use_when:
-  - "<situação em que o agente lê o contrato da slice>"
-horizon: now | planned
-entry: <caminho do ponto de entrada>
-keywords: [<keyword>, <keyword>]
----
-
-# <Nome da slice>
-
-## Responsabilidade
-
-## Contrato
-
-(Interface pública e invariantes.)
-
-## Consumidores
-
-(Features, outras slices e agentes que usam esta slice.)
-
-## Checks da slice
-
-## Previsto
-
-(O que o contrato já acomoda, mas não está construído.)
+horizon: now · blocked_by: [S<n>]
+contract:
+  responsibility: <o que a slice garante, numa frase>
+  interface: <o que os consumidores chamam>
+  invariants: <o que vale sempre>
+  consumers: [<F<n>, S<n> ou agente>]
+  planned: <o que o contrato já acomoda, mas não está construído>
 ```
+
+Depois do primeiro ticket construído, o contrato vai para o cabeçalho do arquivo de entrada, e a slice troca o bloco por `entry: <caminho>` na linha de `horizon`:
+
+```ts
+/**
+ * O quê: <responsibility>
+ * Por quê: <por que a capacidade é compartilhada>
+ * Onde: <onde se conecta: pacote, pontos centrais, consumidores>
+ * Como usar: <interface, com o uso mínimo>
+ * Invariantes: <invariants>
+ * Consumidores: <consumers>
+ * Previsto: <planned>
+ * Checks: <comandos que provam o contrato>
+ * SOT keywords: <keyword>, <keyword>
+ */
+```
+
+Slice concluída colapsa numa linha: `status: done · entry: <caminho>`.
 
 ### A.8 ADR
 
 ```markdown
 # ADR-NNNN <título>
 
-status: proposed | accepted | superseded by ADR-NNNN
+status: accepted | superseded by ADR-NNNN
 area: <área>
 kind: decision | exception | default-change
 

@@ -169,7 +169,9 @@ Quando a regra não é checável mecanicamente: **Padrão.** Verificação por c
 
 ### Ponto em aberto
 
-Ponto em aberto vira ADR `proposed`, e a regra aponta para ele: METHODOLOGY 6.5 e 7.2.
+Pergunta em aberto fica na regra, na seção "Em aberto", um item por pergunta: `- **<título>.** <texto>`; nunca vira ADR.
+
+ADR só registra decisão tomada, difícil de reverter, surpreendente e com trade-off real.
 
 ### Regra de transição
 

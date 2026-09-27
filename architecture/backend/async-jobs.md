@@ -7,6 +7,7 @@ use_when:
   - "enfileirar um job a partir de caso de uso ou subscriber"
   - "tornar um job idempotente ou decidir o retry e a dead letter dele"
   - "escolher a ferramenta de fila"
+activation: "`backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada?"
 applies_to:
   - "apps/app-api/src/domain/application/queues/**"
   - "apps/app-api/src/infra/jobs/**"
@@ -14,8 +15,8 @@ applies_to:
 keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
 not_covered:
   - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
+  - "a ferramenta de fila e o processo em que os workers rodam, que são decisão de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
 examples: [backend/async-jobs.examples.md]
-adr: [ADR-0001, ADR-0002, ADR-0003, ADR-0004]
 status: active
 ---
 # Jobs assíncronos
@@ -24,7 +25,7 @@ Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o con
 
 Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `methodology/authoring.md`, "Domínio didático".
 
-**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
+**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
 
 ## Worker é adaptador de entrada
 
@@ -198,9 +199,11 @@ Para caso de uso que enfileira, a asserção nos `items` entra no spec unitário
 - Tarefa agendada computa por estado, tolerando tick perdido?
 - Quem enfileira tem spec assertando o dublê da fila?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Ferramenta de fila e formato do e2e com fila real (ADR-0001)
-- Em aberto: `failure` esperado que exige intervenção humana (ADR-0002)
-- Em aberto: Forma do enfileiramento transacional (ADR-0003)
-- Em aberto: App de worker dedicado (ADR-0004)
+- **Ferramenta de fila e formato do e2e com fila real.** A ferramenta de fila segue aberta como delegação de projeto (nota da abertura), e o formato do e2e com fila real fecha com a primeira ferramenta escolhida.
+- **`failure` esperado que exige intervenção humana.** `failure` esperado que exija intervenção humana (log e conclui) ganha desenho se um caso real precisar ir para a dead letter em vez do log.
+- **Forma do enfileiramento transacional.** O enfileiramento transacional depende da família da ferramenta: no Postgres é o adapter `executeSql`, cujo detalhe fecha na primeira implementação; fora dele, vira desenho de outbox.
+  - Adapter `executeSql`, no Postgres
+  - Outbox, fora do Postgres
+- **App de worker dedicado.** App de worker dedicado (processo separado do HTTP) não tem gatilho concreto.

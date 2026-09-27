@@ -262,7 +262,7 @@ components:
 
 ## Overview
 
-Base neutra do Architecture Source: o tema neutral do shadcn/ui, sem marca, em claro e escuro. É o default da triagem de design (METHODOLOGY 8.2): o projeto copia este arquivo para `docs/DESIGN.md` e troca nome, valores e prosa pela identidade dele.
+Base neutra do Architecture Source: o tema neutral do shadcn/ui, sem marca, em claro e escuro. É o default da triagem de design: o projeto copia este arquivo para `docs/DESIGN.md` e troca nome, valores e prosa pela identidade dele.
 
 - Referência: o tema neutral do shadcn/ui, com tipografia e espaçamento da análise da Vercel no getdesign.md (seção "Fonte").
 - Biblioteca: shadcn/ui, default global (`.metri/architecture/defaults/ui.md`) | outra → ADR-NNNN.

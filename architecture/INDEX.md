@@ -42,7 +42,7 @@ Como a Source é escrita e mantida — owner de cada decisão, anatomia de docum
 
 ## Ativação
 
-O que a ativação da arquitetura num projeto pergunta, quando pergunta e onde a resposta fica — as classes de decisão e a matriz das decisões delegadas ao projeto — está em `methodology/METHODOLOGY.md`, "6.14 Ativação da arquitetura".
+A pergunta de ativação de cada capacidade condicional é a chave `activation` da regra dona, listada em "Capacidades condicionais", abaixo; a resposta do projeto fica no `docs/architecture/INDEX.md`, "Capacidades ativas".
 
 ## Decisões transversais
 
@@ -76,3 +76,14 @@ Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/sta
 - `frontend` → `frontend/INDEX.md` (9 regras)
 - `general` → `general/INDEX.md` (3 regras)
 - `infrastructure` → `infrastructure/INDEX.md` (7 regras)
+
+## Capacidades condicionais
+
+| id | activation |
+| --- | --- |
+| backend/async-jobs | `backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada? |
+| defaults/ui | O projeto tem interface? |
+| infrastructure/cache | O projeto tem necessidade medida de cache, pelo critério de `infrastructure/cache.md`? |
+| infrastructure/mail | O projeto envia e-mail? |
+| infrastructure/observability | Alguma pergunta operacional do projeto pede métrica, alerta ou reconciliação? |
+| infrastructure/storage | O projeto guarda arquivos ou assets? |

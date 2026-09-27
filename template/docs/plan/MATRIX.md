@@ -18,7 +18,13 @@ actor: <ator> · status: open
 
 ### S<n> · <slice>
 
-horizon: now · contract: docs/architecture/slices/<slice>.md · blocked_by: [S<n>]
+horizon: now · blocked_by: [S<n>]
+contract:
+  responsibility: <o que a slice garante, numa frase>
+  interface: <o que os consumidores chamam>
+  invariants: <o que vale sempre>
+  consumers: [<F<n>, S<n> ou agente>]
+  planned: <o que o contrato já acomoda, mas não está construído>
 
 #### T<s>.<n> · <ticket>
 
@@ -26,6 +32,10 @@ uc: UC<f>.<n> · type: pattern | tracer | task | release · mode: afk | hitl · 
 areas: [<área>/<tema>] · touches: [<ponto central>]
 checks: [`<comando>`]
 subtasks: [<subtarefa>]
+
+### S<n> · <slice concluída>
+
+status: done · entry: <arquivo de entrada, com o contrato no cabeçalho>
 
 ## Fog
 

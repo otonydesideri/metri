@@ -4,7 +4,6 @@ description: "a stack e o idioma do código, lista única das ferramentas que as
 use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
-adr: [ADR-0001, ADR-0012, ADR-0017, ADR-0021]
 status: active
 ---
 # Stack padrão
@@ -21,8 +20,8 @@ Backend:
 - Validação de formato HTTP: Zod via `nestjs-zod` (`createZodDto`), pipe global (backend/http-api, backend/boundaries).
 - Log: `nestjs-pino` (infrastructure/logging).
 - Rate limit: `@nestjs/throttler`, guard global (infrastructure/runtime, backend/errors).
-- Fila: pg-boss (backend/async-jobs, ADR-0001).
-- E-mail: Resend, com o template em React Email (`@react-email/render`) (infrastructure/mail, ADR-0017).
+- Fila: pg-boss (backend/async-jobs, em aberto).
+- E-mail: Resend, com o template em React Email (`@react-email/render`) (infrastructure/mail, em aberto).
 - Storage: Cloudflare R2 pelo `@aws-sdk/client-s3`, implementação de referência (infrastructure/storage).
 
 Frontend (`app-web`):
@@ -34,7 +33,7 @@ Frontend (`app-web`):
 - Formulários: React Hook Form + Zod; `react-phone-number-input` e `use-mask-input` (sobre o Inputmask) (frontend/forms).
 - UI: consome `@metri/ui` (kit de componentes shadcn/ui, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
 - Tema: `next-themes`, o provider de tema do `@metri/ui` (frontend/theming, defaults/ui).
-- Estado global cliente: Zustand (frontend/state, ADR-0012).
+- Estado global cliente: Zustand (frontend/state, em aberto).
 
 Testes:
 

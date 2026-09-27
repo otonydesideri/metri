@@ -7,6 +7,7 @@ use_when:
   - "ajustar o visual de um componente do `@metri/ui`"
   - "mexer nas CSS variables de tema, na tipografia ou no espaçamento do `@metri/ui`"
   - "mexer no `components.json` ou nos `exports` do `@metri/ui`"
+activation: "O projeto tem interface?"
 applies_to:
   - "packages/ui/components.json"
   - "packages/ui/package.json"
@@ -18,18 +19,18 @@ not_covered:
   - "o formato de import e a composição no app → frontend/components"
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
-adr: [ADR-0020]
+adr: [ADR-0001]
 status: active
 ---
 # Biblioteca de UI padrão
 
 ## Kit
 
-- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn (ADR-0020).
+- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn (ADR-0001).
 - O `components.json` do `@metri/ui` fixa `"style": "new-york"` e `"tailwind": { "baseColor": "neutral" }`.
-- Os componentes do shadcn são a base; nenhum componente é recriado do zero (METHODOLOGY 8.1).
+- Os componentes do shadcn são a base; nenhum componente é recriado do zero.
 - O visual vem dos tokens do `DESIGN.md` do projeto.
-- Kit diferente num projeto: ADR do projeto + regra em `docs/architecture/frontend/` (METHODOLOGY 8.5).
+- Kit diferente num projeto: ADR do projeto + regra em `docs/architecture/frontend/`.
 
 ## Componente novo
 
@@ -131,7 +132,7 @@ export {
 
 ## O que é do projeto
 
-- `docs/DESIGN.md` (METHODOLOGY 8.5); os valores dos tokens migram para o `globals.css` do `@metri/ui` com a slice de design system (METHODOLOGY 8.3).
+- `docs/DESIGN.md`; os valores dos tokens migram para o `globals.css` do `@metri/ui` com a slice de design system.
 
 ## Verificação
 

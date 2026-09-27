@@ -1,5 +1,5 @@
-// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras,
-// a lista de áreas abaixo do marcador do INDEX.md raiz e, no source, o catalog/INDEX.md (METHODOLOGY 6.11).
+// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras e, abaixo do marcador do
+// INDEX.md raiz, a lista de áreas e a tabela "Capacidades condicionais" das regras com activation (METHODOLOGY 6.11).
 // Uso: rules-index [<raiz>] [--check]   (raiz padrão: architecture)
 // --check não escreve nada e sai com código 1 se algum INDEX estiver desatualizado.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -7,10 +7,9 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 
 const HEADER = 'Gerado por rules-index. Não edite.';
-const CATALOG = 'catalog';
 const MARKER = '<!-- rules-index -->';
 
-type Rule = { id: string; description: string; useWhen: string[]; entry?: string };
+type Rule = { id: string; description: string; useWhen: string[]; activation?: string };
 
 const args = process.argv.slice(2);
 const isCheck = args.includes('--check');
@@ -29,8 +28,8 @@ function readRule(path: string): Rule {
   if (!Array.isArray(frontmatter.use_when)) {
     throw new Error(`${path}: frontmatter sem use_when`);
   }
-  const entry = typeof frontmatter.entry === 'string' ? frontmatter.entry : undefined;
-  return { id: frontmatter.id, description: frontmatter.description, useWhen: frontmatter.use_when, entry };
+  const activation = typeof frontmatter.activation === 'string' ? frontmatter.activation : undefined;
+  return { id: frontmatter.id, description: frontmatter.description, useWhen: frontmatter.use_when, activation };
 }
 
 function isRuleFile(name: string): boolean {
@@ -41,20 +40,13 @@ function cell(text: string): string {
   return text.replaceAll('|', '\\|').replaceAll('\n', ' ');
 }
 
-// Quando as entradas têm `entry` (as slices, A.7), a tabela ganha a coluna do ponto de entrada.
+function row(cells: string[]): string {
+  return `| ${cells.map(cell).join(' | ')} |`;
+}
+
 function areaIndex(rules: Rule[]): string {
-  const hasEntry = rules.some((rule) => rule.entry !== undefined);
-  const rows = rules.map((rule) => {
-    const cells = [rule.id, rule.description, rule.useWhen.join('; ')];
-    if (hasEntry) {
-      cells.push(rule.entry ?? '');
-    }
-    return `| ${cells.map(cell).join(' | ')} |`;
-  });
-  const head = hasEntry
-    ? ['| id | description | use_when | entry |', '| --- | --- | --- | --- |']
-    : ['| id | description | use_when |', '| --- | --- | --- |'];
-  return [HEADER, '', ...head, ...rows, ''].join('\n');
+  const rows = rules.map((rule) => row([rule.id, rule.description, rule.useWhen.join('; ')]));
+  return [HEADER, '', '| id | description | use_when |', '| --- | --- | --- |', ...rows, ''].join('\n');
 }
 
 function rootIndex(current: string, areas: Map<string, Rule[]>): string {
@@ -70,7 +62,16 @@ function rootIndex(current: string, areas: Map<string, Rule[]>): string {
   if (lines.length === 0) {
     return `${handWritten}\n`;
   }
-  return [handWritten, '', ...lines, ''].join('\n');
+  const conditional = [...areas.values()]
+    .flat()
+    .filter((rule) => rule.activation !== undefined)
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((rule) => row([rule.id, rule.activation ?? '']));
+  const table =
+    conditional.length === 0
+      ? []
+      : ['', '## Capacidades condicionais', '', '| id | activation |', '| --- | --- |', ...conditional];
+  return [handWritten, '', ...lines, ...table, ''].join('\n');
 }
 
 const areas = new Map<string, Rule[]>();
@@ -94,17 +95,6 @@ for (const [area, rules] of areas) {
   expected.set(join(root, area, 'INDEX.md'), areaIndex(rules));
 }
 expected.set(rootPath, rootIndex(existsSync(rootPath) ? readFileSync(rootPath, 'utf8') : '', areas));
-
-// O catálogo do source tem um INDEX.md só, na mesma tabela das áreas; o projeto não tem catalog/.
-if (existsSync(CATALOG)) {
-  const capabilities = readdirSync(CATALOG)
-    .filter(isRuleFile)
-    .map((name) => readRule(join(CATALOG, name)))
-    .sort((a, b) => a.id.localeCompare(b.id));
-  if (capabilities.length > 0) {
-    expected.set(join(CATALOG, 'INDEX.md'), areaIndex(capabilities));
-  }
-}
 
 const stale = [...expected].filter(
   ([path, content]) => !existsSync(path) || readFileSync(path, 'utf8') !== content,

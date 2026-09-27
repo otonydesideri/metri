@@ -15,7 +15,6 @@ keywords: [estado cliente, estado servidor, URL state, useSearchParams, search p
 not_covered:
   - "o estado servidor, dado que vem ou vai para a API, que fica em React Query → frontend/data-fetching"
 examples: [frontend/state.examples.md]
-adr: [ADR-0012, ADR-0013, ADR-0014]
 status: active
 ---
 # Estado cliente no frontend
@@ -218,8 +217,12 @@ function OrderWelcomeBanner() {
 - O evento que troca de dono limpa os stores persistidos e o cache de servidor, sem nada do cache persistido em storage?
 - Não há duplicação entre fontes (URL + local, Context + Zustand)?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Biblioteca de estado global (ADR-0012)
-- Em aberto: Leitura de search params (ADR-0013)
-- Em aberto: Slices e `persist` do Zustand (ADR-0014)
+- **Biblioteca de estado global.** A biblioteca de estado global é Zustand, escolhida por ser o default de menor atrito da comunidade para um app que já tem o estado servidor em React Query, com revisão em aberto: se o formato do estado pedir muitos valores independentes e derivados, com reatividade fina átomo a átomo, reavaliar Jotai (modelo de átomos) contra Zustand (store central) antes de multiplicar stores.
+  - Zustand (store central)
+  - Jotai (modelo de átomos)
+- **Leitura de search params.** A leitura de search params usa `useSearchParams` do react-router enquanto for pontual; `nuqs` (adapter de react-router, parsers tipados) entra quando a conversão manual de número, boolean ou enum virar repetição, ou quando um filtro composto precisar de atualização em lote da URL.
+  - `useSearchParams` do react-router
+  - `nuqs` (adapter de react-router, parsers tipados)
+- **Slices e `persist` do Zustand.** Slices e o middleware `persist` do Zustand nascem com a necessidade real: o primeiro store persistido define o formato de limpeza; o primeiro store grande demais define o corte em slices.

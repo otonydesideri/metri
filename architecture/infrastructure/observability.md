@@ -6,6 +6,7 @@ use_when:
   - "desenhar uma reconciliação, processo que confere o estado esperado contra o estado real"
   - "vigiar um risco aceito"
   - "escolher ferramenta de observabilidade"
+activation: "Alguma pergunta operacional do projeto pede métrica, alerta ou reconciliação?"
 keywords: [observabilidade, métrica, alerta, reconciliação, sinal, pergunta operacional, dimensão, cardinalidade, threshold, severidade, janela, dono operacional, dead letter, redrive, requestId, fonte de verdade, estado esperado, estado real, divergência, cadência, idempotente, órfão de storage, risco aceito]
 not_covered:
   - "log, o mecanismo e o que entra nele → infrastructure/logging"
@@ -13,7 +14,7 @@ not_covered:
   - "retry, dead letter e tarefa agendada → backend/async-jobs"
   - "a divergência possível de cada capacidade, declarada pelo dono dela — o órfão de storage → infrastructure/storage"
   - "a divergência possível de cada capacidade, declarada pelo dono dela — o risco aceito de consistência → backend/transactions"
-  - "ferramenta, métricas concretas, thresholds, destinos e reconciliações concretas, que são delegação de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "ferramenta, métricas concretas, thresholds, destinos e reconciliações concretas, que são delegação de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
 status: active
 ---
 # Observabilidade

@@ -1,7 +1,8 @@
 // docs-lint: lint estrutural do source (METHODOLOGY 6.13).
-// Checa o frontmatter das regras e do catálogo, as citações em architecture/, catalog/, methodology/ e adr/,
+// Checa o frontmatter das regras, as citações em architecture/, methodology/ e adr/,
 // a presença de cada regra em "Como ler" do architecture/INDEX.md e o rules-index:check.
-// template/ fica fora: é o starter do projeto, e as citações dele são caminhos do projeto (METHODOLOGY 6.13).
+// template/ fica fora da checagem de citações: é o starter do projeto, e as citações dele são caminhos do projeto.
+// Regra (architecture/) e template (template/**/*.md) não citam a METHODOLOGY: citação a ela é erro.
 // Uso: docs-lint   (roda na raiz do source)
 // Saída: arquivo:linha: mensagem (aviso com o prefixo "aviso:"). Sai com código 1 se houver erro.
 // Arquivo planejado (docs-lint.planned.json, arquivo → passo do SETUP que o cria): citação a ele é aviso;
@@ -12,8 +13,9 @@ import { dirname, join, normalize, relative } from 'node:path';
 import { parse } from 'yaml';
 
 const ARCHITECTURE = 'architecture';
-const CATALOG = 'catalog';
-const CITATION_ROOTS = ['architecture', 'catalog', 'methodology', 'adr'];
+const CITATION_ROOTS = ['architecture', 'methodology', 'adr'];
+// Onde a METHODOLOGY não é citada: as regras e os templates.
+const NO_METHODOLOGY_ROOTS = ['architecture', 'template'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
 const REQUIRED_KEYS = ['id', 'description', 'use_when', 'status'];
 const KNOWN_KEYS = [
@@ -25,10 +27,9 @@ const KNOWN_KEYS = [
   'keywords',
   'examples',
   'adr',
+  'activation',
 ];
 const STATUSES = ['active', 'draft', 'deprecated'];
-// Frontmatter de capacidade do catálogo: só estas chaves, todas obrigatórias.
-const CATALOG_KEYS = ['id', 'description', 'use_when'];
 const PROJECT_TARGETS = [
   'project:AGENTS',
   'project:CONTEXT',
@@ -329,34 +330,8 @@ function lintFrontmatter(path: string): void {
       report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em adr/`);
     }
   }
-}
-
-function lintCatalogFrontmatter(path: string): void {
-  const read = readFrontmatter(path);
-  if (!read) {
-    return;
-  }
-  const { frontmatter, lines } = read;
-  for (const key of CATALOG_KEYS) {
-    if (!(key in frontmatter)) {
-      report(path, 1, `frontmatter: falta a chave obrigatória ${key}`);
-    }
-  }
-  for (const [key, value] of Object.entries(frontmatter)) {
-    const line = keyLine(lines, key);
-    if (!CATALOG_KEYS.includes(key)) {
-      report(path, line, `frontmatter: chave ${key} fora do frontmatter de capacidade (${CATALOG_KEYS.join(', ')})`);
-    }
-    if (isEmpty(value)) {
-      report(path, line, `frontmatter: chave ${key} vazia`);
-    }
-  }
-  const expectedId = relative('.', path).replace(/\.md$/, '');
-  if (frontmatter.id !== expectedId) {
-    report(path, keyLine(lines, 'id'), `frontmatter: id ${String(frontmatter.id)} diferente do caminho ${expectedId}`);
-  }
-  if ('use_when' in frontmatter && !Array.isArray(frontmatter.use_when)) {
-    report(path, keyLine(lines, 'use_when'), 'frontmatter: use_when não é lista');
+  if ('activation' in frontmatter && typeof frontmatter.activation !== 'string') {
+    report(path, keyLine(lines, 'activation'), 'frontmatter: activation não é texto');
   }
 }
 
@@ -399,6 +374,19 @@ function lintGenerated(): void {
   }
 }
 
+// Toda linha conta, inclusive frontmatter e bloco de código: a METHODOLOGY é para humano.
+function lintMethodologyCitations(path: string): void {
+  const source = readFileSync(path, 'utf8');
+  if (source.startsWith(GENERATED_HEADER)) {
+    return;
+  }
+  source.split('\n').forEach((text, index) => {
+    if (text.includes('METHODOLOGY')) {
+      report(path, index + 1, 'citação: regra e template não citam a METHODOLOGY (cite a regra dona)');
+    }
+  });
+}
+
 function lintPlanned(): void {
   const lines = readFileSync(PLANNED_PATH, 'utf8').split('\n');
   for (const path of Object.keys(planned)) {
@@ -413,11 +401,11 @@ const rules = ruleFiles();
 for (const path of rules) {
   lintFrontmatter(path);
 }
-for (const path of listMarkdown(CATALOG).filter(isRuleFile)) {
-  lintCatalogFrontmatter(path);
-}
 for (const path of CITATION_ROOTS.flatMap(listMarkdown)) {
   lintCitations(path);
+}
+for (const path of NO_METHODOLOGY_ROOTS.flatMap(listMarkdown)) {
+  lintMethodologyCitations(path);
 }
 lintReadingOrder(rules);
 lintPlanned();

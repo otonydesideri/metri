@@ -5,6 +5,7 @@ use_when:
   - "introduzir cache numa leitura, num cálculo ou numa chamada externa do backend"
   - "mudar a expiração (TTL) ou a invalidação de algo cacheado"
   - "escolher provider de cache"
+activation: "O projeto tem necessidade medida de cache, pelo critério de `infrastructure/cache.md`?"
 applies_to:
   - "apps/app-api/src/domain/application/services/cache/**"
   - "apps/app-api/src/infra/services/cache/**"
@@ -16,7 +17,7 @@ not_covered:
   - "o escopo do dono → backend/access-scope"
   - "a regra dos níveis de service de infra → infrastructure/services"
   - "o mecanismo de uma invalidação que reage a outro fluxo → backend/operation-routing"
-  - "o provider e os valores concretos de cada fluxo, que são delegação de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "o provider e os valores concretos de cada fluxo, que são delegação de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
 status: active
 ---
 # Cache

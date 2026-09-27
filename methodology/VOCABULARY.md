@@ -6,7 +6,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | ----------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | look across                               | `look across`                                    | Olhar transversalmente todas as features (atuais e futuras) para descobrir o que têm em comum |
 | slice                                     | `slice`, id `S<n>`                               | Capacidade compartilhada, fonte da verdade, na qual várias features se conectam               |
-| contrato                                  | `contract`                                       | O que uma slice garante: interface, invariantes, consumidores                                 |
+| contrato                                  | `contract`                                       | O que uma slice garante: `responsibility`, `interface`, `invariants`, `consumers` e `planned`. Bloco da slice na matriz enquanto ela é plano; depois do primeiro ticket construído, cabeçalho do `entry` no código |
 | feature                                   | `feature`, id `F<n>`                             | Resultado de valor para o usuário. Atravessa uma ou mais slices                               |
 | caso de uso                               | `use case`, id `UC<f>.<n>`                       | Unidade de definição de uma feature. Tem o mesmo nome do caso de uso no código                |
 | regra de negócio                          | `business rule`, id `BR<n>`                      | Regra do domínio dentro de um UC                                                              |
@@ -15,7 +15,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | ticket                                    | `ticket`, id `T<s>.<n>`                          | Unidade de entrega e de aceite                                                                |
 | tipo padrão / tracer / tarefa / release   | `type: pattern \| tracer \| task \| release`     | Tipo do ticket                                                                                |
 | modo                                      | `mode: afk \| hitl`                              | Se o agente faz sozinho ou com humano                                                         |
-| status                                    | `status: open \| in_progress \| blocked \| done` | Estado do ticket ou UC                                                                        |
+| status                                    | `status: open \| in_progress \| blocked \| done` | Estado do ticket, UC ou slice                                                                 |
 | bloqueado por                             | `blocked_by`                                     | Tickets ou slices que precisam terminar antes                                                 |
 | áreas                                     | `areas`                                          | Áreas de arquitetura envolvidas (ex.: `backend/http-api`)                                     |
 | toca                                      | `touches`                                        | Ponto central que o ticket altera (registry, schema, migrations)                              |
@@ -31,9 +31,10 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | SOT keyword                               | `keywords`                                       | Palavra-chave que torna um arquivo encontrável por grep                                       |
 | descrição                                 | `description`                                    | O texto do "Dono de" da regra (METHODOLOGY 7.2); é a linha do `INDEX.md` gerado e do `rules-for`   |
 | usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
+| ativação                                  | `activation`                                     | Pergunta de ativação de uma capacidade condicional, na regra dona; é a linha da tabela gerada "Capacidades condicionais" do `architecture/INDEX.md` |
 | ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
 | não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
-| ponto de entrada                          | `entry`                                          | Caminho do ponto de entrada de uma slice; coluna do `INDEX.md` gerado que o roteamento lê     |
+| ponto de entrada                          | `entry`                                          | Caminho do arquivo de entrada de uma slice, que leva o cabeçalho de contrato; campo da slice na matriz que o roteamento lê |
 | id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
 | ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita                                                                 |
 | status da regra                           | `status: active \| draft \| deprecated`          | Estado de uma regra                                                                           |
@@ -42,9 +43,5 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
 
 **Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (METHODOLOGY 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:architecture/INDEX`.
-
-**Frontmatter de slice** (`docs/architecture/slices/<slice>.md`): as chaves do formato de slice (METHODOLOGY A.7).
-
-**Frontmatter de capacidade do catálogo** (`catalog/<capacidade>.md`). Só `id` (`catalog/<capacidade>`), `description` e `use_when`, as três obrigatórias.
 
 Modalidades do corpo de uma regra (**Obrigatório.**, **Proibido.** e as demais): `methodology/authoring.md`, "Modalidades".

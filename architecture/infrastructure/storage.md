@@ -8,6 +8,7 @@ use_when:
   - "mudar a chave, o bucket ou a visibilidade, pública ou privada, de um asset"
   - "remover ou substituir o arquivo físico de um registro"
   - "escolher ou trocar o provider de storage"
+activation: "O projeto guarda arquivos ou assets?"
 applies_to:
   - "apps/app-api/src/domain/application/services/storage/**"
   - "apps/app-api/src/infra/services/storage/**"
@@ -17,9 +18,8 @@ not_covered:
   - "o escopo do dono na assinatura e na recarga do registro → backend/access-scope"
   - "a regra transversal de organização — classe de infra sem contrato, contrato específico, registro, dublê → infrastructure/services"
   - "o mecanismo da tarefa agendada que limpa os órfãos → backend/async-jobs"
-  - "o provider, os buckets e o domínio público de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "o provider, os buckets e o domínio público de cada projeto (\"Capacidades ativas\") → project:architecture/INDEX"
 examples: [infrastructure/storage.examples.md]
-adr: [ADR-0018, ADR-0019]
 status: active
 ---
 # Storage
@@ -262,7 +262,7 @@ O e2e de asset que passa pelo backend monta o adapter HTTP com o mesmo limite de
 - Nenhum TTL, bucket ou convenção de chave vazou pra contrato ou caso de uso?
 - Dublê por contrato de asset, com `stat` configurável, sem dublê da classe de infra?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Cron de limpeza de uploads órfãos (ADR-0018)
-- Em aberto: Limite de taxa de `requestUpload` (ADR-0019)
+- **Cron de limpeza de uploads órfãos.** O detalhamento do cron de limpeza de uploads órfãos (fila, periodicidade) fecha com o primeiro asset de upload direto, seguindo `backend/async-jobs.md`.
+- **Limite de taxa de `requestUpload`.** O endpoint de `requestUpload` emite permissão de escrita no storage e pode pedir um limite de taxa mais restrito que o do throttler global. O resto do que este ADR juntava já está decidido no texto: a URL assinada fica fora de log manual e o `location` da resposta entra no `redact` (`infrastructure/logging.md`, "Redação de campo sensível"); o bucket privado e a leitura por URL assinada estão em `infrastructure/storage.md`, "Por que dois buckets" e "Contrato por asset: dois eixos".

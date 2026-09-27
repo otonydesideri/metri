@@ -8,7 +8,6 @@ applies_to:
   - "apps/app-api/src/domain/enterprise/specifications/**"
 keywords: [Specification, specification, "isSatisfiedBy()", "toWhere()", .specification.ts, enterprise/specifications, regra booleana, where, RefundableOrderSpecification, composição de specifications, and/or/not]
 examples: [domain/specification.examples.md]
-adr: [ADR-0009]
 status: active
 ---
 # Specification
@@ -100,6 +99,6 @@ Pontos-chave:
 - O escopo de acesso continua no `where` da query, fora do `toWhere()`?
 - Nenhuma infraestrutura de composição sem requisito real de composição dinâmica?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Composição de specifications (ADR-0009)
+- **Composição de specifications.** Composição de specifications (`and`/`or`/`not` como objetos combináveis) fica fora do desenho até composição dinâmica de regra ser requisito real do produto (segmentação montada pelo usuário, por exemplo).

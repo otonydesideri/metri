@@ -119,6 +119,7 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 - frontend/components: `LoadErrorState` exige `onRetry` no tipo das props
 - frontend/components: nenhum import nomeado de `@metri/ui/components/ui/*`; só `import * as`
 - frontend/components: nenhum import de `packages/ui/src/shadcn/` no app, por caminho relativo ou pelo pacote
+- contrato de slice: o arquivo de entrada de uma slice construída tem o cabeçalho de contrato
 
 ## Fase 5: skills (seção 16)
 

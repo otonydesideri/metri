@@ -8,7 +8,6 @@ use_when:
 applies_to:
   - "apps/app-web/src/**"
 keywords: [estrutura de pastas, casa, app/, pages/, hooks/, api/, lib/, shared/, shared/components, shared/mocks, nomeação de arquivo, kebab-case, pasta do dono, arquivo de entrada, "<tela>-page.tsx", "<área>-layout.tsx", casa nova, "@metri/utils", "@metri/ui"]
-adr: [ADR-0015]
 status: active
 ---
 # Visão geral do frontend
@@ -135,6 +134,6 @@ A colocação entre app e pacote segue `general/code-placement.md`, "Código pod
 - Código que não encaixa em nenhuma casa abriu casa nova, com decisão registrada, em vez de inchar uma existente?
 - A escolha entre app e pacote seguiu a colocação de `general/code-placement.md`, sem pacote catch-all?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Taxonomia de `shared/components/` (ADR-0015)
+- **Taxonomia de `shared/components/`.** A taxonomia de `shared/components/` ainda não está decidida; até fechar, vale a decisão de projeto do app. A primeira pasta de papel já existe: `shared/components/inputs/`, com o critério de pertença escrito em `frontend/forms.md`, "Campo montado no app". A fronteira dela contra o modelo de dono já está fechada ("A pasta do dono"): o que segue aberto é a divisão interna, não quem entra. A direção é uma mistura do modelo (pastas por papel: `forms/`, `cards/`, `modals/`, ...) e demanda, crescendo a partir da raiz e de `icons/`. A taxonomia final não é decidida agora; cada pasta de papel nasce com o critério de pertença escrito quando o primeiro componente dela aparecer.

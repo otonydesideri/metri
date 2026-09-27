@@ -14,7 +14,6 @@ not_covered:
   - "o mecanismo de reação ou de atomicidade entre módulos → backend/operation-routing"
   - "o bounded context e a interação entre contextos → domain/bounded-contexts"
   - "a divisão real de módulos de cada app, que é decisão de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
-adr: [ADR-0007]
 status: active
 ---
 # Módulos
@@ -82,6 +81,8 @@ Todo comportamento exposto por um módulo entra por uma porta: a HTTP, um contro
 - O módulo aparece só como subpasta nas camadas que usa, sem módulo Nest próprio, registrado nas listas centrais?
 - Outro módulo é usado pelo contrato compartilhado, com leitura em lote, e reação ou atomicidade pelo mecanismo de `backend/operation-routing.md`?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Integração entre módulos além do contrato compartilhado (ADR-0007)
+- **Integração entre módulos além do contrato compartilhado.** Integração entre módulos além do contrato compartilhado (capacidade exposta dedicada, comando de um módulo sobre outro) não tem desenho fechado; até essa decisão, módulo novo não introduz mecanismo próprio de integração.
+  - Capacidade exposta dedicada
+  - Comando de um módulo sobre outro

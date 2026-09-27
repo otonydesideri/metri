@@ -5,6 +5,7 @@ use_when:
   - "criar um fluxo novo de e-mail"
   - "disparar um e-mail a partir de um fluxo do produto"
   - "escolher ou trocar o vendor de e-mail"
+activation: "O projeto envia e-mail?"
 applies_to:
   - "apps/app-api/src/domain/application/services/mail/**"
   - "apps/app-api/src/infra/services/mail/**"
@@ -12,15 +13,15 @@ keywords: [e-mail, vendor de e-mail, Resend, ResendMailService, RESEND_API_KEY, 
 not_covered:
   - "a regra transversal de organização — classe de infra sem contrato, contrato por fluxo, registro no `ServicesModule`, dublê por contrato → infrastructure/services"
   - "o mecanismo que dispara o envio, chamada direta, evento ou job → backend/operation-routing"
+  - "o vendor, a configuração, o domínio e o remetente, que são decisão de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
 examples: [infrastructure/mail.examples.md]
-adr: [ADR-0017]
 status: active
 ---
 # E-mail
 
 O envio de e-mail: uma classe de infra que expõe o client do vendor e um contrato por fluxo real do produto (confirmação de pedido, aviso de fatura vencida), consumido por quem dispara aquele fluxo, nunca pela classe de infra direto.
 
-O vendor de e-mail é delegação de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `methodology/authoring.md`, "Domínio didático".
+O vendor de e-mail é delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `methodology/authoring.md`, "Domínio didático".
 
 ## A classe de infra
 
@@ -99,6 +100,6 @@ Pontos-chave:
 - A falha que o SDK devolve como valor, em vez de lançar, está checada inline em cada sender?
 - Registro e dublê seguem `infrastructure/services.md` (sender no `ServicesModule`, fake por contrato, sem dublê da classe de infra)?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Vendor de e-mail (ADR-0017)
+- **Vendor de e-mail.** O vendor de e-mail segue aberto como delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"), resolvida com o primeiro fluxo real; até lá, `ResendMailService` e a checagem do campo `error` valem como ilustração da forma. Quando o vendor escolhido pede forma que este documento não tem, a forma entra aqui antes do código.

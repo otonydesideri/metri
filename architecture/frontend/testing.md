@@ -17,7 +17,6 @@ keywords: [pirâmide, spec, Vitest, jsdom, MSW, setupServer, server.use, onUnhan
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 examples: [frontend/testing.examples.md]
-adr: [ADR-0016]
 status: active
 ---
 # Testes do frontend
@@ -249,6 +248,6 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 - O teste afirma reação da interface ao contrato, e não uma regra derivada que só o servidor pode provar?
 - Produção não importa de `test/`? `grep -rlP "from '[^']*/test/|from '@/test" apps/app-web/src --include="*.ts" --include="*.tsx" --exclude="*.spec.ts" --exclude="*.spec.tsx"` deve devolver vazio.
 
-## Pontos em aberto
+## Em aberto
 
-- Em aberto: E2e de browser (ADR-0016)
+- **E2e de browser.** Não existe runner de browser no monorepo. O nível 5 já prova as sequências multi-tela pela árvore real de rotas, e o backend já prova o servidor com banco real, então o que falta é só o que exige um browser de verdade: cookie entre origens, redirect real de serviço externo, propagação de estado entre abas. Adotar isso é decisão maior que qualquer feature, porque traz seed de banco, provisionamento de usuário de teste e execução em CI. Enquanto não fechar, comportamento que só um browser prova fica sem teste automatizado e é verificado à mão.

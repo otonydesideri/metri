@@ -13,7 +13,6 @@ not_covered:
   - "a escrita do delta no repositório → backend/persistence"
   - "a ordem do arquivo físico em volta da escrita → infrastructure/storage"
 examples: [domain/watched-list.examples.md]
-adr: [ADR-0010]
 status: active
 ---
 # WatchedList
@@ -178,6 +177,6 @@ O desenho do serviço de storage em si (contrato por asset, fluxo de upload dire
 - Nenhuma instância de agregado é salva duas vezes (o delta não zera)?
 - Arquivo físico: upload antes da escrita, remoção física depois?
 
-**Pontos em aberto:**
+## Em aberto
 
-- Em aberto: Edição de item filho no lugar (ADR-0010)
+- **Edição de item filho no lugar.** Edição de item filho no lugar (campo interno de item que permanece na coleção) não tem instância nem desenho na escrita canônica; quando o caso aparecer, a decisão edita a escrita canônica de `backend/persistence.md` e esta coleção.
