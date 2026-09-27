@@ -1,11 +1,11 @@
 # SETUP: Slices com Guardrails
 
 Este repositório é o **Architecture Source** (global). O projeto piloto é outro repositório, criado na Fase 7.
-Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.3).
+Metodologia de referência: `README.md` (v1.1.3: porquê, princípios, mapa) e as skills em `skills/` (o processo).
 
 ## Como usar
 
-- Toda sessão do Claude Code começa lendo este arquivo e **só** a seção da metodologia citada no passo.
+- Toda sessão do Claude Code começa lendo este arquivo e **só** o que o passo cita.
 - Um passo por vez. Ao final de cada passo, commit com o número do passo na mensagem (ex.: `setup(2.1): inventário das regras`).
 - Marque `[x]` e, se houve decisão, anote em uma linha logo abaixo do passo. Nada de relatório.
 - Arquivo temporário: é apagado quando o source chegar à v1.0.0 (passo 6.2).
@@ -50,8 +50,8 @@ Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:ch
   - D3 Capacidades condicionais são globais; a ativação fica no INDEX do projeto.
   - D4 Revogada: a posse de cada tema é definida pela `description` de cada arquivo (antes: Caso de uso, classe/registro de evento e erro de domínio → `domain/`; adaptador/DI, despacho/subscriber e tradução HTTP → `backend/`; variação de integração → `backend/` ou `infrastructure/`).
   - D5 O `design-system` do frontend vira exemplo de projeto; o global mantém "só token" e o contrato de tema.
-  - D6 Regras existentes são refinadas, não reescritas (METHODOLOGY 7.2).
-  - D7 Exemplos didáticos no global; só a implementação completa vai para `<tema>.examples.md` (METHODOLOGY 7.2, item 2); `examples` aponta para ele e, quando existir, para `template/`; nas regras de projeto, para código real.
+  - D6 Regras existentes são refinadas, não reescritas (`skills/writing-for-agents/RULE-FORMAT.md`, "Refinar uma regra existente (sem reescrever)").
+  - D7 Exemplos didáticos no global; só a implementação completa vai para `<tema>.examples.md` (`skills/writing-for-agents/RULE-FORMAT.md`, "Refinar uma regra existente (sem reescrever)", item 2); `examples` aponta para ele e, quando existir, para `template/`; nas regras de projeto, para código real.
   - D8 Revogada por D13 (antes: pontos em aberto viram ADR `proposed`; "o que a decisão não é" vira alternativas do ADR).
   - D9 Temas faltantes (migrações, CI/deploy, segurança HTTP, error boundary, acessibilidade) não são criados agora.
   - D10 Revogada: não há limite de linhas.
@@ -60,13 +60,13 @@ Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:ch
   - D13 ADR só com decisão tomada, difícil de reverter, surpreendente e com trade-off real; pergunta em aberto fica na regra, na seção "Em aberto".
   - D14 A pergunta de ativação de capacidade condicional é a chave `activation` da regra dona; o que fica para o projeto é `not_covered` → `project:`; `catalog/` sai.
   - D15 O contrato de slice é um bloco da slice na MATRIX enquanto ela é plano e, depois do primeiro ticket construído, o cabeçalho do `entry` no código.
-  - D16 Regra e template não citam a METHODOLOGY; o `docs-lint` barra.
+  - D16 Regra e template não citam a METHODOLOGY; o `docs-lint` barra. Na Fase 5, a METHODOLOGY virou `README.md`, e regra e skill não citam o README.
   - D17 Os templates vão para as skills donas na Fase 5.
 - [x] 2.2 Formato das regras (metodologia, seção 7) e mapeamento do formato atual para ele
-  - Mapeamento: METHODOLOGY 7.2
+  - Mapeamento: `skills/writing-for-agents/RULE-FORMAT.md`, "Refinar uma regra existente (sem reescrever)"
 - [x] 2.3 Piloto de refinamento: http-api e components
   - use_when = Consultar antes de; chave vazia não é escrita; Caminhos do projeto no INDEX
-- [x] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
+- [x] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (`skills/writing-for-agents/RULE-FORMAT.md`, item 6 de "Refinar uma regra existente (sem reescrever)")
 - [x] 2.5 Extrair as regras do `overview` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation` → template de INDEX de projeto (3.4), `authoring` → absorvido pela metodologia (apagar no fim da fase)
   - overview → `backend/layers`, `general/{overview,code-placement,http-surface,principles}`, `defaults/stack` e o template de INDEX; activation → `methodology/templates/architecture-INDEX.md`; authoring → `methodology/authoring.md`; design-system → `methodology/templates/examples/`; destinos `project:` no frontmatter.
 - [x] 2.6 Pontos em aberto → ADRs `proposed` (D8)
@@ -87,7 +87,7 @@ Fase 3 fechada: decisões pendentes resolvidas, docs-lint sem erro e rules-index
 - [x] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
   - design-system, async-jobs, mail, storage, cache e observability; `catalog/INDEX.md` gerado; as linhas delas saíram da matriz de ativação. `catalog/` saiu depois (D14).
 - [x] 3.4 Starter em `template/`
-  - Cada arquivo no caminho que terá no projeto (`AGENTS.md`, `CLAUDE.md`, `docs/`); regra, slice e ADR voltam ao Apêndice A; a ativação vai para a METHODOLOGY 6.14; o exemplo de regra de design system sai.
+  - Cada arquivo no caminho que terá no projeto (`AGENTS.md`, `CLAUDE.md`, `docs/`); regra, slice e ADR voltam ao Apêndice A; a ativação vai para a METHODOLOGY 6.14 (hoje `skills/setup/ACTIVATION.md`); o exemplo de regra de design system sai.
 
 Decisões da fase (aplicadas):
 
@@ -117,7 +117,7 @@ Fase 4 fechada: `rules-for`, `docs-lint` no projeto e `verify`, com testes em Vi
   - Testes em Vitest com a fixture `template/scripts/__fixtures__/project/`, cujo `.metri/architecture` é symlink para o `architecture/` deste repositório; substituição de regra global: linha em "Exceções e defaults trocados" com o id, "substitu" e o ADR.
   - Depois (Fase 5): `backend/layers` e `frontend/structure` sem `applies_to`, lidas pela `use_when` quando o ticket cria arquivo ou módulo; `backend/boundaries` mantém o dela até o check de fronteiras ("Em aberto").
 - [x] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
-  - A parte do source está feita; o aviso de `applies_to` sem casamento (METHODOLOGY 6.13) entra aqui.
+  - A parte do source está feita; o aviso de `applies_to` sem casamento (`pnpm docs-lint --help`) entra aqui.
   - Modo pela presença de `.metri/`; a lista de checagens saiu da 6.13 para o `--help`. O aviso de `applies_to` sem casamento vale para as regras do projeto e para "Caminhos do projeto"; `docs/plan/tech/` fica fora da árvore até ser usada; slice em construção (`horizon` com `entry`, sem `contract`) é válida (A.7).
 - [x] 4.4 `verify`: roda os checks do projeto
   - docs-lint e rules-index:check pelos scripts irmãos (não dependem do `package.json`); typecheck, lint e test por `pnpm run`, se existirem; a saída do check que falha vem abaixo da linha dele.
@@ -126,12 +126,14 @@ Fase 4 fechada: `rules-for`, `docs-lint` no projeto e `verify`, com testes em Vi
 
 Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 
-## ▶ Agora: Fase 5, skills (seção 16)
+## Fase 5: skills
+
+Fase 5 fechada: 12 skills em `skills/` (6 chamadas pelo usuário, 6 pelo modelo), distribuídas por link em `.claude/skills/`, com teste a seco; a METHODOLOGY virou `README.md`; `pnpm verify` verde.
 
 - [x] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
   - `skills/<nome>/SKILL.md`, cada uma abrindo com "Adapted from mattpocock/skills@c55ee46 (MIT)"; o `authoring.md` e o formato de regra (A.6 e seção 7) viraram `skills/writing-for-agents/RULE-FORMAT.md`; o formato de ADR é da `domain-language`.
 - [x] 5.2 Escrever as nossas: `guardrail`, `/setup`, `/shape`, `/look-across`, `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os formatos saem de `template/` e do Apêndice A:
-  - `/setup`: `template/AGENTS.md`, `template/CLAUDE.md` e `template/docs/architecture/INDEX.md`, com as classes de ativação e as delegações (hoje na METHODOLOGY 6.14);
+  - `/setup`: `template/AGENTS.md`, `template/CLAUDE.md` e `template/docs/architecture/INDEX.md`, com as classes de ativação e as delegações (hoje em `skills/setup/ACTIVATION.md`);
   - `/shape`: `template/docs/PRODUCT.md` e `template/docs/DESIGN.md`;
   - `/look-across`: `template/docs/plan/MATRIX.md` e o contrato de slice (A.7);
   - `domain-language` (5.1): `template/docs/CONTEXT.md`;
@@ -141,11 +143,12 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
   - `/setup` → `/shape` (cancelar pedido não enviado) → `/look-across` numa cópia da fixture, com o source montado como submódulo: `docs-lint` e `verify` verdes; `/build`, `/accept` e `/diagnose` por subagente com contexto novo, só com a skill e o T1.1; as ambiguidades mecânicas foram corrigidas nas skills.
 - [x] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
   - Fica, na raiz do source (`VOCABULARY.md`); as skills e os formatos apontam para ele.
-- [ ] 5.5 A METHODOLOGY vira `README.md` (porquê, princípios, limiares, mapa e referências), e `methodology/` é apagada
+- [x] 5.5 A METHODOLOGY vira `README.md` (porquê, princípios, limiares, mapa e referências), e `methodology/` é apagada
+  - Texto movido para o `README.md`; o que era operacional já estava nas skills, nas regras, no `VOCABULARY.md` e nos scripts; a precedência (6.3) foi para `architecture/INDEX.md`; o `docs-lint` passa a barrar citação ao README em regra e skill.
 - [x] 5.6 Decidir como skills e scripts chegam aos projetos
   - Skills: o `/setup` liga `.claude/skills/<nome>` → `../../.metri/skills/<nome>` (symlink relativo, commitado), e os arquivos existem só em `.metri/`, na versão fixada. Fonte: code.claude.com/docs/en/skills, tabela de locais (projeto: `.claude/skills/<skill-name>/SKILL.md`, "Commit it so your team gets it too") e "Symlinked folders" ("a `<skill-name>` entry in the enterprise, personal, or project location can be a symlink to a directory elsewhere on disk"). Plugin descartado: pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa as skills (`/<plugin>:<skill>`), segundo code.claude.com/docs/en/plugins/loading. Scripts: `tsx .metri/template/scripts/<script>.ts` no `package.json` do projeto, com `tsx`, `yaml` e `picomatch` e `allowBuilds: { esbuild: false }` no `pnpm-workspace.yaml`.
 
-## Fase 6: release do source
+## ▶ Agora: Fase 6, release do source
 
 - [ ] 6.1 `CHANGELOG.md` + tag `v1.0.0`
 - [ ] 6.2 Apagar este `SETUP.md`
@@ -158,7 +161,7 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 - [ ] 7.3 `/shape` (com triagem de design) → `/look-across`
 - [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter e os `.examples.md` viram ponteiro
 - [ ] 7.5 2–3 slices até o aceite e um release
-- [ ] 7.6 Registrar as métricas do piloto (seção 19)
+- [ ] 7.6 Registrar as métricas do piloto (`README.md`, "Validação e melhoria (piloto)")
 
 ## Fase 8: melhoria
 

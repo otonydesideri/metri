@@ -6,7 +6,7 @@ kind: decision
 
 ## Contexto
 
-- O kit padrão da metodologia é o shadcn/ui, instalado e estilizado por tokens de tema conforme o `DESIGN.md` (METHODOLOGY 8.1).
+- O kit padrão da metodologia é o shadcn/ui, instalado e estilizado por tokens de tema conforme o `DESIGN.md` (`architecture/defaults/ui.md`).
 - O `@metri/ui`, kit que as regras de `frontend/` consomem, era feito em AlignUI: primitivos em compound (`Input.Root`, `Label.Asterisk`) e tokens próprios (`bg-bg-white-0`, `text-title-h6`).
 - O shadcn/ui gera cada componente com exports nomeados (`Tabs`, `TabsList`), e a CLI atualiza o arquivo que gerou.
 

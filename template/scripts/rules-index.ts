@@ -1,5 +1,5 @@
 // rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras e, abaixo do marcador do
-// INDEX.md raiz, a lista de áreas e a tabela "Capacidades condicionais" das regras com activation (METHODOLOGY 6.11).
+// INDEX.md raiz, a lista de áreas e a tabela "Capacidades condicionais" das regras com activation.
 // Uso: rules-index [<raiz>] [--check]   (raiz padrão: architecture)
 // --check não escreve nada e sai com código 1 se algum INDEX estiver desatualizado.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';

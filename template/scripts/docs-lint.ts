@@ -37,9 +37,9 @@ Nos dois modos:
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
 
 Só no source:
-  - METHODOLOGY: regra (architecture/) e skill (skills/, com os formatos e templates de cada uma) não citam a
-    METHODOLOGY, nem em frontmatter nem em bloco de código; citação a ela é erro, e o texto cita o dono.
-  - Citações (em architecture/, methodology/, adr/, skills/ e VOCABULARY.md, fora de bloco de código): todo caminho
+  - README: regra (architecture/) e skill (skills/, com os formatos e templates de cada uma) não citam o README.md,
+    que é para humano, nem em frontmatter nem em bloco de código; citação a ele é erro, e o texto cita o dono.
+  - Citações (em architecture/, adr/, skills/, VOCABULARY.md e README.md, fora de bloco de código): todo caminho
     .md citado existe;
     quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
     \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
@@ -90,9 +90,10 @@ const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 const RULE_DIRS = layout.isProject ? ['docs/architecture', '.metri/architecture'] : ['architecture'];
 const ADR_DIRS = layout.isProject ? ['docs/adr', '.metri/adr'] : ['adr'];
 const ARCHITECTURE = 'architecture';
-const CITATION_ROOTS = ['architecture', 'methodology', 'adr', 'skills', 'VOCABULARY.md'];
-// Onde a METHODOLOGY não é citada: as regras e as skills (com os formatos e templates de cada uma).
-const NO_METHODOLOGY_ROOTS = ['architecture', 'skills'];
+const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'VOCABULARY.md', 'README.md'];
+// Onde o README não é citado: as regras e as skills (com os formatos e templates de cada uma).
+const NO_README_ROOTS = ['architecture', 'skills'];
+const README_CITATION = /`(?:\.metri\/)?README\.md`/;
 const SKILLS = 'skills';
 // Pastas fora da varredura de markdown do source: a fixture de teste é um projeto.
 const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
@@ -460,15 +461,15 @@ function lintGenerated(dir: string): void {
   }
 }
 
-// Toda linha conta, inclusive frontmatter e bloco de código: a METHODOLOGY é para humano.
-function lintMethodologyCitations(path: string): void {
+// Toda linha conta, inclusive frontmatter e bloco de código: o README é para humano.
+function lintReadmeCitations(path: string): void {
   const source = readFileSync(path, 'utf8');
   if (source.startsWith(GENERATED_HEADER)) {
     return;
   }
   source.split('\n').forEach((text, index) => {
-    if (text.includes('METHODOLOGY')) {
-      report(path, index + 1, 'citação: regra e skill não citam a METHODOLOGY (cite o dono)');
+    if (README_CITATION.test(text)) {
+      report(path, index + 1, 'citação: regra e skill não citam o README.md, que é para humano (cite o dono)');
     }
   });
 }
@@ -520,8 +521,8 @@ function lintSource(): void {
   for (const path of CITATION_ROOTS.flatMap(listMarkdown)) {
     lintCitations(path);
   }
-  for (const path of NO_METHODOLOGY_ROOTS.flatMap(listMarkdown)) {
-    lintMethodologyCitations(path);
+  for (const path of NO_README_ROOTS.flatMap(listMarkdown)) {
+    lintReadmeCitations(path);
   }
   lintReadingOrder(rules);
   lintSkills();

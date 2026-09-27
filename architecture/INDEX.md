@@ -33,6 +33,7 @@ Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 
 - Aqui: a referência completa de arquitetura. O quê, o porquê, os limites e os padrões de construção de cada área, com exemplos de código.
 - Instruções de projeto de cada pacote: o que `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `docs/architecture/` certo.
+- Precedência: ADR > regra do projeto > regra global > default global.
 
 Em divergência entre um documento daqui e o código, o documento vale: o desenho evolui primeiro no documento, o código segue. Instrução de projeto que contradiz um documento daqui sem ADR que a sustente é bug de documentação, corrigido na instrução de projeto.
 
