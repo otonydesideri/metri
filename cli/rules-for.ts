@@ -240,15 +240,19 @@ while (queue.length > 0) {
   }
 }
 
+// No projeto, capacidade condicional só vale quando está em "Capacidades ativas".
+function isActive(rule: Rule): boolean {
+  return !layout.isProject || !rule.isConditional || activeIds.has(rule.id);
+}
+
 const inactive: string[] = [];
 const result = [...selected]
   .map((id) => rules.get(id) as Rule)
   .filter((rule) => {
-    const isActive = !layout.isProject || !rule.isConditional || activeIds.has(rule.id);
-    if (!isActive) {
+    if (!isActive(rule)) {
       inactive.push(rule.id);
     }
-    return isActive;
+    return isActive(rule);
   })
   .sort((a, b) => Number(b.isProject) - Number(a.isProject) || a.id.localeCompare(b.id));
 
@@ -258,7 +262,7 @@ for (const rule of result) {
 lines.push(...readBefore);
 const resultIds = new Set(result.map(({ id }) => id));
 const cited = [...new Set(result.flatMap((rule) => rule.cited))]
-  .filter((id) => !resultIds.has(id) && rules.has(id))
+  .filter((id) => !resultIds.has(id) && rules.has(id) && isActive(rules.get(id) as Rule))
   .sort();
 for (const id of cited) {
   lines.push(`citada: ${id} — ${rules.get(id)?.description}`);

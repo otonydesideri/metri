@@ -141,15 +141,13 @@ architecture/
   defaults/                     escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
 adr/                            decisões globais (inclusive as que sustentam os defaults)
 agents/                         os subagentes por função, no formato do Claude Code ("Agentes")
-skills/                         as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e o arquivo copiado igual para o projeto (<ARQUIVO>-TEMPLATE.md)
+skills/                         as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e a base que a skill adapta no projeto (<ARQUIVO>-TEMPLATE.md)
 cli/                            a CLI metri (TypeScript com tsx, sem build) e, em cli/templates/, o que o metri init copia
 VOCABULARY.md                   vocabulário da metodologia (chaves canônicas)
 README.md                       a metodologia para humano: porquê, princípios, mapa e referências
 AGENTS.md, CLAUDE.md            instruções do agente neste repositório
 CHANGELOG.md                    o que mudou em cada versão e como atualizar
 package.json                    o pacote metri: o bin, os arquivos que o projeto recebe (files) e os scripts do source
-```
-
 ```
 
 `general/` guarda as regras que valem para mais de uma área (princípios transversais, colocação de código entre app e pacote). As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
@@ -196,7 +194,7 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 
 - o **significado** dos termos → `CONTEXT.md`;
 - o **modelo em si** → schema e código;
-- as **regras de negócio planejadas** → casos de uso na matriz, que migram para testes e invariantes no código.
+- as **regras de negócio planejadas** → casos de uso nos arquivos de ticket (`.metri/tickets/`), que migram para testes e invariantes no código.
 
 ### Carregamento sob demanda (regras por caminho)
 

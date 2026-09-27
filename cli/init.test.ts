@@ -64,6 +64,17 @@ describe('init', { timeout: 60_000 }, () => {
     expect(scripts).not.toHaveProperty('plan-view');
   });
 
+  it('CLAUDE.md como link para o AGENTS.md: o conteúdo do AGENTS.md fica, uma vez só', () => {
+    const dir = emptyProject();
+    write(dir, 'AGENTS.md', '# AGENTS.md\n\n## Local\n\n- Use a VPN.\n');
+    symlinkSync('AGENTS.md', join(dir, 'CLAUDE.md'));
+    expect(init(dir).status).toBe(0);
+    const agents = readFileSync(join(dir, 'AGENTS.md'), 'utf8');
+    expect(agents.match(/Use a VPN/g)).toHaveLength(1);
+    expect(agents).toContain('## How to work here');
+    expect(readFileSync(join(dir, 'CLAUDE.md'), 'utf8')).toBe('@AGENTS.md\n');
+  });
+
   it('link para skill que o pacote não tem mais sai', () => {
     const dir = emptyProject();
     init(dir);

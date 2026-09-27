@@ -170,12 +170,12 @@ LoggerModule.forRoot({
 
 Pontos-chave:
 
-- O identificador do dono ou tenant (a "Identidade do dono" de `.metri/ARCHITECTURE.md`) entra no `redact` por padrão, no primeiro nível e um abaixo, com o nome que o projeto usa.
+- O identificador do dono ou tenant (a "Identidade do dono" de `.metri/ARCHITECTURE.md`) entra no `redact` por padrão, no primeiro nível e um abaixo, com o nome que o projeto usa; o campo de contexto que leva o mesmo id (o `callerId`, quando o dono é o próprio usuário) também.
 - `censor: '[REDACTED]'` deixa visível no log que a redação atuou. Remover o campo silenciosamente esconderia também a evidência de que a proteção está ativa.
 - Path de `redact` é case-sensitive. Header de request chega minúsculo no Node, então os paths acima cobrem o caso real; um path novo em maiúsculo não protege o header minúsculo equivalente.
 - Body de request não está na lista porque `pino-http` não loga body. Dado sensível passado como dado estruturado num log manual é responsabilidade de quem loga; não existe redação global que cubra objeto arbitrário.
 - Senha, cookie, token de qualquer natureza, URL assinada e payload com dado pessoal não entram em log manual. O `redact` acima protege os headers conhecidos, não argumentos arbitrários.
-- A linha automática inclui a URL. Segredo não pode ser transportado em path ou query que apareça em `req.url`; rota que fizer isso precisa mudar o transporte ou instalar serializer que remova o valor antes da primeira exposição externa. `res.headers.location` está no `redact` pelo mesmo motivo: um redirect pode carregar no `Location` um valor que não deveria aparecer no log.
+- A linha automática inclui a URL. Rota com o identificador do dono no path leva um serializer de `req` que o troca por `[REDACTED]` no `req.url`. Segredo não pode ser transportado em path ou query que apareça em `req.url`; rota que fizer isso precisa mudar o transporte ou instalar serializer que remova o valor antes da primeira exposição externa. `res.headers.location` está no `redact` pelo mesmo motivo: um redirect pode carregar no `Location` um valor que não deveria aparecer no log.
 
 ## Como logar num provider
 

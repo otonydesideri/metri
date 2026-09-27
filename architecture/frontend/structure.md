@@ -66,9 +66,9 @@ Propósito e fronteira de cada casa:
 | `shared/utils/` | função pura que conhece algo deste app | sem domínio, sem React; o agnóstico de app pode nascer em `@metri/utils` (`general/code-placement.md`) |
 | `shared/types/` | tipo TS compartilhado entre arquivos do app | sem runtime |
 
-`shared/` não é um catch-all: cada arquivo entra numa das casas listadas e mantém a fronteira dela. Código específico de página, hook, chamada ao app-api ou facade de dependência continua na casa top-level correspondente.
+`shared/` não é um catch-all: cada arquivo entra numa das casas listadas e mantém a fronteira dela. Código específico de página, hook ou facade de dependência continua na casa top-level correspondente.
 
-`lib/` é reservada ao wrapper de dependência externa, como o cliente HTTP ou o client de um serviço de terceiro. Cada integração tem uma subpasta mesmo quando começa com um arquivo, porque seus clients, adapters e tradutores evoluem juntos. Função pura vai pra `shared/utils/`; chamada ao app-api vai pra `api/`; validação vai pra `shared/schemas/`. Detalhe das casas auxiliares (`shared/utils`, `shared/rules`, `shared/constants`, `shared/types`) está em `frontend/helpers.md`.
+`lib/` é reservada ao wrapper de dependência externa, como o cliente HTTP ou o client de um serviço de terceiro. Cada integração tem uma subpasta mesmo quando começa com um arquivo, porque seus clients, adapters e tradutores evoluem juntos. Função pura vai pra `shared/utils/`; a chamada ao app-api é a função gerada em `api/` (`frontend/data-fetching.md`, "Funções de API"); validação vai pra `shared/schemas/`. Detalhe das casas auxiliares (`shared/utils`, `shared/rules`, `shared/constants`, `shared/types`) está em `frontend/helpers.md`.
 
 ## Nomeação de arquivo
 
@@ -124,7 +124,7 @@ A colocação entre app e pacote segue `general/code-placement.md`, "Código pod
 
 ## Verificação rápida
 
-- O arquivo entrou na casa cujo propósito bate com a função dele (função pura do app em `shared/utils/`, agnóstica de app no pacote dono quando a colocação de `general/code-placement.md` o admite, chamada ao app-api em `api/`, facade de SDK externo em `lib/<integração>/`, validação em `shared/schemas/`)?
+- O arquivo entrou na casa cujo propósito bate com a função dele (função pura do app em `shared/utils/`, agnóstica de app no pacote dono quando a colocação de `general/code-placement.md` o admite, chamada ao app-api pela função gerada em `api/`, facade de SDK externo em `lib/<integração>/`, validação em `shared/schemas/`)?
 - Página e layout nasceram como pasta, com a pasta nomeada pela coisa e o sufixo de papel só no arquivo de entrada?
 - A peça foi pra pasta do dono ou pra casa de papel pela pergunta certa (se o dono some, ela some junto?), sem decidir por contagem de consumidor?
 - Arquivo técnico de `shared/` está na pasta plana e com o sufixo correspondente?

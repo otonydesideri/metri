@@ -60,6 +60,25 @@ describe('design-tokens', { timeout: 30_000 }, () => {
     expect(run('design-tokens', ['--root', project()])).toEqual({ status: 0, lines: [] });
   });
 
+  it('o preâmbulo do globals.css (@import, @source, @custom-variant) antes do primeiro bloco não esconde o bloco', () => {
+    const dir = project();
+    const preamble = '@import "tailwindcss";\n@source "../../../../apps";\n@custom-variant dark (&:is(.dark *));\n\n';
+    edit(dir, THEME, (source) => preamble + source);
+    expect(run('design-tokens', ['--root', dir])).toEqual({ status: 0, lines: [] });
+    const themeFirst = project();
+    edit(themeFirst, THEME, (source) => {
+      const theme = source.slice(source.indexOf('@theme inline'));
+      return `${preamble}${theme}\n${source.slice(0, source.indexOf('@theme inline'))}`;
+    });
+    expect(run('design-tokens', ['--root', themeFirst])).toEqual({ status: 0, lines: [] });
+  });
+
+  it('rounded.lg sem --radius é erro', () => {
+    const dir = project();
+    edit(dir, THEME, (source) => source.replace('  --radius: 0.625rem;\n', ''));
+    expect(run('design-tokens', ['--root', dir]).lines).toContain(`${THEME}: rounded.lg: falta --radius em :root`);
+  });
+
   it('valor diferente, token sem variável e variável de cor sem token são erro', () => {
     const dir = project();
     edit(dir, 'docs/DESIGN.md', (source) => source.replace('background-dark: "oklch(0.145 0 0)"', 'background-dark: "oklch(0.3 0 0)"'));

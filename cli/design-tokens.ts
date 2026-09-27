@@ -52,7 +52,8 @@ function pending(reason: string): never {
 function blocksOf(css: string): Blocks {
   const blocks: Blocks = { light: new Map(), dark: new Map(), theme: new Map() };
   for (const [, selector, body] of css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    const name = selector.trim();
+    // o seletor é o que vem depois do último `;`: @import, @source e @custom-variant antes do bloco ficam de fora
+    const name = selector.split(';').at(-1)?.trim() ?? '';
     const target =
       name === ':root' ? blocks.light : name === '.dark' ? blocks.dark : name.startsWith('@theme') ? blocks.theme : undefined;
     for (const [, key, value] of target ? body.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g) : []) {
@@ -115,7 +116,9 @@ for (const [block, selector, suffix] of [[blocks.light, ':root', ''], [blocks.da
 
 const radius = (tokens.rounded as Record<string, unknown> | undefined)?.lg;
 const actualRadius = blocks.light.get('radius');
-if (radius !== undefined && actualRadius !== undefined && !sameValue(radius, actualRadius)) {
+if (radius !== undefined && actualRadius === undefined) {
+  problems.push('rounded.lg: falta --radius em :root');
+} else if (radius !== undefined && actualRadius !== undefined && !sameValue(radius, actualRadius)) {
   problems.push(`rounded.lg: ${String(radius)} no DESIGN.md, ${actualRadius} em --radius de :root`);
 }
 

@@ -43,11 +43,11 @@ Nos dois modos:
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
 
 Só no source:
-  - README: regra (architecture/), skill (skills/, com os formatos de cada uma) e template (cli/templates/) não
-    citam o README.md, que é para humano, nem em frontmatter nem em bloco de código; citação a ele é erro, e o
+  - README: regra (architecture/), skill (skills/, com os formatos de cada uma), agent (agents/) e template
+    (cli/templates/) não citam o README.md, que é para humano, nem em frontmatter nem em bloco de código; citação a ele é erro, e o
     texto cita o dono.
-  - Citações (em architecture/, adr/, skills/, cli/templates/, VOCABULARY.md e README.md, fora de bloco de
-    código): todo caminho .md citado existe;
+  - Citações (em architecture/, adr/, skills/, agents/, cli/templates/, VOCABULARY.md e README.md, fora de
+    bloco de código): todo caminho .md citado existe;
     quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
     \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
     toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., .metri/..., AGENTS.md,
@@ -64,8 +64,8 @@ Só no source:
 Só no projeto:
   - Árvores fechadas (qualquer outro arquivo nelas é erro):
     - docs/: PRODUCT.md, CONTEXT.md, DESIGN.md e adr/NNNN-<slug>.md;
-    - .metri/: ARCHITECTURE.md, rules/<área>/<tema>.md (com frontmatter), rules/<área>/INDEX.md (gerado),
-      MATRIX.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
+    - .metri/: ARCHITECTURE.md, rules/<área>/<tema>.md (com frontmatter), rules/<área>/<tema>.examples.md,
+      rules/<área>/INDEX.md (gerado), MATRIX.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
   - Links: .claude/skills/<nome> para cada skill do pacote, e .claude/agents/<nome>.md para cada agent, apontando
     para node_modules/metri/skills/<nome> e node_modules/metri/agents/<nome>.md (metri init cria).
   - AGENTS.md com mais de 30 linhas: aviso.
@@ -96,8 +96,9 @@ Só no projeto:
     - blocked_by aponta para um ticket ou uma slice que existe;
     - todo UC fora de draft aparece em ucs da feature dele, em MATRIX.md;
     - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]");
-    - ticket done com área frontend/* tem, para cada critério n, tickets/<id>/<n>-desktop.png e <n>-mobile.png
-      (frontend/experience), até a poda da slice (slice com status: done na MATRIX) tirá-los da árvore.
+    - ticket done com área frontend/* tem, para cada critério n (os itens "- [ ]" do primeiro nível),
+      tickets/<id>/<n>-desktop.png e <n>-mobile.png (frontend/experience); a evidência que a poda da slice tirou
+      da árvore conta pelo histórico do git.
   - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
     superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
     Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.
@@ -602,6 +603,8 @@ function lintMetriTree(): void {
       if (!readFileSync(path, 'utf8').startsWith(GENERATED_HEADER)) {
         report(path, 1, `árvore de .metri/: INDEX de área é gerado ("${GENERATED_HEADER}")`);
       }
+    } else if (/^\.metri\/rules\/[^/]+\/[a-z0-9-]+\.examples\.md$/.test(path)) {
+      continue; // exemplos de regra não têm frontmatter.
     } else if (/^\.metri\/rules\/[^/]+\/[a-z0-9-]+\.md$/.test(path)) {
       lintFrontmatter(path, PROJECT_RULES);
     } else if (/^\.metri\/tickets\/[^/]+\.md$/.test(path)) {
@@ -703,14 +706,33 @@ function lintEvidence(path: string, id: string, frontmatter: Record<string, unkn
   if (frontmatter?.status !== 'done' || !isFrontend) {
     return;
   }
-  sectionItems(source, 'Critérios').forEach(({ line }, index) => {
+  topLevelCriteria(source).forEach((line, index) => {
     for (const device of EVIDENCE_DEVICES) {
       const evidence = `${TICKETS_DIR}/${id}/${index + 1}-${device}.png`;
-      if (!existsSync(evidence)) {
+      if (!existsSync(evidence) && !isInGitHistory(evidence)) {
         report(path, line, `evidência: falta ${evidence} (frontend/experience)`);
       }
     }
   });
+}
+
+// Linha de cada critério do primeiro nível ("- [ ]" ou "- [x]" sem recuo) da seção "Critérios".
+function topLevelCriteria(source: string): number[] {
+  const lines = source.split('\n');
+  const start = lines.indexOf('## Critérios');
+  const result: number[] = [];
+  for (let index = start + 1; start !== -1 && index < lines.length && !lines[index].startsWith('## '); index++) {
+    if (/^- \[[ xX]\] /.test(lines[index])) {
+      result.push(index + 1);
+    }
+  }
+  return result;
+}
+
+// A evidência podada saiu da árvore, mas continua no histórico do git.
+function isInGitHistory(path: string): boolean {
+  const result = spawnSync('git', ['log', '-1', '--format=%h', '--', path], { encoding: 'utf8' });
+  return result.status === 0 && result.stdout.trim() !== '';
 }
 
 function lintAgents(): void {

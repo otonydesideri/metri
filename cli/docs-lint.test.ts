@@ -86,6 +86,10 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     );
   });
 
+  it('árvore fechada de .metri/: <tema>.examples.md de regra do projeto entra', () => {
+    expect(lintChanged((dir) => write(dir, '.metri/rules/frontend/order-list.examples.md', '# Exemplos\n')).status).toBe(0);
+  });
+
   it('árvore fechada de .metri/: INDEX de área não gerado é erro', () => {
     const { status, output } = lintChanged((dir) =>
       edit(dir, '.metri/rules/frontend/INDEX.md', (source) => source.replace('Gerado por', 'Feito por')),
@@ -341,6 +345,14 @@ describe('docs-lint', { timeout: 30_000 }, () => {
       write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
     });
     expect(withEvidence).toEqual({ status: 0, output: '' });
+    // sub-item recuado não é critério
+    const nested = lintChanged((dir) => {
+      done(dir);
+      inTicket('UC1.1', '- [ ] A lista mostra os pedidos mais recentes primeiro.', '- [ ] A lista mostra os pedidos mais recentes primeiro.\n  - inclusive com zero pedidos')(dir);
+      write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png');
+      write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
+    });
+    expect(nested).toEqual({ status: 0, output: '' });
     const pruned = lintChanged((dir) => {
       done(dir);
       inMatrix('horizon: now · entry: apps/app-web/src/pages/orders/orders-page.tsx', 'status: done · entry: apps/app-web/src/pages/orders/orders-page.tsx')(dir);

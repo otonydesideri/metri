@@ -80,6 +80,8 @@ A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de cas
 
 **Obrigatório.** Todo endpoint declara a resposta com `@ZodResponse({ status, type })`, com o `status` explícito, e o controller leva `@ApiTags('<módulo>')`, que dá o arquivo `api/<módulo>.ts` do app-web.
 
+**Obrigatório.** O DTO de resposta é `createZodDto(<schema>, { codec: true })`, e data nele é um codec de string ISO para `Date` (`z.codec(z.iso.datetime(), z.date(), ...)`): a resposta sai pelo `encode`, e o JSON Schema do OpenAPI aceita a data.
+
 **Obrigatório.** Código gerado leva o cabeçalho de gerado e muda só pelo gerador: mudar o contrato é mudar o DTO e rodar `pnpm api:generate`.
 
 **Proibido.** Tratar como contrato de API o que não é: o schema de form é do frontend (`frontend/forms.md`), e a regra que o OpenAPI não carrega (`.refine`, `.transform`, mensagem de erro) mora nele.
@@ -115,6 +117,16 @@ export const createOrderSchema = z.object({
 });
 
 export class CreateOrderDto extends createZodDto(createOrderSchema) {}
+
+const isoDate = z.codec(z.iso.datetime(), z.date(), {
+  decode: (value) => new Date(value),
+  encode: (date) => date.toISOString(),
+});
+
+export class OrderResponseDto extends createZodDto(
+  z.object({ order: z.object({ id: z.uuid(), createdAt: isoDate }).meta({ id: 'Order' }) }),
+  { codec: true },
+) {}
 ```
 
 ```ts

@@ -1,7 +1,7 @@
 // verify: roda os checks e soma o resultado. A explicação está no --help.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { BIN, layoutOf, takeOption } from './lib/layout.ts';
 
@@ -13,8 +13,9 @@ Ordem (todos rodam, mesmo depois de uma falha):
   1. docs-lint;
   2. rules-index:check (rules-index --check);
   3. design-tokens, só no projeto: o tema do código segue os tokens do docs/DESIGN.md; sem os dois, fica pendente;
-  4. api:drift, só com o script api:generate no package.json da raiz: roda o gerador do contrato de API
-     (backend/http-api) e falha se ele mudar algum arquivo; precisa de git;
+  4. api:drift, com o script api:generate no package.json da raiz: roda o gerador do contrato de API
+     (backend/http-api) e falha se ele mudar algum arquivo; precisa de git. Sem o script, com apps/app-api e
+     apps/app-web, fica pendente;
   5. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
      (pnpm run <nome>).
 
@@ -64,7 +65,7 @@ function dirtyFiles(): Map<string, string> | undefined {
     }
     // no porcelain, o caminho é relativo à raiz do repositório
     const path = join(top.stdout.trim(), entry.slice(3));
-    const content = existsSync(path) ? readFileSync(path) : 'removido';
+    const content = !existsSync(path) ? 'removido' : statSync(path).isFile() ? readFileSync(path) : 'diretório';
     files.set(relative(root, path), createHash('sha1').update(content).digest('hex'));
   }
   return files;
@@ -101,6 +102,8 @@ if (layoutOf().isProject) {
 }
 if (GENERATE_SCRIPT in scripts) {
   checks.push({ name: 'api:drift', run: apiDrift });
+} else if (existsSync('apps/app-api') && existsSync('apps/app-web')) {
+  checks.push({ name: 'api:drift', run: () => ({ status: 0, output: `pendente: sem o script ${GENERATE_SCRIPT} (backend/http-api)` }) });
 }
 for (const name of PROJECT_SCRIPTS.filter((name) => name in scripts)) {
   checks.push({ name, run: pnpm(name) });

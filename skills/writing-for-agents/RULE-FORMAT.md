@@ -301,7 +301,7 @@ O índice de cada área é gerado do frontmatter (`pnpm rules-index`).
 | --- | --- |
 | Architecture Source (`architecture/`, em `node_modules/metri/` no projeto) | Decisão global e reutilizável |
 | ADR (`docs/adr/`) | Decisão específica do projeto que é estrutural, significativa, com trade-off, difícil de reverter e cujo rationale precisa ser preservado, incluindo a exceção deliberada a uma regra da Source |
-| Project Architecture (`.metri/ARCHITECTURE.md` e, quando houver caso real, regra em `.metri/rules/<área>/`) | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages existentes, ativações, decisões operacionais vigentes; o INDEX aponta para o ADR de cada uma |
+| Project Architecture (`.metri/ARCHITECTURE.md` e, quando houver caso real, regra em `.metri/rules/<área>/`) | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages além do padrão de `general/code-placement.md`, ativações, decisões operacionais vigentes; o `.metri/ARCHITECTURE.md` aponta para o ADR de cada uma |
 | `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o `.metri/ARCHITECTURE.md`, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
 
 **Obrigatório.** Decisão global e reutilizável fica na Architecture Source.

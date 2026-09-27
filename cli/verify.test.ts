@@ -14,14 +14,14 @@ describe('verify', { timeout: 60_000 }, () => {
   it('passa quando todos os checks passam', () => {
     expect(run('verify', ['--root', projectWithTest(0)])).toEqual({
       status: 0,
-      lines: ['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'ok test'],
+      lines: ['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'pendente api:drift: sem o script api:generate (backend/http-api)', 'ok test'],
     });
   });
 
   it('um check que falha faz o verify falhar, e os outros continuam rodando', () => {
     const { status, lines } = run('verify', ['--root', projectWithTest(1)]);
     expect(status).toBe(1);
-    expect(lines.slice(0, 4)).toEqual(['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'falha test']);
+    expect(lines.slice(0, 5)).toEqual(['ok docs-lint', 'ok rules-index:check', 'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css', 'pendente api:drift: sem o script api:generate (backend/http-api)', 'falha test']);
   });
 
   it('falha do docs-lint aparece com a saída dele', () => {
@@ -34,6 +34,7 @@ describe('verify', { timeout: 60_000 }, () => {
       '  docs/notes.md:1: árvore de docs/: arquivo fora da lista fechada (docs-lint --help)',
       'ok rules-index:check',
       'pendente design-tokens: sem tema em packages/ui/src/styles/globals.css',
+      'pendente api:drift: sem o script api:generate (backend/http-api)',
       'ok test',
     ]);
   });

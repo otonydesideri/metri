@@ -45,12 +45,13 @@ Testes:
 
 ## Configuração de referência
 
-O Biome da raiz, com o override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
+O Biome da raiz, com o código gerado do contrato de API fora dele (o `api:drift` o confere) e o override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
 
 ```json
 {
   "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
   "javascript": { "formatter": { "quoteStyle": "single" } },
+  "files": { "includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json"] },
   "linter": { "rules": { "recommended": true } },
   "overrides": [
     {
@@ -70,7 +71,7 @@ O Biome da raiz, com o override do NestJS: o `import type` apagaria o metadata q
 O Vitest de cada app e pacote passa sem arquivo de teste, para o pacote recém-criado não derrubar o `verify`:
 
 ```ts
-// no bloco test do vite.config.ts (app-web) ou no vitest.config.ts (app-api e pacotes)
+// no bloco test do vite.config.ts (app-web), nos dois configs do Vitest do app-api (unitário e e2e, backend/testing) e no dos pacotes
 test: { passWithNoTests: true },
 ```
 

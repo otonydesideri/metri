@@ -66,7 +66,7 @@ The Subject is the label of the line in "Delegações".
 ## Examples
 
 - A project that sends a confirmation e-mail, stores product photos and has no expensive read activates mail and storage and resolves vendor, provider and buckets; cache and observability raise no question, and bounded contexts stay at the default of one context.
-- The first job shows up months after the initial activation: the queue delegation is resolved then, by steps 3 to 6 of "Order".
+- The first job shows up months later: the /look-across that plans it activates `backend/async-jobs`, and resolves its worker process, by steps 3 to 6 of "Order".
 - Requiring workers in their own app is a need without coverage, because that design is open in `backend/async-jobs.md`: activation stops at ARCHITECTURE DECISION REQUIRED.
 
 ## Check

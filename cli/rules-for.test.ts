@@ -121,6 +121,10 @@ describe('rules-for', { timeout: 30_000 }, () => {
     expect(cited).toContain('frontend/theming');
     expect(cited).toContain('frontend/forms');
     expect(cited).not.toContain('frontend/components');
+    // capacidade condicional fora de "Capacidades ativas" não é citada
+    const backend = run('rules-for', ['--root', FIXTURE, 'apps/app-api/src/main.ts']).lines.join('\n');
+    expect(backend).not.toContain('citada: backend/async-jobs');
+    expect(backend).not.toContain('citada: infrastructure/observability');
     expect(lines.join('\n')).not.toContain('Obrigatório');
   });
 

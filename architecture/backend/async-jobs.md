@@ -6,7 +6,7 @@ use_when:
   - "tirar uma operação do fluxo de quem pediu para executar depois, com garantia"
   - "enfileirar um job a partir de caso de uso ou subscriber"
   - "tornar um job idempotente ou decidir o retry e a dead letter dele"
-  - "escolher a ferramenta de fila"
+  - "trocar a ferramenta de fila do default (por ADR)"
 activation: "`backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada?"
 applies_to:
   - "apps/app-api/src/domain/application/queues/**"
@@ -25,7 +25,7 @@ Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o con
 
 Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
-**A fila é o pg-boss**, o default de `defaults/stack.md`, pelas razões de "A referência dos exemplos: fila no Postgres (pg-boss)"; outra ferramenta é troca de default, por ADR. O que vale com qualquer ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência.
+**A fila é o pg-boss**, o default de `defaults/stack.md`, pelas razões de "Por que pg-boss: fila no Postgres"; outra ferramenta é troca de default, por ADR. O que vale com qualquer ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência.
 
 ## Worker é adaptador de entrada
 
@@ -35,9 +35,9 @@ Worker é adaptador de entrada fino, da mesma natureza do controller e do subscr
 
 Job é um comando: descreve uma intenção no imperativo (`generate-order-report`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`; este documento define o job depois que a árvore de lá chega nele.
 
-## A referência dos exemplos: fila no Postgres (pg-boss)
+## Por que pg-boss: fila no Postgres
 
-A referência é o [pg-boss](https://github.com/timgit/pg-boss): jobs são linhas em tabelas do próprio Postgres do produto, reivindicadas com `SELECT ... FOR UPDATE SKIP LOCKED`, e os workers rodam dentro do processo do app. Três razões fazem dela a referência:
+O [pg-boss](https://github.com/timgit/pg-boss): jobs são linhas em tabelas do próprio Postgres do produto, reivindicadas com `SELECT ... FOR UPDATE SKIP LOCKED`, e os workers rodam dentro do processo do app. Três razões fazem dela o default:
 
 - Zero infra nova: nenhum broker para operar, configurar persistência ou monitorar separado.
 - Enfileirar pode participar da `$transaction` do Prisma. Isso dissolve o problema clássico das duas escritas (job enfileirado antes do commit roda sem os dados; crash depois do commit perde o trabalho em silêncio) sem precisar de tabela de outbox com drenador próprio.

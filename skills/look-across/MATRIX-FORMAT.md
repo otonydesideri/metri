@@ -128,8 +128,9 @@ metrics: <tokens> tokens, <n> regras
 <achados do /build ou do /accept, quando houver>
 ```
 
-- A UC that doesn't fit a clean session with about 5 rules (`pnpm rules-for --ticket <id>`) is split into smaller
-  UCs, each visible to the user and verifiable. A UC never has a partial ticket.
+- A UC that doesn't fit a clean session with about 5 rules (`pnpm rules-for --ticket <id>`), or more when rules-for says
+  the excess is expected, is split into smaller UCs, each visible to the user and verifiable. A UC never has a
+  partial ticket.
 - Its BRs (`- BR<n>: ...`, with `(sensitive)` after the id when it is) go under "Regras de negócio", and its
   criteria (`- [ ] ...`) under "Critérios". "Notas" is written only when there's something to say.
 

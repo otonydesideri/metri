@@ -13,6 +13,8 @@ applies_to:
   - "apps/app-web/test/**"
   - "apps/app-web/dev-server-proxy.spec.ts"
   - "apps/app-web/vite.config.ts"
+  - "apps/app-web/playwright.config.ts"
+  - "apps/app-web/e2e/**"
 keywords: [pirâmide, spec, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
@@ -68,7 +70,7 @@ Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/
 
 ### E2e de critério de UI
 
-Fora da pirâmide, cada critério de UI de um UC tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento (`frontend/experience.md`). O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina salvando a evidência do critério:
+Fora da pirâmide, cada critério de um ticket com área `frontend/*` tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento (`frontend/experience.md`). O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina salvando a evidência do critério:
 
 ```ts
 // e2e/order/confirm-order.e2e.ts
@@ -92,7 +94,7 @@ O config do Vitest mora no bloco `test` do `vite.config.ts` do app, não num arq
 
 O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação com máscara e reposicionamento de cursor do campo de telefone e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
 
-A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. O `httpClient` resolve as rotas REST sob `/api` nessa mesma origem. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
+A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. As rotas REST saem sob `/api`, na mesma origem: o path vem do OpenAPI. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
 Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Turbo na raiz; o e2e de critério de UI, por `pnpm --filter app-web test:e2e`.
 
@@ -108,7 +110,7 @@ Regras de uso:
 - `server.listen({ onUnhandledRequest: 'error' })` no setup. É o que torna auto-verificável a afirmação de que um mecanismo cobre os dois caminhos: requisição sem dublê quebra o teste em vez de vazar para a rede.
 - O `listen()` fica no **topo do arquivo de setup, nunca dentro de `beforeAll`**. Client que resolve o `fetch` uma vez, na criação, faz isso na avaliação do módulo, que roda antes de qualquer hook. Com o `listen()` em `beforeAll`, esse client fica com o `fetch` original: as chamadas dele escapam do dublê e vão para a rede de verdade, sem erro nenhum, e o teste passa ou falha pelo que houver no ambiente. É a falha mais silenciosa da suíte, porque só parte da superfície escapa e o resto continua dublado normalmente.
 - Handler com URL absoluta, construída a partir de `window.location.origin`. Rota REST fica sob `/api`.
-- O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda contra composição silenciosa de `baseURL`, não uma segunda prova da operação de domínio.
+- O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda de que o path gerado sai na origem da página, não uma segunda prova da operação de domínio.
 - `vi.mock` fica reservado a fronteira que não é rede: o `toast` do Sonner (`@metri/ui/components/ui/sonner`), quando o teste afirma título e descrição sem montar o `Toaster`, e uma função de `lib/<integração>/` cujo efeito é sobre a biblioteca, não sobre a tela. Nunca para substituir uma chamada de rede.
 
 ```ts
@@ -218,7 +220,7 @@ Regra de entrada: só ganha caso aqui a opção de config cuja remoção não qu
 
 ## Builders de payload (`test/factories/make-<recurso>.factory.ts`)
 
-Uma função pura `make<Recurso>(override = {})`, com `...override` sempre por último, mesma forma do backend. O frontend não tem entidade, então o que o builder devolve é **o objeto de wire cru**, o JSON que o handler serve, nunca um objeto já parseado por schema: o schema continua sob prova na fronteira em que ele existe para atuar.
+Uma função pura `make<Recurso>(override = {})`, com `...override` sempre por último, mesma forma do backend. O frontend não tem entidade, então o que o builder devolve é **o objeto de wire cru**, o JSON que o handler serve, na forma do wire (datas como string).
 
 `@faker-js/faker` só para o campo que nenhuma asserção lê. Campo que a asserção lê, ou de que um ramo de tela depende, é literal passado como override. Um id aleatório num campo que a asserção compara produz teste que passa por acidente; um valor formatado (data, telefone, slug) vindo do faker produz falha intermitente quando a formatação da tela muda de resultado.
 

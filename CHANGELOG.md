@@ -63,7 +63,8 @@ Ticket `pattern`, na raiz do projeto:
    houver, para "Capacidades ativas" (`- domain/bounded-contexts: ...`, `- domain/domain-services: ...`).
 4. Na MATRIX e nos tickets: tirar o bloco entre `<!-- matrix-view -->` e `<!-- /matrix-view -->`, a chave
    `tech_design` e a `evidence`, e trocar caminho de `.md` por id; nas regras do projeto, `project:architecture/INDEX`
-   vira `project:ARCHITECTURE`.
+   vira `project:ARCHITECTURE`. Nos arquivos do projeto, citação a arquivo do pacote passa de `.metri/<caminho>` a
+   `node_modules/metri/<caminho>` (`grep -rnE '\.metri/(architecture|adr|skills|VOCABULARY)' AGENTS.md docs .metri`).
 5. `rm -f .claude/skills/setup`; no `AGENTS.md`, apagar as seções "How to work here" e "Where things live"; no
    `package.json`, tirar `tsx`, `yaml` e `picomatch` quando só os scripts antigos os usavam; no `.gitignore`, a linha
    `.evidence/`.

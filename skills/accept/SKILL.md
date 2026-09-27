@@ -20,7 +20,7 @@ The work never judges itself: each axis is a reviewer agent that gets nothing fr
 
 ### 1. Pin the fixed point
 
-Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. The slice is ready when every UC with `slice: S<id>` and every T of the slice are `done`, and each command in their `checks` and `pnpm verify` exit 0.
+Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. The slice is ready when every UC with `slice: S<id>` and every T of the slice are `done`, and each command in their `checks` and `pnpm verify` exit 0. When the branch carries only the urgent fix of /diagnose, only its ticket must be `done`; the slice's other tickets wait for a later /accept.
 
 The fixed point is where `slice/<id>` left main: `git merge-base main slice/<id>`. Capture the diff command once: `git diff <fixed-point>...slice/<id>` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..slice/<id> --oneline`.
 
@@ -28,18 +28,18 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 2. Gather the inputs
 
-- **Contract**: the contract header at the top of the file named by the slice's `entry`; in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
-- **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns reviewer and say so.
+- **Contract**: the contract header at the top of the file named by the slice's `entry` (`S0` has none); in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
+- **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, leaving out the `citada:` lines and `frontend/experience` (whose items go to the Experience reviewer), the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns reviewer and say so.
 - **Experience**, when a UC of the slice has UI: the evidence paths of each UI criterion, `docs/DESIGN.md`, the UCs, and the verification items of `frontend/experience` without a `(check: <id>)` mark.
 
 ### 3. Call the reviewers in parallel
 
-Call each agent (`.claude/agents/<name>.md`, the owner of its brief) as a sub-agent, passing only its inputs; it may read the repository at `slice/<id>`, nothing else of this session.
+Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what it may read) as a sub-agent, passing only its inputs and nothing else of this session.
 
 - `reviewer-contract`: the diff command, the commit list, and the Contract inputs, pasted in full.
 - `reviewer-patterns`: the diff command, the commit list, and the Patterns items, pasted with their rule id.
 - `reviewer-ux`, when a UC of the slice has UI: the Experience inputs.
-- `consumer-tester`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): the contract's `interface`; and, for each UC with UI, only the UC's goal and the app's URL.
+- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with UI, only the UC's goal and the URL of the app served with the development seed by the `webServer` of `playwright.config.ts` (`frontend/testing`, "E2e de critério de UI").
 
 ### 4. Aggregate
 
@@ -50,7 +50,7 @@ Present the reports in the chat under `## Contract` and `## Patterns` (and `## E
 Call the Skill tool with "grilling" and walk the human through the gate in its three blocks:
 
 - the slice's linear path, "show me the flow and the sources of truth": from the `entry` to each source of truth, as file:line;
-- for each UC criterion, the paths of its evidence (the test that proves it and, for a UI criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and for the feature, when this is its last slice (every other slice in the feature's `slices` is done). Running the app is optional: give the steps per criterion when the human wants it;
+- for each criterion, the paths of its evidence (the test that proves it and, in a ticket with a `frontend/*` area, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when this is the feature's last slice (every other slice in the feature's `slices` is done), whether the feature delivers its `outcome` across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
 - the diff of every ticket with `sensitive: true` or `type: pattern`;
 - each finding, with its group and the reviewer's recommendation; the user decides each one.
 
@@ -68,7 +68,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each
 
 On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file, and their evidence folders leave the tree), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
-Done when the slice is on main, or its reopened UCs are in the matrix; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
+Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
 ## Why separate axes
 

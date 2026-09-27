@@ -165,7 +165,7 @@ export default defineConfig({
 });
 ```
 
-O tipo da resposta, do filtro e do payload é o gerado, importado de `@/api/model.zod`, nunca redeclarado à mão (`frontend/helpers.md`, "Tipos compartilhados"). A função gerada devolve o corpo como o backend o nomeia (`{ order }`, `backend/http-api.md`, "Presenter e corpo de resposta"): quem desembrulha é a `queryFn` do hook.
+O tipo da resposta, do filtro e do payload é o gerado, importado de `@/api/model.zod`, nunca redeclarado à mão (`frontend/helpers.md`, "Tipos compartilhados"). A função gerada devolve o corpo como o backend o nomeia (`{ order }`, `backend/http-api.md`, "Presenter e corpo de resposta"): quem desembrulha é a `queryFn` do hook. O hook a chama dentro de uma arrow (`() => fetchOrder(id)`): passada por referência, ela receberia o contexto do React Query no lugar do `init` do fetch.
 
 Parâmetro de conjunto fechado e o nome do query param na URL do app seguem `backend/http-api.md`, "União fechada e limite do contrato".
 
@@ -175,12 +175,12 @@ Cada módulo tem uma key factory em `hooks/<módulo>/keys.ts`: um objeto hierár
 
 ```ts
 // hooks/order/keys.ts
-import type { FetchOrdersFilters } from '@/api/model.zod';
+import type { FetchOrdersParams } from '@/api/model.zod';
 
 export const orderKeys = {
   all: ['orders'] as const,
   lists: () => [...orderKeys.all, 'list'] as const,
-  list: (filters?: FetchOrdersFilters) =>
+  list: (filters?: FetchOrdersParams) =>
     [...orderKeys.lists(), filters ?? {}] as const,
   details: () => [...orderKeys.all, 'detail'] as const,
   detail: (id: string) => [...orderKeys.details(), id] as const,
@@ -210,11 +210,11 @@ export function useOrder(id: string) {
 ```ts
 // hooks/order/use-orders.ts
 import { useQuery } from '@tanstack/react-query';
-import type { FetchOrdersFilters } from '@/api/model.zod';
+import type { FetchOrdersParams } from '@/api/model.zod';
 import { fetchOrders } from '@/api/order';
 import { orderKeys } from './keys';
 
-export function useOrders(filters?: FetchOrdersFilters) {
+export function useOrders(filters?: FetchOrdersParams) {
   return useQuery({
     queryKey: orderKeys.list(filters),
     queryFn: () => fetchOrders(filters),
@@ -246,7 +246,7 @@ import { shippingKeys } from './keys';
 export function useShippingMethods() {
   return useQuery({
     queryKey: shippingKeys.all,
-    queryFn: fetchShippingMethods,
+    queryFn: () => fetchShippingMethods().then(({ shippingMethods }) => shippingMethods),
     // muda em release, não na sessão: staleTime alto corta refetch inútil
     staleTime: Number.POSITIVE_INFINITY,
   });
@@ -264,6 +264,7 @@ Escrita feita por rota REST do app-api é um `useMutation` embrulhado num hook, 
 ```ts
 // hooks/order/use-create-order.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { CreateOrderDto } from '@/api/model.zod';
 import { createOrder } from '@/api/order';
 import { orderKeys } from './keys';
 
@@ -271,7 +272,7 @@ export function useCreateOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createOrder,
+    mutationFn: (input: CreateOrderDto) => createOrder(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
     },
@@ -378,7 +379,7 @@ Dado que precisa de refresh automático usa `refetchInterval` com condição de 
 export function useOrderProcessing(id: string) {
   return useQuery({
     queryKey: orderKeys.detail(id),
-    queryFn: () => fetchOrder(id),
+    queryFn: () => fetchOrder(id).then(({ order }) => order),
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       if (status === 'CONFIRMED' || status === 'CANCELLED') {

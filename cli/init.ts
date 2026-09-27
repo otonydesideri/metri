@@ -75,6 +75,8 @@ function sections(source: string): string[] {
 
 function agentFiles(): void {
   const claudePointer = template('CLAUDE.md');
+  // CLAUDE.md e AGENTS.md ligados um ao outro por link têm um conteúdo só, lido pelo AGENTS.md.
+  const isLinked = linkTargetOf('CLAUDE.md') !== undefined || linkTargetOf('AGENTS.md') !== undefined;
   let agents = existsSync('AGENTS.md') ? readFileSync('AGENTS.md', 'utf8') : template('AGENTS.md');
   for (const section of sections(template('AGENTS.md'))) {
     const title = section.split('\n')[0];
@@ -82,7 +84,7 @@ function agentFiles(): void {
       agents = `${agents.trimEnd()}\n\n${section.trimEnd()}\n`;
     }
   }
-  if (existsSync('CLAUDE.md')) {
+  if (existsSync('CLAUDE.md') && !isLinked) {
     const held = readFileSync('CLAUDE.md', 'utf8')
       .split('\n')
       .filter((line) => line.trim() !== claudePointer.trim())
@@ -91,6 +93,9 @@ function agentFiles(): void {
     if (held !== '') {
       agents = `${agents.trimEnd()}\n\n${held}\n`;
     }
+  }
+  for (const path of ['AGENTS.md', 'CLAUDE.md'].filter((file) => linkTargetOf(file) !== undefined)) {
+    rmSync(path);
   }
   write('AGENTS.md', agents);
   write('CLAUDE.md', claudePointer);

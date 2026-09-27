@@ -26,7 +26,7 @@ Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill 
 
 ### 2. Features → use cases
 
-Keep the `horizon` the direction gate confirmed for each feature and, when it makes sense, give it its `milestone`. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action.
+Keep the `horizon` and the `milestone` the direction gate confirmed for each feature. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action.
 
 ### 3. Look across
 
@@ -52,7 +52,7 @@ Each `now` UC is a **tracer bullet** ticket.
 
 - Each UC cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests): vertical, NOT a horizontal cut of one layer
 - A completed UC is demoable or verifiable on its own
-- Each UC is sized to fit in a single fresh context window, with about 5 rules (`pnpm rules-for --ticket <id>`)
+- Each UC is sized to fit in a single fresh context window, with about 5 rules (`pnpm rules-for --ticket <id>`), or more when rules-for says the excess is expected
 - Any prefactoring should be done first
 
 </tracer-bullet-rules>
@@ -65,7 +65,7 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 ### 7. Slice 0
 
-- **New project**: the foundation slice. The template of the Source version is instantiated and `pnpm verify` is green; with an interface, the `design-system` slice installs the library, builds the theme from `docs/DESIGN.md` and the app shell, and closes on the human's visual approval.
+- **New project**: the foundation slice, `S0`: the monorepo of `general/code-placement`, with `pnpm verify` green; with an interface, the `design-system` slice installs the library, builds the theme from `docs/DESIGN.md` and the app shell, and closes on the human's visual approval.
 - **Existing project**: the mapping of step 0.
 
 ### 8. Quiz the user

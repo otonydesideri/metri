@@ -34,10 +34,10 @@ Write what the interview settled:
 
 - `docs/PRODUCT.md`, in the format of [PRODUCT-FORMAT.md](PRODUCT-FORMAT.md);
 - an ADR for each hard decision already taken (domain-language, which also kept `docs/CONTEXT.md` current during the interview);
-- the candidate features in the Features section of `.metri/MATRIX.md`, each with `outcome`, `ucs` (the ids of its UCs) and `horizon`, inferred: `now` for the minimum that delivers the expected outcome of `docs/PRODUCT.md`, `planned` or `fog` for the rest; each UC of a candidate feature as its own file, `.metri/tickets/UC<f>.<n>.md`, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its BRs and its criteria. /look-across plans it and opens it.
+- the candidate features in the Features section of `.metri/MATRIX.md`, each with `outcome`, `ucs` (the ids of its UCs), `horizon` and, when it makes sense, `milestone`, inferred: `now` for the minimum that delivers the expected outcome of `docs/PRODUCT.md`, `planned`, `fog` or `out` for the rest; each UC of a candidate feature as its own file, `.metri/tickets/UC<f>.<n>.md`, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its BRs and its criteria. /look-across plans it and opens it.
 
 ### 5. Direction gate
 
-Show the user the direction (the product, the terms, the features and UCs) in the three blocks of the grilling skill, with each feature's proposed `horizon` among the Inferred, and iterate until they approve it. The human commits the result: the agent never commits on main.
+Show the user the direction (the product, the terms, the features and UCs) in the three blocks of the grilling skill, with each feature's proposed `horizon` and `milestone` among the Inferred, and iterate until they approve it. The human commits the result: the agent never commits on main.
 
 Done when the direction is approved, every term has its English identifier in `docs/CONTEXT.md`, the candidate features are in the matrix with each draft UC in its own ticket file, and `pnpm docs-lint` is green. Recommend /look-across next, in the same session.

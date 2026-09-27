@@ -23,7 +23,7 @@ Este documento fixa a forma do contrato de escopo do dono, igual para qualquer p
 
 ### Contrato genérico, identidade de projeto
 
-**Obrigatório.** A Source define só o contrato genérico de escopo; a identidade concreta do dono e a entidade que o representa são decisão de projeto, delegada na matriz de `.metri/ARCHITECTURE.md` e registrada nas casas de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
+**Obrigatório.** A Source define só o contrato genérico de escopo; a identidade concreta do dono e a entidade que o representa são decisão de projeto, delegada na matriz de `skills/look-across/ACTIVATION.md`, "Delegation matrix", e registrada nas casas de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
 
 ### De onde o dono chega
 

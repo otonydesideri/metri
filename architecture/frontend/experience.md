@@ -58,7 +58,7 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 
 **Obrigatório.** A tela funciona em desktop e em mobile.
 
-**Obrigatório.** Cada critério de UI de um UC tem screenshot em desktop e em mobile na pasta do ticket: `.metri/tickets/<id>/<n>-desktop.png` e `<n>-mobile.png`, com `<n>` a ordem do critério.
+**Obrigatório.** Cada critério de um ticket com área `frontend/*` tem screenshot em desktop e em mobile na pasta do ticket: `.metri/tickets/<id>/<n>-desktop.png` e `<n>-mobile.png`, com `<n>` a ordem do critério.
 
 ## Verificação
 
@@ -68,4 +68,4 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 - A tela parte de uma tela canônica ou de uma referência, agrupada por proximidade e alinhamento?
 - Os textos usam os termos do `docs/CONTEXT.md`, os rótulos dizem o resultado e os dados são realistas?
 - A tela funciona em desktop e em mobile?
-- Todo critério de UI de um ticket `done` tem os dois screenshots na pasta do ticket? (check: docs-lint)
+- Todo critério de um ticket `done` com área `frontend/*` tem os dois screenshots na pasta do ticket? (check: docs-lint)

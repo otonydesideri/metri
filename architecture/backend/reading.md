@@ -120,7 +120,7 @@ Pontos-chave:
 - Leitura de dado protegido segue o escopo do dono de `backend/access-scope.md`: escopo no input, filtro no `where`.
 - `include`/`select` pode atravessar agregados do mesmo bounded context e datastore, com `select` estreito dos campos usados. Não atravessa schema interno de outro bounded context.
 - O DTO da query é o corpo HTTP quando essa é a única porta, sob a chave que o nomeia (`{ order: ... }`) ou dentro do envelope de paginação, que já é tipado (`{ items: [...], total, page, pageSize }`). Nomear não é transformar: não existe presenter ou mapper por cerimônia na leitura, e mapper de agregado pertence à escrita (`backend/persistence.md`). Se outra porta exigir representação diferente, cada adapter transforma o DTO ou ganha uma query própria conforme a intenção.
-- O DTO é plano e serializável: primitivos, `Date`, arrays e objetos deles. Nunca entidade, value object ou `UniqueEntityID`.
+- O DTO é plano e serializável: primitivos, `Date`, arrays e objetos deles. O `Date` sai no HTTP como string ISO, pelo codec do DTO de resposta (`backend/http-api.md`, "Contrato de API: o backend é a fonte"). Nunca entidade, value object ou `UniqueEntityID`.
 - O input chega resolvido: defaults e teto de paginação são da fronteira Zod (seção "Paginação"); a query não aplica `??`.
 
 ## DTO, projeção, read model e CQRS

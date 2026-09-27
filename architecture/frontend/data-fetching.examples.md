@@ -13,7 +13,7 @@ export function useConfirmOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: confirmOrder,
+    mutationFn: (id: string) => confirmOrder(id),
     onSuccess: ({ order, invoice }) => {
       // a resposta carrega o estado novo — inclusive a fatura emitida no
       // mesmo commit: entra no cache do detalhe sem outra ida ao servidor
@@ -42,11 +42,11 @@ export function useConfirmOrder() {
 // hooks/order/use-orders.ts
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import type { FetchOrdersFilters } from '@/api/model.zod';
+import type { FetchOrdersParams } from '@/api/model.zod';
 import { fetchOrders } from '@/api/order';
 import { orderKeys } from './keys';
 
-export function useOrders(filters: FetchOrdersFilters) {
+export function useOrders(filters: FetchOrdersParams) {
   const queryClient = useQueryClient();
   const { status, page, pageSize } = filters;
 
@@ -108,7 +108,7 @@ export function useCancelOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: cancelOrder,
+    mutationFn: (id: string) => cancelOrder(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: orderKeys.detail(id) });
       const previous = queryClient.getQueryData<OrderDetails>(orderKeys.detail(id));
