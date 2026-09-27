@@ -1,21 +1,98 @@
-// docs-lint: lint estrutural do source (METHODOLOGY 6.13).
-// Checa o frontmatter das regras, as citações em architecture/, methodology/ e adr/,
-// a presença de cada regra em "Como ler" do architecture/INDEX.md e o rules-index:check.
-// template/ fica fora da checagem de citações: é o starter do projeto, e as citações dele são caminhos do projeto.
-// Regra (architecture/) e template (template/**/*.md) não citam a METHODOLOGY: citação a ela é erro.
-// Uso: docs-lint   (roda na raiz do source)
-// Saída: arquivo:linha: mensagem (aviso com o prefixo "aviso:"). Sai com código 1 se houver erro.
-// Arquivo planejado (docs-lint.planned.json, arquivo → passo do SETUP que o cria): citação a ele é aviso;
-// arquivo planejado que já existe é erro, para a lista não ficar velha.
+// docs-lint: lint estrutural do source e do projeto. As checagens de cada modo estão no --help.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join, normalize, relative } from 'node:path';
+import { basename, dirname, join, normalize, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import picomatch from 'picomatch';
 import { parse } from 'yaml';
+import {
+  asList,
+  layoutOf,
+  MATRIX,
+  PROJECT_INDEX,
+  projectFiles,
+  ruleFiles,
+  sectionItems,
+  takeOption,
+} from './lib/layout.ts';
+import { CONTRACT_LABELS, matrixProblems } from './lib/matrix-lint.ts';
 
+const HELP = `docs-lint: lint estrutural. Roda na raiz (ou em --root <dir>) e detecta o modo:
+com .metri/ na raiz, é projeto; sem .metri/, é o source.
+
+Uso: docs-lint [--root <dir>]
+Saída: arquivo:linha: mensagem, com o prefixo "aviso:" no aviso. Sai com código 1 só quando há erro.
+
+Nos dois modos:
+  - Regras: o frontmatter de cada <área>/<tema>.md (architecture/ no source, docs/architecture/ no projeto):
+    - as quatro chaves obrigatórias de methodology/VOCABULARY.md (id, description, use_when, status), nenhuma
+      chave vazia, nenhuma chave fora dele, status com um valor dele e activation, quando existe, em texto;
+    - id igual ao caminho <área>/<tema>;
+    - os ids de read_first e not_covered existem ou são destinos project: da lista fechada de
+      methodology/VOCABULARY.md, e a seção que not_covered cita existe na regra;
+    - os arquivos citados em examples existem, e os ids de adr existem em adr/ (docs/adr/ no projeto).
+    Arquivos *.examples.md não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo
+    nem número de linhas.
+  - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
+
+Só no source:
+  - METHODOLOGY: regra (architecture/) e template (template/**/*.md) não citam a METHODOLOGY, nem em frontmatter
+    nem em bloco de código; citação a ela é erro, e o texto cita a regra dona.
+  - Citações (em architecture/, methodology/ e adr/, fora de bloco de código): todo caminho .md citado existe;
+    quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
+    \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
+    toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., AGENTS.md, CONTEXT.md,
+    PRODUCT.md, DESIGN.md, MATRIX.md) não é conferido. template/ fica fora: é o starter do projeto, e as citações
+    dele são caminhos do projeto.
+  - Arquivos planejados: template/scripts/docs-lint.planned.json lista cada arquivo que ainda não existe e o
+    passo do SETUP.md que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe
+    é erro ("tire da lista"), para a lista não ficar velha.
+  - "Como ler": todo id de regra do source aparece em "Como ler" do architecture/INDEX.md.
+
+Só no projeto:
+  - Árvore fechada de docs/: PRODUCT.md, CONTEXT.md, DESIGN.md, architecture/INDEX.md,
+    architecture/<área>/<tema>.md (com frontmatter), architecture/<área>/INDEX.md (gerado),
+    adr/NNNN-<slug>.md e plan/MATRIX.md. Qualquer outro arquivo em docs/ é erro.
+  - AGENTS.md com mais de 30 linhas: aviso.
+  - applies_to sem casamento: glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum
+    arquivo gera aviso, não erro; a regra é candidata a poda.
+  - MATRIX.md:
+    - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
+    - ids: ### F<n> e #### UC<f>.<n> em Features, ### S<n> e #### T<s>.<n> em Slices, GAP-<n> e PP-<n> nas
+      listas; sem id repetido; UC dentro da feature F<f> e ticket dentro da slice S<s>;
+    - chaves de methodology/VOCABULARY.md por bloco, sem chave repetida; valores de horizon, status, type,
+      mode e sensitive dentro do permitido; listas em [a, b];
+    - nenhuma chave vazia;
+    - obrigatórias: horizon na feature; status no UC; type, mode, status e checks no ticket;
+    - nada órfão: ticket pertence a uma slice; tracer tem uc; slice now serve a uma feature now;
+    - slices, blocked_by e uc apontam para um id que existe na matriz;
+    - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou entry, nunca os
+      dois; slice done tem entry;
+    - o entry existe e tem o cabeçalho de contrato (/** ... */) com os rótulos ${CONTRACT_LABELS.join(', ')};
+    - Gaps: "- GAP-<n> · <texto> → T<s>.<n>"; Pattern proposals: "- PP-<n> · de T<s>.<n> · <texto> → <destino>".
+  - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
+    superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
+    Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.
+`;
+
+const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(HELP);
+  process.exit(0);
+}
+process.chdir(resolve(takeOption(args, '--root') ?? '.'));
+
+const layout = layoutOf();
+const SCRIPTS = dirname(fileURLToPath(import.meta.url));
+// Pastas de regra e de ADR onde um id é procurado: o projeto primeiro, depois o global montado em .metri/.
+const RULE_DIRS = layout.isProject ? ['docs/architecture', '.metri/architecture'] : ['architecture'];
+const ADR_DIRS = layout.isProject ? ['docs/adr', '.metri/adr'] : ['adr'];
 const ARCHITECTURE = 'architecture';
 const CITATION_ROOTS = ['architecture', 'methodology', 'adr'];
 // Onde a METHODOLOGY não é citada: as regras e os templates.
 const NO_METHODOLOGY_ROOTS = ['architecture', 'template'];
+// Pastas fora da varredura de markdown do source: a fixture de teste é um projeto, não template.
+const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
 const REQUIRED_KEYS = ['id', 'description', 'use_when', 'status'];
 const KNOWN_KEYS = [
@@ -39,12 +116,17 @@ const PROJECT_TARGETS = [
 ];
 // Arquivos do projeto citados pelo nome: moram no projeto, não no source.
 const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md'];
+const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md', PROJECT_INDEX, MATRIX];
+const AGENTS_MAX_LINES = 30;
+const ADR_STATUS = /^(accepted|superseded by (ADR-\d{4}))$/;
+const ADR_KINDS = ['decision', 'exception', 'default-change'];
+const ADR_SECTIONS = ['Contexto', 'Decisão', 'Alternativas consideradas', 'Consequências', 'Imposto por'];
 
 type Problem = { file: string; line: number; message: string; isWarning?: boolean };
 type Heading = { text: string; slug: string };
 
 const PLANNED_PATH = 'template/scripts/docs-lint.planned.json';
-const planned: Record<string, string> = JSON.parse(readFileSync(PLANNED_PATH, 'utf8'));
+const planned: Record<string, string> = layout.isProject ? {} : JSON.parse(readFileSync(PLANNED_PATH, 'utf8'));
 
 const problems: Problem[] = [];
 
@@ -65,7 +147,7 @@ function listMarkdown(dir: string): string[] {
     .flatMap((name) => {
       const path = join(dir, name);
       if (statSync(path).isDirectory()) {
-        return listMarkdown(path);
+        return SKIPPED_DIRS.includes(name) ? [] : listMarkdown(path);
       }
       return name.endsWith('.md') ? [path] : [];
     });
@@ -74,19 +156,6 @@ function listMarkdown(dir: string): string[] {
 function isRuleFile(path: string): boolean {
   const name = path.split('/').at(-1) ?? '';
   return name !== 'INDEX.md' && !name.endsWith('.examples.md');
-}
-
-function ruleFiles(): string[] {
-  return readdirSync(ARCHITECTURE)
-    .sort()
-    .filter((area) => statSync(join(ARCHITECTURE, area)).isDirectory())
-    .flatMap((area) =>
-      readdirSync(join(ARCHITECTURE, area))
-        .sort()
-        .filter((name) => name.endsWith('.md'))
-        .map((name) => join(ARCHITECTURE, area, name))
-        .filter(isRuleFile),
-    );
 }
 
 // Linhas fora do frontmatter e de bloco de código cercado, com o número de cada uma.
@@ -152,6 +221,9 @@ function hasAnchor(path: string, anchor: string): boolean {
 }
 
 function citationCandidates(from: string, cited: string): string[] {
+  if (layout.isProject) {
+    return [cited, join(dirname(from), cited)].map((candidate) => normalize(candidate));
+  }
   const path = cited.replace(/^\.metri\//, '');
   return [path, join(ARCHITECTURE, path), join(dirname(from), path)].map((candidate) =>
     normalize(candidate),
@@ -162,7 +234,7 @@ function citationCandidates(from: string, cited: string): string[] {
 // Devolve null para arquivo do projeto, que o source não tem como conferir.
 function resolveCitation(from: string, cited: string): string | null | undefined {
   const path = cited.replace(/^\.metri\//, '');
-  if (path.startsWith('docs/') || PROJECT_FILES.includes(path)) {
+  if (!layout.isProject && (path.startsWith('docs/') || PROJECT_FILES.includes(path))) {
     return null;
   }
   return citationCandidates(from, cited).find((candidate) => existsSync(candidate));
@@ -240,13 +312,23 @@ function keyLine(lines: string[], key: string): number {
   return index === -1 ? 1 : index + 1;
 }
 
-function ruleExists(id: string): boolean {
-  return existsSync(join(ARCHITECTURE, `${id}.md`)) && isRuleFile(`${id}.md`);
+// Caminho da regra com esse id, na primeira pasta de regra que a tem.
+function rulePath(id: string): string | undefined {
+  return RULE_DIRS.map((dir) => join(dir, `${id}.md`)).find((path) => existsSync(path) && isRuleFile(path));
 }
 
-function adrExists(id: string): boolean {
+function adrPath(id: string): string | undefined {
   const number = /^ADR-(\d{4})$/.exec(id)?.[1];
-  return number !== undefined && readdirSync('adr').some((name) => name.startsWith(`${number}-`));
+  if (number === undefined) {
+    return undefined;
+  }
+  for (const dir of ADR_DIRS.filter((candidate) => existsSync(candidate))) {
+    const name = readdirSync(dir).find((candidate) => candidate.startsWith(`${number}-`));
+    if (name) {
+      return join(dir, name);
+    }
+  }
+  return undefined;
 }
 
 // Destino de read_first e not_covered: id de regra ou destino project: da lista fechada.
@@ -257,7 +339,7 @@ function lintTarget(path: string, line: number, key: string, target: string): vo
     }
     return;
   }
-  if (!ruleExists(target)) {
+  if (!rulePath(target)) {
     report(path, line, `${key}: a regra ${target} não existe`);
   }
 }
@@ -277,7 +359,7 @@ function readFrontmatter(path: string): { frontmatter: Record<string, unknown>; 
   }
 }
 
-function lintFrontmatter(path: string): void {
+function lintFrontmatter(path: string, dir: string): void {
   const read = readFrontmatter(path);
   if (!read) {
     return;
@@ -297,7 +379,7 @@ function lintFrontmatter(path: string): void {
       report(path, line, `frontmatter: chave ${key} vazia`);
     }
   }
-  const expectedId = relative(ARCHITECTURE, path).replace(/\.md$/, '');
+  const expectedId = relative(dir, path).replace(/\.md$/, '');
   if (frontmatter.id !== expectedId) {
     report(path, keyLine(lines, 'id'), `frontmatter: id ${String(frontmatter.id)} diferente do caminho ${expectedId}`);
   }
@@ -316,7 +398,8 @@ function lintFrontmatter(path: string): void {
     }
     const [, section, target] = parts;
     lintTarget(path, line, 'not_covered', target);
-    if (section && ruleExists(target) && !hasSection(join(ARCHITECTURE, `${target}.md`), section)) {
+    const targetPath = rulePath(target);
+    if (section && targetPath && !hasSection(targetPath, section)) {
       report(path, line, `not_covered: seção "${section}" não existe em ${target}`);
     }
   }
@@ -326,17 +409,13 @@ function lintFrontmatter(path: string): void {
     }
   }
   for (const id of asList(frontmatter.adr)) {
-    if (!adrExists(id)) {
-      report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em adr/`);
+    if (!adrPath(id)) {
+      report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em ${ADR_DIRS[0]}/`);
     }
   }
   if ('activation' in frontmatter && typeof frontmatter.activation !== 'string') {
     report(path, keyLine(lines, 'activation'), 'frontmatter: activation não é texto');
   }
-}
-
-function asList(value: unknown): string[] {
-  return Array.isArray(value) ? value.map(String) : [];
 }
 
 function lintReadingOrder(rules: string[]): void {
@@ -357,10 +436,10 @@ function lintReadingOrder(rules: string[]): void {
   }
 }
 
-function lintGenerated(): void {
+function lintGenerated(dir: string): void {
   const result = spawnSync(
     process.execPath,
-    [...process.execArgv, 'template/scripts/rules-index.ts', '--check'],
+    [...process.execArgv, join(SCRIPTS, 'rules-index.ts'), dir, '--check'],
     { encoding: 'utf8' },
   );
   for (const text of result.stderr.split('\n')) {
@@ -370,7 +449,7 @@ function lintGenerated(): void {
     }
   }
   if (result.status !== 0 && !problems.some(({ message }) => message.startsWith('rules-index:check'))) {
-    report('template/scripts/rules-index.ts', 1, `rules-index:check: falhou (${result.stderr.trim()})`);
+    report(join(SCRIPTS, 'rules-index.ts'), 1, `rules-index:check: falhou (${result.stderr.trim()})`);
   }
 }
 
@@ -397,19 +476,133 @@ function lintPlanned(): void {
   }
 }
 
-const rules = ruleFiles();
-for (const path of rules) {
-  lintFrontmatter(path);
+function lintSource(): void {
+  const rules = ruleFiles(ARCHITECTURE);
+  for (const path of rules) {
+    lintFrontmatter(path, ARCHITECTURE);
+  }
+  for (const path of CITATION_ROOTS.flatMap(listMarkdown)) {
+    lintCitations(path);
+  }
+  for (const path of NO_METHODOLOGY_ROOTS.flatMap(listMarkdown)) {
+    lintMethodologyCitations(path);
+  }
+  lintReadingOrder(rules);
+  lintPlanned();
+  lintGenerated(ARCHITECTURE);
 }
-for (const path of CITATION_ROOTS.flatMap(listMarkdown)) {
-  lintCitations(path);
+
+function lintDocsTree(): void {
+  for (const path of existsSync('docs') ? projectFiles('docs') : []) {
+    if (DOCS_FILES.includes(path)) {
+      continue;
+    }
+    if (/^docs\/architecture\/[^/]+\/INDEX\.md$/.test(path)) {
+      if (!readFileSync(path, 'utf8').startsWith(GENERATED_HEADER)) {
+        report(path, 1, `árvore de docs/: INDEX de área é gerado ("${GENERATED_HEADER}")`);
+      }
+    } else if (/^docs\/architecture\/[^/]+\/[a-z0-9-]+\.md$/.test(path)) {
+      lintFrontmatter(path, 'docs/architecture');
+    } else if (/^docs\/adr\/\d{4}-[a-z0-9-]+\.md$/.test(path)) {
+      lintAdr(path);
+    } else {
+      report(path, 1, 'árvore de docs/: arquivo fora da lista fechada (docs-lint --help)');
+    }
+  }
 }
-for (const path of NO_METHODOLOGY_ROOTS.flatMap(listMarkdown)) {
-  lintMethodologyCitations(path);
+
+function lintAgents(): void {
+  if (!existsSync('AGENTS.md')) {
+    return;
+  }
+  const count = readFileSync('AGENTS.md', 'utf8').trimEnd().split('\n').length;
+  if (count > AGENTS_MAX_LINES) {
+    warn('AGENTS.md', 1, `AGENTS.md com ${count} linhas, mais de ${AGENTS_MAX_LINES}`);
+  }
 }
-lintReadingOrder(rules);
-lintPlanned();
-lintGenerated();
+
+function lintAdr(path: string): void {
+  const lines = readFileSync(path, 'utf8').split('\n');
+  const number = basename(path).slice(0, 4);
+  if (!new RegExp(`^# ADR-${number} \\S`).test(lines[0] ?? '')) {
+    report(path, 1, `ADR: a primeira linha é "# ADR-${number} <título>"`);
+  }
+  const firstSection = lines.findIndex((text) => text.startsWith('## '));
+  const header = lines.slice(0, firstSection === -1 ? undefined : firstSection);
+  const field = (key: string) => {
+    const index = header.findIndex((text) => text.startsWith(`${key}: `));
+    return index === -1 ? undefined : { value: header[index].slice(key.length + 2).trim(), line: index + 1 };
+  };
+  const status = field('status');
+  const statusMatch = status && ADR_STATUS.exec(status.value);
+  if (!status || !statusMatch) {
+    report(path, status?.line ?? 1, 'ADR: status accepted ou superseded by ADR-NNNN');
+  } else if (statusMatch[2] && !adrPath(statusMatch[2])) {
+    report(path, status.line, `ADR: ${statusMatch[2]} não existe em docs/adr/`);
+  }
+  if (!field('area')) {
+    report(path, 1, 'ADR: falta area');
+  }
+  const kind = field('kind');
+  if (!kind || !ADR_KINDS.includes(kind.value)) {
+    report(path, kind?.line ?? 1, `ADR: kind ${ADR_KINDS.join(' | ')}`);
+  }
+  const sections = lines.filter((text) => text.startsWith('## ')).map((text) => text.slice(3).trim());
+  if (sections.join('|') !== ADR_SECTIONS.join('|')) {
+    report(path, firstSection + 1 || 1, `ADR: seções ${ADR_SECTIONS.join(', ')}, nessa ordem`);
+  }
+}
+
+function lintMatrix(): void {
+  if (!existsSync(MATRIX)) {
+    return;
+  }
+  for (const { line, message } of matrixProblems(readFileSync(MATRIX, 'utf8'))) {
+    report(MATRIX, line, message);
+  }
+}
+
+// Glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum arquivo: candidata a poda.
+function lintAppliesTo(): void {
+  const files = projectFiles();
+  const globs: { glob: string; file: string; line: number }[] = [];
+  for (const path of ruleFiles('docs/architecture')) {
+    const read = readFrontmatter(path);
+    for (const glob of asList(read?.frontmatter.applies_to)) {
+      globs.push({ glob, file: path, line: keyLine(read?.lines ?? [], 'applies_to') });
+    }
+  }
+  if (existsSync(PROJECT_INDEX)) {
+    for (const { text, line } of sectionItems(readFileSync(PROJECT_INDEX, 'utf8'), 'Caminhos do projeto')) {
+      const glob = /^`?(.+?)`? → /.exec(text)?.[1];
+      if (glob) {
+        globs.push({ glob, file: PROJECT_INDEX, line });
+      }
+    }
+  }
+  for (const { glob, file, line } of globs) {
+    const isMatch = picomatch(glob, { dot: true });
+    if (!files.some((path) => isMatch(path))) {
+      warn(file, line, `applies_to: ${glob} não casa com nenhum arquivo (candidata a poda)`);
+    }
+  }
+}
+
+function lintProject(): void {
+  lintDocsTree();
+  lintAgents();
+  lintMatrix();
+  lintAppliesTo();
+  if (existsSync(PROJECT_INDEX)) {
+    lintGenerated('docs/architecture');
+  }
+}
+
+if (layout.isProject) {
+  lintProject();
+} else {
+  lintSource();
+}
 
 for (const { file, line, message, isWarning } of problems) {
   console.log(`${file}:${line}: ${isWarning ? 'aviso: ' : ''}${message}`);

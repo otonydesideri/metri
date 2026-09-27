@@ -113,8 +113,9 @@ Decisões da fase (aplicadas):
   - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
 - [x] 4.2 `rules-for`: `applies_to` e "Caminhos do projeto" do INDEX; cerca de 5 regras por ticket
   - Testes em Vitest com a fixture `template/scripts/__fixtures__/project/`, cujo `.metri/architecture` é symlink para o `architecture/` deste repositório; substituição de regra global: linha em "Exceções e defaults trocados" com o id, "substitu" e o ADR.
-- [ ] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
+- [x] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
   - A parte do source está feita; o aviso de `applies_to` sem casamento (METHODOLOGY 6.13) entra aqui.
+  - Modo pela presença de `.metri/`; a lista de checagens saiu da 6.13 para o `--help`. O aviso de `applies_to` sem casamento vale para as regras do projeto e para "Caminhos do projeto"; `docs/plan/tech/` fica fora da árvore até ser usada; slice em construção (`horizon` com `entry`, sem `contract`) é válida (A.7).
 - [ ] 4.4 `verify`: roda os checks do projeto
 
 Os demais checks candidatos ficam para a Fase 8, depois do piloto.
@@ -170,3 +171,6 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
   - frontend/components: nenhum import nomeado de `@metri/ui/components/ui/*`; só `import * as`
   - frontend/components: nenhum import de `packages/ui/src/shadcn/` no app, por caminho relativo ou pelo pacote
   - contrato de slice: o arquivo de entrada de uma slice construída tem o cabeçalho de contrato
+  - matriz: todo `GAP-n` do código existe na seção Gaps da matriz, e vice-versa
+  - opcional: sinônimos proibidos do `CONTEXT.md` ausentes dos identificadores
+  - opcional: nenhum valor fixo de cor ou espaçamento fora do tema

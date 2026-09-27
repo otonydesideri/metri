@@ -181,7 +181,7 @@ docs/
 - **Os arquivos que agentes já reconhecem pelo nome ficam em maiúsculas:** `AGENTS.md`, `CONTEXT.md` (nome do Matt), `DESIGN.md` (nome do spec). O nome funciona como palavra-guia.
 - **`AGENTS.md` fica na raiz**, porque as ferramentas o procuram lá.
 - **Arquivos gerados** (`INDEX.md` de área) têm como primeira linha "Gerado por rules-index. Não edite."; no `INDEX.md` raiz, só a lista abaixo do marcador `<!-- rules-index -->` é gerada. O `rules-index:check` confere se estão atualizados.
-- **O lint estrutural** aceita exatamente essa árvore, incluindo as pastas reservadas (seção 6.13).
+- **O lint estrutural** aceita exatamente essa árvore; a pasta reservada `docs/plan/tech/` entra no lint quando for usada (seção 6.13).
 
 ### 5.3 Árvore do Architecture Source
 
@@ -338,23 +338,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 ### 6.13 Lint estrutural (parte do `verify`)
 
-- **Árvore permitida:** `AGENTS.md`, `CLAUDE.md`, `docs/{CONTEXT,PRODUCT,DESIGN}.md`, `docs/architecture/**`, `docs/adr/**`, `docs/plan/MATRIX.md`, `docs/plan/tech/**` (reservado). Nada mais em `docs/`.
-- **Regras:** o `docs-lint` checa o frontmatter:
-  - as quatro chaves obrigatórias de `methodology/VOCABULARY.md` (`id`, `description`, `use_when`, `status`), nenhuma chave vazia, nenhuma chave fora dele, `status` com um valor dele e `activation`, quando existe, em texto;
-  - `id` igual ao caminho `<área>/<tema>`;
-  - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada de `methodology/VOCABULARY.md`, e a seção que `not_covered` cita existe na regra;
-  - os arquivos citados em `examples` existem, e os ids de `adr` existem em `adr/`.
-
-  Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
-- **METHODOLOGY:** regra (`architecture/`) e template (`template/**/*.md`) não citam a METHODOLOGY, nem em frontmatter nem em bloco de código; citação a ela é erro, e o texto cita a regra dona.
-- **Citações** (no source, em `architecture/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido. `template/` fica fora: é o starter do projeto, e as citações dele são caminhos do projeto (`docs/`, `AGENTS.md`); nem o `docs-lint` nem o `rules-index` o processam no source.
-- **Arquivos planejados:** `template/scripts/docs-lint.planned.json` lista cada arquivo que ainda não existe e o passo do `SETUP.md` que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe é erro ("tire da lista"), para a lista não ficar velha.
-- **`applies_to` sem casamento** (no projeto): glob que não casa com nenhum arquivo gera aviso, não erro; a regra é candidata a poda (seção 15.6).
-- **Saída:** `arquivo:linha: mensagem`, com o prefixo `aviso:` no aviso; o lint sai com código 1 só quando há erro.
-- **"Como ler":** todo id de regra do source aparece em "Como ler" do `architecture/INDEX.md`.
-- **Gerados:** `INDEX.md` atualizados; o `rules-index:check` sai com código 1 se algum estiver desatualizado.
-- **Matriz:** esquema da seção 9 (chaves em inglês, ids válidos, valores de enum válidos); todo ticket tem slice, tipo e checks; todo tracer aponta para um UC; nada órfão; todo `GAP-n` do código existe na matriz e vice-versa.
-- **Opcional:** sinônimos proibidos do `CONTEXT.md` ausentes dos identificadores; nenhum valor fixo de cor ou espaçamento fora do tema.
+O `docs-lint` (`template/scripts/docs-lint.ts`) confere a estrutura do source e do projeto, no modo que detecta (com `.metri/` na raiz, projeto); as checagens de cada modo: `pnpm docs-lint --help`.
 
 ### 6.14 Ativação da arquitetura
 

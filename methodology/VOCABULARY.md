@@ -8,11 +8,16 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | slice                                     | `slice`, id `S<n>`                               | Capacidade compartilhada, fonte da verdade, na qual várias features se conectam               |
 | contrato                                  | `contract`                                       | O que uma slice garante: `responsibility`, `interface`, `invariants`, `consumers` e `planned`. Bloco da slice na matriz enquanto ela é plano; depois do primeiro ticket construído, cabeçalho do `entry` no código |
 | feature                                   | `feature`, id `F<n>`                             | Resultado de valor para o usuário. Atravessa uma ou mais slices                               |
+| resultado                                 | `outcome`                                        | O resultado de valor da feature, em prosa                                                     |
+| slices da feature                         | `slices`                                         | Slices em que a feature se conecta                                                            |
 | caso de uso                               | `use case`, id `UC<f>.<n>`                       | Unidade de definição de uma feature. Tem o mesmo nome do caso de uso no código                |
+| ator                                      | `actor`                                          | Quem executa o caso de uso                                                                    |
 | regra de negócio                          | `business rule`, id `BR<n>`                      | Regra do domínio dentro de um UC                                                              |
 | horizonte agora / prevista / névoa / fora | `horizon: now \| planned \| fog \| out`          | Estado de uma feature ou slice                                                                |
 | marco                                     | `milestone`                                      | Versão do produto a que a feature pertence (`v1`, `v2`...)                                    |
+| campos reservados                         | `tech_design`, `evidence`, `metrics`, `notes`    | Opcionais em qualquer bloco da matriz; só escritos quando têm valor                           |
 | ticket                                    | `ticket`, id `T<s>.<n>`                          | Unidade de entrega e de aceite                                                                |
+| caso de uso do ticket                     | `uc`                                             | O UC que o ticket entrega; obrigatório no tracer                                              |
 | tipo padrão / tracer / tarefa / release   | `type: pattern \| tracer \| task \| release`     | Tipo do ticket                                                                                |
 | modo                                      | `mode: afk \| hitl`                              | Se o agente faz sozinho ou com humano                                                         |
 | status                                    | `status: open \| in_progress \| blocked \| done` | Estado do ticket, UC ou slice                                                                 |
