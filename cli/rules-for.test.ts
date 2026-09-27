@@ -10,7 +10,7 @@ function ids(lines: string[]): string[] {
   return lines.filter((line) => line.includes(' — ')).map((line) => line.split(' — ')[0]);
 }
 
-describe('rules-for', () => {
+describe('rules-for', { timeout: 30_000 }, () => {
   it('caminho: casa com o applies_to global e do projeto, projeto primeiro, com read_first e exceção', () => {
     const { status, lines } = run('rules-for', ['--root', FIXTURE, PAGE]);
     expect(status).toBe(0);

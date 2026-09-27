@@ -8,6 +8,7 @@ afterAll(removeCopies);
 const SKILLS = readdirSync(join(REPO, 'skills'), { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
+const AGENTS = readdirSync(join(REPO, 'agents')).filter((name) => name.endsWith('.md'));
 
 function init(dir: string): { status: number | null; lines: string[] } {
   return run('init', ['--root', dir]);
@@ -23,6 +24,9 @@ describe('init', { timeout: 60_000 }, () => {
     }
     for (const name of SKILLS) {
       expect(readlinkSync(join(dir, '.claude/skills', name))).toBe(`../../node_modules/metri/skills/${name}`);
+    }
+    for (const name of AGENTS) {
+      expect(readlinkSync(join(dir, '.claude/agents', name))).toBe(`../../node_modules/metri/agents/${name}`);
     }
     expect(readFileSync(join(dir, 'CLAUDE.md'), 'utf8')).toBe('@AGENTS.md\n');
     expect(readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8')).not.toContain('mapeamento: pendente');

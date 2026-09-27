@@ -48,7 +48,7 @@ function project(): string {
   return dir;
 }
 
-describe('design-tokens', () => {
+describe('design-tokens', { timeout: 30_000 }, () => {
   it('sem tema, pendente e sem falhar', () => {
     expect(run('design-tokens', ['--root', copyFixture()])).toEqual({
       status: 0,

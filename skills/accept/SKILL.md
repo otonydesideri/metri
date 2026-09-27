@@ -1,6 +1,6 @@
 ---
 name: accept
-description: Accept a slice, and its feature when it is the last slice. Isolated reviewers on contract and patterns, the consumer test, the human gate, the knowledge gate and the matrix pruning.
+description: Accept a slice, and its feature when it is the last slice. Isolated reviewers on contract, patterns and experience, the consumer test, the human gate, the knowledge gate and the matrix pruning.
 disable-model-invocation: true
 ---
 
@@ -8,12 +8,13 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
-Judge what no check judges, on the diff of a slice, along two axes:
+Judge what no check judges, on the diff of a slice, along separate axes:
 
 - **Contract**: does the code deliver the slice contract, its UCs and its T tickets?
 - **Patterns**: does the code pass the verification items of its rules that no check covers?
+- **Experience**, when the slice has UI: what does the user live on its screens?
 
-The work never judges itself: both axes run as **parallel sub-agents** that get nothing from the builder's conversation, then this skill aggregates their findings.
+The work never judges itself: each axis is a reviewer agent that gets nothing from the builder's conversation, all run in parallel, and this skill aggregates their findings.
 
 ## Process
 
@@ -28,29 +29,21 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 ### 2. Gather the inputs
 
 - **Contract**: the contract header at the top of the file named by the slice's `entry`; in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
-- **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns sub-agent and say so.
+- **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns reviewer and say so.
+- **Experience**, when a UC of the slice has UI: the evidence paths of each UI criterion, `docs/DESIGN.md`, the UCs, and the verification items of `frontend/experience` without a `(check: <id>)` mark.
 
-### 3. Spawn the sub-agents in parallel
+### 3. Call the reviewers in parallel
 
-They may read the repository at `slice/<id>`, nothing else of this session.
+Call each agent (`.claude/agents/<name>.md`, the owner of its brief) as a sub-agent, passing only its inputs; it may read the repository at `slice/<id>`, nothing else of this session.
 
-**Contract sub-agent prompt** includes:
-
-- The diff command and the commit list.
-- The contract, the UCs and the T tickets, pasted in full.
-- The brief: "Report: (a) contract items, UC criteria, or T `what` and `criteria` that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `.metri/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the UC's `checks` proves. Quote the contract, UC or T line for each finding, and put it in one group, Corrigir agora, Virar T or Aceitar como está, with your recommendation. Under 400 words."
-
-**Patterns sub-agent prompt** includes:
-
-- The diff command and the commit list.
-- The unchecked verification items, pasted with their rule id.
-- The brief: "Report, per file/hunk, every verification item the diff fails: cite the rule id and the item, quote the hunk, and put it in one group, Corrigir agora, Virar T or Aceitar como está, with your recommendation. Under 400 words."
-
-**Consumer sub-agent**, only when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): an agent that knows only the public interface (the contract's `interface`) tries to use it, and reports where it got stuck. The consumer test also runs on the interface: for each UC with UI, an agent that gets only the UC's goal and the app's URL tries it with a browser tool; with no browser tool in the session, skip it and say so in the report.
+- `reviewer-contract`: the diff command, the commit list, and the Contract inputs, pasted in full.
+- `reviewer-patterns`: the diff command, the commit list, and the Patterns items, pasted with their rule id.
+- `reviewer-ux`, when a UC of the slice has UI: the Experience inputs.
+- `consumer-tester`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): the contract's `interface`; and, for each UC with UI, only the UC's goal and the app's URL.
 
 ### 4. Aggregate
 
-Present the reports in the chat under `## Contract` and `## Patterns` (and `## Consumer`), verbatim or lightly cleaned, each axis with its findings in the reviewer's three groups. Keep the axes apart (see _Why two axes_).
+Present the reports in the chat under `## Contract` and `## Patterns` (and `## Experience`, `## Consumer`), verbatim or lightly cleaned, each axis with its findings in the reviewer's three groups. Keep the axes apart (see _Why separate axes_).
 
 ### 5. Human gate
 
@@ -77,11 +70,12 @@ On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `no
 
 Done when the slice is on main, or its reopened UCs are in the matrix; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
-## Why two axes
+## Why separate axes
 
-A slice can pass one axis and fail the other:
+A slice can pass one axis and fail another:
 
 - Code that follows every rule but delivers the wrong thing → **Patterns pass, Contract fail.**
 - Code that does exactly what the contract asked but breaks the rules → **Contract pass, Patterns fail.**
+- Screens that deliver the UC by the rules but bury its main action → **Contract and Patterns pass, Experience fail.**
 
-Reporting them separately stops one axis from masking the other.
+Reporting them separately stops one axis from masking another.

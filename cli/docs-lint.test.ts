@@ -50,6 +50,18 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(lines.join('\n')).not.toContain('skills/good');
   });
 
+  it('agents (source): name igual ao arquivo, description e tools não vazio', () => {
+    const dir = copySource();
+    write(dir, 'agents/good.md', '---\nname: good\ndescription: Does X.\ntools: Read, Grep\n---\nBody.\n');
+    write(dir, 'agents/bad.md', '---\nname: other\ntools: ""\n---\nBody.\n');
+    const { status, lines } = lint(dir);
+    expect(status).toBe(1);
+    expect(lines).toContain('agents/bad.md:2: agent: name other diferente do arquivo bad');
+    expect(lines).toContain('agents/bad.md:1: agent: falta a description');
+    expect(lines).toContain('agents/bad.md:3: agent: tools vazio (sem a chave, o agent herda as ferramentas da sessão)');
+    expect(lines.join('\n')).not.toContain('agents/good.md');
+  });
+
   it('source: regra e skill não citam o README.md', () => {
     const dir = copySource();
     edit(dir, 'skills/tdd/SKILL.md', (source) => `${source}\nSee \`README.md\`.\n`);

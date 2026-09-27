@@ -58,6 +58,8 @@ Só no source:
     erro ("tire da lista"), para a lista não ficar velha.
   - "Como ler": todo id de regra do source aparece em "Como ler" do architecture/INDEX.md.
   - Skills: cada pasta de skills/ tem SKILL.md, com frontmatter: name igual ao nome da pasta e description.
+  - Agents: cada agents/<nome>.md tem frontmatter com name igual ao nome do arquivo, description e, quando tem,
+    tools não vazio.
 
 Só no projeto:
   - Árvores fechadas (qualquer outro arquivo nelas é erro):
@@ -114,13 +116,14 @@ const layout = layoutOf();
 const RULE_DIRS = layout.isProject ? [PROJECT_RULES, layout.globalDir] : ['architecture'];
 const ADR_DIRS = layout.isProject ? ['docs/adr', layout.globalAdrDir] : ['adr'];
 const ARCHITECTURE = 'architecture';
-const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'cli/templates', 'VOCABULARY.md', 'README.md'];
-// Onde o README não é citado: as regras, as skills (com os formatos de cada uma) e os templates.
-const NO_README_ROOTS = ['architecture', 'skills', 'cli/templates'];
+const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'agents', 'cli/templates', 'VOCABULARY.md', 'README.md'];
+// Onde o README não é citado: as regras, as skills (com os formatos de cada uma), os agents e os templates.
+const NO_README_ROOTS = ['architecture', 'skills', 'agents', 'cli/templates'];
 // Prefixo de um arquivo do pacote citado a partir do projeto; no source, é o caminho sem ele.
 const PACKAGE_PREFIX = /^node_modules\/metri\//;
 const README_CITATION = /`(?:node_modules\/metri\/)?README\.md`/;
 const SKILLS = 'skills';
+const AGENTS = 'agents';
 // Pastas fora da varredura de markdown do source: a fixture de teste é um projeto.
 const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
@@ -537,6 +540,28 @@ function lintSkills(): void {
   }
 }
 
+// Cada agents/<nome>.md tem name igual ao nome do arquivo, description e, quando tem, tools não vazio.
+function lintAgentFiles(): void {
+  for (const name of existsSync(AGENTS) ? readdirSync(AGENTS).filter((file) => file.endsWith('.md')).sort() : []) {
+    const path = join(AGENTS, name);
+    const read = readFrontmatter(path);
+    if (!read) {
+      continue;
+    }
+    const { frontmatter, lines } = read;
+    const expected = name.replace(/\.md$/, '');
+    if (frontmatter.name !== expected) {
+      report(path, keyLine(lines, 'name'), `agent: name ${String(frontmatter.name)} diferente do arquivo ${expected}`);
+    }
+    if (typeof frontmatter.description !== 'string' || frontmatter.description.trim() === '') {
+      report(path, keyLine(lines, 'description'), 'agent: falta a description');
+    }
+    if ('tools' in frontmatter && isEmpty(frontmatter.tools)) {
+      report(path, keyLine(lines, 'tools'), 'agent: tools vazio (sem a chave, o agent herda as ferramentas da sessão)');
+    }
+  }
+}
+
 function lintSource(): void {
   const rules = ruleFiles(ARCHITECTURE);
   for (const path of rules) {
@@ -550,6 +575,7 @@ function lintSource(): void {
   }
   lintReadingOrder(rules);
   lintSkills();
+  lintAgentFiles();
   lintPlanned();
   lintGenerated();
 }
