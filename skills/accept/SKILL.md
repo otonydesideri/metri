@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default).
+
 Judge what no check judges, on the diff of a slice, along two axes:
 
 - **Contract**: does the code deliver the slice contract, its UCs and its T tickets?

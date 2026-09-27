@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default).
+
 # Look Across
 
 Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`); a ticket `T` exists only for work without a UC. Everything goes to `docs/plan/MATRIX.md`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md).

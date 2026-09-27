@@ -7,7 +7,7 @@ use_when:
   - "ajustar o visual de um componente do `@metri/ui`"
   - "mexer nas CSS variables de tema, na tipografia ou no espaçamento do `@metri/ui`"
   - "mexer no `components.json`, nos `exports`, nos `imports` ou no `cn` do `@metri/ui`"
-activation: "O projeto tem interface?"
+activation: "O projeto tem interface? O estilo visual (docs/DESIGN.md) é decidido no /shape."
 applies_to:
   - "packages/ui/components.json"
   - "packages/ui/package.json"

@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default).
+
 Build the ticket the user names: a UC (the tracer) or a T. With no id, take the next ticket of the **frontier**: among the unblocked ones (`status: open`, every `blocked_by` done), the T tickets first, since they unblock, then the lowest id in numeric order. A UC in `draft` is never built: stop and tell the user to run /look-across. A named ticket with a blocker not done: stop and say which. A named ticket `in_progress` or `blocked`: resume it on its branch. Each ticket runs in a clean context: a fresh session, or a worker in coordinator mode. For several ticket ids, or a slice id, read [COORDINATOR.md](COORDINATOR.md). For a T, read [TICKET-TYPES.md](TICKET-TYPES.md) too.
 
 ## Steps

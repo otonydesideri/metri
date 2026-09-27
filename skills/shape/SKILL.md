@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default).
+
 Understand the problem, the outcome and the limits, and align the language. Don't plan yet: slices, contracts and tickets belong to /look-across.
 
 ## Process

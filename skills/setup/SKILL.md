@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default); before AGENTS.md exists, ask and report in pt-BR from the first question.
+
 # Setup
 
 Scaffold what the other skills assume:
@@ -85,4 +87,4 @@ Done when:
 - every conditional capability with a trigger is answered in `docs/architecture/INDEX.md`, and the "Check" list of [ACTIVATION.md](ACTIVATION.md) holds;
 - `pnpm verify` is green.
 
-Tell the user the setup is complete, to commit it (the agent never commits on main), and to run /shape next (after /reload-skills when `.claude/skills/` didn't exist when the session started).
+Tell the user the setup is complete, to commit it (the agent never commits on main), and to run /shape next (after /reload-skills when `.claude/skills/` didn't exist when the session started): /shape defines the product, the domain terms and, when the project has an interface, the visual style (`docs/DESIGN.md`).

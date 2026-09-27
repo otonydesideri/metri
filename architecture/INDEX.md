@@ -83,7 +83,7 @@ Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/sta
 | id | activation |
 | --- | --- |
 | backend/async-jobs | `backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada? |
-| defaults/ui | O projeto tem interface? |
+| defaults/ui | O projeto tem interface? O estilo visual (docs/DESIGN.md) é decidido no /shape. |
 | infrastructure/cache | O projeto tem necessidade medida de cache, pelo critério de `infrastructure/cache.md`? |
 | infrastructure/mail | O projeto envia e-mail? |
 | infrastructure/observability | Alguma pergunta operacional do projeto pede métrica, alerta ou reconciliação? |
