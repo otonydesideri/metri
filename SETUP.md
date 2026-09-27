@@ -1,7 +1,7 @@
 # SETUP: Slices com Guardrails
 
 Este repositório é o **Architecture Source** (global). O projeto piloto é outro repositório, criado na Fase 7.
-Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
+Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.3).
 
 ## Como usar
 
@@ -9,6 +9,19 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - Um passo por vez. Ao final de cada passo, commit com o número do passo na mensagem (ex.: `setup(2.1): inventário das regras`).
 - Marque `[x]` e, se houve decisão, anote em uma linha logo abaixo do passo. Nada de relatório.
 - Arquivo temporário: é apagado quando o source chegar à v1.0.0 (passo 6.2).
+
+## Estado final (alvo)
+
+```text
+source (montado em .metri/ no projeto)
+  README.md  AGENTS.md  CLAUDE.md  CHANGELOG.md
+  architecture/  adr/  skills/  template/
+
+projeto
+  AGENTS.md  CLAUDE.md  .metri/
+  docs/  PRODUCT.md  CONTEXT.md  DESIGN.md  architecture/INDEX.md  adr/  plan/MATRIX.md
+  código: o contrato de cada slice construída, no cabeçalho do entry
+```
 
 ---
 
@@ -39,11 +52,16 @@ Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:ch
   - D5 O `design-system` do frontend vira exemplo de projeto; o global mantém "só token" e o contrato de tema.
   - D6 Regras existentes são refinadas, não reescritas (METHODOLOGY 7.2).
   - D7 Exemplos didáticos no global; só a implementação completa vai para `<tema>.examples.md` (METHODOLOGY 7.2, item 2); `examples` aponta para ele e, quando existir, para `template/`; nas regras de projeto, para código real.
-  - D8 Pontos em aberto viram ADR `proposed`; "o que a decisão não é" vira alternativas do ADR.
+  - D8 Revogada por D13 (antes: pontos em aberto viram ADR `proposed`; "o que a decisão não é" vira alternativas do ADR).
   - D9 Temas faltantes (migrações, CI/deploy, segurança HTTP, error boundary, acessibilidade) não são criados agora.
   - D10 Revogada: não há limite de linhas.
   - D11 `@metri/*` são pacotes do template (globais), não nomes de projeto.
   - D12 Escrita para agentes, só em texto novo (skills, templates, regras novas): imperativo, uma ideia por linha, sem introdução, narrativa nem explicação didática, sem repetir outro arquivo (`read_first`/`not_covered`), termos do vocabulário.
+  - D13 ADR só com decisão tomada, difícil de reverter, surpreendente e com trade-off real; pergunta em aberto fica na regra, na seção "Em aberto".
+  - D14 A pergunta de ativação de capacidade condicional é a chave `activation` da regra dona; o que fica para o projeto é `not_covered` → `project:`; `catalog/` sai.
+  - D15 O contrato de slice é um bloco da slice na MATRIX enquanto ela é plano e, depois do primeiro ticket construído, o cabeçalho do `entry` no código.
+  - D16 Regra e template não citam a METHODOLOGY; o `docs-lint` barra.
+  - D17 Os templates vão para as skills donas na Fase 5.
 - [x] 2.2 Formato das regras (metodologia, seção 7) e mapeamento do formato atual para ele
   - Mapeamento: METHODOLOGY 7.2
 - [x] 2.3 Piloto de refinamento: http-api e components
@@ -52,7 +70,7 @@ Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:ch
 - [x] 2.5 Extrair as regras do `overview` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation` → template de INDEX de projeto (3.4), `authoring` → absorvido pela metodologia (apagar no fim da fase)
   - overview → `backend/layers`, `general/{overview,code-placement,http-surface,principles}`, `defaults/stack` e o template de INDEX; activation → `methodology/templates/architecture-INDEX.md`; authoring → `methodology/authoring.md`; design-system → `methodology/templates/examples/`; destinos `project:` no frontmatter.
 - [x] 2.6 Pontos em aberto → ADRs `proposed` (D8)
-  - ADR-0001 a ADR-0019, um por ponto; na regra fica "Em aberto: <título> (ADR-NNNN)" e o id vai em `adr`.
+  - ADR-0001 a ADR-0019, um por ponto; na regra fica "Em aberto: <título> (ADR-NNNN)" e o id vai em `adr`. Revertido na Fase 3 (D13).
 - [x] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
   - Source montado em `.metri/`; `defaults/` → `architecture/defaults/` (ids iguais); `general/overview` e `architecture/README` absorvidos pela parte à mão de `architecture/INDEX.md`; token e tema → `frontend/theming`; `INDEX.md` gerados (4.0 e 4.1 adiantados).
 
@@ -65,9 +83,9 @@ Passos feitos; a fase segue aberta pelas decisões pendentes abaixo.
 - [x] 3.1 `methodology/VOCABULARY.md`
   - Texto da 4.3 movido sem reescrever; a 4.3 virou ponteiro; modalidades ficam em `methodology/authoring.md`.
 - [x] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; ADR `stack` para `architecture/defaults/stack.md`, que já existe (os dois ADRs pegam os próximos números livres de `adr/`)
-  - ADR-0020 (shadcn/ui dentro do `@metri/ui`, compound por re-export, um só formato de import; AlignUI sai) e ADR-0021; o `DESIGN.md` base é o próprio `template/docs/DESIGN.md`, no formato da especificação do Google.
+  - ADR-0020 (shadcn/ui dentro do `@metri/ui`, compound por re-export, um só formato de import; AlignUI sai) e ADR-0021 (depois o ADR-0020 virou ADR-0001, e o ADR-0021 saiu: o `stack.md` é o registro); o `DESIGN.md` base é o próprio `template/docs/DESIGN.md`, no formato da especificação do Google.
 - [x] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
-  - design-system, async-jobs, mail, storage, cache e observability; `catalog/INDEX.md` gerado; as linhas delas saíram da matriz de ativação.
+  - design-system, async-jobs, mail, storage, cache e observability; `catalog/INDEX.md` gerado; as linhas delas saíram da matriz de ativação. `catalog/` saiu depois (D14).
 - [x] 3.4 Starter em `template/`
   - Cada arquivo no caminho que terá no projeto (`AGENTS.md`, `CLAUDE.md`, `docs/`); regra, slice e ADR voltam ao Apêndice A; a ativação vai para a METHODOLOGY 6.14; o exemplo de regra de design system sai.
 
@@ -79,14 +97,14 @@ Decisões da fase (aplicadas):
 - Tipografia e espaçamento: `--font-sans`, `--font-mono` e os níveis de texto do `DESIGN.md` no `@theme`; espaçamento na escala padrão do Tailwind.
 - Ajuste que o token não resolve: wrapper no arquivo de re-export, com o gerado intocado e os mesmos nomes de parte.
 - `EmptyState` sai: as telas usam o `Empty` do `@metri/ui`, e o `LoadErrorState` é composto sobre ele; o qualificador de rótulo é texto dentro do `Field.Label`.
+- INDEX do projeto: guarda o estado vigente (ativação, delegações, desvios) e aponta para o ADR; `methodology/authoring.md` alinhado.
+- Vocabulário visual das telas: no `DESIGN.md` (`not_covered` de `defaults/ui`); o catálogo, que o punha em regra de projeto, saiu.
 
 Decisões pendentes (seguram a fase):
 
 - Script inline do tema: o do `index.html` ficou, porque o script do next-themes não roda no app Vite (`frontend/theming.md`); confirmar, e decidir se o fundo do `index.html` pinta claro e escuro (`frontend/routing.md`).
 - `exports` × arquivos gerados: os gerados importam irmãos e o `cn` pelos aliases do `components.json`; sem `shadcn/*` e `lib/*` nos `exports`, não resolvem. Opção: campo `imports` com aliases `#` (doc de monorepo do shadcn).
 - `text-<nível>` × `cn`: o tailwind-merge trata `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
-- INDEX do projeto × `methodology/authoring.md`, "Decisões específicas de projeto": a tabela diz que o INDEX só aponta, e agora ele guarda o estado de ativação.
-- Vocabulário visual das telas: `catalog/design-system.md` o põe em regra de projeto; os `not_covered` e a METHODOLOGY 6.12 e 8.5, no `DESIGN.md`.
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
@@ -94,43 +112,21 @@ Decisões pendentes (seguram a fase):
   - TypeScript com tsx, sem build; `package.json` na raiz, com pnpm; scripts em `template/scripts/`.
 - [x] 4.1 `rules-index`: gera os `INDEX.md` a partir do frontmatter
   - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
-- [ ] 4.2 `rules-for`: devolve as regras aplicáveis a caminhos ou a um ticket; soma os "Caminhos do projeto" do INDEX ao `applies_to`
-- [ ] 4.3 `docs-lint`: árvore permitida, frontmatter das regras, formato da matriz
-  - Parte do source feita; faltam a árvore do projeto, o formato da matriz e o aviso de `applies_to` sem casamento.
-- [ ] 4.4 `verify`: agrega os checks
-- [ ] 4.5 Rodar tudo neste repositório até ficar verde
+- [ ] 4.2 `rules-for`: `applies_to` e "Caminhos do projeto" do INDEX; cerca de 5 regras por ticket
+- [ ] 4.3 `docs-lint` no projeto: árvore fechada do `docs/` e formato da matriz
+  - A parte do source está feita; o aviso de `applies_to` sem casamento (METHODOLOGY 6.13) entra aqui.
+- [ ] 4.4 `verify`: roda os checks do projeto
 
-Checks candidatos (item de verificação sem check até o check existir; depois o id entra em `enforced_by`):
-
-- backend/http-api: cada `*.controller.ts` em `controllers/<módulo>/` tem uma classe com um único handler de rota
-- backend/http-api: nenhum `@Param('<campo>')`; só `@Param()` tipado por DTO
-- backend/http-api: todo `z.string()` de schema de request tem `.max()`
-- backend/http-api: nenhum `z.uuidv4()`
-- backend/http-api: retorno do controller não é entidade de domínio (tipo) e passa por `<agregado>.presenter.ts`
-- backend/http-api: corpo de resposta sem chave `data` no topo, fora de `PaginatedResult` (teste e2e)
-- backend/http-api: erro de validação, rota inexistente e throttler saem no envelope com `type` em `ApiErrorType` (teste e2e)
-- backend/http-api: nenhum pacote `@metri/contracts` no workspace
-- backend/http-api: o app não declara constante de limite (`*_MIN_LENGTH`, `*_MAX_LENGTH`) que o contrato exporta
-- frontend/components: todo hook antes do primeiro retorno (Biome `useHookAtTopLevel`)
-- frontend/components: um componente por `.tsx`, salvo compound com bloco `export { X as Root, ... }` (spec de estrutura)
-- frontend/components: nenhum `cond ? null : <X />`
-- frontend/components: handler local `handle*` e prop de callback `on*`
-- frontend/components: booleanos com prefixo `is`, `has`, `can` ou `should`
-- frontend/components: `LoadErrorState` exige `onRetry` no tipo das props
-- frontend/components: nenhum import nomeado de `@metri/ui/components/ui/*`; só `import * as`
-- frontend/components: nenhum import de `packages/ui/src/shadcn/` no app, por caminho relativo ou pelo pacote
-- contrato de slice: o arquivo de entrada de uma slice construída tem o cabeçalho de contrato
+Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 
 ## Fase 5: skills (seção 16)
 
-Cada skill leva o formato do artefato que escreve; o Apêndice A passa a apontar para as skills.
-
-- [ ] 5.1 `writing-for-agents` primeiro (adaptada do Matt; é usada para escrever as outras)
-- [ ] 5.2 Adaptar do Matt: `grilling`, `tdd`, `research`, `domain-language` (a partir de `domain-modeling`)
-- [ ] 5.3 Escrever `guardrail`
-- [ ] 5.4 Escrever `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`
-- [ ] 5.5 Decidir como as skills e os scripts chegam aos projetos
-- [ ] 5.6 Teste a seco de cada skill com um exemplo pequeno
+- [ ] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
+- [ ] 5.2 Escrever as nossas: `guardrail`, `/setup` (`AGENTS.md`, `CLAUDE.md` e INDEX do projeto), `/shape` (`PRODUCT.md` e `DESIGN.md` base), `/look-across` (MATRIX e contrato de slice), `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os templates de documento saem de `template/` e do Apêndice A
+- [ ] 5.3 Teste a seco de cada skill
+- [ ] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
+- [ ] 5.5 A METHODOLOGY vira `README.md` (porquê, princípios, limiares, mapa e referências), e `methodology/` é apagada
+- [ ] 5.6 Decidir como skills e scripts chegam aos projetos
 
 ## Fase 6: release do source
 
@@ -140,13 +136,32 @@ Cada skill leva o formato do artefato que escreve; o Apêndice A passa a apontar
 ## Fase 7: projeto piloto (outro repositório)
 
 - [ ] 7.1 Criar o repositório e adicionar o source em `.metri/` (submódulo ou pacote, versão fixada)
-- [ ] 7.2 Copiar `template/` para o projeto
+- [ ] 7.2 Rodar `/setup`
 - [ ] 7.3 `/shape` (com triagem de design) → `/look-across`
-- [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui
+- [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter e os `.examples.md` viram ponteiro
 - [ ] 7.5 2–3 slices até o aceite e um release
 - [ ] 7.6 Registrar as métricas do piloto (seção 19)
 
 ## Fase 8: melhoria
 
 - [ ] 8.1 Metodologia v1.2 a partir das métricas
-- [ ] 8.2 Promover ao source o que passou nos critérios (template de código, catálogo, regras)
+- [ ] 8.2 Promover ao source o que passou nos critérios (template de código, capacidades condicionais, regras)
+- [ ] 8.3 Checks candidatos (item de verificação sem check até o check existir; depois o id entra em `enforced_by`):
+  - backend/http-api: cada `*.controller.ts` em `controllers/<módulo>/` tem uma classe com um único handler de rota
+  - backend/http-api: nenhum `@Param('<campo>')`; só `@Param()` tipado por DTO
+  - backend/http-api: todo `z.string()` de schema de request tem `.max()`
+  - backend/http-api: nenhum `z.uuidv4()`
+  - backend/http-api: retorno do controller não é entidade de domínio (tipo) e passa por `<agregado>.presenter.ts`
+  - backend/http-api: corpo de resposta sem chave `data` no topo, fora de `PaginatedResult` (teste e2e)
+  - backend/http-api: erro de validação, rota inexistente e throttler saem no envelope com `type` em `ApiErrorType` (teste e2e)
+  - backend/http-api: nenhum pacote `@metri/contracts` no workspace
+  - backend/http-api: o app não declara constante de limite (`*_MIN_LENGTH`, `*_MAX_LENGTH`) que o contrato exporta
+  - frontend/components: todo hook antes do primeiro retorno (Biome `useHookAtTopLevel`)
+  - frontend/components: um componente por `.tsx`, salvo compound com bloco `export { X as Root, ... }` (spec de estrutura)
+  - frontend/components: nenhum `cond ? null : <X />`
+  - frontend/components: handler local `handle*` e prop de callback `on*`
+  - frontend/components: booleanos com prefixo `is`, `has`, `can` ou `should`
+  - frontend/components: `LoadErrorState` exige `onRetry` no tipo das props
+  - frontend/components: nenhum import nomeado de `@metri/ui/components/ui/*`; só `import * as`
+  - frontend/components: nenhum import de `packages/ui/src/shadcn/` no app, por caminho relativo ou pelo pacote
+  - contrato de slice: o arquivo de entrada de uma slice construída tem o cabeçalho de contrato

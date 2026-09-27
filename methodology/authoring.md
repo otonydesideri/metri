@@ -229,8 +229,7 @@ O índice de cada área é gerado do frontmatter (METHODOLOGY 6.11).
 | --- | --- |
 | Architecture Source (`architecture/`, em `.metri/` no projeto) | Decisão global e reutilizável |
 | ADR (`docs/adr/`) | Decisão específica do projeto que é estrutural, significativa, com trade-off, difícil de reverter e cujo rationale precisa ser preservado, incluindo a exceção deliberada a uma regra da Source |
-| Project Architecture | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages existentes, ativações, decisões operacionais vigentes |
-| `docs/architecture/INDEX.md` | Índice do projeto: ponteiros para a Project Architecture, o ADR e os demais documentos vigentes do projeto |
+| Project Architecture (`docs/architecture/INDEX.md` e, quando houver caso real, regra em `docs/architecture/<área>/`) | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages existentes, ativações, decisões operacionais vigentes; o INDEX aponta para o ADR de cada uma |
 | `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o `docs/architecture/INDEX.md`, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
 
 **Obrigatório.** Decisão global e reutilizável fica na Architecture Source.
@@ -243,9 +242,9 @@ Quando uma decisão de projeto, exceção incluída, muda o estado vigente do pr
 
 **Obrigatório.** Estado e configuração vigentes do projeto ficam na Project Architecture.
 
-**Proibido.** O `docs/architecture/INDEX.md` copiar decisão da Project Architecture ou do ADR: ele aponta para eles.
+**Proibido.** O `docs/architecture/INDEX.md` copiar o porquê de um ADR: ele registra o estado e aponta para o ADR.
 
-A localização e o formato físico da Project Architecture e do `docs/architecture/INDEX.md` estão na METHODOLOGY, seção 5.2.
+A localização e o formato físico da Project Architecture estão na METHODOLOGY, seções 5.2 e 6.14.
 
 **Proibido.** Documento da Source registrar o resultado de decisão por app, como a divisão de módulos e a forma de cada agregado: ele ensina o procedimento de decidir, e o resultado fica nas casas de projeto.
 

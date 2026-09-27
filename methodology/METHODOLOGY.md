@@ -2,14 +2,14 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.1.2**, consolidada em 26/09/2026.
+> **Versão 1.1.3**, consolidada em 26/09/2026.
 > Status: pronta para a fase de **setup**. Depois do setup vem a **fase de validação e melhoria**, com um piloto real (seção 19).
 
-**O que mudou da v1.1 para a v1.1.2**
+**O que mudou da v1.1 para a v1.1.3**
 
+- v1.1.3: ADR só com decisão tomada, e a pergunta em aberto fica na regra, em "Em aberto" (6.5); a pergunta de ativação é a chave `activation` da regra dona, e o catálogo sai (6.11 e 6.14); o contrato de slice fica na matriz e, depois do primeiro ticket, no cabeçalho do `entry` (A.7); regra e template não citam a METHODOLOGY (6.13); limiares na seção 3.
 - Frontmatter das regras com `description`, `use_when` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (`methodology/VOCABULARY.md` e seção 7.2).
-- ADR com status `proposed`; ponto em aberto vira ADR `proposed` (seção 6.5 e A.8).
-- Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `architecture/defaults/stack.md` + ADR global (seção 6.2).
+- Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `architecture/defaults/stack.md` (seção 6.2).
 - Release segue `docs/architecture/infrastructure/release.md` (seções 9.3 e 10).
 - Regras existentes são refinadas, não reescritas (7.2); sem limite de linhas; sem marca check/manual por regra.
 - "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (`methodology/VOCABULARY.md` e seções 6.11, 6.13, 7.2 e A.5).
@@ -109,6 +109,15 @@ Referências:
 6. **Conhecimento persistente é exceção.** Só vira conhecimento o que não é derivável nem verificável e afeta o futuro (seção 15). A maioria dos tickets termina sem gerar nenhum.
 7. **O humano dirige; o agente executa.** O humano decide direção, plano, padrões e aceite. O agente não inventa arquitetura.
 8. **O futuro entra por extensão.** Campos opcionais e pastas reservadas; nada que já existe muda de forma quando uma evolução chega (seção 18).
+
+**Limiares:**
+
+- Arquivo só existe se tiver conteúdo que nenhum outro pode carregar.
+- ADR só com decisão tomada, difícil de reverter, surpreendente e com trade-off real.
+- O `docs/` do projeto tem só `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md`, `docs/architecture/INDEX.md` (e regra de projeto quando houver caso real), `docs/adr/` e `docs/plan/MATRIX.md`, e o `docs-lint` barra o resto.
+- Regra nunca é pré-carregada: cerca de 5 por ticket, pelo `rules-for`, e encolhe quando um check ou o código assume o que ela diz.
+- O agente lê `AGENTS.md`, skills e regras; a METHODOLOGY é para humano.
+- Skill: adaptar do Matt; skill nova só para método nosso.
 
 ---
 
@@ -297,8 +306,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 - Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no `applies_to` global: fica na seção "Caminhos do projeto" do `docs/architecture/INDEX.md` (glob → id), e o `rules-for` soma esses caminhos ao `applies_to` da regra.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
 - Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Não há segunda fonte.
-- O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada: área → caminho do `INDEX.md` da área, com o número de regras.
-- Abaixo da lista vem a tabela gerada "Capacidades condicionais" (`id | activation`), uma linha por regra com `activation`: a pergunta de ativação de cada capacidade condicional mora na regra dona.
+- O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada (área → caminho do `INDEX.md` da área, com o número de regras) e a tabela gerada "Capacidades condicionais" (`id | activation`), uma linha por regra com `activation`: a pergunta de ativação de cada capacidade condicional mora na regra dona.
 - **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
 
 ### 6.12 Fonte única por conceito e escada de regras
@@ -357,7 +365,7 @@ Dono de: a ativação da arquitetura num projeto — as três classes de decisã
 
 Consultar antes de: ativar a arquitetura num projeto novo; ligar uma capacidade condicional num projeto existente; escolher um valor que a Source deixa ao projeto (provider, identidade do dono, pacote dono, topologia); registrar essa escolha.
 
-Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`methodology/authoring.md`, "Decisões específicas de projeto"); a regra de escape (`AGENTS.md`, "How to work here"); a regra de transição (`methodology/authoring.md`, "Regra de transição"); a localização e o formato físico da Project Architecture, que estão na seção 5.2; a descoberta do repositório.
+Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`methodology/authoring.md`, "Decisões específicas de projeto"); a regra de escape (`AGENTS.md`, "How to work here"); a regra de transição (`methodology/authoring.md`, "Regra de transição"); a descoberta do repositório.
 
 A Source decide como o sistema é construído; o projeto decide o que só ele sabe: se precisa de uma capacidade, qual provider usa, quem é o dono dos dados. Esta seção é o contrato entre os dois: o que a ativação pergunta, quando pergunta e onde a resposta fica.
 
@@ -446,7 +454,6 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - Um projeto que envia e-mail de confirmação, guarda foto de produto e não tem leitura cara ativa e-mail e storage e resolve vendor, provider e buckets; cache e observabilidade não geram pergunta, e bounded context fica no default de um contexto.
 - O primeiro job aparece meses depois da ativação inicial: a delegação de fila é resolvida ali, pelos passos 3 a 6 de "Ordem".
 - A exigência de rodar workers em app próprio cai em necessidade sem cobertura, porque o desenho está em aberto em `backend/async-jobs.md`: a ativação para em ARCHITECTURE DECISION REQUIRED.
-- A localização e o formato da Project Architecture seguem `methodology/authoring.md`, "Decisões específicas de projeto".
 
 #### Verificação
 
@@ -653,7 +660,7 @@ subtasks: [registro no mounter, renderização no site]
 4. **Checks são imutáveis para o `/build`.** Ele pode acrescentar testes, nunca remover ou afrouxar. Mudar um check exige voltar ao look across.
 5. **Mesmo `touches`, sem paralelismo.** Mudanças de schema seguem expand–contract ou ficam num ticket de fundação.
 6. **Critérios escritos uma vez, no UC.** O ticket lista só os checks que os provam.
-7. **Poda:** o contrato sai da matriz para o cabeçalho do `entry` quando o primeiro ticket da slice é construído (A.7); UC concluído colapsa em uma linha apontando para os testes; slice concluída colapsa numa linha com o `entry`. O git guarda o histórico. A matriz fica pequena.
+7. **Poda:** o contrato sai da matriz para o cabeçalho do `entry` quando o primeiro ticket da slice é construído (A.7); UC concluído colapsa em uma linha apontando para os testes; slice concluída colapsa numa linha com o `entry` (`status: done · entry: <caminho>`). O git guarda o histórico. A matriz fica pequena.
 
 ---
 
@@ -962,6 +969,7 @@ Entra por PR no repositório do source, com nova versão e registro no `CHANGELO
 | `/look-across` | Features → UCs → capacidades → slices → contratos → cobertura → tickets                                                 | `domain-language`, `grilling`             | Todo UC `now` tem ticket; toda slice `now` tem cobertura; nada órfão; matriz passa no lint; plano aprovado    |
 | `/build`       | Um ticket (ou a próxima fronteira) até o verde; modo coordenador para paralelismo                                       | `guardrail`, `tdd`                        | Checks verdes; commit com id; status atualizado; lacunas e propostas registradas                              |
 | `/accept`      | Revisores em paralelo + roteiro humano + teste do consumidor + portão de conhecimento                                   | revisores, `guardrail`                    | Slice mergeada ou tickets de correção criados; UCs colapsados; cada lição aprovada com destino, ou descartada |
+| `/setup`       | Instancia o starter no projeto: `AGENTS.md`, `CLAUDE.md` e `docs/architecture/INDEX.md`, com a ativação (seção 6.14)   | —                                         | Arquivos no lugar; capacidade condicional com gatilho respondida no INDEX; `docs-lint` verde                  |
 | `/diagnose`    | Bug até o check vermelho virar verde                                                                                    | `tdd`, `guardrail`                        | Regressão verde; "por que o guardrail não pegou" respondido                                                   |
 
 **Invocadas pelo modelo** (guardam a disciplina):
@@ -1049,15 +1057,7 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
 
 ### Fase 1: Setup
 
-1. **Architecture Source:**
-   - frontmatter e refinamento das regras existentes (seção 7.2);
-   - `INDEX.md` gerados;
-   - `methodology/VOCABULARY.md` e o starter em `template/`;
-   - `architecture/defaults/ui.md` (shadcn/ui) com ADR global e o `DESIGN.md` base neutro;
-   - `CHANGELOG.md` e tags;
-   - scripts no `template/`: `verify`, `rules-for`, `rules-index`, `docs-lint`.
-2. **Skills:** escrever as 11 skills (seção 16) em inglês, no estilo definido.
-3. **Distribuição:** o source entra no projeto como submódulo ou pacote em `.metri/`, somente leitura, com versão fixada, fora do código entregue.
+O passo a passo está no `SETUP.md` do source: regras refinadas (seção 7.2), `INDEX.md` gerados, vocabulário, defaults e starter; scripts (`verify`, `rules-for`, `rules-index`, `docs-lint`); as skills da seção 16, adaptadas do Matt ou escritas para o método; `CHANGELOG.md` e tags; e a distribuição em `.metri/`, somente leitura, com versão fixada, fora do código entregue.
 
 ### Fase 2: Validação e melhoria (piloto)
 
@@ -1174,8 +1174,6 @@ Depois do primeiro ticket construído, o contrato vai para o cabeçalho do arqui
  * SOT keywords: <keyword>, <keyword>
  */
 ```
-
-Slice concluída colapsa numa linha: `status: done · entry: <caminho>`.
 
 ### A.8 ADR
 
