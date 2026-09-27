@@ -82,7 +82,7 @@ Só no projeto:
     - slice now serve a uma feature now (a feature a lista em slices) ou um ticket com ela em slice;
     - slices e blocked_by (da slice) apontam para uma slice que existe na matriz;
     - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou entry, nunca os
-      dois; slice done tem entry;
+      dois; slice done tem entry; a de fundação, S0, não precisa de nenhum dos dois;
     - o entry existe e tem o cabeçalho de contrato (/** ... */) com os rótulos ${CONTRACT_LABELS.join(', ')};
     - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
   - Tickets (.metri/tickets/<id>.md, um UC ou um T; formato: skills/look-across/MATRIX-FORMAT.md,

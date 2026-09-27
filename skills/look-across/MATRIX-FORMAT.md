@@ -59,6 +59,7 @@ the ticket files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` p
 - `ucs`: the ids of the feature's UCs, draft included; every UC outside `draft` appears here.
 - `sensitive: true` when the ticket touches money, access (authentication, authorization, data scope), personal
   data, deletion (a destructive migration included) or a sensitive BR; its diff gets the human's review in /accept.
+- The foundation slice, `S0`, has no contract and no `entry`: only `horizon`, or `status: done` once accepted.
 - Gaps: the arrow points to the ticket (UC or T) that closes the gap; while none is planned, to the ticket that
   left it. Pattern proposals: `de <id>` is the ticket that raised it, and the arrow its destination.
 
@@ -83,8 +84,8 @@ when missing or empty, the rest are written only with a value.
 - `mode` and `checks` (T always; UC required outside `draft`), and `blocked_by`, `areas`, `touches`, `sensitive`,
   `subtasks` and `metrics`.
 - `checks`: besides `pnpm verify`, at least one command that runs the test or test pattern proving the criteria
-  (`` `pnpm test order-confirmation` ``); a command with a backtick, space or `·` is written as a quoted YAML
-  string (`` "`pnpm test order-confirmation`" ``).
+  (`` `pnpm test order-confirmation` ``), a pattern the runner matches against the file path; a command with a
+  backtick, space or `·` is written as a quoted YAML string (`` "`pnpm test order-confirmation`" ``).
 - `metrics`: only the numbers the tool reports, as `metrics: <tokens> tokens, <n> regras`.
 
 A ticket file is never pruned or collapsed: done, it keeps its title, its frontmatter and its body, with

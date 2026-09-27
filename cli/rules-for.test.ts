@@ -7,7 +7,7 @@ const PAGE = 'apps/app-web/src/pages/orders/orders-page.tsx';
 const MAIL = 'apps/app-api/src/infra/services/mail/resend-mail.service.ts';
 
 function ids(lines: string[]): string[] {
-  return lines.filter((line) => line.includes(' — ')).map((line) => line.split(' — ')[0]);
+  return lines.filter((line) => line.includes(' — ') && !line.startsWith('citada: ')).map((line) => line.split(' — ')[0]);
 }
 
 describe('rules-for', { timeout: 30_000 }, () => {
@@ -113,6 +113,23 @@ describe('rules-for', { timeout: 30_000 }, () => {
     const dir = copyFixture();
     edit(dir, '.metri/ARCHITECTURE.md', (source) => source.replace('- `apps/app-api/src/legacy/**` → backend/http-api\n', ''));
     expect(ids(run('rules-for', ['--root', dir, legacy]).lines)).not.toContain('backend/http-api');
+  });
+
+  it('citadas: as regras que as devolvidas citam, só com id e description, sem repetir as devolvidas', () => {
+    const { lines } = run('rules-for', ['--root', FIXTURE, PAGE]);
+    const cited = lines.filter((line) => line.startsWith('citada: ')).map((line) => line.slice(8).split(' — ')[0]);
+    expect(cited).toContain('frontend/theming');
+    expect(cited).toContain('frontend/forms');
+    expect(cited).not.toContain('frontend/components');
+    expect(lines.join('\n')).not.toContain('Obrigatório');
+  });
+
+  it('orçamento: no primeiro ticket depois de um pattern novo, o aviso diz que é exceção esperada', () => {
+    const dir = copyFixture();
+    edit(dir, '.metri/tickets/T2.1.md', (source) => source.replace('type: task', 'type: pattern'));
+    expect(run('rules-for', ['--root', dir, '--ticket', 'UC1.2']).lines).toContain(
+      'aviso: 6 regras, mais de 5: exceção esperada, primeiro ticket depois do pattern T2.1',
+    );
   });
 
   it('sem caminho nem ticket é erro', () => {

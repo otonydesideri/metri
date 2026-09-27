@@ -16,6 +16,7 @@ const REQUIRED: Record<Kind, string[]> = {
   slice: [],
 };
 const CONTRACT_KEYS = ['responsibility', 'interface', 'invariants', 'consumers', 'planned'];
+const FOUNDATION = 'S0';
 const CONTRACT_REQUIRED = ['responsibility', 'interface', 'invariants', 'consumers'];
 const VALUES: Record<string, string[]> = {
   horizon: ['now', 'planned', 'fog', 'out'],
@@ -174,6 +175,8 @@ function lintSlice(
   const entry = fieldOf(block, 'entry');
   if (hasContract && entry) {
     report(block.line, `${block.id}: contract e entry juntos; construída, a slice guarda só o entry (o contrato vai para o cabeçalho)`);
+  } else if (block.id === FOUNDATION) {
+    // a slice de fundação não tem contrato nem entry (skills/look-across/MATRIX-FORMAT.md)
   } else if (isDone && !entry) {
     report(block.line, `${block.id}: slice done sem entry`);
   } else if (!hasContract && !entry) {

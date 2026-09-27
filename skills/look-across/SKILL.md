@@ -38,7 +38,7 @@ For each UC, name the capabilities it needs and ask, in this order:
 
 ### 4. Contracts
 
-Give each new or changed slice its `contract` block, designed to accommodate what is `planned`. A slice already built changes its contract only through a ticket: its `notes` say what the contract gains, and /build writes it in the header of the slice `entry`.
+Give each new or changed slice its `contract` block, designed to accommodate what is `planned`; the foundation slice, `S0`, has none. A slice already built changes its contract only through a ticket: its `notes` say what the contract gains, and /build writes it in the header of the slice `entry`.
 
 ### 5. Architectural coverage
 
@@ -59,7 +59,7 @@ Each `now` UC is a **tracer bullet** ticket.
 
 A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel.
 
-A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket.
+A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket, except the urgent fix of /diagnose.
 
 **Wide refactors are the exception to tracer bullets.** A **wide refactor** is one mechanical change (rename a column, retype a shared symbol) whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no tracer bullet can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**, in `task` tickets. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket; green is promised only there.
 
@@ -92,7 +92,7 @@ Done when:
 - every T has `type`, "O que entrega" and "Critérios";
 - every `now` slice has the rules it needs, or a `pattern` T that writes them;
 - nothing is orphan;
-- `pnpm rules-for --ticket <id>` lists about 5 rules or fewer for every UC and T id;
+- `pnpm rules-for --ticket <id>` lists about 5 rules or fewer for every UC and T id, or says the excess is expected (the first ticket after a new pattern);
 - `pnpm docs-lint` is green.
 
 Tell the user the plan is ready: /build takes a UC or T id, or the next ticket of the **frontier** (the unblocked ones, T first).

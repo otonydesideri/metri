@@ -197,6 +197,19 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     );
   });
 
+  it('MATRIX: a slice de fundação, S0, não tem contract nem entry', () => {
+    const foundation = '### S0 · Fundação\n\nhorizon: now\n\n### S1 · Lista de pedidos';
+    const ticket = '---\nid: T0.1\ntitle: Fundação\nslice: S0\ntype: task\nstatus: open\nmode: afk\nchecks: ["`pnpm verify`"]\n---\n\n# T0.1 · Fundação\n\n## O que entrega\n\nO monorepo com o verify verde.\n\n## Critérios\n\n- [ ] O `pnpm verify` passa.\n';
+    expect(
+      lintChanged((dir) => {
+        inMatrix('### S1 · Lista de pedidos', foundation)(dir);
+        write(dir, `${TICKETS}/T0.1.md`, ticket);
+      }),
+    ).toEqual({ status: 0, output: '' });
+    const done = '### S0 · Fundação\n\nstatus: done\n\n### S1 · Lista de pedidos';
+    expect(lintChanged(inMatrix('### S1 · Lista de pedidos', done)).status).toBe(0);
+  });
+
   it('MATRIX: o entry existe e tem o cabeçalho de contrato', () => {
     expect(
       lintChanged((dir) =>

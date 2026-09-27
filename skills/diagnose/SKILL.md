@@ -16,7 +16,7 @@ When exploring the codebase, read `docs/CONTEXT.md` (if it exists) to get a clea
 
 ## Redact
 
-This skill has you show commands, outputs and captured artifacts. **Redact every secret first**: write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
+This skill has you show commands, outputs and captured artifacts. **Redact every secret and every owner or tenant identifier first** (the owner identity of `.metri/ARCHITECTURE.md`, "Delegações"): write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
 
 If the redacted output is not enough to diagnose the bug, say so and ask the user.
 
@@ -155,4 +155,4 @@ Required before declaring done:
 
 Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`node_modules/metri/` is read-only). Then set the ticket's `status: done` and commit, with its id.
 
-Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main.
+Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main. A fix with `sensitive: true` is urgent: /accept it alone, before any other ticket enters its slice branch, and release it right after, in a `release` T of its own.

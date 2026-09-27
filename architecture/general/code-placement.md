@@ -1,8 +1,9 @@
 ---
 id: general/code-placement
-description: "o monorepo e a colocação de código entre app e pacote pelo ownership: o que fica no app, o que pode nascer no pacote dono do conceito e a reavaliação da casa quando aparece um segundo consumidor real."
+description: "o monorepo, com o layout e os nomes padrão dos apps e pacotes, e a colocação de código entre app e pacote pelo ownership: o que fica no app, o que pode nascer no pacote dono do conceito e a reavaliação da casa quando aparece um segundo consumidor real."
 use_when:
   - "decidir em que app ou pacote um código novo mora"
+  - "criar app ou pacote no monorepo"
   - "promover código de um app para um pacote compartilhado"
 status: active
 ---
@@ -10,7 +11,20 @@ status: active
 
 ## Monorepo: apps e pacotes
 
-`apps/` contém aplicações executáveis; `packages/` contém código compartilhado. A lista de apps e pacotes, com o papel de cada um, é decisão de projeto (`.metri/ARCHITECTURE.md`, "Delegações").
+`apps/` contém aplicações executáveis; `packages/` contém código compartilhado.
+
+**Padrão.** O monorepo tem estes apps e pacotes, com estes nomes:
+
+| Caminho | Pacote | Papel |
+| --- | --- | --- |
+| `apps/app-api` | | a API NestJS (`backend/layers.md`) |
+| `apps/app-web` | | a SPA React (`frontend/structure.md`) |
+| `packages/core` | `@metri/core` | vocabulário compartilhado do domínio, como `@metri/core/errors` |
+| `packages/db` | `@metri/db` | o schema, as migrations e o client do Prisma |
+| `packages/ui` | `@metri/ui` | o kit de UI, com os tokens e o tema (`defaults/ui.md`) |
+| `packages/utils` | `@metri/utils` | função pura agnóstica de app e de domínio |
+
+Quando o projeto precisa de outro app ou pacote: **Obrigatório.** Ele segue a mesma forma (`apps/app-<nome>`; `packages/<nome>` com `@metri/<nome>`) e entra por ADR.
 
 ### Código pode nascer no pacote dono quando nada nele é do app
 

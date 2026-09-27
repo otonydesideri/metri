@@ -94,7 +94,7 @@ O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação c
 
 A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. O `httpClient` resolve as rotas REST sob `/api` nessa mesma origem. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
-Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Turbo na raiz. Não há suíte de e2e no frontend (ver "Pontos em aberto").
+Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Turbo na raiz; o e2e de critério de UI, por `pnpm --filter app-web test:e2e`.
 
 ## O dublê de rede é um só: MSW no nível do fetch
 
@@ -267,4 +267,4 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 
 ## Em aberto
 
-- **E2e de browser.** Não existe runner de browser no monorepo. O nível 5 já prova as sequências multi-tela pela árvore real de rotas, e o backend já prova o servidor com banco real, então o que falta é só o que exige um browser de verdade: cookie entre origens, redirect real de serviço externo, propagação de estado entre abas. Adotar isso é decisão maior que qualquer feature, porque traz seed de banco, provisionamento de usuário de teste e execução em CI. Enquanto não fechar, comportamento que só um browser prova fica sem teste automatizado e é verificado à mão.
+- **E2e além do critério de UI.** O Playwright roda os critérios de UI ("E2e de critério de UI"); cookie entre origens, redirect real de serviço externo e propagação de estado entre abas seguem verificados à mão, até um caso real pedir seed de banco e usuário de teste no e2e.

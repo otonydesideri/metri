@@ -158,6 +158,9 @@ LoggerModule.forRoot({
         'req.headers.cookie',
         'res.headers["set-cookie"]',
         'res.headers.location',
+        // o identificador do dono (backend/access-scope.md): customerId no domínio didático
+        'customerId',
+        '*.customerId',
       ],
       censor: '[REDACTED]',
     },
@@ -167,6 +170,7 @@ LoggerModule.forRoot({
 
 Pontos-chave:
 
+- O identificador do dono ou tenant (a "Identidade do dono" de `.metri/ARCHITECTURE.md`) entra no `redact` por padrão, no primeiro nível e um abaixo, com o nome que o projeto usa.
 - `censor: '[REDACTED]'` deixa visível no log que a redação atuou. Remover o campo silenciosamente esconderia também a evidência de que a proteção está ativa.
 - Path de `redact` é case-sensitive. Header de request chega minúsculo no Node, então os paths acima cobrem o caso real; um path novo em maiúsculo não protege o header minúsculo equivalente.
 - Body de request não está na lista porque `pino-http` não loga body. Dado sensível passado como dado estruturado num log manual é responsabilidade de quem loga; não existe redação global que cubra objeto arbitrário.

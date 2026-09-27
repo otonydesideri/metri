@@ -78,6 +78,7 @@ Propósito e fronteira de cada casa:
 - `app/router/guards/` é plana: `<nome>-guard.tsx`, com o spec ao lado. Guard não acumula peça, é um componente e a decisão que ele toma, então a pasta não teria o que agrupar.
 - Pasta e arquivo não repetem o módulo que já os contém: em `pages/<módulo>/`, a tela é `<tela>/<tela>-page.tsx`. Quem carrega o módulo é o nome do componente (`OrderDetailPage`, em `pages/order/detail/detail-page.tsx`), que no router convive com os de todos os outros módulos.
 - Tudo em kebab-case.
+- O filtro de um check do ticket (`pnpm test <nome>`) casa com o caminho do arquivo, então o `<nome>` de uma tela leva a pasta do módulo: `pnpm test order/detail` acha `pages/order/detail/detail-page.spec.tsx`.
 - Segmento e parâmetro de rota seguem `frontend/routing.md`, "Segmento de rota".
 
 ## A pasta do dono: quem some junto com quem

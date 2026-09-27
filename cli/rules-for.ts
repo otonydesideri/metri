@@ -42,10 +42,13 @@ Capacidades condicionais:
 
 Saída (não imprime o conteúdo das regras):
   - Uma linha por regra: "<id> — <description> (<caminho>)", as do projeto primeiro, cada grupo em ordem de id.
+  - Depois, as regras que as devolvidas citam (not_covered e caminhos <área>/<tema>.md do corpo) e que não
+    foram devolvidas, com o prefixo "citada:": só o id e a description, para ler quando o caso chegar lá.
   - Depois, as linhas de "Exceções e defaults trocados" do ARCHITECTURE.md que citam algum id devolvido,
     com o prefixo "exceção:".
   - Avisos com o prefixo "aviso:". Mais de 5 regras gera o aviso "ticket grande demais ou applies_to largo";
-    não é erro.
+    não é erro. No primeiro ticket depois de um pattern novo (um T de type pattern em blocked_by), o aviso diz
+    que é exceção esperada.
 
 Erros (saem com código 1, prefixo "erro:"):
   - Id de regra do projeto igual a id global, a não ser que "Exceções e defaults trocados" declare a
@@ -62,6 +65,8 @@ type Rule = {
   description: string;
   appliesTo: string[];
   readFirst: string[];
+  // Ids de regra que ela cita: os de not_covered e os caminhos `<área>/<tema>.md` do corpo.
+  cited: string[];
   isConditional: boolean;
   isProject: boolean;
 };
@@ -107,12 +112,19 @@ function mentions(text: string, id: string): boolean {
   return new RegExp(`(?<![\\w/-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w/-])`).test(text);
 }
 
+function citedIds(source: string, notCovered: string[]): string[] {
+  const fromNotCovered = notCovered.map((entry) => / → ([\w-]+\/[\w-]+)$/.exec(entry)?.[1]);
+  const fromBody = [...source.matchAll(/`([\w-]+\/[\w-]+)\.md`/g)].map(([, id]) => id);
+  return [...fromNotCovered, ...fromBody].filter((id): id is string => id !== undefined);
+}
+
 function readRules(dir: string | undefined, isProject: boolean): Rule[] {
   if (dir === undefined) {
     return [];
   }
   return ruleFiles(dir).flatMap((path) => {
-    const frontmatter = frontmatterOf(readFileSync(path, 'utf8'));
+    const source = readFileSync(path, 'utf8');
+    const frontmatter = frontmatterOf(source);
     if (typeof frontmatter?.id !== 'string') {
       warnings.push(`${path} sem frontmatter com id; rode docs-lint`);
       return [];
@@ -124,6 +136,7 @@ function readRules(dir: string | undefined, isProject: boolean): Rule[] {
         description: String(frontmatter.description ?? ''),
         appliesTo: asList(frontmatter.applies_to),
         readFirst: asList(frontmatter.read_first),
+        cited: citedIds(source, asList(frontmatter.not_covered)),
         isConditional: typeof frontmatter.activation === 'string',
         isProject,
       },
@@ -162,6 +175,7 @@ for (const { text } of sectionItems(indexSource, 'Caminhos do projeto')) {
 }
 
 const selected = new Set<string>();
+let afterPattern: string | undefined;
 
 function selectFile(file: string): void {
   for (const rule of rules.values()) {
@@ -193,6 +207,11 @@ if (ticket !== undefined) {
   }
   const frontmatter = frontmatterOf(readFileSync(ticketPath, 'utf8'));
   const areas = asList(frontmatter?.areas);
+  // O primeiro ticket depois de um pattern novo carrega as regras que o pattern acabou de escrever.
+  afterPattern = asList(frontmatter?.blocked_by).find((id) => {
+    const blocker = `${TICKETS_DIR}/${id}.md`;
+    return existsSync(blocker) && frontmatterOf(readFileSync(blocker, 'utf8'))?.type === 'pattern';
+  });
   if (areas.length === 0) {
     fail(`ticket ${ticket} sem areas em ${ticketPath}`);
   }
@@ -237,6 +256,13 @@ for (const rule of result) {
   lines.push(`${rule.id} — ${rule.description} (${rule.path})`);
 }
 lines.push(...readBefore);
+const resultIds = new Set(result.map(({ id }) => id));
+const cited = [...new Set(result.flatMap((rule) => rule.cited))]
+  .filter((id) => !resultIds.has(id) && rules.has(id))
+  .sort();
+for (const id of cited) {
+  lines.push(`citada: ${id} — ${rules.get(id)?.description}`);
+}
 for (const text of exceptions) {
   if (result.some(({ id }) => mentions(text, id))) {
     lines.push(`exceção: ${text}`);
@@ -250,7 +276,9 @@ if (inactive.length > 0) {
 if (result.length === 0) {
   warnings.push('nenhuma regra');
 }
-if (result.length > BUDGET) {
+if (result.length > BUDGET && afterPattern !== undefined) {
+  warnings.push(`${result.length} regras, mais de ${BUDGET}: exceção esperada, primeiro ticket depois do pattern ${afterPattern}`);
+} else if (result.length > BUDGET) {
   warnings.push(`${result.length} regras, mais de ${BUDGET}: ticket grande demais ou applies_to largo`);
 }
 
