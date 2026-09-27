@@ -1,16 +1,88 @@
-# Autoria da Architecture Source
+# Formato de regra
+
+O formato de uma regra, global (`.metri/architecture/`) ou do projeto (`docs/architecture/`), e o contrato de autoria da Architecture Source. Regra é escrita em português; chaves e ids, em inglês.
+
+## Formato
+
+- Toda regra começa com frontmatter, com as chaves de `.metri/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
+- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades ("Modalidades", abaixo), blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
+- Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
+
+````markdown
+---
+id: <área>/<tema>
+description: <o que a regra decide>
+use_when: [<situação em que o agente lê a regra>]
+applies_to: [<globs>]                  # opcional
+keywords: [<SOT keywords>]             # opcional
+read_first: [<ids>]                    # opcional
+not_covered: ["<tema> → <id>"]         # opcional
+enforced_by: [<ids dos checks>]        # opcional
+examples: [<arquivos>]                 # opcional
+adr: [<ids>]                           # opcional
+status: active
+---
+# <Tema>
+
+<Uma frase de propósito.>
+
+## <Seção temática>
+
+**Obrigatório.** <Norma.>
+
+> **Por quê.** <Motivo, quando não for óbvio.>
+
+- **Exceção.** <Condição>: <efeito> (ADR-NNNN).
+
+## Árvore de decisão
+
+```mermaid
+flowchart TD
+  Q1{<Pergunta 1>} -->|sim| A[<Caminho A>]
+  Q1 -->|não| Q2{<Pergunta 2>}
+  Q2 -->|sim| B[<Caminho B>]
+  Q2 -->|não| C[<Caminho C>]
+```
+
+## Verificação
+
+- <Pergunta de sim ou não que confere a norma>? (check: <id>)
+````
+
+Chave marcada `# opcional` só é escrita quando tem valor (`.metri/VOCABULARY.md`). Exemplo do formato: `.metri/architecture/frontend/components.md`.
+
+`(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
+
+## Refinar uma regra existente (sem reescrever)
+
+Numa regra existente, muda só isto:
+
+1. Entra o frontmatter no topo. "Dono de", "Consultar antes de" e "Não cobre" passam para `description`, `use_when` e `not_covered` e saem do corpo. "Consultar antes de" é o gatilho do próprio arquivo, não uma lista de pré-requisitos: vai para `use_when` sem alteração, uma entrada por situação, e não para `read_first`.
+2. Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, idêntico, com um ponteiro no texto. Trecho curto que ilustra uma regra fica onde está.
+3. Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
+4. A cópia da regra de escape sai (ela vive no `AGENTS.md`, "How to work here").
+5. "Pontos em aberto" fica na regra, na seção "Em aberto" ("Ponto em aberto", abaixo).
+6. Citação que não se sustenta, em que o arquivo e a seção citados não dizem o que foi citado: a frase vai para o arquivo dono, usando um texto que já existe em outro arquivo. Se esse texto não existe em lugar nenhum, vira dúvida.
+
+Todo o resto fica como está: texto, ordem das seções, diagramas e tabelas.
+
+## Regra nova
+
+Segue o mesmo formato. O texto novo segue a skill `writing-for-agents`.
+
+## Autoria da Architecture Source
 
 Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, pontos em aberto, regra de transição, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
 
 Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
-Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`methodology/METHODOLOGY.md`, "6.14 Ativação da arquitetura"); a regra de escape (`AGENTS.md`, "How to work here").
+Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`.metri/skills/setup/ACTIVATION.md`); a regra de escape (`AGENTS.md`, "How to work here").
 
 Este documento é o contrato de escrita da Source: onde cada decisão mora, que forma um documento tem e como uma regra se distingue de explicação, exemplo e verificação. Não decide nada sobre o sistema; decide como o que foi decidido fica escrito.
 
-## Regras
+### Regras
 
-### Alcance
+#### Alcance
 
 **Obrigatório.** Documento novo, e texto novo ou refatorado em documento existente, segue este contrato.
 
@@ -18,7 +90,7 @@ Este documento é o contrato de escrita da Source: onde cada decisão mora, que 
 
 > **Por quê.** A forma nova entra pelo trecho que já está sendo mudado, sem reescrever a Source inteira de uma vez.
 
-### Ownership de decisão
+#### Ownership de decisão
 
 Um documento se relaciona com uma decisão arquitetural de uma destas formas:
 
@@ -32,7 +104,7 @@ Um documento se relaciona com uma decisão arquitetural de uma destas formas:
 
 **Obrigatório.** Toda decisão arquitetural tem exatamente um owner, o documento que a define (DEFINED).
 
-Onde a decisão entra no arquivo do owner: `VOCABULARY.md` (frontmatter) e METHODOLOGY 7 (corpo).
+Onde a decisão entra no arquivo do owner: `.metri/VOCABULARY.md` (frontmatter) e "Formato", acima (corpo).
 
 **Obrigatório.** Documento que não é owner de uma decisão se relaciona com ela só como APPLIED, REFERENCED, VERIFIED ou EXAMPLE.
 
@@ -40,13 +112,13 @@ Onde a decisão entra no arquivo do owner: `VOCABULARY.md` (frontmatter) e METHO
 
 **Obrigatório.** Aplicação local de regra de outro documento cita o owner da regra aplicada.
 
-### Anatomia do documento
+#### Anatomia do documento
 
-O formato do arquivo de regra está na METHODOLOGY: frontmatter em `VOCABULARY.md`, corpo na seção 7.
+O formato do arquivo de regra está em "Formato", acima: frontmatter em `.metri/VOCABULARY.md`, corpo na mesma seção.
 
 **Permitido.** Heading de subseção afirmar o princípio ("Retornando erro: sempre `Either`, nunca `throw`") em vez de rótulo neutro.
 
-### Modalidades
+#### Modalidades
 
 | Marcador | Modalidade |
 | --- | --- |
@@ -56,7 +128,7 @@ O formato do arquivo de regra está na METHODOLOGY: frontmatter em `VOCABULARY.m
 | `**Recomendado.**` | RECOMMENDED |
 | `**Permitido.**` | PERMITTED |
 
-**Obrigatório.** Toda norma nova é marcada pela modalidade, com um dos marcadores da tabela, dentro de `## Regras` ou da seção temática em que está; os dois formatos valem (METHODOLOGY 7.1).
+**Obrigatório.** Toda norma nova é marcada pela modalidade, com um dos marcadores da tabela, dentro de `## Regras` ou da seção temática em que está; os dois formatos valem ("Formato", acima).
 
 **Obrigatório.** Uma regra tem uma modalidade e um assunto.
 
@@ -66,7 +138,7 @@ Quando a regra é condicionada: **Obrigatório.** A condição vem antes da moda
 
 Em texto novo ou refatorado: **Proibido.** Inferir obrigação de trecho sem modalidade.
 
-### Exceções
+#### Exceções
 
 Forma canônica:
 
@@ -80,7 +152,7 @@ Forma canônica:
 
 **Proibido.** Inferir exceção de exemplo.
 
-### Rationale
+#### Rationale
 
 Forma canônica:
 
@@ -92,7 +164,7 @@ Forma canônica:
 
 **Proibido.** Rationale prescrever ou introduzir exceção.
 
-### Exemplos, formas canônicas e implementações de referência
+#### Exemplos, formas canônicas e implementações de referência
 
 | Categoria | O que é |
 | --- | --- |
@@ -118,7 +190,7 @@ Forma canônica:
 
 - **Exceção.** Ferramenta escolhida do monorepo, ou ferramenta que o documento classifica na seção "Ferramentas": entra pelo nome real.
 
-### Domínio didático
+#### Domínio didático
 
 Nomes que os exemplos da Source usam.
 
@@ -137,7 +209,7 @@ Nomes que os exemplos da Source usam.
 | Carrinho | `CartItem`, `useCartStore` |
 | Pagamento | `PaymentReceivedEvent` |
 
-### Ferramentas
+#### Ferramentas
 
 | Status | Significado |
 | --- | --- |
@@ -153,7 +225,7 @@ Ferramenta que só aparece em exemplo, ou cuja decisão tem outro owner, não ga
 
 **Proibido.** Atribuir a uma ferramenta status que nenhuma decisão da Source sustenta.
 
-### Verificação de regra
+#### Verificação de regra
 
 **Obrigatório.** Verificação comprova regra existente, do próprio documento ou do owner que ele aplica.
 
@@ -167,13 +239,13 @@ Quando a regra é checável mecanicamente: **Padrão.** Verificação por comand
 
 Quando a regra não é checável mecanicamente: **Padrão.** Verificação por checklist de perguntas de sim/não.
 
-### Ponto em aberto
+#### Ponto em aberto
 
 Pergunta em aberto fica na regra, na seção "Em aberto", um item por pergunta: `- **<título>.** <texto>`; nunca vira ADR.
 
 ADR só registra decisão tomada, difícil de reverter, surpreendente e com trade-off real.
 
-### Regra de transição
+#### Regra de transição
 
 É o regime que vale enquanto um ponto em aberto não fecha, e é o que os documentos citam como "a regra de transição".
 
@@ -185,7 +257,7 @@ Enquanto um ponto está aberto: **Proibido.** Código introduzir mecanismo próp
 
 > **Por quê.** O documento já é a decisão da forma, mesmo quando a ferramenta ainda é ilustração; o que falta decidir fica nomeado como ponto em aberto.
 
-### Emendar ou criar
+#### Emendar ou criar
 
 Antes de escrever: **Obrigatório.** Achar o trecho que já é dono do assunto.
 
@@ -209,9 +281,9 @@ Quando a emenda contradiz o texto em volta: **Obrigatório.** Corrigir o texto e
 
 **Proibido.** Changelog, histórico ou documento paralelo de decisão dentro da Source: o histórico pertence ao Git.
 
-### Organização física
+#### Organização física
 
-A árvore do source está na METHODOLOGY 5.3.
+As pastas de área do source estão em `.metri/architecture/INDEX.md`, "Índice".
 
 **Obrigatório.** A localização do documento reflete o ownership: o documento mora na pasta da área dona do assunto.
 
@@ -221,9 +293,9 @@ A árvore do source está na METHODOLOGY 5.3.
 
 Quando um assunto acumula partes independentes: **Obrigatório.** Cada parte vira documento próprio.
 
-O índice de cada área é gerado do frontmatter (METHODOLOGY 6.11).
+O índice de cada área é gerado do frontmatter (`pnpm rules-index`).
 
-### Decisões específicas de projeto
+#### Decisões específicas de projeto
 
 | Casa | Guarda |
 | --- | --- |
@@ -244,7 +316,7 @@ Quando uma decisão de projeto, exceção incluída, muda o estado vigente do pr
 
 **Proibido.** O `docs/architecture/INDEX.md` copiar o porquê de um ADR: ele registra o estado e aponta para o ADR.
 
-A localização e o formato físico da Project Architecture estão na METHODOLOGY, seções 5.2 e 6.14.
+A localização e o formato físico da Project Architecture estão em `pnpm docs-lint --help` (árvore fechada de `docs/`) e em `.metri/skills/setup/ACTIVATION.md`.
 
 **Proibido.** Documento da Source registrar o resultado de decisão por app, como a divisão de módulos e a forma de cada agregado: ele ensina o procedimento de decidir, e o resultado fica nas casas de projeto.
 
@@ -256,7 +328,7 @@ Quando um assunto ganha documento na Source: **Obrigatório.** Ele sai das instr
 
 Quando uma instrução local contradiz a Source sem ADR explícito que a sustente: **Obrigatório.** Tratar a contradição como inconsistência a corrigir, nunca como exceção válida.
 
-## Verificação
+### Verificação
 
 - Cada decisão nova tem exatamente um owner que a define?
 - Os demais documentos só aplicam, referenciam, verificam ou exemplificam a decisão, sem redefinir modalidade nem regra, citando o owner quando aplicam?
@@ -272,10 +344,10 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 - Decisão específica de projeto registrada fora da Source, na casa certa, e toda exceção a uma regra da Source em ADR que nomeia a regra, o escopo e o rationale?
 - Nenhuma instrução local cria exceção, redefine regra da Source ou faz o papel de ADR, Project Architecture ou `docs/architecture/INDEX.md`?
 
-## Referências
+### Referências
 
 - `architecture/INDEX.md`: autoridade e precedência da Source, navegação, decisões transversais e índice.
 - `backend/boundaries.md`: verificação por comando executável.
 - `infrastructure/storage.md`: implementação de referência declarada.
 - `docs/adr/`: casa dos ADRs do projeto.
-- `methodology/METHODOLOGY.md`, 6.14: ativação num projeto e decisões delegadas a ele.
+- `.metri/skills/setup/ACTIVATION.md`: ativação num projeto e decisões delegadas a ele.

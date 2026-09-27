@@ -14,7 +14,7 @@ status: active
 
 A variação de comportamento selecionada por dado: cada variação é uma classe própria sob o mesmo contrato, e a escolha é uma consulta a um `Record` tipado.
 
-Os exemplos usam o domínio didático de pedidos de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## O problema
 

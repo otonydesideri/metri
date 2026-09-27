@@ -48,7 +48,7 @@ Quando existe uma pergunta operacional que só um comportamento agregado respond
 
 **Proibido.** Identificador como dimensão: `userId`, `requestId`, id de entidade, escopo do dono, URL crua.
 
-- **Exceção.** Dimensão de identificador com cardinalidade comprovadamente limitada, decidida em ADR (`methodology/authoring.md`, "Decisões específicas de projeto"): permitida no escopo que o ADR registra.
+- **Exceção.** Dimensão de identificador com cardinalidade comprovadamente limitada, decidida em ADR (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto"): permitida no escopo que o ADR registra.
 
 > **Por quê.** Cada valor distinto vira uma série própria, e custo e consulta crescem com ele; o identificador que localiza um caso já está no log, com o `requestId` da request.
 
@@ -110,5 +110,5 @@ Quando o caminho síncrono não garante a consistência — operação distribu�
 - `backend/transactions.md`: o risco aceito e a condição de revisita.
 - `backend/application.md`: contrato neutro para fato do caso de uso.
 - `backend/boundaries.md`: o que `src/domain` importa.
-- `methodology/authoring.md`: casa do ADR de exceção.
+- `skills/writing-for-agents/RULE-FORMAT.md`: casa do ADR de exceção.
 - `docs/architecture/INDEX.md`: ferramenta e valores concretos como decisão de projeto.

@@ -8,7 +8,7 @@ Estes documentos são a referência de construção do projeto. Lidos em ordem, 
 
 O sistema numa página: o que existe no monorepo (`general/code-placement.md`), as camadas do backend (`backend/layers.md`) e o caminho que uma request percorre (`backend/layers.md`, "O caminho de uma request").
 
-O como construir cada artefato vive no documento correspondente (`backend/layers.md`, "Onde cada arquivo mora"); o que não é decisão da Source segue `methodology/authoring.md`, "Decisões específicas de projeto". Fronteiras de import vivem em `backend/boundaries.md`; estrutura de módulo e comunicação entre módulos, em `backend/modules.md`.
+O como construir cada artefato vive no documento correspondente (`backend/layers.md`, "Onde cada arquivo mora"); o que não é decisão da Source segue `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto". Fronteiras de import vivem em `backend/boundaries.md`; estrutura de módulo e comunicação entre módulos, em `backend/modules.md`.
 
 ### Observabilidade
 
@@ -32,13 +32,13 @@ Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 ## O que mora aqui, o que mora em outro lugar
 
 - Aqui: a referência completa de arquitetura. O quê, o porquê, os limites e os padrões de construção de cada área, com exemplos de código.
-- Instruções de projeto de cada pacote: o que `methodology/authoring.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `docs/architecture/` certo.
+- Instruções de projeto de cada pacote: o que `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `docs/architecture/` certo.
 
 Em divergência entre um documento daqui e o código, o documento vale: o desenho evolui primeiro no documento, o código segue. Instrução de projeto que contradiz um documento daqui sem ADR que a sustente é bug de documentação, corrigido na instrução de projeto.
 
 ## Autoria
 
-Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, pontos em aberto, regra de transição, organização física e casa das decisões específicas de projeto — está em `methodology/authoring.md`. Ler antes de criar ou editar qualquer documento daqui.
+Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, pontos em aberto, regra de transição, organização física e casa das decisões específicas de projeto — está em `skills/writing-for-agents/RULE-FORMAT.md`. Ler antes de criar ou editar qualquer documento daqui.
 
 ## Ativação
 
@@ -64,7 +64,7 @@ Resumo das decisões que valem em todo documento e em todo app; cada uma é defi
 
 ## Índice
 
-Agrupado pela pasta da área dona de cada documento (`methodology/authoring.md`, "Organização física").
+Agrupado pela pasta da área dona de cada documento (`skills/writing-for-agents/RULE-FORMAT.md`, "Organização física").
 
 Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/stack.md`, "Stack", e seguem o mesmo domínio didático de pedidos dos de backend.
 

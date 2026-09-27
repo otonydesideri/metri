@@ -24,7 +24,10 @@ function inMatrix(from: string, to: string): (dir: string) => void {
 describe('docs-lint', { timeout: 30_000 }, () => {
   it('passa: a fixture de projeto e este repositório (modo source)', () => {
     expect(lint(FIXTURE)).toEqual({ status: 0, lines: [] });
-    expect(lint(REPO)).toEqual({ status: 0, lines: [] });
+    // No source, só sai aviso de citação a arquivo planejado (template/scripts/docs-lint.planned.json).
+    const source = lint(REPO);
+    expect(source.status).toBe(0);
+    expect(source.lines.filter((line) => !/: aviso: citação: .+ é arquivo planejado/.test(line))).toEqual([]);
   });
 
   it('skills (source): SKILL.md com name igual à pasta e description', () => {

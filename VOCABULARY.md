@@ -34,7 +34,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | aplica a                                  | `applies_to`                                     | Globs de caminho onde uma regra vale                                                          |
 | imposto por                               | `enforced_by`                                    | Ids dos checks ou lints que automatizam a regra; ausente enquanto não houver                  |
 | SOT keyword                               | `keywords`                                       | Palavra-chave que torna um arquivo encontrável por grep                                       |
-| descrição                                 | `description`                                    | O texto do "Dono de" da regra (METHODOLOGY 7.2); é a linha do `INDEX.md` gerado e do `rules-for`   |
+| descrição                                 | `description`                                    | O texto do "Dono de" da regra (`skills/writing-for-agents/RULE-FORMAT.md`, "Refinar uma regra existente (sem reescrever)"); é a linha do `INDEX.md` gerado e do `rules-for`   |
 | usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
 | ativação                                  | `activation`                                     | Pergunta de ativação de uma capacidade condicional, na regra dona; é a linha da tabela gerada "Capacidades condicionais" do `architecture/INDEX.md` |
 | ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
@@ -49,4 +49,4 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 
 **Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (METHODOLOGY 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:architecture/INDEX`.
 
-Modalidades do corpo de uma regra (**Obrigatório.**, **Proibido.** e as demais): `methodology/authoring.md`, "Modalidades".
+Modalidades do corpo de uma regra (**Obrigatório.**, **Proibido.** e as demais): `skills/writing-for-agents/RULE-FORMAT.md`, "Modalidades".

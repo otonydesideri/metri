@@ -20,7 +20,7 @@ status: active
 
 Como o backend garante atomicidade quando uma operação de negócio grava em mais de um agregado, como risco de concorrência é avaliado e protegido, e o que acontece quando uma escrita de sistema externo não cabe na transação.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## O problema
 

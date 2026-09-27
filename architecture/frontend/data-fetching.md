@@ -25,7 +25,7 @@ status: active
 
 Como o `app-web` busca e envia dado pro app-api: o cliente HTTP, as funções de `api/`, os hooks de React Query (query e mutation), a key factory, a sincronização de cache e o caminho de erro.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## A árvore de decisão
 
@@ -329,7 +329,7 @@ O `@tanstack/react-query-devtools` entra só em desenvolvimento, montado como ir
 
 ## Padrões de referência
 
-Sem instância no produto ainda; a primeira de cada segue este documento, pela regra de transição de `methodology/authoring.md`. Ficam aqui pra que a primeira implementação não reinvente o padrão.
+Sem instância no produto ainda; a primeira de cada segue este documento, pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`. Ficam aqui pra que a primeira implementação não reinvente o padrão.
 
 ### Optimistic update
 

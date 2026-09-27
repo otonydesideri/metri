@@ -20,7 +20,7 @@ status: active
 
 Como o backend do produto prova comportamento: os três níveis da pirâmide, o que cada um prova e onde mora, as factories e dublês compartilhados entre eles.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático". Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático". Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica.
 
 ## A pirâmide
 

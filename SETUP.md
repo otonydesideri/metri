@@ -128,7 +128,8 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 
 ## ▶ Agora: Fase 5, skills (seção 16)
 
-- [ ] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
+- [x] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
+  - `skills/<nome>/SKILL.md`, cada uma abrindo com "Adapted from mattpocock/skills@c55ee46 (MIT)"; o `authoring.md` e o formato de regra (A.6 e seção 7) viraram `skills/writing-for-agents/RULE-FORMAT.md`; o formato de ADR é da `domain-language`.
 - [ ] 5.2 Escrever as nossas: `guardrail`, `/setup`, `/shape`, `/look-across`, `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os formatos saem de `template/` e do Apêndice A:
   - `/setup`: `template/AGENTS.md`, `template/CLAUDE.md` e `template/docs/architecture/INDEX.md`, com as classes de ativação e as delegações (hoje na METHODOLOGY 6.14);
   - `/shape`: `template/docs/PRODUCT.md` e `template/docs/DESIGN.md`;

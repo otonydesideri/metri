@@ -21,7 +21,7 @@ status: active
 
 Como o `app-web` organiza o que não é componente nem página: helper, rule, constante e tipo compartilhado. Onde cada um mora, e quando um valor sai de inline pra arquivo próprio. A estrutura de pastas em si é canônica em `frontend/structure.md`, "Estrutura de pastas"; aqui está o detalhe de cada casa auxiliar (`shared/utils`, `shared/rules`, `shared/constants`, `shared/types`).
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## A hierarquia de código auxiliar
 

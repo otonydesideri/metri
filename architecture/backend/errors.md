@@ -18,7 +18,7 @@ status: active
 
 Como erro de domínio é modelado, retornado e traduzido em resposta HTTP, e o envelope único que toda resposta de erro da API usa, com a taxonomia de protocolo dele (`ApiErrorType`).
 
-Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## Os três tipos de erro que existem no sistema
 

@@ -17,13 +17,13 @@ status: active
 ---
 # Escopo de acesso
 
-Este documento fixa a forma do contrato de escopo do dono, igual para qualquer projeto; quem é o dono em cada projeto é decisão daquele projeto. Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático", com o cliente no papel de dono.
+Este documento fixa a forma do contrato de escopo do dono, igual para qualquer projeto; quem é o dono em cada projeto é decisão daquele projeto. Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático", com o cliente no papel de dono.
 
 ## Regras
 
 ### Contrato genérico, identidade de projeto
 
-**Obrigatório.** A Source define só o contrato genérico de escopo; a identidade concreta do dono e a entidade que o representa são decisão de projeto, delegada na matriz de `docs/architecture/INDEX.md` e registrada nas casas de `methodology/authoring.md`, "Decisões específicas de projeto".
+**Obrigatório.** A Source define só o contrato genérico de escopo; a identidade concreta do dono e a entidade que o representa são decisão de projeto, delegada na matriz de `docs/architecture/INDEX.md` e registrada nas casas de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
 
 ### De onde o dono chega
 
@@ -102,4 +102,4 @@ Quando o primeiro asset pertence a uma entidade: **Obrigatório.** O e2e prova a
 - `infrastructure/storage.md`: assinatura, chave e registro de upload.
 - `infrastructure/runtime.md`: a fronteira de request que resolve o escopo.
 - `domain/specification.md`: escopo fora do `toWhere()`.
-- `methodology/authoring.md`: casa da identidade concreta do dono.
+- `skills/writing-for-agents/RULE-FORMAT.md`: casa da identidade concreta do dono.

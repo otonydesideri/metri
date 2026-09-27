@@ -69,7 +69,7 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 
 - O cliente da venda (endereço de entrega, histórico de pedidos) e o cliente do faturamento (dados fiscais, condição de pagamento) são o sinal clássico: o mesmo termo, dois modelos. Com dois contextos, cada um tem o próprio `Customer`, e o faturamento reage ao `OrderConfirmedEvent` da venda, que carrega ids, montando a própria visão pelo próprio modelo.
 - Dentro de um contexto, módulos se comunicam pelas regras de `backend/modules.md`, "Comunicação entre módulos"; as proibições desta seção valem entre contextos.
-- Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, ponto em aberto de `backend/modules.md`: pela regra de transição de `methodology/authoring.md`, nenhum mecanismo próprio nasce antes da decisão.
+- Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, ponto em aberto de `backend/modules.md`: pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`, nenhum mecanismo próprio nasce antes da decisão.
 - Leitura entre contextos segue a regra de join de `backend/reading.md`, "Regras absolutas da query".
 - A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Contrato de transação entre agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos": ele recebe as entidades dos dois lados (`backend/transactions.md`).
 - A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é delegação de projeto, com gatilho, registro e condição de ADR em `docs/architecture/INDEX.md`, "Delegações".
@@ -90,5 +90,5 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 - `backend/reading.md`: leitura e join entre contextos.
 - `backend/operation-routing.md`: o mecanismo de uma reação.
 - `backend/layers.md`, `general/code-placement.md`: estrutura layer-first e colocação entre app e pacote.
-- `methodology/authoring.md`: regra de transição.
+- `skills/writing-for-agents/RULE-FORMAT.md`: regra de transição.
 - `docs/architecture/INDEX.md`: a divisão concreta como decisão de projeto.

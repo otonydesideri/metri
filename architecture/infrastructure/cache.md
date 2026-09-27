@@ -108,7 +108,7 @@ Quando a invalidação reage à escrita de outro fluxo: **Obrigatório.** O meca
 
 **Padrão.** Falha do cache degrada para a fonte: a implementação do contrato do fluxo trata erro ou indisponibilidade do mecanismo como ausência na leitura e como operação não feita na escrita e na invalidação, loga a falha (`infrastructure/logging.md`), e o fluxo segue pela fonte.
 
-Quando um caso exige o cache como dependência de disponibilidade: **Obrigatório.** A exceção é decisão explícita do projeto, em ADR (`methodology/authoring.md`, "Decisões específicas de projeto").
+Quando um caso exige o cache como dependência de disponibilidade: **Obrigatório.** A exceção é decisão explícita do projeto, em ADR (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto").
 
 ### Spec
 
@@ -222,5 +222,5 @@ async execute(input: FetchOrdersQueryInput): Promise<PaginatedResult<OrderListIt
 - `backend/transactions.md`: proteção de concorrência contra a fonte.
 - `backend/operation-routing.md`: o mecanismo de uma invalidação que reage a outro fluxo.
 - `infrastructure/logging.md`: o log da falha do cache.
-- `methodology/authoring.md`: casa do ADR de exceção.
+- `skills/writing-for-agents/RULE-FORMAT.md`: casa do ADR de exceção.
 - `docs/architecture/INDEX.md`: provider e valores concretos como decisão de projeto.

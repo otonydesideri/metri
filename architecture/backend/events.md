@@ -18,7 +18,7 @@ status: active
 
 Como um módulo reage a um fato acontecido em outro sem acoplamento direto: o que é um domain event, como declarar, emitir, assinar e testar, e o que acontece quando um handler falha.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## O que é um domain event
 

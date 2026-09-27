@@ -254,19 +254,7 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 
 ### 6.5 ADRs
 
-**Critério para criar** (só decisão tomada, com os três ao mesmo tempo, como no Matt):
-
-1. **difícil de reverter;**
-2. **surpreendente sem contexto;**
-3. **resultado de um trade-off real.**
-
-**Também viram ADR:** toda **exceção a uma regra global** e toda **troca de um default global**.
-
-**Onde:** as decisões globais ficam em `.metri/adr/`; as do projeto, em `docs/adr/`.
-
-**Status:** `accepted` ou `superseded by ADR-NNNN`. Nunca se apaga um ADR.
-
-**Pergunta em aberto** fica na regra dona, na seção "Em aberto", um item por pergunta (`- **<título>.** <texto>`); nunca vira ADR. Decidida, sai de lá: a regra é editada no lugar e, se a decisão cumpre o critério, ganha ADR. O que uma decisão explicitamente não é entra no ADR como alternativa considerada.
+Critério, formato, status e numeração: `skills/domain-language/ADR-FORMAT.md`; pergunta em aberto: `skills/writing-for-agents/RULE-FORMAT.md`, "Ponto em aberto".
 
 ### 6.6 `PRODUCT.md`
 
@@ -274,14 +262,7 @@ Contém **para quem, qual problema, o resultado esperado, escopo e fora de escop
 
 ### 6.7 `CONTEXT.md` (linguagem compartilhada)
 
-É o equivalente do `CONTEXT.md` do Matt, com o mesmo nome e a mesma função: eliminar ambiguidade e dar ao agente um vocabulário conciso. O acréscimo é a **ponte PT ↔ EN**.
-
-- Cada termo tem: nome em português, **identificador canônico em inglês** (o nome no código e a SOT keyword), definição e sinônimos a evitar.
-- Também registra relações entre termos e ambiguidades já resolvidas.
-- **Não contém** detalhe de implementação, regras de negócio nem convenções de código (estas são regras de arquitetura).
-- **Aplicando a escada:** um check opcional pode proibir, nos identificadores do código, os sinônimos listados em "Evitar".
-
-Template no Apêndice A.
+Formato: `skills/domain-language/CONTEXT-FORMAT.md`; a disciplina que o mantém: `skills/domain-language/SKILL.md`.
 
 ### 6.8 `DESIGN.md`
 
@@ -293,11 +274,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 ### 6.10 O código como fonte
 
-- **Exemplo canônico:** todo padrão tem um arquivo de código de referência, apontado pela regra.
-- **Cabeçalho inline:** no topo de cada módulo relevante, _o quê / por quê / onde se conecta / como usar_ + **SOT keywords** + ids de ADR ou BR quando houver; no `entry` de uma slice construída, o cabeçalho é o contrato dela (A.7).
-- **Barrels (`index`)** funcionam como mapa do módulo para o agente.
-- **Lacuna sinalizada:** `GAP-<n>` no código, verificado por lint contra a seção Gaps da matriz.
-- **Tokens de design** (cores, tipografia, espaçamento, raio) vivem no tema do código; nenhum valor fixo em componente.
+Exemplo canônico, cabeçalho inline com SOT keywords, barrels e lacuna sinalizada: `skills/guardrail/SKILL.md`; tokens de design no tema do código: `architecture/frontend/theming.md`.
 
 ### 6.11 Carregamento sob demanda (regras por caminho)
 
@@ -328,13 +305,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
 | Procedimentos do agente                        | `AGENTS.md` + skills                      | regras de arquitetura                          |
 
-**Escada de regras.** Toda regra ou lição desce até o degrau mais baixo que funcione:
-
-1. **Check executável:** tipo, lint, teste, script, constraint de schema.
-2. **Padrão existente no código:** exemplo canônico que o agente copia.
-3. **Cabeçalho inline** no ponto em que a informação é necessária.
-4. **Regra ou ADR:** só para o porquê, a árvore de decisão e o que não pode ser verificado.
-5. **Documento de produto, contexto ou design:** só intenção, linguagem e identidade.
+**Escada de regras:** `skills/guardrail/SKILL.md`, "The rules ladder".
 
 ### 6.13 Lint estrutural (parte do `verify`)
 
@@ -348,7 +319,7 @@ Dono de: a ativação da arquitetura num projeto — as três classes de decisã
 
 Consultar antes de: ativar a arquitetura num projeto novo; ligar uma capacidade condicional num projeto existente; escolher um valor que a Source deixa ao projeto (provider, identidade do dono, pacote dono, topologia); registrar essa escolha.
 
-Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`methodology/authoring.md`, "Decisões específicas de projeto"); a regra de escape (`AGENTS.md`, "How to work here"); a regra de transição (`methodology/authoring.md`, "Regra de transição"); a descoberta do repositório.
+Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto"); a regra de escape (`AGENTS.md`, "How to work here"); a regra de transição (`skills/writing-for-agents/RULE-FORMAT.md`, "Regra de transição"); a descoberta do repositório.
 
 A Source decide como o sistema é construído; o projeto decide o que só ele sabe: se precisa de uma capacidade, qual provider usa, quem é o dono dos dados. Esta seção é o contrato entre os dois: o que a ativação pergunta, quando pergunta e onde a resposta fica.
 
@@ -368,7 +339,7 @@ A Source decide como o sistema é construído; o projeto decide o que só ele sa
 
 Quando a capacidade é GLOBAL_CONDITIONAL: **Obrigatório.** A pergunta é só se o projeto precisa dela; sem necessidade, ela não é ativada e nada dela é perguntado.
 
-Quando uma capacidade GLOBAL_CONDITIONAL é ativada: **Obrigatório.** Ela segue o owner global, pela regra de transição de `methodology/authoring.md`, e a ativação resolve só os valores PROJECT_SPECIFIC dela.
+Quando uma capacidade GLOBAL_CONDITIONAL é ativada: **Obrigatório.** Ela segue o owner global, pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`, e a ativação resolve só os valores PROJECT_SPECIFIC dela.
 
 Quando um valor é PROJECT_SPECIFIC: **Obrigatório.** Ele é resolvido antes do primeiro ponto do projeto que depende dele.
 
@@ -399,7 +370,7 @@ Quando o gatilho de uma delegação aparece depois da ativação inicial, como o
 
 **Obrigatório.** A Project Architecture registra quais capacidades GLOBAL_CONDITIONAL foram ativadas e o valor escolhido para cada delegação resolvida.
 
-Quando a delegação resolvida cumpre a condição de "ADR quando" da matriz, que aplica a ela o critério de `methodology/authoring.md`, ou, numa capacidade condicional, esse critério direto: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
+Quando a delegação resolvida cumpre a condição de "ADR quando" da matriz, que aplica a ela o critério de `skills/writing-for-agents/RULE-FORMAT.md`, ou, numa capacidade condicional, esse critério direto: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
 
 ##### Necessidade sem cobertura
 
@@ -450,7 +421,7 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 
 #### Referências
 
-- `methodology/authoring.md`: casas de decisão, critério de ADR e regra de transição.
+- `skills/writing-for-agents/RULE-FORMAT.md`: casas de decisão, critério de ADR e regra de transição.
 - `AGENTS.md`: regra de escape.
 - `general/code-placement.md`, `general/http-surface.md`: apps, pacotes, colocação e superfície HTTP.
 - `backend/modules.md`, `domain/model.md`: módulos e forma dos agregados.
@@ -466,30 +437,7 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 
 ## 7. Formato dos arquivos de regra
 
-Serve para o global e para o projeto.
-
-### 7.1 Formato
-
-- Toda regra começa com frontmatter, com as chaves de `VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
-- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades de `methodology/authoring.md`, blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
-- Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
-
-### 7.2 Refinar uma regra existente (sem reescrever)
-
-Numa regra existente, muda só isto:
-
-1. Entra o frontmatter no topo. "Dono de", "Consultar antes de" e "Não cobre" passam para `description`, `use_when` e `not_covered` e saem do corpo. "Consultar antes de" é o gatilho do próprio arquivo, não uma lista de pré-requisitos: vai para `use_when` sem alteração, uma entrada por situação, e não para `read_first`.
-2. Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, idêntico, com um ponteiro no texto. Trecho curto que ilustra uma regra fica onde está.
-3. Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
-4. A cópia da regra de escape sai (ela vive no `AGENTS.md`, "How to work here").
-5. "Pontos em aberto" fica na regra, na seção "Em aberto" (6.5).
-6. Citação que não se sustenta, em que o arquivo e a seção citados não dizem o que foi citado: a frase vai para o arquivo dono, usando um texto que já existe em outro arquivo. Se esse texto não existe em lugar nenhum, vira dúvida.
-
-Todo o resto fica como está: texto, ordem das seções, diagramas e tabelas.
-
-### 7.3 Regra nova
-
-Segue o mesmo formato. O texto novo segue a skill `writing-for-agents`.
+Formato de regra (frontmatter, corpo, refinar uma regra existente, regra nova) e contrato de autoria: `skills/writing-for-agents/RULE-FORMAT.md`.
 
 ---
 
@@ -875,68 +823,9 @@ Todo o resto é trabalho do agente.
 
 ## 15. Conhecimento persistente e evolução
 
-### 15.1 Definição
+### 15.1 a 15.6
 
-Conhecimento persistente é algo que **muda uma decisão ou implementação futura**, **não pode ser derivado** do código, dos testes, dos checks, do git ou das regras e ADRs existentes, e **se perderia** se não fosse registrado.
-
-### 15.2 Portão: as cinco perguntas precisam dar "sim"
-
-Qualquer "não" = descartar.
-
-1. **Não é derivável?** Um agente _não_ encontraria isso com um grep, lendo o código, os testes, as regras ou o `git log`.
-2. **Não é verificável?** Se for verificável, o resultado é **um check**, não conhecimento. Criar um check é código, não artefato de aprendizado.
-3. **Vale além deste ticket?** Afeta trabalho futuro, não só o que acabou de ser feito.
-4. **É recorrente, ou é o primeiro exemplar de um padrão?** Caso único não conta.
-5. **Tem uma casa existente?** `CONTEXT.md`, uma regra (de preferência **alterando uma que já existe**), um ADR, `PRODUCT.md` ou `DESIGN.md`. **Nenhum tipo novo de artefato pode ser criado por aprendizado.**
-
-### 15.3 Nunca é conhecimento
-
-- **O que foi feito** → git.
-- **Como um bug foi corrigido** → teste + commit.
-- **Status** → matriz.
-- **Contorno temporário** → `GAP`.
-- **Preferência pontual.**
-- **Fato que o código já mostra.**
-- **O que uma regra ou check existente já cobre.**
-- **Documentação de biblioteca** → buscada sob demanda.
-- **Passos de depuração.**
-- **Resumo de sessão.**
-- **"Lições aprendidas" genéricas.**
-
-### 15.4 Quem pode escrever e quando
-
-- **`/build` nunca escreve conhecimento.** Ele só levanta `PP` ou `GAP`.
-- **Fora do planejamento** (`/shape` e `/look-across`, que registram decisões e termos novos), **só três momentos gravam conhecimento:** fim do `/accept`, fim do `/diagnose` e o ticket `pattern`.
-- **Cada lição proposta traz** a evidência (ticket ou achado) e o destino. **O humano aprova** no portão de aceite.
-- **A memória automática da ferramenta de agente não é conhecimento do projeto.** Só o que está no repositório conta.
-
-**Resultado esperado: a maioria dos tickets e das slices termina com zero aprendizado.** Isso é sinal de saúde, não de omissão. Muitas lições por slice indicam que o portão está frouxo.
-
-### 15.5 Árvore de destino (depois que passou no portão)
-
-1. **Descobriu-se que dá para verificar?** → Criar o check. No máximo uma linha em `enforced_by`.
-2. **Padrão recorrente que não dá para verificar?** → Exemplo canônico no código + alteração ou criação de regra (formato da seção 7).
-3. **Escolha difícil de reverter, surpreendente e fruto de trade-off?** → ADR.
-4. **Termo do domínio?** → `CONTEXT.md`.
-5. **Identidade ou uso visual?** → `DESIGN.md`.
-
-### 15.6 Evolução do Architecture Source
-
-**Promoção ao global** (os três critérios juntos):
-
-- não depende de tecnologia nem de decisão específica do projeto (a não ser que seja um `default`, com ADR global);
-- foi usado sem alteração em pelo menos um projeto (está estável);
-- vale para os próximos projetos.
-
-Entra por PR no repositório do source, com nova versão e registro no `CHANGELOG.md`.
-
-**Atualizar a versão do source num projeto** é um ticket `type: pattern`, feito a partir do `CHANGELOG.md`.
-
-**Poda:**
-
-- Regra com todos os itens de verificação cobertos por check → pode ser reduzida ao frontmatter, ao porquê e às exceções, porque a mensagem do check passa a ensinar o resto.
-- Regra cujo `applies_to` não casa com nenhum arquivo → candidata a poda; o lint gera aviso, não erro.
-- ADR superado → `superseded by`.
+Definição, as cinco perguntas, o que nunca é conhecimento, quem grava e quando, destino, promoção ao global e poda: `skills/guardrail/KNOWLEDGE-GATE.md`.
 
 ---
 
@@ -1071,7 +960,7 @@ Starter em `template/docs/PRODUCT.md`.
 
 ### A.3 `docs/CONTEXT.md`
 
-Starter em `template/docs/CONTEXT.md`.
+`skills/domain-language/CONTEXT-FORMAT.md`.
 
 ### A.4 `docs/DESIGN.md`
 
@@ -1083,50 +972,7 @@ Starter em `template/docs/architecture/INDEX.md`; como preencher: seção 6.14.
 
 ### A.6 Regra (global ou do projeto)
 
-````markdown
----
-id: <área>/<tema>
-description: <o que a regra decide>
-use_when: [<situação em que o agente lê a regra>]
-applies_to: [<globs>]                  # opcional
-keywords: [<SOT keywords>]             # opcional
-read_first: [<ids>]                    # opcional
-not_covered: ["<tema> → <id>"]         # opcional
-enforced_by: [<ids dos checks>]        # opcional
-examples: [<arquivos>]                 # opcional
-adr: [<ids>]                           # opcional
-status: active
----
-# <Tema>
-
-<Uma frase de propósito.>
-
-## <Seção temática>
-
-**Obrigatório.** <Norma.>
-
-> **Por quê.** <Motivo, quando não for óbvio.>
-
-- **Exceção.** <Condição>: <efeito> (ADR-NNNN).
-
-## Árvore de decisão
-
-```mermaid
-flowchart TD
-  Q1{<Pergunta 1>} -->|sim| A[<Caminho A>]
-  Q1 -->|não| Q2{<Pergunta 2>}
-  Q2 -->|sim| B[<Caminho B>]
-  Q2 -->|não| C[<Caminho C>]
-```
-
-## Verificação
-
-- <Pergunta de sim ou não que confere a norma>? (check: <id>)
-````
-
-Chave marcada `# opcional` só é escrita quando tem valor (`VOCABULARY.md`). Exemplo do formato: `frontend/components.md`.
-
-`(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
+`skills/writing-for-agents/RULE-FORMAT.md`.
 
 ### A.7 Contrato de slice
 
@@ -1162,25 +1008,7 @@ Os rótulos seguem o idioma dos comentários (`architecture/defaults/stack.md`, 
 
 ### A.8 ADR
 
-```markdown
-# ADR-NNNN <título>
-
-status: accepted | superseded by ADR-NNNN
-area: <área>
-kind: decision | exception | default-change
-
-## Contexto
-
-## Decisão
-
-## Alternativas consideradas
-
-## Consequências
-
-## Imposto por
-
-(Check ou lint que garante a decisão, ou "não imposto".)
-```
+`skills/domain-language/ADR-FORMAT.md`.
 
 ### A.9 `docs/plan/MATRIX.md`
 

@@ -116,7 +116,7 @@ Quando a tabela é escrita por um sistema externo (um adapter de biblioteca que 
 | Externo, com escrita do domínio | Só `reconstitute()`; leitura + escrita que recebe o agregado, sem insert |
 | Externo, leitura pura | Só `reconstitute()`; só leitura |
 
-**Obrigatório.** A forma que cada agregado real assume é registrada como decisão de projeto do app antes do primeiro contrato (`methodology/authoring.md`, "Decisões específicas de projeto").
+**Obrigatório.** A forma que cada agregado real assume é registrada como decisão de projeto do app antes do primeiro contrato (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto").
 
 ### Atualização parcial: setter por campo, e o que não cabe nele
 
@@ -211,4 +211,4 @@ Os arquivos seguem a tabela "Onde cada arquivo mora" do `backend/layers.md`: `<e
 - `backend/application.md`: o caso de uso que orquestra a entidade.
 - `backend/http-api.md`: `.max()` na porta para restrição de entrada.
 - `backend/layers.md`: onde cada arquivo mora.
-- `methodology/authoring.md`: casa da decisão de projeto sobre a forma de cada agregado.
+- `skills/writing-for-agents/RULE-FORMAT.md`: casa da decisão de projeto sobre a forma de cada agregado.

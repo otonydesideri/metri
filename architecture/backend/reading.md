@@ -20,7 +20,7 @@ status: active
 
 Como o backend monta respostas de consulta: quando uma leitura pertence ao caminho de domínio (contrato, entidade, caso de uso) e quando ela vira uma query de exibição com contrato na aplicação e execução direta no banco pela infraestrutura, onde cada artefato mora, paginação, não-encontrado e agregação.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático".
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## As duas naturezas de uma leitura
 
