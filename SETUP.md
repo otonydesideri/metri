@@ -76,9 +76,9 @@ Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:ch
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
 
-## ▶ Agora: Fase 3, vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
+## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
-Passos feitos; a fase segue aberta pelas decisões pendentes abaixo.
+Fase 3 fechada: decisões pendentes resolvidas, docs-lint sem erro e rules-index:check verde.
 
 - [x] 3.1 `methodology/VOCABULARY.md`
   - Texto da 4.3 movido sem reescrever; a 4.3 virou ponteiro; modalidades ficam em `methodology/authoring.md`.
@@ -99,14 +99,13 @@ Decisões da fase (aplicadas):
 - `EmptyState` sai: as telas usam o `Empty` do `@metri/ui`, e o `LoadErrorState` é composto sobre ele; o qualificador de rótulo é texto dentro do `Field.Label`.
 - INDEX do projeto: guarda o estado vigente (ativação, delegações, desvios) e aponta para o ADR; `methodology/authoring.md` alinhado.
 - Vocabulário visual das telas: no `DESIGN.md` (`not_covered` de `defaults/ui`); o catálogo, que o punha em regra de projeto, saiu.
+- Script inline do tema: fica no `index.html` do `app-web` e lê a mesma chave de armazenamento que o `ThemeProvider` (next-themes) usa (`defaults/ui.md`, `frontend/theming.md`).
+- `exports` × arquivos gerados: os imports internos do `@metri/ui` usam o campo `imports` com aliases `#`, e os aliases do `components.json` apontam para eles; os `#` resolvem no shadcn, no TypeScript e no Vite, e os `exports` ficam só com `components/ui/*` (`defaults/ui.md`).
+- `cn`: `extendTailwindMerge`, com os níveis de texto do `DESIGN.md` como tamanho de fonte (`defaults/ui.md`).
+- Cabeçalho de contrato de slice: os rótulos seguem o idioma dos comentários de `defaults/stack.md` (A.7).
+- Caminho de uma request: o diagrama e os bullets saíram do template do INDEX para `backend/layers.md`, "O caminho de uma request"; o INDEX do projeto guarda só os desvios, com ADR.
 
-Decisões pendentes (seguram a fase):
-
-- Script inline do tema: o do `index.html` ficou, porque o script do next-themes não roda no app Vite (`frontend/theming.md`); confirmar, e decidir se o fundo do `index.html` pinta claro e escuro (`frontend/routing.md`).
-- `exports` × arquivos gerados: os gerados importam irmãos e o `cn` pelos aliases do `components.json`; sem `shadcn/*` e `lib/*` nos `exports`, não resolvem. Opção: campo `imports` com aliases `#` (doc de monorepo do shadcn).
-- `text-<nível>` × `cn`: o tailwind-merge trata `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
-
-## Fase 4: scripts (seções 6.11 e 6.13)
+## ▶ Agora: Fase 4, scripts (seções 6.11 e 6.13)
 
 - [x] 4.0 Decidir a linguagem dos scripts (sugestão: TypeScript/Node)
   - TypeScript com tsx, sem build; `package.json` na raiz, com pnpm; scripts em `template/scripts/`.
@@ -122,7 +121,12 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 ## Fase 5: skills (seção 16)
 
 - [ ] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
-- [ ] 5.2 Escrever as nossas: `guardrail`, `/setup` (`AGENTS.md`, `CLAUDE.md` e INDEX do projeto), `/shape` (`PRODUCT.md` e `DESIGN.md` base), `/look-across` (MATRIX e contrato de slice), `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os templates de documento saem de `template/` e do Apêndice A
+- [ ] 5.2 Escrever as nossas: `guardrail`, `/setup`, `/shape`, `/look-across`, `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os formatos saem de `template/` e do Apêndice A:
+  - `/setup`: `template/AGENTS.md`, `template/CLAUDE.md` e `template/docs/architecture/INDEX.md`, com as classes de ativação e as delegações (hoje na METHODOLOGY 6.14);
+  - `/shape`: `template/docs/PRODUCT.md` e `template/docs/DESIGN.md`;
+  - `/look-across`: `template/docs/plan/MATRIX.md` e o contrato de slice (A.7);
+  - `domain-language` (5.1): `template/docs/CONTEXT.md`;
+  - `template/` fica com o código do starter e os scripts.
 - [ ] 5.3 Teste a seco de cada skill
 - [ ] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
 - [ ] 5.5 A METHODOLOGY vira `README.md` (porquê, princípios, limiares, mapa e referências), e `methodology/` é apagada

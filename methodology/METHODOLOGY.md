@@ -359,7 +359,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 ### 6.14 Ativação da arquitetura
 
-O projeto registra o resultado no `docs/architecture/INDEX.md` (starter em `template/docs/architecture/INDEX.md`): em "Capacidades ativas", uma linha por id da tabela "Capacidades condicionais" do `architecture/INDEX.md` que o projeto ativou, com os valores que o `not_covered` da regra deixa ao projeto; em "Delegações", uma linha por delegação resolvida da matriz abaixo; em "Stack", só o que difere de `architecture/defaults/stack.md`; em "Caminho linear", as camadas na ordem em que uma requisição passa; e em "Exceções e defaults trocados", o ADR de cada desvio.
+O projeto registra o resultado no `docs/architecture/INDEX.md` (starter em `template/docs/architecture/INDEX.md`): em "Capacidades ativas", uma linha por id da tabela "Capacidades condicionais" do `architecture/INDEX.md` que o projeto ativou, com os valores que o `not_covered` da regra deixa ao projeto; em "Delegações", uma linha por delegação resolvida da matriz abaixo; em "Stack", só o que difere de `architecture/defaults/stack.md`; em "Caminho linear", só os desvios de `backend/layers.md`, "O caminho de uma request", com o ADR; e em "Exceções e defaults trocados", o ADR de cada desvio.
 
 Dono de: a ativação da arquitetura num projeto — as três classes de decisão (GLOBAL, GLOBAL_CONDITIONAL, PROJECT_SPECIFIC), o que a ativação pergunta e o que não pergunta, a ordem de ativação, o registro do que ela resolve, o encaminhamento de uma necessidade sem cobertura como ARCHITECTURE DECISION REQUIRED e a matriz das decisões delegadas ao projeto.
 
@@ -1174,6 +1174,8 @@ Depois do primeiro ticket construído, o contrato vai para o cabeçalho do arqui
  * SOT keywords: <keyword>, <keyword>
  */
 ```
+
+Os rótulos seguem o idioma dos comentários (`architecture/defaults/stack.md`, "Stack"); os de cima são os do default.
 
 ### A.8 ADR
 

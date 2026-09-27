@@ -36,7 +36,9 @@ Quando falta um token: **Obrigatório.** Checar primeiro se ele já existe no `@
 
 **Obrigatório.** Quem alterna a classe é o next-themes, pelo `ThemeProvider` do `@metri/ui` (`@metri/ui/components/providers/theme-provider`), montado em `app/index.tsx` do `app-web`. O `ThemeProvider` configura o next-themes com `attribute="class"`, `themes={['light', 'dark']}` e `enableSystem={false}`.
 
-**Obrigatório.** No app Vite, o `index.html` aplica a classe antes do primeiro paint, num script inline com a mesma chave e o mesmo default do provider (a chave `theme` e o `light` do next-themes).
+**Obrigatório.** No app Vite, o `index.html` do `app-web` aplica a classe antes do primeiro paint, num script inline que lê a mesma chave de armazenamento que o `ThemeProvider` (next-themes) usa — a `theme` do `localStorage`, o `storageKey` padrão do next-themes — e cai no mesmo default, `light`.
+
+Quando o `ThemeProvider` passa a usar outra chave: **Obrigatório.** O script inline troca de chave na mesma edição.
 
 > **Por quê.** O next-themes aplica a classe num `useEffect`, depois do primeiro paint, e o script que ele renderiza só roda em HTML que vem do servidor: no app Vite, o React cria esse script sem executá-lo. Sem o script do `index.html`, o primeiro frame sai no tema errado para quem escolheu o escuro.
 

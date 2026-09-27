@@ -6,7 +6,7 @@ Estes documentos são a referência de construção do projeto. Lidos em ordem, 
 
 ## Visão geral
 
-O sistema numa página: o que existe no monorepo (`general/code-placement.md`), as camadas do backend (`backend/layers.md`) e o caminho que uma request percorre (`docs/architecture/INDEX.md`, "Caminho linear").
+O sistema numa página: o que existe no monorepo (`general/code-placement.md`), as camadas do backend (`backend/layers.md`) e o caminho que uma request percorre (`backend/layers.md`, "O caminho de uma request").
 
 O como construir cada artefato vive no documento correspondente (`backend/layers.md`, "Onde cada arquivo mora"); o que não é decisão da Source segue `methodology/authoring.md`, "Decisões específicas de projeto". Fronteiras de import vivem em `backend/boundaries.md`; estrutura de módulo e comunicação entre módulos, em `backend/modules.md`.
 
@@ -22,7 +22,7 @@ O desenho transversal de testes (pirâmide, factories, repositórios em memória
 
 Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 
-1. **O sistema.** `architecture/INDEX.md`, "Visão geral" (o mapa), `general/code-placement.md` (o monorepo), `backend/layers.md` (as camadas), o caminho de uma request (`docs/architecture/INDEX.md`, "Caminho linear"), `backend/boundaries.md` (quem pode importar o quê), `general/principles.md` (os princípios não negociáveis), `general/http-surface.md` (a superfície HTTP same-origin) e `defaults/stack.md` (a stack padrão).
+1. **O sistema.** `architecture/INDEX.md`, "Visão geral" (o mapa), `general/code-placement.md` (o monorepo), `backend/layers.md` (as camadas), o caminho de uma request (`backend/layers.md`, "O caminho de uma request"), `backend/boundaries.md` (quem pode importar o quê), `general/principles.md` (os princípios não negociáveis), `general/http-surface.md` (a superfície HTTP same-origin) e `defaults/stack.md` (a stack padrão).
 2. **O módulo.** `backend/modules.md` (o que é um módulo e como módulos se comunicam), depois as peças dele: `domain/model.md` (entidade, value object, agregado), `backend/application.md` (contrato e caso de uso), `backend/persistence.md` (repositório e mapper) e `backend/http-api.md` (a porta HTTP). Depois `backend/errors.md` (erro esperado é valor de retorno), `backend/reading.md` (leitura de domínio vs. leitura de exibição) e `backend/access-scope.md` (o escopo do dono).
 3. **Os padrões de domínio.** Sob demanda, quando o caso aparece: `backend/operation-routing.md` (qual mecanismo executa a operação), `backend/events.md`, `backend/transactions.md`, `domain/watched-list.md`, `domain/strategy.md`, `domain/specification.md`, `domain/domain-services.md` (regra de domínio sem dono natural), `domain/builder.md` e, quando o domínio pede mais de um modelo, `domain/bounded-contexts.md`.
 4. **A infraestrutura.** `infrastructure/runtime.md` (bootstrap, providers globais, env), `infrastructure/services.md` (a regra dos níveis para serviço compartilhado), e as capacidades: `infrastructure/logging.md`, `infrastructure/observability.md` (métrica, alerta e reconciliação), `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `backend/async-jobs.md`.

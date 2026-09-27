@@ -1,6 +1,6 @@
 ---
 id: backend/layers
-description: "as camadas do backend (layer-first) — `domain/` e `infra/` como únicas pastas na raiz de `src/`, módulo como pasta dentro de cada camada, o que cada camada pode conhecer —, os princípios não negociáveis de camada e onde cada arquivo mora."
+description: "as camadas do backend (layer-first) — `domain/` e `infra/` como únicas pastas na raiz de `src/`, módulo como pasta dentro de cada camada, o que cada camada pode conhecer —, os princípios não negociáveis de camada, o caminho de uma request e onde cada arquivo mora."
 use_when:
   - "decidir em qual camada do backend uma regra entra"
   - "criar arquivo novo no app backend"
@@ -55,6 +55,32 @@ O que cada camada pode conhecer, em resumo (regras completas de import e exceç�
 3. Use case não importa Zod. Schema Zod é fronteira (`backend/boundaries.md`, "Zod é fronteira, não vocabulário interno"); o request/response do use case é tipo próprio, local ao arquivo, mesmo quando estruturalmente idêntico ao schema. Detalhe em `backend/application.md`.
 4. Quem injeta pede o contrato (`abstract class`), nunca a implementação concreta. Detalhe em `backend/application.md`.
 5. Toda escrita passa por use case e entidade de domínio, e leitura que alimenta decisão de negócio também. Leitura de exibição expõe contrato e DTO na aplicação, com implementação direta no banco pela infra; o critério e as regras estão em `backend/reading.md`.
+
+## O caminho de uma request
+
+```mermaid
+flowchart TD
+    A["Request em /api/*"] --> B[Guards globais: throttler]
+    B --> C[ZodValidationPipe global]
+    C --> D["Controller da ação (infra/http)"]
+    D --> E["UseCase.execute() (domain/application)"]
+    E --> F["Contrato de repositório (abstract class)"]
+    F --> G["Repositório Prisma + mapper (infra/persistence)"]
+    G --> H[(Postgres)]
+    E --> I{Either}
+    I -->|failure| J[HttpException]
+    I -->|success| K[Resposta JSON]
+    D -.->|"leitura de exibição (backend/reading.md)"| Q["Contrato de query (domain/application)"]
+    Q --> R["Implementação Prisma (infra/persistence)"]
+    R --> H
+    Q --> K
+```
+
+- As rotas ficam sob `/api` (`general/http-surface.md`, "Superfície HTTP"). Guards e pipe globais, e o módulo dos endpoints de infra externa, entram no grafo de módulos pela regra de `infrastructure/runtime.md`.
+- `ZodValidationPipe` global valida body, query e path param na fronteira (`backend/http-api.md`).
+- Controller é por ação (`backend/http-api.md`) e traduz `Either.failure` em `HttpException` pela tabela de `backend/errors.md`.
+- Use case fala com o banco só pelo contrato; repositório concreto e mapper vivem em `infra/persistence`.
+- Endpoint de leitura de exibição substitui use case e repositório de agregado por um contrato de query da aplicação, implementado em infra e injetado no controller (`backend/reading.md`); guards, pipe e formato de erro são os mesmos.
 
 ## Onde cada arquivo mora
 

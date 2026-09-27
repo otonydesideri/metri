@@ -109,7 +109,7 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 - `infrastructure/services.md`: a regra dos níveis e o `ServicesModule`.
 - `backend/async-jobs.md`: o `PgBossService` e o ciclo de vida dos workers.
 - `general/http-surface.md`: a superfície HTTP.
-- `docs/architecture/INDEX.md`, "Caminho linear": o caminho de uma request.
+- `backend/layers.md`, "O caminho de uma request": o caminho de uma request.
 - `backend/boundaries.md`: Zod na fronteira de env.
 - `backend/testing.md`: a montagem do app nos e2e.
 - `backend/access-scope.md`: o escopo que a fronteira de request resolve.
