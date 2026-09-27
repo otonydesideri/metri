@@ -32,7 +32,7 @@ Do NOT interview the user again; synthesize what the interview settled:
 
 - `docs/PRODUCT.md`, in the format of [PRODUCT-FORMAT.md](PRODUCT-FORMAT.md);
 - an ADR for each hard decision already taken (domain-language, which also kept `docs/CONTEXT.md` current during the interview);
-- the candidate features and their UCs in the Features section of `docs/plan/MATRIX.md`, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md`: each feature with `horizon` and `outcome`, each UC with `actor`, `status: open`, its BRs and its criteria.
+- the candidate features and their UCs in the Features section of `docs/plan/MATRIX.md`, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): each feature with `horizon` and `outcome`, each UC with `actor`, `status: draft`, its BRs and its criteria; /look-across plans it and opens it.
 
 ### 5. Direction gate
 

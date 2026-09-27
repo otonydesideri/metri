@@ -162,6 +162,7 @@ Fase 5 fechada: 12 skills em `skills/` (6 chamadas pelo usuário, 6 pelo modelo)
 - [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter e os `.examples.md` viram ponteiro
 - [ ] 7.5 2–3 slices até o aceite e um release
 - [ ] 7.6 Registrar as métricas do piloto (`README.md`, "Validação e melhoria (piloto)")
+  - Anotar também os três gatilhos do board (8.4): conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, e o número de linhas ativas da MATRIX depois da poda.
 
 ## Fase 8: melhoria
 
@@ -189,3 +190,5 @@ Fase 5 fechada: 12 skills em `skills/` (6 chamadas pelo usuário, 6 pelo modelo)
   - matriz: todo `GAP-n` do código existe na seção Gaps da matriz, e vice-versa
   - opcional: sinônimos proibidos do `CONTEXT.md` ausentes dos identificadores
   - opcional: nenhum valor fixo de cor ou espaçamento fora do tema
+- [ ] 8.4 Board próprio, sem ferramenta externa: uma visão que lê e escreve a MATRIX pelo formato estrito dela; a MATRIX continua a fonte única dos tickets
+  - Começa quando aparecer um destes gatilhos: conflito na MATRIX com agentes em paralelo; necessidade de ver ou mostrar o andamento; mais de ~300 linhas ativas mesmo com a poda.

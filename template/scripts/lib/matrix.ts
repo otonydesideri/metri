@@ -1,4 +1,4 @@
-// Leitura do docs/plan/MATRIX.md: títulos, blocos (feature, UC, slice, ticket), campos e itens de lista.
+// Leitura do docs/plan/MATRIX.md: títulos, blocos (feature, UC, slice, ticket T), campos e itens de lista.
 // Só lê; o que é válido quem decide é o docs-lint. Linha que não se lê entra em problems.
 
 export type Field = { key: string; value: string; line: number };
@@ -10,6 +10,10 @@ export type Block = {
   parent?: Block;
   fields: Field[];
   contract?: Field[];
+  // Linhas do what (a da chave e as de continuação, recuadas em dois espaços).
+  whatLines?: number;
+  // Itens "- " que seguem a chave criteria.
+  criteria?: { text: string; line: number }[];
 };
 export type Item = { section: string; text: string; line: number };
 export type Matrix = {
@@ -21,7 +25,7 @@ export type Matrix = {
 };
 
 // Campo cujo valor é prosa: a linha inteira, sem separar por " · ".
-const PROSE_KEYS = ['outcome'];
+const PROSE_KEYS = ['outcome', 'what'];
 
 const HEADING_IDS: Record<string, { kind: Kind; pattern: RegExp; section: string }> = {
   '###:Features': { kind: 'feature', pattern: /^(F\d+) · \S/, section: 'Features' },
@@ -36,6 +40,8 @@ export function parseMatrix(source: string): Matrix {
   let block: Block | undefined;
   let parent: Block | undefined;
   let isInContract = false;
+  let isInWhat = false;
+  let isInCriteria = false;
 
   source.split('\n').forEach((text, index) => {
     const line = index + 1;
@@ -43,6 +49,8 @@ export function parseMatrix(source: string): Matrix {
     if (heading) {
       const [, marks, title] = heading;
       isInContract = false;
+      isInWhat = false;
+      isInCriteria = false;
       block = undefined;
       if (marks === '#') {
         matrix.title = { text: title, line };
@@ -73,16 +81,31 @@ export function parseMatrix(source: string): Matrix {
       return;
     }
     if (text.startsWith('- ')) {
+      isInWhat = false;
       if (block?.kind === 'uc') {
         return;
       }
+      if (block && isInCriteria && block.criteria) {
+        block.criteria.push({ text: text.slice(2).trim(), line });
+        return;
+      }
       if (block) {
-        matrix.problems.push({ line, message: `item de lista fora de UC: ${text}` });
+        matrix.problems.push({ line, message: `item de lista fora de UC e de criteria: ${text}` });
         return;
       }
       matrix.items.push({ section, text: text.slice(2).trim(), line });
       return;
     }
+    isInCriteria = false;
+    if (isInWhat && block && /^ {2}\S/.test(text)) {
+      block.whatLines = (block.whatLines ?? 1) + 1;
+      const what = fieldOf(block, 'what');
+      if (what) {
+        what.value = `${what.value} ${text.trim()}`;
+      }
+      return;
+    }
+    isInWhat = false;
     const contractField = /^ {2}([a-z_]+):(?: (.*))?$/.exec(text);
     if (contractField && isInContract && block?.contract) {
       block.contract.push({ key: contractField[1], value: (contractField[2] ?? '').trim(), line });
@@ -102,6 +125,14 @@ export function parseMatrix(source: string): Matrix {
       if (field.key === 'contract') {
         block.contract = [];
         isInContract = true;
+      }
+      if (field.key === 'what') {
+        block.whatLines = 1;
+        isInWhat = true;
+      }
+      if (field.key === 'criteria') {
+        block.criteria = [];
+        isInCriteria = true;
       }
       block.fields.push(field);
     }

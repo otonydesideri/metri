@@ -61,17 +61,20 @@ Só no projeto:
   - MATRIX.md:
     - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
     - ids: ### F<n> e #### UC<f>.<n> em Features, ### S<n> e #### T<s>.<n> em Slices, GAP-<n> e PP-<n> nas
-      listas; sem id repetido; UC dentro da feature F<f> e ticket dentro da slice S<s>;
+      listas; sem id repetido; UC dentro da feature F<f> e ticket T dentro da slice S<s>;
     - chaves de VOCABULARY.md por bloco, sem chave repetida; valores de horizon, status, type,
-      mode e sensitive dentro do permitido; listas em [a, b];
+      mode e sensitive dentro do permitido (status draft só no UC; type do T só pattern, task ou release);
+      listas em [a, b];
     - nenhuma chave vazia;
-    - obrigatórias: horizon na feature; status no UC; type, mode, status e checks no ticket;
-    - nada órfão: ticket pertence a uma slice; tracer tem uc; slice now serve a uma feature now;
-    - slices, blocked_by e uc apontam para um id que existe na matriz;
+    - obrigatórias: horizon na feature; status no UC e, fora de draft e antes da poda, mode e checks; type,
+      mode, status, checks, what (1 a 3 linhas) e criteria (com ao menos um item "- ") no ticket T;
+    - nada órfão: UC fora de draft tem slice; ticket T pertence a uma slice; slice now serve a uma feature now
+      (a feature a lista em slices ou tem um UC com ela em slice);
+    - slices, slice e blocked_by apontam para um id que existe na matriz (blocked_by: UC, T ou slice);
     - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou entry, nunca os
       dois; slice done tem entry;
     - o entry existe e tem o cabeçalho de contrato (/** ... */) com os rótulos ${CONTRACT_LABELS.join(', ')};
-    - Gaps: "- GAP-<n> · <texto> → T<s>.<n>"; Pattern proposals: "- PP-<n> · de T<s>.<n> · <texto> → <destino>".
+    - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
   - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
     superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
     Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.

@@ -8,7 +8,7 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Judge what no check judges, on the diff of a slice, along two axes:
 
-- **Contract**: does the code deliver the slice contract and its UCs?
+- **Contract**: does the code deliver the slice contract, its UCs and its T tickets?
 - **Patterns**: does the code pass the verification items of its rules that no check covers?
 
 The work never judges itself: both axes run as **parallel sub-agents** that get nothing from the builder's conversation, then this skill aggregates their findings.
@@ -17,7 +17,7 @@ The work never judges itself: both axes run as **parallel sub-agents** that get 
 
 ### 1. Pin the fixed point
 
-Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. Every ticket of the slice is `done`, and each command in their `checks` and `pnpm verify` exit 0.
+Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. The slice is ready when every UC with `slice: S<id>` and every T of the slice are `done`, and each command in their `checks` and `pnpm verify` exit 0.
 
 The fixed point is where `slice/<id>` left main: `git merge-base main slice/<id>`. Capture the diff command once: `git diff <fixed-point>...slice/<id>` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..slice/<id> --oneline`.
 
@@ -25,7 +25,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 2. Gather the inputs
 
-- **Contract**: the contract header at the top of the file named by the slice's `entry`, and the UCs its tickets serve in `docs/plan/MATRIX.md`, with their criteria and the text of their BRs.
+- **Contract**: the contract header at the top of the file named by the slice's `entry`; in `docs/plan/MATRIX.md`, each UC with `slice: S<id>`, with its criteria and the text of its BRs, and each T of the slice, with its `what` and `criteria`.
 - **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns sub-agent and say so.
 
 ### 3. Spawn the sub-agents in parallel
@@ -35,8 +35,8 @@ They may read the repository at `slice/<id>`, nothing else of this session.
 **Contract sub-agent prompt** includes:
 
 - The diff command and the commit list.
-- The contract and the UCs, pasted in full.
-- The brief: "Report: (a) contract items or UC criteria that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `docs/plan/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the tickets' `checks` proves. Quote the contract or UC line for each finding. Under 400 words."
+- The contract, the UCs and the T tickets, pasted in full.
+- The brief: "Report: (a) contract items, UC criteria, or T `what` and `criteria` that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `docs/plan/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the UC's `checks` proves. Quote the contract, UC or T line for each finding. Under 400 words."
 
 **Patterns sub-agent prompt** includes:
 
@@ -58,7 +58,7 @@ Walk the human through:
 - the QA of its UCs, which the human runs from the steps you give per UC criterion, with visual conformity to `docs/DESIGN.md`; and of the feature, when this is its last slice (every other slice in the feature's `slices` is done);
 - the diff of every ticket with `sensitive: true` or `type: pattern`.
 
-A finding to fix becomes a correction ticket in the slice (`.metri/skills/look-across/MATRIX-FORMAT.md`). With correction tickets, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
+A finding to fix reopens its UC (`in_progress`, with the finding in `notes`), or becomes a T of the slice when no UC covers it (`.metri/skills/look-across/MATRIX-FORMAT.md`). With a reopened UC or a new T, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
 
 ### 6. Knowledge gate
 
@@ -66,9 +66,9 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by rule 7 of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md`, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md` (each done UC becomes one line pointing to its tests, and the done slice one line with its `entry`), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
-Done when the slice is on main, or its correction tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
+Done when the slice is on main, or its reopened UCs and new T tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
 ## Why two axes
 

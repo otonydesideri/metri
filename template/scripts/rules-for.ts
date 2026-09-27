@@ -20,7 +20,7 @@ const HELP = `rules-for: lista as regras de arquitetura que valem para caminhos 
 
 Uso:
   rules-for <caminho | glob>...         regras dos arquivos
-  rules-for --ticket <T<s>.<n>>         regras do ticket
+  rules-for --ticket <UC<f>.<n> | T<s>.<n>>   regras do ticket: um UC (o tracer) ou um ticket T
   rules-for ... --root <dir>            outra raiz (padrão: a pasta atual)
 
 Modo:
@@ -33,7 +33,8 @@ Entrada:
     Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no applies_to global:
     fica em "Caminhos do projeto".
   - Glob: expandido contra os arquivos da raiz (fora de node_modules, .git e .metri); glob sem arquivo gera aviso.
-  - --ticket: lê o ticket em docs/plan/MATRIX.md e usa os ids de "areas".
+  - --ticket: lê o bloco do UC (em Features) ou do ticket T (em Slices) em docs/plan/MATRIX.md e usa os ids
+    de "areas".
   - Nos dois casos, entram também as regras de read_first, em cadeia. Destino project: sai numa linha "ler antes:".
 
 Capacidades condicionais:
@@ -192,7 +193,7 @@ if (ticket !== undefined) {
     fail(`${MATRIX} não existe`);
   }
   const block = parseMatrix(readFileSync(MATRIX, 'utf8')).blocks.find(
-    ({ kind, id }) => kind === 'ticket' && id === ticket,
+    ({ kind, id }) => (kind === 'ticket' || kind === 'uc') && id === ticket,
   );
   if (!block) {
     fail(`ticket ${ticket} não existe em ${MATRIX}`);

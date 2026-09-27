@@ -42,10 +42,16 @@ describe('rules-for', () => {
     expect(backend).not.toContain('backend/layers');
   });
 
-  it('ticket: usa os ids de areas e expande read_first', () => {
-    const { status, lines } = run('rules-for.ts', ['--root', FIXTURE, '--ticket', 'T1.1']);
+  it('ticket UC: usa os ids de areas do bloco do UC e expande read_first', () => {
+    const { status, lines } = run('rules-for.ts', ['--root', FIXTURE, '--ticket', 'UC1.1']);
     expect(status).toBe(0);
     expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/data-fetching', 'frontend/state']);
+  });
+
+  it('ticket T: usa os ids de areas do bloco do T', () => {
+    const { status, lines } = run('rules-for.ts', ['--root', FIXTURE, '--ticket', 'T2.1']);
+    expect(status).toBe(0);
+    expect(ids(lines)).toEqual(['infrastructure/runtime']);
   });
 
   it('ticket inexistente é erro', () => {
@@ -70,7 +76,7 @@ describe('rules-for', () => {
   });
 
   it('orçamento: mais de 5 regras gera aviso, sem erro', () => {
-    const { status, lines } = run('rules-for.ts', ['--root', FIXTURE, '--ticket', 'T2.1']);
+    const { status, lines } = run('rules-for.ts', ['--root', FIXTURE, '--ticket', 'UC1.2']);
     expect(status).toBe(0);
     expect(ids(lines)).toHaveLength(6);
     expect(lines).toContain('aviso: 6 regras, mais de 5: ticket grande demais ou applies_to largo');

@@ -126,7 +126,7 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(lintChanged(inMatrix('horizon: planned', 'horizon: later')).output).toContain(
       'horizon: later fora de now | planned | fog | out',
     );
-    expect(lintChanged(inMatrix('mode: afk · status: in_progress', 'mode: solo · status: in_progress')).output).toContain(
+    expect(lintChanged(inMatrix('slice: S1 · mode: afk', 'slice: S1 · mode: solo')).output).toContain(
       'mode: solo fora de afk | hitl',
     );
   });
@@ -134,23 +134,74 @@ describe('docs-lint', { timeout: 30_000 }, () => {
   it('MATRIX: nenhuma chave vazia', () => {
     const { status, output } = lintChanged(inMatrix('touches: [router:orders]', 'touches: []'));
     expect(status).toBe(1);
-    expect(output).toContain('chave touches vazia em T1.1');
+    expect(output).toContain('chave touches vazia em UC1.1');
   });
 
   it('MATRIX: nada órfão', () => {
-    expect(lintChanged(inMatrix('uc: UC1.1 · type: tracer', 'type: tracer')).output).toContain('T1.1: tracer sem uc');
-    expect(lintChanged(inMatrix('slices: [S1, S2]', 'slices: [S1]')).output).toContain(
-      'S2: slice now que nenhuma feature now lista em slices',
-    );
+    const noSlice = lintChanged(inMatrix('status: in_progress · slice: S1 · ', 'status: in_progress · '));
+    expect(noSlice.status).toBe(1);
+    expect(noSlice.output).toContain('UC1.1: UC fora de draft sem slice');
+    expect(lintChanged(inMatrix('status: in_progress · slice: S1 · mode: afk · sensitive: false', 'status: draft')).status).toBe(0);
+    expect(lintChanged(inMatrix('horizon: now · slices: [S1, S2]', 'horizon: now · slices: [S1]')).status).toBe(0);
+    const unserved = lintChanged((dir) => {
+      inMatrix('horizon: now · slices: [S1, S2]', 'horizon: now · slices: [S1]')(dir);
+      inMatrix('slice: S2', 'slice: S1')(dir);
+    });
+    expect(unserved.status).toBe(1);
+    expect(unserved.output).toContain('S2: slice now que nenhuma feature now serve');
     expect(lintChanged(inMatrix('## Slices\n', '## Slices\n\n#### T0.1 · Solto\n')).output).toContain(
       'T0.1 fora de uma slice',
     );
   });
 
-  it('MATRIX: blocked_by aponta para um id que existe', () => {
-    const { status, output } = lintChanged(inMatrix('blocked_by: [T1.1]', 'blocked_by: [T1.9]'));
+  it('MATRIX: blocked_by aponta para um UC, T ou slice que existe', () => {
+    const { status, output } = lintChanged(inMatrix('blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.9, T2.1]'));
     expect(status).toBe(1);
-    expect(output).toContain('blocked_by de T2.1: T1.9 não existe na matriz');
+    expect(output).toContain('blocked_by de UC1.2: UC1.9 não existe na matriz');
+    expect(lintChanged(inMatrix('blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.1, T2.1, S1]')).status).toBe(0);
+  });
+
+  it('MATRIX: chaves de ticket obrigatórias no UC fora de draft', () => {
+    expect(lintChanged(inMatrix('slice: S1 · mode: afk · ', 'slice: S1 · ')).output).toContain(
+      'UC1.1: falta a chave mode (UC fora de draft)',
+    );
+    expect(lintChanged(inMatrix('checks: [`pnpm verify`]\n\n- BR1', '- BR1')).output).toContain(
+      'UC1.1: falta a chave checks (UC fora de draft)',
+    );
+    const pruned = lintChanged((dir) =>
+      edit(dir, MATRIX, (source) =>
+        source.replace(/actor: cliente · status: open[^\n]*\nareas: [^\n]*\nchecks: [^\n]*\n/, 'status: done → apps/app-api/test/order-confirmation.e2e-spec.ts\n'),
+      ),
+    );
+    expect(pruned).toEqual({ status: 0, output: '' });
+  });
+
+  it('MATRIX: what e criteria obrigatórios no ticket T', () => {
+    const what = 'what: A conta no provedor de e-mail, com o domínio de envio verificado e a chave de API no env do app-api.\n';
+    expect(lintChanged(inMatrix(what, '')).output).toContain('T2.1: falta a chave what');
+    expect(lintChanged(inMatrix(what, `${what}  linha 2.\n  linha 3.\n`)).status).toBe(0);
+    expect(lintChanged(inMatrix(what, `${what}  linha 2.\n  linha 3.\n  linha 4.\n`)).output).toContain(
+      'what de T2.1: 4 linhas, mais de 3',
+    );
+    const items = '- [ ] O domínio de envio está verificado no provedor.\n- [ ] A chave de API existe no env de desenvolvimento do app-api.\n';
+    expect(lintChanged(inMatrix(`criteria:\n${items}`, '')).output).toContain('T2.1: falta a chave criteria');
+    expect(lintChanged(inMatrix(items, '')).output).toContain('criteria de T2.1 sem item');
+  });
+
+  it('MATRIX: type do ticket T só pattern, task ou release; uc não é chave', () => {
+    const tracer = lintChanged(inMatrix('type: task', 'type: tracer'));
+    expect(tracer.status).toBe(1);
+    expect(tracer.output).toContain('type: tracer fora de pattern | task | release');
+    expect(lintChanged(inMatrix('type: task', 'type: pattern')).status).toBe(0);
+    expect(lintChanged(inMatrix('type: task', 'uc: UC1.2 · type: task')).output).toContain(
+      'chave uc fora do VOCABULARY para ticket',
+    );
+  });
+
+  it('MATRIX: status draft só no UC', () => {
+    const draft = lintChanged(inMatrix('status: open · sensitive: true', 'status: draft · sensitive: true'));
+    expect(draft.status).toBe(1);
+    expect(draft.output).toContain('status: draft só no UC (T2.1)');
   });
 
   it('MATRIX: slice com contract ou entry, e done com entry', () => {

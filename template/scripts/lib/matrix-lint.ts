@@ -7,24 +7,29 @@ export type MatrixProblem = { line: number; message: string };
 const SECTIONS = ['Features', 'Slices', 'Fog', 'Gaps', 'Pattern proposals'];
 // Campos reservados: opcionais em qualquer bloco, só escritos quando têm valor.
 const RESERVED = ['milestone', 'tech_design', 'evidence', 'metrics', 'notes'];
+// Chaves de ticket: o UC (o tracer) e o ticket T levam as mesmas.
+const TICKET_KEYS = ['mode', 'status', 'blocked_by', 'sensitive', 'areas', 'touches', 'checks', 'subtasks'];
 const KEYS: Record<Kind, string[]> = {
   feature: ['horizon', 'slices', 'outcome', ...RESERVED],
-  uc: ['actor', 'status', ...RESERVED],
+  uc: ['actor', 'slice', ...TICKET_KEYS, ...RESERVED],
   slice: ['horizon', 'blocked_by', 'contract', 'entry', 'status', ...RESERVED],
-  ticket: ['uc', 'type', 'mode', 'status', 'blocked_by', 'sensitive', 'areas', 'touches', 'checks', 'subtasks', ...RESERVED],
+  ticket: ['type', 'what', 'criteria', ...TICKET_KEYS, ...RESERVED],
 };
 const REQUIRED: Record<Kind, string[]> = {
   feature: ['horizon'],
   uc: ['status'],
   slice: [],
-  ticket: ['type', 'mode', 'status', 'checks'],
+  ticket: ['type', 'mode', 'status', 'checks', 'what', 'criteria'],
 };
+// Obrigatórias no UC fora de draft e ainda não podado (status: done → <testes>); slice sai em lintOrphans.
+const UC_TICKET_REQUIRED = ['mode', 'checks'];
+const WHAT_MAX_LINES = 3;
 const CONTRACT_KEYS = ['responsibility', 'interface', 'invariants', 'consumers', 'planned'];
 const CONTRACT_REQUIRED = ['responsibility', 'interface', 'invariants', 'consumers'];
 const VALUES: Record<string, string[]> = {
   horizon: ['now', 'planned', 'fog', 'out'],
   status: ['open', 'in_progress', 'blocked', 'done'],
-  type: ['pattern', 'tracer', 'task', 'release'],
+  type: ['pattern', 'task', 'release'],
   mode: ['afk', 'hitl'],
   sensitive: ['true', 'false'],
 };
@@ -41,10 +46,11 @@ export const CONTRACT_LABELS = [
   'Checks',
   'SOT keywords',
 ];
+const TICKET_ID = '(?:UC|T)\\d+\\.\\d+';
 const ITEMS: Record<string, RegExp | undefined> = {
   Fog: undefined,
-  Gaps: /^GAP-\d+ · .+ → T\d+\.\d+$/,
-  'Pattern proposals': /^PP-\d+ · de T\d+\.\d+ · .+ → .+$/,
+  Gaps: new RegExp(`^GAP-\\d+ · .+ → ${TICKET_ID}$`),
+  'Pattern proposals': new RegExp(`^PP-\\d+ · de ${TICKET_ID} · .+ → .+$`),
 };
 
 export function matrixProblems(source: string): MatrixProblem[] {
@@ -125,21 +131,45 @@ function lintFields(
       report(field.line, `chave ${field.key} repetida em ${block.id}`);
     }
     seen.add(field.key);
-    if (field.key === 'contract') {
+    if (field.key === 'contract' || field.key === 'criteria') {
       continue;
     }
     lintValue(block, field.key, field.value, field.line, ids, report);
   }
-  for (const key of REQUIRED[block.kind]) {
+  const required = isUcInPlay(block) ? [...REQUIRED.uc, ...UC_TICKET_REQUIRED] : REQUIRED[block.kind];
+  for (const key of required) {
     if (!seen.has(key)) {
-      report(block.line, `${block.id}: falta a chave ${key}`);
+      report(block.line, `${block.id}: falta a chave ${key}${block.kind === 'uc' ? ' (UC fora de draft)' : ''}`);
     }
   }
   if (block.kind === 'slice') {
     lintSlice(block, seen, ids, report);
   }
-  if (block.kind === 'ticket' && fieldOf(block, 'type')?.value === 'tracer' && !seen.has('uc')) {
-    report(block.line, `${block.id}: tracer sem uc`);
+  if (block.kind === 'ticket') {
+    lintTicket(block, report);
+  }
+}
+
+// UC que já é ticket: fora de draft e ainda não podado para "status: done → <testes>".
+function isUcInPlay(block: Block): boolean {
+  if (block.kind !== 'uc') {
+    return false;
+  }
+  const status = fieldOf(block, 'status')?.value ?? '';
+  return status !== 'draft' && !/^done → \S+$/.test(status);
+}
+
+// Ticket T: what em 1 a 3 linhas e criteria com ao menos um item.
+function lintTicket(block: Block, report: (line: number, message: string) => void): void {
+  const what = fieldOf(block, 'what');
+  if (what && (block.whatLines ?? 1) > WHAT_MAX_LINES) {
+    report(what.line, `what de ${block.id}: ${block.whatLines} linhas, mais de ${WHAT_MAX_LINES}`);
+  }
+  const criteria = fieldOf(block, 'criteria');
+  if (criteria && criteria.value !== '') {
+    report(criteria.line, `criteria de ${block.id}: os critérios vêm nas linhas "- " abaixo da chave`);
+  } else if (criteria && (block.criteria ?? []).length === 0) {
+    report(criteria.line, `criteria de ${block.id} sem item`);
   }
 }
 
@@ -155,9 +185,12 @@ function lintValue(
     report(line, `chave ${key} vazia em ${block.id}`);
     return;
   }
-  const allowed = VALUES[key];
-  const plain = block.kind === 'uc' && key === 'status' ? value.replace(/^done → \S+$/, 'done') : value;
-  if (allowed && !allowed.includes(plain)) {
+  const isUcStatus = block.kind === 'uc' && key === 'status';
+  const allowed = isUcStatus ? ['draft', ...VALUES.status] : VALUES[key];
+  const plain = isUcStatus ? value.replace(/^done → \S+$/, 'done') : value;
+  if (key === 'status' && plain === 'draft' && !isUcStatus) {
+    report(line, `status: draft só no UC (${block.id})`);
+  } else if (allowed && !allowed.includes(plain)) {
     report(line, `${key}: ${value} fora de ${allowed.join(' | ')}`);
   }
   if (LISTS.includes(key)) {
@@ -170,7 +203,7 @@ function lintValue(
       lintReference(block, key, item, line, ids, report);
     }
   }
-  if (key === 'uc') {
+  if (key === 'slice') {
     lintReference(block, key, value, line, ids, report);
   }
 }
@@ -183,7 +216,7 @@ function lintReference(
   ids: Map<string, Block>,
   report: (line: number, message: string) => void,
 ): void {
-  const kinds: Record<string, Kind[]> = { slices: ['slice'], blocked_by: ['slice', 'ticket'], uc: ['uc'] };
+  const kinds: Record<string, Kind[]> = { slices: ['slice'], blocked_by: ['slice', 'ticket', 'uc'], slice: ['slice'] };
   const expected = kinds[key];
   if (!expected) {
     return;
@@ -247,16 +280,24 @@ function entryProblem(path: string): string | undefined {
   return missing.length === 0 ? undefined : `entry: cabeçalho de ${path} sem ${missing.join(', ')}`;
 }
 
-// Nada órfão: slice now serve a uma feature now. Ticket fora de slice e tracer sem uc saem em lintParent e lintFields.
+// Nada órfão: UC fora de draft tem slice; slice now serve a uma feature now, que a lista em slices ou tem um UC
+// com ela em slice. Ticket T fora de slice sai em lintParent.
 function lintOrphans(blocks: Block[], report: (line: number, message: string) => void): void {
-  const servedNow = new Set(
-    blocks
-      .filter((block) => block.kind === 'feature' && fieldOf(block, 'horizon')?.value === 'now')
+  const isNow = (block: Block) => fieldOf(block, 'horizon')?.value === 'now';
+  const servedNow = new Set([
+    ...blocks
+      .filter((block) => block.kind === 'feature' && isNow(block))
       .flatMap((block) => listOf(fieldOf(block, 'slices')?.value ?? '') ?? []),
-  );
+    ...blocks
+      .filter((block) => block.kind === 'uc' && block.parent !== undefined && isNow(block.parent))
+      .map((block) => fieldOf(block, 'slice')?.value ?? ''),
+  ]);
   for (const block of blocks) {
-    if (block.kind === 'slice' && fieldOf(block, 'horizon')?.value === 'now' && !servedNow.has(block.id)) {
-      report(block.line, `${block.id}: slice now que nenhuma feature now lista em slices`);
+    if (isUcInPlay(block) && !fieldOf(block, 'slice')) {
+      report(block.line, `${block.id}: UC fora de draft sem slice`);
+    }
+    if (block.kind === 'slice' && isNow(block) && !servedNow.has(block.id)) {
+      report(block.line, `${block.id}: slice now que nenhuma feature now serve (slices da feature ou slice de um UC)`);
     }
   }
 }

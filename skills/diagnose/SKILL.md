@@ -116,11 +116,11 @@ Tool preference:
 
 ## Phase 5: Fix + regression test
 
-Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md`, in the slice whose code the fix changes (a done slice reopens by its rule 7), with the next free id of that slice:
+Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
 
-- `uc`: the UC whose behaviour broke, with `type: tracer`; when no UC covers it, `type: task` and no `uc`;
-- `mode: afk`; `status: in_progress`; `areas` and `touches` of the code the fix changes; `sensitive` by the criterion of MATRIX-FORMAT.md;
-- `checks`: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
+- A bug that breaks a criterion of a UC reopens that UC: `status: in_progress`, what broke in `notes`, and its ticket keys written again when it was pruned (`slice`: the slice whose code the fix changes; `mode: afk`; the `areas` and `touches` of that code; `sensitive` by the criterion of MATRIX-FORMAT.md).
+- Any other bug becomes a T in the slice whose code the fix changes, with the next free id of that slice: `type: task`, `mode: afk`, `status: in_progress`, a `what` and `criteria` for the fix, the `areas` and `touches` of that code, and `sensitive` by the criterion of MATRIX-FORMAT.md.
+- Their `checks` get the regression check: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
 
 Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `.metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
 
