@@ -1,6 +1,6 @@
 # Coordinator mode
 
-For several ticket ids, or a slice id. Only **unblocked** tickets or subtasks run in parallel, when their `touches` don't overlap and their areas differ. Schema and migrations run alone, never in parallel.
+For several ticket ids, or a slice id. Only **unblocked** tickets or subtasks run in parallel (a slice in `blocked_by` only once /accept merged it into main), when their `touches` don't overlap and their areas differ. Schema and migrations run alone, never in parallel.
 
 - **Coordinator**: this session, the slice's (or the initiative's). It hands out the tickets (UCs and T) and subtasks (a ticket is taken once handed out), writes every `status` and `metrics` in each ticket's file, merges each ticket branch into `slice/<id>` after its checks pass, one at a time, and talks to the human.
 - **Worker**: one per ticket or subtask, a sub-agent in its own worktree with a clean context, told to read `node_modules/metri/skills/build/SKILL.md` and build that one ticket, without writing `status` and without merging it. A new worktree runs `pnpm install` first: the skills and the global rules come from `node_modules/metri/`.

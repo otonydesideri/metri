@@ -84,6 +84,8 @@ Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/sta
 | --- | --- |
 | backend/async-jobs | `backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada? |
 | defaults/ui | O projeto tem interface? O estilo visual (docs/DESIGN.md) é decidido no /shape. |
+| domain/bounded-contexts | O domínio dos UCs mostra um dos sinais de `domain/bounded-contexts.md` para mais de um modelo, como o mesmo termo com dois significados? |
+| domain/domain-services | Alguma BR dos UCs é regra de domínio sem dono natural num value object, numa entidade ou num agregado? |
 | infrastructure/cache | O projeto tem necessidade medida de cache, pelo critério de `infrastructure/cache.md`? |
 | infrastructure/mail | O projeto envia e-mail? |
 | infrastructure/observability | Alguma pergunta operacional do projeto pede métrica, alerta ou reconciliação? |

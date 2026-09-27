@@ -6,7 +6,7 @@ A T is work without a UC; what each `type` means: `node_modules/metri/skills/loo
 
 - Deliver the rule (a file in `.metri/rules/<área>/`, written with the writing-for-agents skill, or a proposal for the Source), the canonical example in the code and its enforcement (a lint, a type or a check).
 - It is the only ticket that writes in `.metri/rules/`, `docs/adr/`, `docs/CONTEXT.md` or `docs/DESIGN.md`.
-- Its `status` stays `in_progress` until the human reviews the rule, the example and the enforcement; `done` releases the tickets it blocks.
+- Its `status` stays `in_progress` until the human reviews the rule, the example and the enforcement, shown in the three blocks of the grilling skill (call the Skill tool with "grilling"); `done` releases the tickets it blocks.
 - An update of the Source version is a `pattern` ticket made from `node_modules/metri/CHANGELOG.md`.
 
 ## task

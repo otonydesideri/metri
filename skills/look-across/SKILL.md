@@ -14,22 +14,26 @@ Look across every feature, `now` and `planned`, to find the **slices** they shar
 
 ## Process
 
+### 0. Mapping
+
+When `.metri/ARCHITECTURE.md` has the line `mapeamento: pendente` (an existing project, marked by `metri init`), start here. A survey of the code, run in a sub-agent, proposes the Slices section with the `entry` of each slice, the project rules and the lines of `.metri/ARCHITECTURE.md`; the human reviews them, and the line `mapeamento: pendente` leaves.
+
 ### 1. Gather context
 
-Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, all of `.metri/MATRIX.md` (Features, Slices, Gaps and Pattern proposals), every draft UC's ticket file in `.metri/tickets/`, the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` and the area indexes (`node_modules/metri/architecture/<área>/INDEX.md`, `.metri/rules/<área>/INDEX.md`). Grep the code for what already exists.
+Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, `.metri/ARCHITECTURE.md`, all of `.metri/MATRIX.md` (Features, Slices, Gaps and Pattern proposals), every draft UC's ticket file in `.metri/tickets/`, the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` and the area indexes (`node_modules/metri/architecture/<área>/INDEX.md`, `.metri/rules/<área>/INDEX.md`). Grep the code for what already exists.
 
 Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill tool with "domain-language" when a term is new or fuzzy, and with "grilling" when a decision branch is open.
 
 ### 2. Features → use cases
 
-Give each feature its `horizon` and, when it makes sense, its `milestone`. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`.
+Keep the `horizon` the direction gate confirmed for each feature and, when it makes sense, give it its `milestone`. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`.
 
 ### 3. Look across
 
 For each UC, name the capabilities it needs and ask, in this order:
 
 1. Does it exist in the project? Reuse its slice.
-2. Is it a conditional capability of the Source, in the "Capacidades condicionais" table? Activate it by steps 3 to 6 of "Order" in [ACTIVATION.md](ACTIVATION.md), then instantiate it in a slice.
+2. Is it a conditional capability of the Source, in the "Capacidades condicionais" table? Infer its activation from the UCs and BRs by steps 3 to 6 of "Order" in [ACTIVATION.md](ACTIVATION.md), then instantiate it in a slice. A PROJECT_SPECIFIC value a UC needs (the delegation matrix there) is an open question of the plan gate.
 3. Otherwise it is new: create a slice.
 
 ### 4. Contracts
@@ -62,7 +66,7 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 ### 7. Slice 0
 
 - **New project**: the foundation slice. The template of the Source version is instantiated and `pnpm verify` is green; with an interface, the `design-system` slice installs the library and styles it by `docs/DESIGN.md`.
-- **Existing project**: the mapping. A survey of the code, run in a sub-agent, writes the Slices section with the `entry` of each slice, and the project rules, under human review.
+- **Existing project**: the mapping of step 0.
 
 ### 8. Quiz the user
 
@@ -74,12 +78,7 @@ Present the proposed plan as a numbered list: each slice with its contract, then
 - **Blocked by**: which UCs, T tickets or slices (if any) must complete first
 - **What it delivers**: the end-to-end behaviour the UC makes work, or the T's `what`
 
-Ask the user:
-
-- Does the granularity feel right? (too coarse / too fine)
-- Are the blocking edges correct: does each ticket only depend on tickets that genuinely gate it?
-- Should any tickets be merged or split further?
-- Do the order, the contracts and the coverage hold?
+Then call the Skill tool with "grilling" and show the plan gate in its three blocks. Inferred: the capabilities activated from the UCs and BRs, the contracts, the order, the granularity, the blocking edges, and each ticket's `sensitive` and `mode`, each with its reason. Open questions: the PROJECT_SPECIFIC values a UC needs, and any merge or split you can't settle.
 
 Iterate until the user approves the plan.
 

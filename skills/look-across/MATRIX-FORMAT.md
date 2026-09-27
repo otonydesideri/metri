@@ -57,8 +57,8 @@ optional on a feature and appears only with a value; a value never holds ` · `,
 the ticket files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` path.
 
 - `ucs`: the ids of the feature's UCs, draft included; every UC outside `draft` appears here.
-- `sensitive: true` when the ticket touches authentication, data scope, payments, a destructive migration or a
-  sensitive BR; its diff gets the human's review in /accept.
+- `sensitive: true` when the ticket touches money, access (authentication, authorization, data scope), personal
+  data, deletion (a destructive migration included) or a sensitive BR; its diff gets the human's review in /accept.
 - Gaps: the arrow points to the ticket (UC or T) that closes the gap; while none is planned, to the ticket that
   left it. Pattern proposals: `de <id>` is the ticket that raised it, and the arrow its destination.
 
@@ -328,7 +328,8 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
    `slice`.
 2. **Every `now` slice serves at least one `now` feature:** the feature lists it in `slices`, or one of its
    tickets has it in `slice`.
-3. **`blocked_by` points to a UC, a T or a slice;** a ticket is unblocked when each of them is done.
+3. **`blocked_by` points to a UC, a T or a slice;** a ticket is unblocked when each of them is done, and a slice counts
+   as done once /accept merged it into main.
 4. **Every ticket serves the now.** The slice grows on demand; nothing is built for a `planned` feature, whose UCs
    stay in `draft`.
 5. **New pattern first:** when a slice needs a rule that doesn't exist, its first ticket is a T of `type: pattern`.

@@ -1,24 +1,17 @@
 # Design triage
 
-Once per project with an interface, while `docs/DESIGN.md` doesn't exist. Four questions, each with a default:
+Classify each decision by the grilling skill ("Defined, inferred, ask"), in this order:
 
-| Question | Example answers | Default |
-| --- | --- | --- |
-| Visual reference | A `DESIGN.md` from getdesign.md, a site URL, images, the brand | The Source's neutral base |
-| Component library | shadcn/ui, Coss UI, another | shadcn/ui (`node_modules/metri/architecture/defaults/ui.md`) |
-| Icons, density, tone, light/dark | — | The library's and the neutral base's |
-| Constraints | Accessibility, languages, devices | None beyond the global rules |
+1. **Find what was given**: `docs/DESIGN.md`, a design system file or link in the conversation, in the attachments or in the repo, and the brand. Convert it to the format of [DESIGN-FORMAT.md](DESIGN-FORMAT.md) and show a summary to confirm.
+2. **Ask only what is missing**: 2–3 reference products or screens, and what to avoid.
+3. **Infer density, theme and devices** from the design system and `docs/PRODUCT.md` (who uses it, how often, where), and confirm.
+4. **Propose 3–5 experience principles** from `docs/PRODUCT.md` and the references, and confirm.
+5. **Library**: the global default (`node_modules/metri/architecture/defaults/ui.md`); ask only when the design system requires another.
 
 ## Result
 
-- `docs/DESIGN.md`: start from [DESIGN-TEMPLATE.md](DESIGN-TEMPLATE.md), the neutral base, and adapt it to the answers; a ready reference (a `DESIGN.md` from getdesign.md) is pasted and adapted the same way.
+- `docs/DESIGN.md`, in the format of [DESIGN-FORMAT.md](DESIGN-FORMAT.md). With no design system given, it starts from [DESIGN-TEMPLATE.md](DESIGN-TEMPLATE.md), the neutral base, adapted to the answers.
 - A library other than the default: an ADR of `kind: default-change` (call the Skill tool with "domain-language"); its project rule in `.metri/rules/frontend/` comes as a `pattern` ticket from /look-across.
-
-## The format of docs/DESIGN.md
-
-- It follows the DESIGN.md specification (https://github.com/google-labs-code/design.md/blob/main/docs/spec.md), the one getdesign.md uses: tokens in the YAML frontmatter, and the sections with its titles, in its order.
-- Prose in Portuguese.
-- When the design-system slice is built, the token values move to the theme in the code, and `docs/DESIGN.md` swaps each value for a pointer to the theme file; it keeps the principles, the rationale and the guidance on using the components.
 
 ## Where each design decision lives
 

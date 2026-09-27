@@ -15,7 +15,8 @@ not_covered:
   - "regra booleana de domínio com mais de um consumidor → domain/specification"
   - "service de integração com vendor → infrastructure/services"
   - "interação entre contextos → domain/bounded-contexts"
-  - "a regra concreta de cada projeto (\"Delegações\") → project:ARCHITECTURE"
+  - "a regra concreta de cada projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
+activation: "Alguma BR dos UCs é regra de domínio sem dono natural num value object, numa entidade ou num agregado?"
 examples: [domain/domain-services.examples.md]
 status: active
 ---

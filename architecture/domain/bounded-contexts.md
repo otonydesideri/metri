@@ -13,7 +13,8 @@ not_covered:
   - "join e composição de leitura entre contextos → backend/reading"
   - "colocação entre app e pacote → general/code-placement"
   - "o mecanismo de uma reação → backend/operation-routing"
-  - "a divisão concreta de cada projeto (\"Delegações\") → project:ARCHITECTURE"
+  - "a divisão concreta de cada projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
+activation: "O domínio dos UCs mostra um dos sinais de `domain/bounded-contexts.md` para mais de um modelo, como o mesmo termo com dois significados?"
 status: active
 ---
 # Bounded context

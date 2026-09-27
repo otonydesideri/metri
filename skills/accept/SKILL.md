@@ -38,29 +38,34 @@ They may read the repository at `slice/<id>`, nothing else of this session.
 
 - The diff command and the commit list.
 - The contract, the UCs and the T tickets, pasted in full.
-- The brief: "Report: (a) contract items, UC criteria, or T `what` and `criteria` that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `.metri/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the UC's `checks` proves. Quote the contract, UC or T line for each finding. Under 400 words."
+- The brief: "Report: (a) contract items, UC criteria, or T `what` and `criteria` that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `.metri/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the UC's `checks` proves. Quote the contract, UC or T line for each finding, and put it in one group, Corrigir agora, Virar T or Aceitar como está, with your recommendation. Under 400 words."
 
 **Patterns sub-agent prompt** includes:
 
 - The diff command and the commit list.
 - The unchecked verification items, pasted with their rule id.
-- The brief: "Report, per file/hunk, every verification item the diff fails: cite the rule id and the item, and quote the hunk. Under 400 words."
+- The brief: "Report, per file/hunk, every verification item the diff fails: cite the rule id and the item, quote the hunk, and put it in one group, Corrigir agora, Virar T or Aceitar como está, with your recommendation. Under 400 words."
 
 **Consumer sub-agent**, only when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): an agent that knows only the public interface (the contract's `interface`) tries to use it, and reports where it got stuck.
 
 ### 4. Aggregate
 
-Present the reports in the chat under `## Contract` and `## Patterns` (and `## Consumer`), verbatim or lightly cleaned. Do **not** merge or rerank findings, because the axes are deliberately separate (see _Why two axes_).
+Present the reports in the chat under `## Contract` and `## Patterns` (and `## Consumer`), verbatim or lightly cleaned, each axis with its findings in the reviewer's three groups. Keep the axes apart (see _Why two axes_).
 
 ### 5. Human gate
 
-Walk the human through:
+Call the Skill tool with "grilling" and walk the human through the gate in its three blocks:
 
 - the slice's linear path, "show me the flow and the sources of truth": from the `entry` to each source of truth, as file:line;
-- the QA of its UCs, which the human runs from the steps you give per UC criterion, with visual conformity to `docs/DESIGN.md`; and of the feature, when this is its last slice (every other slice in the feature's `slices` is done);
-- the diff of every ticket with `sensitive: true` or `type: pattern`.
+- for each UC criterion, the paths of its evidence (the test that proves it and, for a UI criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and for the feature, when this is its last slice (every other slice in the feature's `slices` is done). Running the app is optional: give the steps per criterion when the human wants it;
+- the diff of every ticket with `sensitive: true` or `type: pattern`;
+- each finding, with its group and the reviewer's recommendation; the user decides each one.
 
-A finding to fix reopens its UC (`in_progress`, with the finding in its ticket file's "Notas"), or becomes a T of the slice when no UC covers it (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`). With a reopened UC or a new T, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
+What each decision does (the formats: `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`):
+
+- **Corrigir agora**: reopens its UC (`in_progress`, with the finding in its ticket file's "Notas"), or becomes a T of the slice when no UC covers it. Run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
+- **Virar T**: a new T, `open`, for a later /build; the merge goes on, and the slice stays `horizon: now` by the pruning rule.
+- **Aceitar como está**: the code stays; the finding goes to the knowledge gate as a lesson candidate.
 
 ### 6. Knowledge gate
 
@@ -70,7 +75,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each
 
 On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
-Done when the slice is on main, or its reopened UCs and new T tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
+Done when the slice is on main, or its reopened UCs are in the matrix; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
 ## Why two axes
 

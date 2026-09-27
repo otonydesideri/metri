@@ -1,17 +1,17 @@
 # Activation
 
-The Source decides how the system is built; the project decides what only it knows: whether it needs a capability, which provider it uses, who owns the data. This file is the contract between the two: what activation asks, when it asks, and where the answer lives.
+The Source decides how the system is built; the project decides what only it knows: whether it needs a capability, which provider it uses, who owns the data. This file is the contract between the two: what /look-across infers, what it asks and when, and where the answer lives.
 
 ## Three classes of decision
 
-| Class | What it is | At activation |
+| Class | What it is | In /look-across |
 | --- | --- | --- |
-| GLOBAL | A rule that holds in every project | Applied, with no question |
-| GLOBAL_CONDITIONAL | A capability the project may not have; when it has it, its owner already decided the shape | One question: does the project need it? |
-| PROJECT_SPECIFIC | A concrete value only the project knows: provider, owner entity, package, topology | Resolved before the first point that depends on it |
+| GLOBAL | A rule that holds in every project | Defined: applied as it is |
+| GLOBAL_CONDITIONAL | A capability the project may not have; when it has it, its owner already decided the shape | Inferred from the UCs and BRs by its `activation` question, confirmed at the plan gate |
+| PROJECT_SPECIFIC | A concrete value only the project knows: provider, owner entity, topology | Asked when a UC needs it |
 
-- Never ask what the Source already decided: a GLOBAL decision is applied as it is.
-- GLOBAL_CONDITIONAL: ask only whether the project needs it; without the need, it is not activated and nothing of it is asked.
+- The stack is GLOBAL (`node_modules/metri/architecture/defaults/stack.md`): ask only when the product doesn't fit it, and a swap is an ADR.
+- GLOBAL_CONDITIONAL without the need stays inactive, with nothing of it asked.
 - An activated GLOBAL_CONDITIONAL capability follows its global owner, by the transition rule (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Regra de transição"); activation resolves only its PROJECT_SPECIFIC values.
 - A PROJECT_SPECIFIC value is resolved before the first point of the project that depends on it, and never with a choice the Source did not declare as its default.
 
@@ -21,14 +21,14 @@ Each question hangs on the trigger of its delegation: with no trigger in the pro
 
 ## Order
 
-1. Identify the project's capabilities.
+1. Identify the capabilities the `now` UCs and their BRs need.
 2. Apply the GLOBAL.
-3. Evaluate the GLOBAL_CONDITIONAL triggers.
-4. Resolve the applicable PROJECT_SPECIFIC values.
+3. Infer each GLOBAL_CONDITIONAL by its `activation` question.
+4. Ask the PROJECT_SPECIFIC values a UC needs.
 5. Record them in the Project Architecture and, when it applies, in an ADR.
 6. Validate the activated architecture by the verification of each activated owner.
 
-A delegation whose trigger shows up after the initial activation, like the first job or the first asset, is resolved at that moment, by steps 3 to 6.
+A trigger that shows up later, like the first job or the first asset, is resolved by the /look-across that plans it, by steps 3 to 6.
 
 ## Record
 
@@ -56,7 +56,7 @@ Activation never improvises a value, a mechanism or an exception.
 
 ## Delegation matrix
 
-Every decision the Source delegates to the project has a row here, with nine fields. The decision of a conditional capability (the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md`) lives in its owner rule instead: its trigger is the `activation` key, and what the project decides is a `not_covered` entry with the target `project:ARCHITECTURE`. When an owner starts delegating a new decision, its row enters this matrix, or the owner rule of the conditional capability, in the same edit.
+Every decision the Source delegates to the project has a row here, with nine fields. The decision of a conditional capability lives in its owner rule instead, listed in the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md`: its trigger is the `activation` key, and what the project decides is a `not_covered` entry with the target `project:ARCHITECTURE`. When an owner starts delegating a new decision, its row enters this matrix, or the owner rule of the conditional capability, in the same edit.
 
 The Subject is the label of the line in "Delegações".
 
@@ -65,8 +65,6 @@ The Subject is the label of the line in "Delegações".
 | Autenticação | PROJECT_SPECIFIC | The product has an authenticated identity | `backend/boundaries.md`, `backend/application.md`, `backend/access-scope.md` | Mechanism and provider; the concrete session or token model | Resolved at the request boundary (`infrastructure/runtime.md`); same-origin (`general/http-surface.md`); a table the provider writes follows the aggregate ownership of `domain/model.md` | — | Project Architecture | The mechanism shapes the structure, like session × token or a provider with its own schema |
 | Autorização | PROJECT_SPECIFIC | Actions or resources with different access policies | `backend/access-scope.md`, `backend/errors.md`, `backend/boundaries.md` | The concrete permission model; the real roles and policies | Refusal in the shape of `backend/errors.md`, "Erros sensíveis"; no global permission model or library | — | Project Architecture | The permission model is structural |
 | Identidade do dono | PROJECT_SPECIFIC | Isolation by organization, customer or another owner | `backend/access-scope.md` | The entity that represents the owner; the identifier; its origin in the identity or in the request | Origin validated at the boundary; scope in every `where`; A/B proof | — | Project Architecture | The choice sets the data isolation boundary |
-| Bounded contexts | GLOBAL_CONDITIONAL | One of the signals of `domain/bounded-contexts.md` | `domain/bounded-contexts.md` | The contexts, their names and boundaries, the modules of each and the contracts between them | No entity or repository contract across contexts; interaction by explicit contract | One context | Project Architecture | The split is a structural decision |
-| Domain Service / Policy | GLOBAL_CONDITIONAL | A domain rule with no natural owner in a value object, entity or aggregate | `domain/domain-services.md` | The concrete rule; the concept and module it belongs to; the minimal form | No IO and no framework; facts loaded by the use case | Rule in the model | The rule's code | — |
 | Módulos e agregados | PROJECT_SPECIFIC | The first module; before the first contract of each aggregate | `backend/modules.md`, `domain/model.md` | The module split; the ownership and the form of each aggregate | A module per business concept; the forms of `domain/model.md` | Aggregate owned by the app | Project Architecture | An external system writes the table, under the integration's agreement |
 | Apps e pacotes | PROJECT_SPECIFIC | Initial activation; a new capability | `general/code-placement.md` | The real apps and packages; the owner package of each capability | Placement by ownership (`general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app"); no catch-all package | The artifact stays in the app while shared ownership isn't unequivocal | Project Architecture | A new app or package changes the monorepo structure |
 | Destino do log | GLOBAL | The runtime runs in an environment with a log collector | `infrastructure/logging.md` | Where the lines go (collector, aggregator); trust in a proxy's `x-request-id` | `nestjs-pino`, level per environment, redaction and context of `infrastructure/logging.md` | JSON on stdout | Project Architecture | A proxy's `x-request-id` starts being accepted |
