@@ -4,6 +4,10 @@ description: "o uso de token e tema no código do app — cor, espaçamento e ti
 use_when:
   - "escolher cor, espaçamento ou tipografia"
   - "mexer em tema ou no provider de tema"
+applies_to:
+  - "apps/app-web/index.html"
+  - "apps/app-web/src/app/index.tsx"
+  - "packages/ui/src/styles/globals.css"
 keywords: [token, tokens de UI, design system, "@metri/ui", Tailwind, valor arbitrário, tema, light, dark, documentElement, "@custom-variant dark", ThemeProvider, theme-provider, next-themes, useTheme, script inline, primeiro paint, prefers-color-scheme, system]
 not_covered:
   - "valores e vocabulário visual → project:DESIGN"

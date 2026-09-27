@@ -27,13 +27,15 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - [x] 1.3 Criar a estrutura de pastas do source (metodologia, seção 5.3), **sem mover as regras ainda**: `catalog/`, `defaults/`, `methodology/templates/`, `template/`, `adr/`, `skills/`, `CHANGELOG.md`
 - [x] 1.4 `AGENTS.md` deste repositório (até ~15 linhas): o que é este repo, onde está a metodologia, que o progresso está em `SETUP.md`
 
-## ▶ Agora: Fase 2, regras existentes → novo formato (seções 6.2, 6.3 e 7)
+## Fase 2: regras existentes → novo formato (seções 6.2, 6.3 e 7)
+
+Fase 2 fechada: decisões P1 a P8 aplicadas, docs-lint sem erro e rules-index:check verde.
 
 - [x] 2.1 Inventário: cada arquivo de regra com área, tema, seções que já tem e classificação **global** ou **específico de projeto**. Saída: tabela no chat para aprovação (não vira arquivo)
   - D1 Stack repetida vira default global (`architecture/defaults/stack.md` + ADR global): só a lista `## Stack` do `overview` vai para lá; as menções à stack no texto das regras ficam; sem seção "Stack padrão"; outra stack = ADR + regra de projeto.
   - D2 Regras do `overview` saem primeiro: layer-first → `backend/`; princípios 6 e 7 e colocação app × pacote → `general/`; Stack → `architecture/defaults/stack.md`; caminho da request → template do INDEX de projeto; as extrações movem o texto como ele está, sem reescrever.
   - D3 Capacidades condicionais são globais; a ativação fica no INDEX do projeto.
-  - D4 Caso de uso, classe/registro de evento e erro de domínio → `domain/`; adaptador/DI, despacho/subscriber e tradução HTTP → `backend/`; variação de integração → `backend/` ou `infrastructure/`.
+  - D4 Revogada: a posse de cada tema é definida pela `description` de cada arquivo (antes: Caso de uso, classe/registro de evento e erro de domínio → `domain/`; adaptador/DI, despacho/subscriber e tradução HTTP → `backend/`; variação de integração → `backend/` ou `infrastructure/`).
   - D5 O `design-system` do frontend vira exemplo de projeto; o global mantém "só token" e o contrato de tema.
   - D6 Regras existentes são refinadas, não reescritas (METHODOLOGY 7.2).
   - D7 Exemplos didáticos no global; só a implementação completa vai para `<tema>.examples.md` (METHODOLOGY 7.2, item 2); `examples` aponta para ele e, quando existir, para `template/`; nas regras de projeto, para código real.
@@ -56,23 +58,16 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
 
-Fase 2 aberta: decisões pendentes da revisão de fechamento (cada uma vira edição no dono ou ADR):
+Lacunas conhecidas, decisão pendente (não seguram a fase):
 
-- P1 Ferramenta tornada obrigatória fora de `architecture/defaults/stack.md` e sem "Ferramentas": `@faker-js/faker` (backend/testing, frontend/testing), Tailwind e `next-themes` (frontend/theming), `@better-fetch/fetch` (frontend/data-fetching), MSW, Testing Library e jsdom (frontend/testing), Zustand "deste projeto" (frontend/state, ADR-0012), `@nestjs/throttler` (infrastructure/runtime), React Email (infrastructure/mail).
-- P2 Corpo HTTP no frontend: o detalhe chega como `{ order }` (backend/reading), mas `fetchOrder` e o builder `makeOrder` usam o recurso solto; o envelope de escrita é tipado à mão em `api/order.ts`; `OrderStatus` em maiúsculas (helpers, data-fetching) × minúsculas (testing, components).
-- P3 Escopo do dono nos exemplos: `ConfirmOrderUseCase` sem `requesterId` em backend/errors e backend/transactions; e2e de backend/testing.examples sem credencial; a forma da credencial é de projeto.
-- P4 `applies_to` largo: backend/application (controllers, events, jobs), backend/errors (tradução e filtro sem caminho fixo), frontend/forms, data-fetching e routing (`pages/**`), frontend/theming (sem `applies_to`), infrastructure/logging (`infra/common/**` ou `infra/**`); pesa no orçamento de ~5 regras.
-- P5 E-mail de confirmação: domain/strategy monta a mensagem na base e usa `NotifyOrderConfirmationUseCase` × infrastructure/mail (composição no sender, `SendOrderConfirmationUseCase`); domain/strategy cita infrastructure/services para a classe de vendor; o mesmo efeito é evento (operation-routing, events) e job (async-jobs).
-- P6 Storage e services: prefixo da chave da foto de produto (storage, "O namespace de um asset" × exemplo); ADR-0019 deixa aberto o que a regra já decide; risco de consumo concorrente aceito no global × backend/transactions; `{ key }` aceito do cliente em watched-list.examples; classe de infra sem export × health check que a injeta; stub da impl de cache fora da exceção de infrastructure/services.
-- P7 Metodologia: frontmatter do A.7 e INDEX de slices (o `rules-index` quebra); lint de `applies_to` sem casamento (15.6 × 6.13); `## Regras` obrigatório em authoring × A.6; "Project Brain" e a casa da Project Architecture (authoring × 5.2); formato de `methodology/templates/examples/design-system.md`; cabeçalhos "Dono de" em `methodology/authoring.md`.
-- P8 Soltos: D4 nem aplicada nem revogada; AGENTS.md só autoriza editar `architecture/` em passo da Fase 2; tags `ORDER-003` sem dono (× `BR<n>`); Tabs do `@metri/ui` importadas por nome × compound; "decisão registrada junto ao código" em general/code-placement × authoring.
+- `infrastructure/cache.md`, "Spec": o spec da impl de cache usa stub local da classe de infra pela ramificação própria (degradar a falha), mas a exceção de `infrastructure/services.md`, "Testes", só cobre a impl que compõe ou escolhe entre vendors.
 
-## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
+## ▶ Agora: Fase 3, vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
 - [ ] 3.1 `methodology/VOCABULARY.md`
 - [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; ADR `stack` para `architecture/defaults/stack.md`, que já existe (os dois ADRs pegam os próximos números livres de `adr/`)
 - [ ] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
-- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX (o de architecture INDEX, com "Caminhos do projeto", já existe desde o 2.5)
+- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX (o de architecture INDEX, com "Caminhos do projeto", já existe desde o 2.5); aqui se decide o formato de `methodology/templates/examples/design-system.md`
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
@@ -82,7 +77,7 @@ Fase 2 aberta: decisões pendentes da revisão de fechamento (cada uma vira edi�
   - `pnpm rules-index` gera; `pnpm rules-index:check` sai com 1 se algum INDEX estiver desatualizado.
 - [ ] 4.2 `rules-for`: devolve as regras aplicáveis a caminhos ou a um ticket; soma os "Caminhos do projeto" do INDEX ao `applies_to`
 - [ ] 4.3 `docs-lint`: árvore permitida, frontmatter das regras, formato da matriz
-  - Parte do source feita; faltam a árvore do projeto e o formato da matriz.
+  - Parte do source feita; faltam a árvore do projeto, o formato da matriz e o aviso de `applies_to` sem casamento.
 - [ ] 4.4 `verify`: agrega os checks
 - [ ] 4.5 Rodar tudo neste repositório até ficar verde
 

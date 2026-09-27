@@ -30,8 +30,8 @@ Formulário é a parte da tela que recebe entrada do usuário: ele valida no nav
 | --- | --- | --- |
 | React Hook Form | DECIDIDA | `defaults/stack.md`, "Stack" |
 | Zod | DECIDIDA | `defaults/stack.md`, "Stack" |
-| `react-phone-number-input` | DECIDIDA | "Campo montado no app", abaixo |
-| `use-mask-input` (sobre o Inputmask) | DECIDIDA | "Campo montado no app", abaixo |
+| `react-phone-number-input` | DECIDIDA | `defaults/stack.md`, "Stack"; uso em "Campo montado no app", abaixo |
+| `use-mask-input` (sobre o Inputmask) | DECIDIDA | `defaults/stack.md`, "Stack"; uso em "Campo montado no app", abaixo |
 
 ## Regras
 

@@ -12,7 +12,7 @@ export interface ShippingContext {
 }
 
 export abstract class ShippingCostCalculator {
-  /** ORDER-004 — frete em centavos inteiros, por modalidade de entrega. */
+  /** BR4 — frete em centavos inteiros, por modalidade de entrega. */
   abstract calculate(context: ShippingContext): number;
 }
 
@@ -72,7 +72,7 @@ interface NotifyOrderConfirmationInput {
 
 type NotifyOrderConfirmationOutput = Either<OrderNotFoundError, { order: Order }>;
 
-/** ORDER-005 — confirmação notifica o cliente pelo canal da preferência dele. */
+/** BR5 — confirmação notifica o cliente pelo canal da preferência dele. */
 @Injectable()
 export class NotifyOrderConfirmationUseCase {
   private readonly notifiers: Record<NotificationChannel, OrderNotifier>;
@@ -101,6 +101,8 @@ export class NotifyOrderConfirmationUseCase {
     const notifier = this.notifiers[channel];
     await notifier.send({
       orderId: order.id.toValue(),
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
       totalInCents: order.totalInCents,
     });
 

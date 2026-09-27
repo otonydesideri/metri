@@ -6,7 +6,7 @@
 import type { UniqueEntityID } from '@metri/core/entities';
 import type { DomainEvent } from '@metri/core/events';
 
-/** ORDER-003 — pedido saiu de rascunho; notificação e faturamento reagem. */
+/** BR3 — pedido saiu de rascunho; notificação e faturamento reagem. */
 export class OrderConfirmedEvent implements DomainEvent {
   public readonly occurredAt: Date;
 

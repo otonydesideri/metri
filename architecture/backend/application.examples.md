@@ -13,7 +13,7 @@ import { OrderRepository } from '../../repositories/order-repository.contract';
 
 interface ConfirmOrderInput {
   orderId: string;
-  requesterId: string;
+  customerId: string;
 }
 
 type ConfirmOrderOutput = Either<
@@ -21,14 +21,14 @@ type ConfirmOrderOutput = Either<
   { order: Order }
 >;
 
-/** ORDER-003 — confirmação congela o pedido para faturamento. */
+/** BR3 — confirmação congela o pedido para faturamento. */
 @Injectable()
 export class ConfirmOrderUseCase {
   constructor(private readonly orderRepository: OrderRepository) {}
 
   async execute({
     orderId,
-    requesterId,
+    customerId,
   }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
     const order = await this.orderRepository.findById(orderId);
 
@@ -36,7 +36,7 @@ export class ConfirmOrderUseCase {
       return failure(new OrderNotFoundError(orderId));
     }
 
-    if (order.customerId.toValue() !== requesterId) {
+    if (order.customerId.toValue() !== customerId) {
       return failure(new OrderNotFoundError(orderId));
     }
 

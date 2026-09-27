@@ -67,7 +67,7 @@ Providers de serviço de infra entram num módulo único, `ServicesModule`, mesm
 export class ServicesModule {}
 ```
 
-A classe de infra entra em `providers` mas não em `exports`: nada fora das implementações da própria pasta de services deveria precisar dela direto. Contrato novo entra na mesma lista, com `{ provide: <Contrato>, useClass: <Impl> }` em `providers` e o contrato em `exports`.
+A classe de infra entra em `providers` mas não em `exports`: nada fora das implementações da própria pasta de services deveria precisar dela direto. A exceção é o consumidor técnico puro da árvore acima, o health check: ele mora no `@Module` próprio de `infrastructure/runtime.md`, "Composição no `AppModule`", e a classe que ele injeta entra em `exports`. Contrato novo entra na mesma lista, com `{ provide: <Contrato>, useClass: <Impl> }` em `providers` e o contrato em `exports`.
 
 ## Testes
 
@@ -78,7 +78,7 @@ Dublê por contrato, nunca da classe de infra. O dublê vive em `test/services/<
 - A capacidade nova passou pela regra dos níveis (classe de infra sem contrato, contrato específico pra quem é domínio/aplicação)?
 - O nome do vendor aparece só na classe de infra?
 - Um contrato por fluxo real, nunca um contrato genérico da capacidade nem por módulo?
-- Providers no `ServicesModule`, com a classe de infra fora de `exports`?
+- Providers no `ServicesModule`, com a classe de infra fora de `exports`, salvo a que o health check injeta?
 - A subpasta de `services/` nomeia a capacidade, sem reusar nome de módulo com agregado?
 - Impl que precisa de outra capacidade injeta o contrato dela, nunca a classe de vendor dela?
 - Dublê por contrato acumulando em `items`, e a classe de infra substituída só no spec da impl que compõe?

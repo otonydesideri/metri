@@ -9,7 +9,7 @@ import { parse } from 'yaml';
 const HEADER = 'Gerado por rules-index. Não edite.';
 const MARKER = '<!-- rules-index -->';
 
-type Rule = { id: string; description: string; useWhen: string[] };
+type Rule = { id: string; description: string; useWhen: string[]; entry?: string };
 
 const args = process.argv.slice(2);
 const isCheck = args.includes('--check');
@@ -28,7 +28,8 @@ function readRule(path: string): Rule {
   if (!Array.isArray(frontmatter.use_when)) {
     throw new Error(`${path}: frontmatter sem use_when`);
   }
-  return { id: frontmatter.id, description: frontmatter.description, useWhen: frontmatter.use_when };
+  const entry = typeof frontmatter.entry === 'string' ? frontmatter.entry : undefined;
+  return { id: frontmatter.id, description: frontmatter.description, useWhen: frontmatter.use_when, entry };
 }
 
 function isRuleFile(name: string): boolean {
@@ -39,11 +40,20 @@ function cell(text: string): string {
   return text.replaceAll('|', '\\|').replaceAll('\n', ' ');
 }
 
+// Quando as entradas têm `entry` (as slices, A.7), a tabela ganha a coluna do ponto de entrada.
 function areaIndex(rules: Rule[]): string {
-  const rows = rules.map(
-    (rule) => `| ${cell(rule.id)} | ${cell(rule.description)} | ${cell(rule.useWhen.join('; '))} |`,
-  );
-  return [HEADER, '', '| id | description | use_when |', '| --- | --- | --- |', ...rows, ''].join('\n');
+  const hasEntry = rules.some((rule) => rule.entry !== undefined);
+  const rows = rules.map((rule) => {
+    const cells = [rule.id, rule.description, rule.useWhen.join('; ')];
+    if (hasEntry) {
+      cells.push(rule.entry ?? '');
+    }
+    return `| ${cells.map(cell).join(' | ')} |`;
+  });
+  const head = hasEntry
+    ? ['| id | description | use_when | entry |', '| --- | --- | --- | --- |']
+    : ['| id | description | use_when |', '| --- | --- | --- |'];
+  return [HEADER, '', ...head, ...rows, ''].join('\n');
 }
 
 function rootIndex(current: string, areas: Map<string, Rule[]>): string {

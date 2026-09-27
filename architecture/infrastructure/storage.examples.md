@@ -124,7 +124,7 @@ export class ProductPhotoStorageImpl implements ProductPhotoStorage {
     input: RequestProductPhotoUploadInput,
   ): Promise<RequestProductPhotoUploadOutput> {
     const extension = EXTENSION_BY_MIME_TYPE[input.mimeType];
-    const key = `products/${input.productId}/photos/${randomUUID()}.${extension}`;
+    const key = `product-photo/${randomUUID()}.${extension}`;
 
     const uploadUrl = await this.r2.getSignedUploadUrl(
       this.r2.publicBucket,

@@ -56,7 +56,7 @@ O formato do arquivo de regra está na METHODOLOGY: frontmatter em 4.3, corpo em
 | `**Recomendado.**` | RECOMMENDED |
 | `**Permitido.**` | PERMITTED |
 
-**Obrigatório.** Toda norma nova fica em `## Regras`, marcada por um dos marcadores da tabela.
+**Obrigatório.** Toda norma nova é marcada pela modalidade, com um dos marcadores da tabela, dentro de `## Regras` ou da seção temática em que está; os dois formatos valem (METHODOLOGY 7.1).
 
 **Obrigatório.** Uma regra tem uma modalidade e um assunto.
 
@@ -133,7 +133,7 @@ Nomes que os exemplos da Source usam.
 | Frete | `ShippingCostCalculator`, `DeliveryMethod` |
 | Desconto | `calculateLoyaltyDiscount` |
 | Reembolso | `RefundableOrderSpecification` |
-| Relatório de pedidos | `OrderReportStorage` |
+| Relatório de pedidos | `OrderReportStorage`, `GenerateOrderReportUseCase` |
 | Carrinho | `CartItem`, `useCartStore` |
 | Pagamento | `PaymentReceivedEvent` |
 
@@ -228,8 +228,8 @@ O índice de cada área é gerado do frontmatter (METHODOLOGY 6.11).
 | Architecture Source (`architecture/`, em `.metri/` no projeto) | Decisão global e reutilizável |
 | ADR (`docs/adr/`) | Decisão específica do projeto que é estrutural, significativa, com trade-off, difícil de reverter e cujo rationale precisa ser preservado, incluindo a exceção deliberada a uma regra da Source |
 | Project Architecture | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages existentes, ativações, decisões operacionais vigentes |
-| Project Brain | Índice do projeto: ponteiros para a Project Architecture, o ADR e os demais documentos vigentes do projeto |
-| `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o Project Brain, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
+| `docs/architecture/INDEX.md` | Índice do projeto: ponteiros para a Project Architecture, o ADR e os demais documentos vigentes do projeto |
+| `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o `docs/architecture/INDEX.md`, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
 
 **Obrigatório.** Decisão global e reutilizável fica na Architecture Source.
 
@@ -241,15 +241,15 @@ Quando uma decisão de projeto, exceção incluída, muda o estado vigente do pr
 
 **Obrigatório.** Estado e configuração vigentes do projeto ficam na Project Architecture.
 
-**Proibido.** O Project Brain copiar decisão da Project Architecture ou do ADR: ele aponta para eles.
+**Proibido.** O `docs/architecture/INDEX.md` copiar decisão da Project Architecture ou do ADR: ele aponta para eles.
 
-A localização e o formato físico da Project Architecture e do Project Brain pertencem ao workflow/tooling do projeto.
+A localização e o formato físico da Project Architecture e do `docs/architecture/INDEX.md` estão na METHODOLOGY, seção 5.2.
 
 **Proibido.** Documento da Source registrar o resultado de decisão por app, como a divisão de módulos e a forma de cada agregado: ele ensina o procedimento de decidir, e o resultado fica nas casas de projeto.
 
-**Proibido.** `AGENTS.md`, `CLAUDE.md` ou instrução local criar exceção arquitetural, redefinir regra da Source ou substituir o ADR, a Project Architecture ou o Project Brain.
+**Proibido.** `AGENTS.md`, `CLAUDE.md` ou instrução local criar exceção arquitetural, redefinir regra da Source ou substituir o ADR, a Project Architecture ou o `docs/architecture/INDEX.md`.
 
-**Permitido.** `AGENTS.md`, `CLAUDE.md` e instruções locais apontarem para a Architecture Source, o ADR e o Project Brain e darem orientação operacional local.
+**Permitido.** `AGENTS.md`, `CLAUDE.md` e instruções locais apontarem para a Architecture Source, o ADR e o `docs/architecture/INDEX.md` e darem orientação operacional local.
 
 Quando um assunto ganha documento na Source: **Obrigatório.** Ele sai das instruções de projeto na mesma sessão em que o documento é escrito ou revisado.
 
@@ -269,7 +269,7 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 - Nenhum changelog nem documento paralelo de decisão dentro da Source?
 - O documento está na pasta da área dona e cobre um assunto só?
 - Decisão específica de projeto registrada fora da Source, na casa certa, e toda exceção a uma regra da Source em ADR que nomeia a regra, o escopo e o rationale?
-- Nenhuma instrução local cria exceção, redefine regra da Source ou faz o papel de ADR, Project Architecture ou Project Brain?
+- Nenhuma instrução local cria exceção, redefine regra da Source ou faz o papel de ADR, Project Architecture ou `docs/architecture/INDEX.md`?
 
 ## Referências
 

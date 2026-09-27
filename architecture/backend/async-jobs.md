@@ -32,7 +32,7 @@ Worker é adaptador de entrada fino, da mesma natureza do controller e do subscr
 
 ## Job é comando
 
-Job é um comando: descreve uma intenção no imperativo (`send-order-confirmation`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`; este documento define o job depois que a árvore de lá chega nele.
+Job é um comando: descreve uma intenção no imperativo (`generate-order-report`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`; este documento define o job depois que a árvore de lá chega nele.
 
 ## A referência dos exemplos: fila no Postgres (pg-boss)
 
@@ -53,13 +53,13 @@ O custo dessa família é o teto de throughput: a fila compete com o banco por W
 O caso de uso (ou subscriber) que enfileira não conhece pg-boss; conhece um contrato de fila do fluxo, em `src/domain/application/queues/<fluxo>-queue.contract.ts`. É uma família de contrato da camada application, como `repositories/` e `services/`: service é "faça agora, em linha"; fila é "garanta que isso acontece depois".
 
 ```ts
-export type OrderConfirmationQueueInput = {
+export type OrderReportQueueInput = {
   orderId: string;
   customerId: string;
 };
 
-export abstract class OrderConfirmationQueue {
-  abstract enqueue(input: OrderConfirmationQueueInput): Promise<void>;
+export abstract class OrderReportQueue {
+  abstract enqueue(input: OrderReportQueueInput): Promise<void>;
 }
 ```
 
@@ -72,7 +72,7 @@ Pontos-chave:
 
 Mora em `src/infra/jobs/<fluxo>.pg-boss-queue.impl.ts`, espelhando o `<agregado>.prisma-repository.impl.ts` da persistência. É fina: repassa o input para a fila do job.
 
-Exemplo completo: async-jobs.examples.md#orderconfirmationpgbossqueueimpl
+Exemplo completo: async-jobs.examples.md#orderreportpgbossqueueimpl
 
 `singletonKey` deduplica na origem: enquanto existir job pendente com a mesma chave, enfileirar de novo não cria segundo job. É a primeira linha de defesa contra duplicação; a segunda é a idempotência do handler.
 
@@ -80,7 +80,7 @@ Exemplo completo: async-jobs.examples.md#orderconfirmationpgbossqueueimpl
 
 Mora em `src/infra/jobs/<job>.worker.ts`, classe `<Job>Worker`. O nome da fila é o nome do comando em kebab-case, igual ao arquivo. A definição da fila (retry, dead letter) vive como constante exportada no arquivo do worker, que é quem conhece o custo de reexecutar.
 
-Exemplo completo: async-jobs.examples.md#sendorderconfirmationworker
+Exemplo completo: async-jobs.examples.md#generateorderreportworker
 
 Pontos-chave:
 
@@ -101,7 +101,7 @@ Três produtores, em ordem de frequência esperada:
 ```ts
 await this.prisma.client.$transaction(async (tx) => {
   // ...upserts do fluxo, como em backend/persistence.examples.md#orderprismarepositoryimpl...
-  await this.pgBoss.sendInTransaction(tx, SEND_ORDER_CONFIRMATION_QUEUE.name, input);
+  await this.pgBoss.sendInTransaction(tx, GENERATE_ORDER_REPORT_QUEUE.name, input);
 });
 ```
 
@@ -131,7 +131,7 @@ Pontos-chave:
 Reexecutar qualquer handler é cenário normal de operação, não edge case. As técnicas, em ordem de preferência:
 
 1. Operação naturalmente idempotente: upsert, valor absoluto em vez de incremento, deleção por critério. A segunda execução produz o mesmo estado.
-2. Verificação de estado antes do efeito: o caso de uso recarrega o agregado e sai cedo se o fato já foi tratado (`confirmationSentAt` preenchido, pedido cancelado). É a forma que o retorno `failure(...)` esperado já induz.
+2. Verificação de estado antes do efeito: o caso de uso recarrega o agregado e sai cedo se o fato já foi tratado (relatório já gerado, pedido cancelado). É a forma que o retorno `failure(...)` esperado já induz.
 3. Unique constraint no banco do efeito, quando o efeito é uma escrita nossa: a segunda execução viola a constraint, a implementação da escrita reconhece a violação e devolve o outcome que declara para ela, e o caso de uso trata esse outcome como sucesso (`backend/persistence.md`, "Outcome de persistência"). A violação não escapa como exceção técnica, que pela regra de falha do worker iria para retry e dead letter por um efeito que já aconteceu.
 4. `singletonKey` na origem, contra duplicação de enfileiramento (seção "A implementação do contrato"). Reduz duplicatas, não substitui as técnicas acima: dedup na origem não protege contra reexecução por retry.
 
@@ -172,14 +172,14 @@ O registro no Nest é o `jobs.module.ts` central, na mesma lógica de `events.mo
 **Spec de quem enfileira** prova que o comando entrou na fila, não que ele executou. Para o subscriber, é o mesmo formato do spec de subscriber de `backend/testing.md`, com a asserção no dublê:
 
 ```ts
-it('enfileira a confirmação quando o pedido é confirmado', async () => {
+it('enfileira o relatório quando o pedido é confirmado', async () => {
   const order = makeOrder();
   order.confirm();
 
   await inMemory.OrderRepository.save(order);
 
   await waitFor(() => {
-    expect(orderConfirmationQueue.items).toHaveLength(1);
+    expect(orderReportQueue.items).toHaveLength(1);
   });
 });
 ```

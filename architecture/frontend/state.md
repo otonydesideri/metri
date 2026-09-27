@@ -130,7 +130,7 @@ Um cuidado com Context: quando o valor do Provider muda, todo componente que cha
 
 ## Zustand: estado transversal a várias telas
 
-Use Zustand quando o estado é compartilhado entre telas diferentes (um carrinho que aparece no header e na página de checkout, um filtro global aplicado em várias listas) ou quando o custo de re-render do Context seria alto e você precisa de subscrição granular. Zustand é a biblioteca de estado global cliente deste projeto; a decisão e o gatilho de revisão estão em Pontos em aberto.
+Use Zustand quando o estado é compartilhado entre telas diferentes (um carrinho que aparece no header e na página de checkout, um filtro global aplicado em várias listas) ou quando o custo de re-render do Context seria alto e você precisa de subscrição granular. Zustand é a biblioteca de estado global cliente desta Source; a decisão e o gatilho de revisão estão em Pontos em aberto.
 
 O store mora na casa `shared/stores/`, por módulo (`shared/stores/cart.ts`), com `create<T>()` tipado. Não há Provider: o store é um hook global, e é essa a diferença prática pro Context. Estado e ações moram no mesmo `create`.
 

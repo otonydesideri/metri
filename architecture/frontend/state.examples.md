@@ -4,7 +4,7 @@
 
 ```tsx
 import { useSearchParams } from 'react-router';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@metri/ui/components/ui/tabs';
+import * as Tabs from '@metri/ui/components/ui/tabs';
 
 export function OrderDetailsTabs() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,16 +21,16 @@ export function OrderDetailsTabs() {
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange}>
-      <TabsList>
-        <TabsTrigger value="details">Detalhes</TabsTrigger>
-        <TabsTrigger value="items">Itens</TabsTrigger>
-        <TabsTrigger value="payments">Pagamentos</TabsTrigger>
-      </TabsList>
-      <TabsContent value="details">{/* ... */}</TabsContent>
-      <TabsContent value="items">{/* ... */}</TabsContent>
-      <TabsContent value="payments">{/* ... */}</TabsContent>
-    </Tabs>
+    <Tabs.Root value={activeTab} onValueChange={handleTabChange}>
+      <Tabs.List>
+        <Tabs.Trigger value="details">Detalhes</Tabs.Trigger>
+        <Tabs.Trigger value="items">Itens</Tabs.Trigger>
+        <Tabs.Trigger value="payments">Pagamentos</Tabs.Trigger>
+      </Tabs.List>
+      <Tabs.Content value="details">{/* ... */}</Tabs.Content>
+      <Tabs.Content value="items">{/* ... */}</Tabs.Content>
+      <Tabs.Content value="payments">{/* ... */}</Tabs.Content>
+    </Tabs.Root>
   );
 }
 ```

@@ -338,7 +338,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 - **`rules-for <caminhos | --ticket T2.1>`** é um script do template, independente de ferramenta. Ele devolve só as regras aplicáveis (global, depois projeto, mais os ADRs citados).
 - Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no `applies_to` global: fica na seção "Caminhos do projeto" do `docs/architecture/INDEX.md` (glob → id), e o `rules-for` soma esses caminhos ao `applies_to` da regra.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
-- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Não há segunda fonte.
+- Os `INDEX.md` de cada área também são **gerados** a partir do frontmatter (`rules-index`): a primeira linha é "Gerado por rules-index. Não edite." e depois vem uma tabela `id | description | use_when`, uma linha por regra, com as entradas de `use_when` unidas por "; ". Arquivos `*.examples.md` ficam fora. Quando as entradas têm `entry` (as slices, A.7), a tabela ganha a coluna `entry`, que é o ponto de entrada que o roteamento lê. Não há segunda fonte.
 - O `INDEX.md` raiz tem uma parte escrita à mão, acima do marcador `<!-- rules-index -->`, e abaixo dele a lista gerada: área → caminho do `INDEX.md` da área, com o número de regras.
 - **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
 
@@ -381,6 +381,9 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
 - **Citações** (no source, em `architecture/`, `methodology/` e `adr/`, fora de bloco de código): todo caminho `.md` citado existe; quando o caminho entre crases vem seguido de uma seção entre aspas (`` `<arquivo>.md`, "Seção" `` ou `` `<arquivo>.md` ("Seção") ``), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final; toda âncora `#...` resolve para um título do arquivo. Arquivo do projeto (`docs/...`, `AGENTS.md`, `CONTEXT.md`, `PRODUCT.md`, `DESIGN.md`, `MATRIX.md`) não é conferido.
+- **Arquivos planejados:** `template/scripts/docs-lint.planned.json` lista cada arquivo que ainda não existe e o passo do `SETUP.md` que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe é erro ("tire da lista"), para a lista não ficar velha.
+- **`applies_to` sem casamento** (no projeto): glob que não casa com nenhum arquivo gera aviso, não erro; a regra é candidata a poda (seção 15.6).
+- **Saída:** `arquivo:linha: mensagem`, com o prefixo `aviso:` no aviso; o lint sai com código 1 só quando há erro.
 - **"Como ler":** todo id de regra do source aparece em "Como ler" do `architecture/INDEX.md`.
 - **Gerados:** `INDEX.md` atualizados; o `rules-index:check` sai com código 1 se algum estiver desatualizado.
 - **Matriz:** esquema da seção 9 (chaves em inglês, ids válidos, valores de enum válidos); todo ticket tem slice, tipo e checks; todo tracer aponta para um UC; nada órfão; todo `GAP-n` do código existe na matriz e vice-versa.
@@ -853,7 +856,7 @@ Entra por PR no repositório do source, com nova versão e registro no `CHANGELO
 **Poda:**
 
 - Regra com todos os itens de verificação cobertos por check → pode ser reduzida ao frontmatter, ao porquê e às exceções, porque a mensagem do check passa a ensinar o resto.
-- Regra cujo `applies_to` não casa com nada → o lint acusa.
+- Regra cujo `applies_to` não casa com nenhum arquivo → candidata a poda; o lint gera aviso, não erro.
 - ADR superado → `superseded by`.
 
 ---
@@ -1127,7 +1130,10 @@ Chave marcada `# opcional` só é escrita quando tem valor (seção 4.3).
 
 ```markdown
 ---
-id: slice/<name>
+id: slices/<nome>
+description: "<o que a slice garante, numa frase>"
+use_when:
+  - "<situação em que o agente lê o contrato da slice>"
 horizon: now | planned
 entry: <caminho do ponto de entrada>
 keywords: [<keyword>, <keyword>]

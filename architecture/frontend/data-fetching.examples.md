@@ -8,14 +8,20 @@ import {
   type CreateOrderInput,
   type FetchOrdersFilters,
   type Order,
+  type OrderDetails,
   type OrderList,
+  orderDetailsResponseSchema,
   orderListSchema,
-  orderSchema,
+  orderResponseSchema,
 } from '@metri/<pacote-dono>';
 import { httpClient } from '@/lib/http/client';
 
-export function fetchOrder(id: string): Promise<Order> {
-  return httpClient(`/orders/${id}`, { output: orderSchema });
+// o corpo nomeia o recurso ({ order }): a função desembrulha e devolve o recurso
+export async function fetchOrder(id: string): Promise<OrderDetails> {
+  const { order } = await httpClient(`/orders/${id}`, {
+    output: orderDetailsResponseSchema,
+  });
+  return order;
 }
 
 export function fetchOrders(filters?: FetchOrdersFilters): Promise<OrderList> {
@@ -25,12 +31,21 @@ export function fetchOrders(filters?: FetchOrdersFilters): Promise<OrderList> {
   });
 }
 
-export function createOrder(input: CreateOrderInput): Promise<{ order: Order }> {
-  return httpClient('/orders', { method: 'POST', body: input });
+export async function createOrder(input: CreateOrderInput): Promise<Order> {
+  const { order } = await httpClient('/orders', {
+    method: 'POST',
+    body: input,
+    output: orderResponseSchema,
+  });
+  return order;
 }
 
-export function cancelOrder(id: string): Promise<{ order: Order }> {
-  return httpClient(`/orders/${id}/cancel`, { method: 'POST' });
+export async function cancelOrder(id: string): Promise<Order> {
+  const { order } = await httpClient(`/orders/${id}/cancel`, {
+    method: 'POST',
+    output: orderResponseSchema,
+  });
+  return order;
 }
 ```
 
@@ -144,8 +159,8 @@ export function useCancelOrder() {
     mutationFn: cancelOrder,
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: orderKeys.detail(id) });
-      const previous = queryClient.getQueryData<Order>(orderKeys.detail(id));
-      queryClient.setQueryData<Order>(orderKeys.detail(id), (old) => {
+      const previous = queryClient.getQueryData<OrderDetails>(orderKeys.detail(id));
+      queryClient.setQueryData<OrderDetails>(orderKeys.detail(id), (old) => {
         if (!old) {
           return old;
         }

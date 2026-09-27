@@ -11,7 +11,6 @@ applies_to:
   - "apps/app-api/src/main.ts"
   - "apps/app-api/src/app.module.ts"
   - "apps/app-api/src/infra/common/**"
-  - "apps/app-api/src/infra/health/**"
 keywords: [main.ts, app.module.ts, AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
 not_covered:
   - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"

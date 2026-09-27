@@ -16,7 +16,7 @@ const DISCOUNT_RATE_BY_TIER: Record<CustomerTier, number> = {
   [CustomerTier.Gold]: 0.1,
 };
 
-/** ORDER-007 — desconto de fidelidade: nível do cliente sobre pedido acima do mínimo. */
+/** BR7 — desconto de fidelidade: nível do cliente sobre pedido acima do mínimo. */
 export function calculateLoyaltyDiscount(order: Order, customer: Customer): number {
   if (order.totalInCents < MINIMUM_TOTAL_FOR_DISCOUNT_IN_CENTS) {
     return 0;

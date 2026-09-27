@@ -99,7 +99,6 @@ export const PRODUCT_PHOTO_MIME_TYPES = [
 export type ProductPhotoMimeType = (typeof PRODUCT_PHOTO_MIME_TYPES)[number];
 
 export type RequestProductPhotoUploadInput = {
-  productId: string;
   mimeType: ProductPhotoMimeType;
 };
 
@@ -189,7 +188,7 @@ if (stat.sizeInBytes > MAX_PRODUCT_PHOTO_SIZE_IN_BYTES) {
 
 A verificação com `stat` na confirmação não é opcional, porque a assinatura de PUT não impõe tamanho máximo: qualquer um com a URL de escrita válida pode subir o que couber no teto do vendor dentro do TTL. O limite real de tamanho é checado aqui, contra o objeto que de fato chegou, e objeto inválido é removido na hora (o `null` do `stat` já significa ausência confirmada, então o `remove` só roda sobre objeto que existe e é inválido).
 
-O consumo é uma transição de estado, e a ordem em volta da escrita do agregado dono importa pelo mesmo raciocínio de "Arquivo físico segue o destino do registro", adiante: o upload é marcado consumido antes da persistência que referencia a chave, ou junto dela na mesma transação, pelo desenho de `backend/transactions.md`, quando o fluxo justificar. Se a marcação acontecer e a escrita falhar, o custo é um novo upload; a ordem inversa deixaria a chave referenciada com o registro ainda pendente, e a limpeza agendada apagaria um objeto em uso. Dois consumos concorrentes do mesmo `uploadId` passando juntos pela revalidação são a corrida da escada de locking de `backend/transactions.md`, risco aceito até o gatilho daquela escada.
+O consumo é uma transição de estado, e a ordem em volta da escrita do agregado dono importa pelo mesmo raciocínio de "Arquivo físico segue o destino do registro", adiante: o upload é marcado consumido antes da persistência que referencia a chave, ou junto dela na mesma transação, pelo desenho de `backend/transactions.md`, quando o fluxo justificar. Se a marcação acontecer e a escrita falhar, o custo é um novo upload; a ordem inversa deixaria a chave referenciada com o registro ainda pendente, e a limpeza agendada apagaria um objeto em uso. Dois consumos concorrentes do mesmo `uploadId` passando juntos pela revalidação são a corrida da escada de locking de `backend/transactions.md`, avaliada pelo projeto e, se aceita, registrada como decisão de projeto na forma de "Concorrência e locking".
 
 Upload órfão é estado normal de operação, não falha rara: URL emitida e nunca usada, binário subido e fluxo abandonado. A limpeza é uma tarefa agendada de `backend/async-jobs.md`, computando por estado: registros pendentes mais velhos que o TTL com folga, removendo objeto primeiro e registro depois. Se a remoção do objeto falhar, o registro sobrevive e a próxima rodada reprocessa; na ordem inversa, a falha deixaria um objeto sem ponteiro nenhum, invisível pra sempre e, no bucket público, ainda acessível por URL.
 
@@ -266,4 +265,4 @@ O e2e de asset que passa pelo backend monta o adapter HTTP com o mesmo limite de
 **Pontos em aberto:**
 
 - Em aberto: Cron de limpeza de uploads órfãos (ADR-0018)
-- Em aberto: Asset com leitura assinada: redação de log, limite de `requestUpload` e bucket privado (ADR-0019)
+- Em aberto: Limite de taxa de `requestUpload` (ADR-0019)

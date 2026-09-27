@@ -93,7 +93,7 @@ O mapper monta a lista na reconstituição (`new ProductPhotoList(photos)` dentr
 
 O ponto que decide se o padrão funciona: a substituição precisa preservar a identidade que `compareItems` usa. Numa coleção de itens com conteúdo próprio, essa identidade é o id da linha, então item mantido entra na substituição como a instância corrente, localizada por id na própria coleção, nunca recriado. Recriar todos os itens do input com ids novos faria `compareItems` não reconhecer nada, e o delta degeneraria em deletar e reinserir a coleção inteira a cada edição; com arquivo físico, em novo upload de tudo.
 
-O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. A chave do item novo chega já resolvida neste exemplo, pra manter o foco no delta; de onde ela vem de verdade (upload direto, registro pendente) é o fluxo de `infrastructure/storage.md`, "O upload direto e o registro pendente".
+O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. Item novo traz o id do registro de upload, nunca a chave, que não é aceita de cliente (`infrastructure/storage.md`, "Regras absolutas do storage"); o caso de uso resolve a chave pelo registro, no fluxo de `infrastructure/storage.md`, "O upload direto e o registro pendente".
 
 Exemplo completo: watched-list.examples.md#replaceproductphotosusecase
 
@@ -150,23 +150,7 @@ O limite que este documento fixa: o delta rastreia pertencimento, não conteúdo
 
 Quando o item da coleção referencia um arquivo em storage (a foto do produto), a ordem das operações em volta da escrita é a de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro": validação do upload dos itens novos antes de mutar o domínio, `replacePhotos()` e `save()`, remoção física dos arquivos dos itens removidos depois do `save()`.
 
-No caso de uso, só a montagem dos itens novos e o pós-`save()` mudam em relação ao exemplo anterior; item novo passa a trazer a referência do upload em vez da chave resolvida, e o repositório do agregado `Upload` e o contrato de storage entram como qualquer dependência de `application/`:
-
-```ts
-photos: Array<{ photoId: string } | { uploadId: string }>;
-```
-
-```ts
-// item novo: resolver e validar o upload antes de tocar o domínio
-// (stat e consumo: infrastructure/storage.md, "O upload direto e o registro pendente")
-const upload = await this.uploadRepository.findById(photo.uploadId);
-if (!upload || upload.consumed || upload.assetType !== 'product-photo') {
-  return failure(new UploadNotFoundError());
-}
-
-const created = ProductPhoto.create({ key: upload.key });
-nextPhotos.push(created.value);
-```
+No caso de uso, o exemplo anterior já resolve a chave do item novo pelo registro de upload; só o pós-`save()` muda, e o contrato de storage entra como qualquer dependência de `application/`:
 
 ```ts
 // depois do save(): o delta continua na lista, e é ele que diz o que apagar

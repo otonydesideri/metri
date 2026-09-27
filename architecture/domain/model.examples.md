@@ -48,7 +48,7 @@ export class Order extends AggregateRoot<OrderProps> {
     super(props, id);
   }
 
-  /** ORDER-001 — pedido nasce em rascunho e nunca nasce vazio. */
+  /** BR1 — pedido nasce em rascunho e nunca nasce vazio. */
   public static create(
     props: Optional<OrderProps, 'status' | 'createdAt'>,
   ): Either<EmptyOrderError, Order> {
@@ -93,7 +93,7 @@ export class Order extends AggregateRoot<OrderProps> {
     this.props.updatedAt = new Date();
   }
 
-  /** ORDER-002 — item entra só enquanto o pedido é rascunho. */
+  /** BR2 — item entra só enquanto o pedido é rascunho. */
   public addItem(item: OrderItem): Either<OrderNotEditableError, void> {
     if (this.props.status !== OrderStatus.Draft) {
       return failure(new OrderNotEditableError(this.props.status));
@@ -105,7 +105,7 @@ export class Order extends AggregateRoot<OrderProps> {
     return success(undefined);
   }
 
-  /** ORDER-003 — só rascunho pode ser confirmado. */
+  /** BR3 — só rascunho pode ser confirmado. */
   public confirm(): Either<InvalidOrderStatusTransitionError, void> {
     if (this.props.status !== OrderStatus.Draft) {
       return failure(

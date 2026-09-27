@@ -2,7 +2,9 @@
 // Checa o frontmatter das regras, as citações em architecture/, methodology/ e adr/,
 // a presença de cada regra em "Como ler" do architecture/INDEX.md e o rules-index:check.
 // Uso: docs-lint   (roda na raiz do source)
-// Saída: arquivo:linha: mensagem. Sai com código 1 se houver erro.
+// Saída: arquivo:linha: mensagem (aviso com o prefixo "aviso:"). Sai com código 1 se houver erro.
+// Arquivo planejado (docs-lint.planned.json, arquivo → passo do SETUP que o cria): citação a ele é aviso;
+// arquivo planejado que já existe é erro, para a lista não ficar velha.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, normalize, relative } from 'node:path';
@@ -33,13 +35,20 @@ const PROJECT_TARGETS = [
 // Arquivos do projeto citados pelo nome: moram no projeto, não no source.
 const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md'];
 
-type Problem = { file: string; line: number; message: string };
+type Problem = { file: string; line: number; message: string; isWarning?: boolean };
 type Heading = { text: string; slug: string };
+
+const PLANNED_PATH = 'template/scripts/docs-lint.planned.json';
+const planned: Record<string, string> = JSON.parse(readFileSync(PLANNED_PATH, 'utf8'));
 
 const problems: Problem[] = [];
 
 function report(file: string, line: number, message: string): void {
   problems.push({ file, line, message });
+}
+
+function warn(file: string, line: number, message: string): void {
+  problems.push({ file, line, message, isWarning: true });
 }
 
 function listMarkdown(dir: string): string[] {
@@ -137,6 +146,13 @@ function hasAnchor(path: string, anchor: string): boolean {
   return headingsOf(path).some(({ slug }) => slug === anchor);
 }
 
+function citationCandidates(from: string, cited: string): string[] {
+  const path = cited.replace(/^(architecture-source|\.metri)\//, '');
+  return [path, join(ARCHITECTURE, path), join(dirname(from), path)].map((candidate) =>
+    normalize(candidate),
+  );
+}
+
 // Resolve o caminho citado: raiz do source, architecture/ e a pasta do arquivo que cita.
 // Devolve null para arquivo do projeto, que o source não tem como conferir.
 function resolveCitation(from: string, cited: string): string | null | undefined {
@@ -144,10 +160,12 @@ function resolveCitation(from: string, cited: string): string | null | undefined
   if (path.startsWith('docs/') || PROJECT_FILES.includes(path)) {
     return null;
   }
-  const candidates = [path, join(ARCHITECTURE, path), join(dirname(from), path)].map((candidate) =>
-    normalize(candidate),
-  );
-  return candidates.find((candidate) => existsSync(candidate));
+  return citationCandidates(from, cited).find((candidate) => existsSync(candidate));
+}
+
+function plannedStep(from: string, cited: string): string | undefined {
+  const match = citationCandidates(from, cited).find((candidate) => candidate in planned);
+  return match === undefined ? undefined : planned[match];
 }
 
 // Citação: o caminho .md, a âncora opcional e, depois do caminho entre crases, as seções entre aspas
@@ -177,7 +195,12 @@ function lintCitations(path: string): void {
         continue;
       }
       if (target === undefined) {
-        report(path, line, `citação: ${cited} não existe`);
+        const step = plannedStep(path, cited);
+        if (step === undefined) {
+          report(path, line, `citação: ${cited} não existe`);
+        } else {
+          warn(path, line, `citação: ${cited} é arquivo planejado (passo ${step} do SETUP)`);
+        }
         continue;
       }
       if (anchor && !hasAnchor(target, anchor.slice(1))) {
@@ -336,6 +359,16 @@ function lintGenerated(): void {
   }
 }
 
+function lintPlanned(): void {
+  const lines = readFileSync(PLANNED_PATH, 'utf8').split('\n');
+  for (const path of Object.keys(planned)) {
+    if (existsSync(path)) {
+      const index = lines.findIndex((text) => text.includes(`"${path}"`));
+      report(PLANNED_PATH, index + 1, `planejado: ${path} já existe, tire da lista`);
+    }
+  }
+}
+
 const rules = ruleFiles();
 for (const path of rules) {
   lintFrontmatter(path);
@@ -344,9 +377,10 @@ for (const path of CITATION_ROOTS.flatMap(listMarkdown)) {
   lintCitations(path);
 }
 lintReadingOrder(rules);
+lintPlanned();
 lintGenerated();
 
-for (const { file, line, message } of problems) {
-  console.log(`${file}:${line}: ${message}`);
+for (const { file, line, message, isWarning } of problems) {
+  console.log(`${file}:${line}: ${isWarning ? 'aviso: ' : ''}${message}`);
 }
-process.exit(problems.length > 0 ? 1 : 0);
+process.exit(problems.some(({ isWarning }) => !isWarning) ? 1 : 0);

@@ -38,7 +38,7 @@ export class Product extends AggregateRoot<ProductProps> {
     super(props, id);
   }
 
-  /** PRODUCT-001 — produto nasce sem foto. */
+  /** BR8 — produto nasce sem foto. */
   public static create(
     props: Optional<ProductProps, 'photos' | 'createdAt'>,
   ): Either<never, Product> {
@@ -75,7 +75,7 @@ export class Product extends AggregateRoot<ProductProps> {
     this.props.updatedAt = new Date();
   }
 
-  /** PRODUCT-002 — a galeria é substituída inteira e nunca passa do limite. */
+  /** BR9 — a galeria é substituída inteira e nunca passa do limite. */
   public replacePhotos(
     photos: ProductPhoto[],
   ): Either<TooManyProductPhotosError, void> {
@@ -103,22 +103,30 @@ import {
   ProductPhotoNotFoundError,
   TooManyProductPhotosError,
 } from '../../../enterprise/errors/product.errors';
+import { UploadNotFoundError } from '../../../enterprise/errors/upload.errors';
 import { ProductRepository } from '../../repositories/product-repository.contract';
+import { UploadRepository } from '../../repositories/upload-repository.contract';
 
 interface ReplaceProductPhotosInput {
   productId: string;
-  photos: Array<{ photoId: string } | { key: string }>;
+  photos: Array<{ photoId: string } | { uploadId: string }>;
 }
 
 type ReplaceProductPhotosOutput = Either<
-  ProductNotFoundError | ProductPhotoNotFoundError | TooManyProductPhotosError,
+  | ProductNotFoundError
+  | ProductPhotoNotFoundError
+  | TooManyProductPhotosError
+  | UploadNotFoundError,
   { product: Product }
 >;
 
-/** PRODUCT-002 — a galeria enviada substitui a atual por completo. */
+/** BR9 — a galeria enviada substitui a atual por completo. */
 @Injectable()
 export class ReplaceProductPhotosUseCase {
-  constructor(private readonly productRepository: ProductRepository) {}
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly uploadRepository: UploadRepository,
+  ) {}
 
   async execute({
     productId,
@@ -148,7 +156,15 @@ export class ReplaceProductPhotosUseCase {
         continue;
       }
 
-      const created = ProductPhoto.create({ key: photo.key });
+      // item novo: a chave sai do registro de upload, nunca do cliente
+      // (stat e consumo: infrastructure/storage.md, "O upload direto e o registro pendente")
+      const upload = await this.uploadRepository.findById(photo.uploadId);
+
+      if (!upload || upload.consumed || upload.assetType !== 'product-photo') {
+        return failure(new UploadNotFoundError());
+      }
+
+      const created = ProductPhoto.create({ key: upload.key });
       nextPhotos.push(created.value);
     }
 

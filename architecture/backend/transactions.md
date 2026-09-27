@@ -61,9 +61,12 @@ O nome do fluxo mora na classe, e `run` é uniforme em todos: a peça é distint
 O caso de uso mantém a ordem de sempre, leitura, regra, gravação. A única diferença é que a gravação inteira vira uma chamada só, no fim:
 
 ```ts
-async execute({ orderId }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
+async execute({ orderId, customerId }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
   const order = await this.orderRepository.findById(orderId);
   if (!order) {
+    return failure(new OrderNotFoundError(orderId));
+  }
+  if (order.customerId.toValue() !== customerId) {
     return failure(new OrderNotFoundError(orderId));
   }
 

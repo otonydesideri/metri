@@ -52,7 +52,7 @@ export function OrderPage() {
   }
 
   const hasItems = order.items.length > 0;
-  const canEdit = order.status === 'draft';
+  const canEdit = order.status === 'DRAFT';
 
   if (!hasItems) {
     return <OrderEmptyState />;

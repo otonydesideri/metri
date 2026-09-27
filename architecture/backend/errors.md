@@ -124,7 +124,7 @@ type ConfirmOrderOutput = Either<
   { order: Order }
 >;
 
-async execute({ orderId }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
+async execute({ orderId, customerId }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
   const order = await this.orderRepository.findById(orderId);
   if (!order) {
     return failure(new OrderNotFoundError(orderId));
@@ -166,7 +166,8 @@ export function toHttpException(error: DomainError): HttpException {
 O handler vira uma linha:
 
 ```ts
-const result = await this.confirmOrderUseCase.execute({ orderId });
+// customerId: o escopo do dono que a fronteira de request validou (backend/access-scope.md)
+const result = await this.confirmOrderUseCase.execute({ orderId, customerId });
 if (result.isFailure()) {
   throw toHttpException(result.value);
 }

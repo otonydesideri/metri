@@ -7,7 +7,7 @@
 describe('orderRules.resolveDestination', () => {
   it('pedido confirmado na rota de edição → rota de detalhe', () => {
     const destination = orderRules.resolveDestination({
-      status: 'confirmed',
+      status: 'CONFIRMED',
       pathname: '/orders/order-1/edit',
     });
 
@@ -16,7 +16,7 @@ describe('orderRules.resolveDestination', () => {
 
   it('pedido confirmado na rota de detalhe → null', () => {
     const destination = orderRules.resolveDestination({
-      status: 'confirmed',
+      status: 'CONFIRMED',
       pathname: '/orders/order-1',
     });
 
@@ -36,7 +36,7 @@ describe('useConfirmOrder', () => {
     server.use(
       http.post(`${APP_URL}/api/orders/order-1/confirm`, () =>
         HttpResponse.json({
-          order: { id: 'order-1', status: 'confirmed', updatedAt: '2026-01-01T00:00:00.000Z' },
+          order: { id: 'order-1', status: 'CONFIRMED', updatedAt: '2026-01-01T00:00:00.000Z' },
           invoice: { id: 'invoice-1' },
         }),
       ),
@@ -45,7 +45,7 @@ describe('useConfirmOrder', () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    queryClient.setQueryData(orderKeys.detail('order-1'), makeOrder());
+    queryClient.setQueryData(orderKeys.detail('order-1'), makeOrder({ id: 'order-1' }).order);
 
     const { result } = renderHook(() => useConfirmOrder(), {
       wrapper: ({ children }) => (
@@ -57,7 +57,7 @@ describe('useConfirmOrder', () => {
 
     await waitFor(() => {
       expect(queryClient.getQueryData(orderKeys.detail('order-1'))).toMatchObject({
-        status: 'confirmed',
+        status: 'CONFIRMED',
         invoice: { id: 'invoice-1' },
       });
     });
@@ -70,21 +70,25 @@ describe('useConfirmOrder', () => {
 ```ts
 // test/factories/make-order.factory.ts
 import { faker } from '@faker-js/faker';
+import type { OrderStatus } from '@metri/<pacote-dono>';
 
 interface OrderPayload {
   id: string;
   customerName: string;
-  status: 'draft' | 'confirmed';
+  status: OrderStatus;
   totalInCents: number;
 }
 
-export function makeOrder(override: Partial<OrderPayload> = {}): OrderPayload {
+// o detalhe chega como envelope ({ order }): o override vale para o miolo
+export function makeOrder(override: Partial<OrderPayload> = {}): { order: OrderPayload } {
   return {
-    id: faker.string.uuid(),
-    customerName: faker.person.fullName(),
-    status: 'draft',
-    totalInCents: faker.number.int({ min: 1000, max: 100_000 }),
-    ...override,
+    order: {
+      id: faker.string.uuid(),
+      customerName: faker.person.fullName(),
+      status: 'DRAFT',
+      totalInCents: faker.number.int({ min: 1000, max: 100_000 }),
+      ...override,
+    },
   };
 }
 ```

@@ -1,64 +1,64 @@
 # Jobs assíncronos: exemplos
 
-## OrderConfirmationPgBossQueueImpl
+## OrderReportPgBossQueueImpl
 
 ```ts
 import { Injectable } from '@nestjs/common';
 import {
-  OrderConfirmationQueue,
-  type OrderConfirmationQueueInput,
-} from '../../domain/application/queues/order-confirmation-queue.contract';
+  OrderReportQueue,
+  type OrderReportQueueInput,
+} from '../../domain/application/queues/order-report-queue.contract';
 import { PgBossService } from './pg-boss.service';
-import { SEND_ORDER_CONFIRMATION_QUEUE } from './send-order-confirmation.worker';
+import { GENERATE_ORDER_REPORT_QUEUE } from './generate-order-report.worker';
 
 @Injectable()
-export class OrderConfirmationPgBossQueueImpl implements OrderConfirmationQueue {
+export class OrderReportPgBossQueueImpl implements OrderReportQueue {
   constructor(private readonly pgBoss: PgBossService) {}
 
-  async enqueue(input: OrderConfirmationQueueInput): Promise<void> {
-    await this.pgBoss.send(SEND_ORDER_CONFIRMATION_QUEUE.name, input, {
+  async enqueue(input: OrderReportQueueInput): Promise<void> {
+    await this.pgBoss.send(GENERATE_ORDER_REPORT_QUEUE.name, input, {
       singletonKey: input.orderId,
     });
   }
 }
 ```
 
-## SendOrderConfirmationWorker
+## GenerateOrderReportWorker
 
 ```ts
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import type { OrderConfirmationQueueInput } from '../../domain/application/queues/order-confirmation-queue.contract';
-import { SendOrderConfirmationUseCase } from '../../domain/application/use-cases/notification/send-order-confirmation.use-case';
+import type { OrderReportQueueInput } from '../../domain/application/queues/order-report-queue.contract';
+import { GenerateOrderReportUseCase } from '../../domain/application/use-cases/order/generate-order-report.use-case';
 import { PgBossService, type QueueDefinition } from './pg-boss.service';
 
-export const SEND_ORDER_CONFIRMATION_QUEUE: QueueDefinition = {
-  name: 'send-order-confirmation',
-  deadLetter: 'send-order-confirmation-dlq',
+export const GENERATE_ORDER_REPORT_QUEUE: QueueDefinition = {
+  name: 'generate-order-report',
+  deadLetter: 'generate-order-report-dlq',
   retryLimit: 5,
   retryDelay: 5,
   retryBackoff: true,
 };
 
 @Injectable()
-export class SendOrderConfirmationWorker implements OnModuleInit {
+export class GenerateOrderReportWorker implements OnModuleInit {
   constructor(
     private readonly pgBoss: PgBossService,
-    private readonly sendOrderConfirmationUseCase: SendOrderConfirmationUseCase,
+    private readonly generateOrderReportUseCase: GenerateOrderReportUseCase,
     private readonly logger: PinoLogger,
   ) {
-    this.logger.setContext(SendOrderConfirmationWorker.name);
+    this.logger.setContext(GenerateOrderReportWorker.name);
   }
 
   async onModuleInit(): Promise<void> {
-    await this.pgBoss.work<OrderConfirmationQueueInput>(
-      SEND_ORDER_CONFIRMATION_QUEUE,
+    await this.pgBoss.work<OrderReportQueueInput>(
+      GENERATE_ORDER_REPORT_QUEUE,
       (input) => this.handle(input),
     );
   }
 
-  private async handle(input: OrderConfirmationQueueInput): Promise<void> {
-    const result = await this.sendOrderConfirmationUseCase.execute({
+  private async handle(input: OrderReportQueueInput): Promise<void> {
+    const result = await this.generateOrderReportUseCase.execute({
       orderId: input.orderId,
       customerId: input.customerId,
     });
@@ -67,7 +67,7 @@ export class SendOrderConfirmationWorker implements OnModuleInit {
       // failure esperado é resultado de negócio: retry não muda a regra.
       this.logger.error(
         { err: result.value, orderId: input.orderId },
-        'SendOrderConfirmationWorker descartou o job',
+        'GenerateOrderReportWorker descartou o job',
       );
     }
   }

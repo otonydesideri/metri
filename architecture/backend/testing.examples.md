@@ -128,7 +128,7 @@ describe('ConfirmOrderUseCase', () => {
   it('pedido não encontrado → falha', async () => {
     const request = {
       orderId: 'order-1',
-      requesterId: 'customer-1',
+      customerId: 'customer-1',
     };
 
     const result = await sut.execute(request);
@@ -143,7 +143,7 @@ describe('ConfirmOrderUseCase', () => {
 
     const request = {
       orderId: order.id.toValue(),
-      requesterId: 'customer-1',
+      customerId: 'customer-1',
     };
 
     const result = await sut.execute(request);
@@ -163,6 +163,7 @@ import {
   type NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { Test, type TestingModule } from '@nestjs/testing';
+import { UniqueEntityID } from '@metri/core/entities';
 import request from 'supertest';
 import { OrderFactory } from '../../../../../test/factories/make-order.factory';
 import { AppModule } from '../../../../app.module';
@@ -197,18 +198,21 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
   });
 
   it('rascunho existente → confirmado', async () => {
-    const order = await orderFactory.makePrismaOrder();
+    const customerId = new UniqueEntityID();
+    const order = await orderFactory.makePrismaOrder({ customerId });
 
-    const response = await request(app.getHttpServer()).post(
-      `/api/orders/${order.id.toValue()}/confirm`,
-    );
+    // a credencial do dono tem a forma do projeto: o helper que a monta é o do
+    // projeto (docs/architecture/INDEX.md, "Matriz de delegações")
+    const response = await request(app.getHttpServer())
+      .post(`/api/orders/${order.id.toValue()}/confirm`)
+      .set(ownerCredential(customerId.toValue()));
 
     expect(response.status).toBe(200);
 
     const confirmedOnDatabase = await prisma.client.order.findUnique({
       where: { id: order.id.toValue() },
     });
-    expect(confirmedOnDatabase?.status).toBe('confirmed');
+    expect(confirmedOnDatabase?.status).toBe('CONFIRMED');
   });
 });
 ```

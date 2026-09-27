@@ -92,6 +92,8 @@ Quando a variação fala com o mundo externo (canal de envio, gateway por métod
 // domain/application/services/notification/order-notifier.contract.ts
 export interface OrderNotification {
   orderId: string;
+  customerName: string;
+  customerEmail: string;
   totalInCents: number;
 }
 
@@ -104,7 +106,25 @@ export abstract class EmailOrderNotifier extends OrderNotifier {}
 export abstract class SmsOrderNotifier extends OrderNotifier {}
 ```
 
-As implementações vivem em `infra/services/<capacidade>/<nome>.impl.ts` (`notification/email-order-notifier.impl.ts`, por exemplo) e entram em `services.module.ts` provendo o contrato da própria variação, construção igual à de qualquer service de `infrastructure/services.md`: `{ provide: EmailOrderNotifier, useClass: EmailOrderNotifierImpl }`, `{ provide: SmsOrderNotifier, useClass: SmsOrderNotifierImpl }`. Cada implementação consome por baixo a classe de infra do vendor daquele canal, que é a única a nomeá-lo (`infrastructure/services.md`).
+As implementações vivem em `infra/services/<capacidade>/<nome>.impl.ts` (`notification/email-order-notifier.impl.ts`, por exemplo) e entram em `services.module.ts` provendo o contrato da própria variação, construção igual à de qualquer service de `infrastructure/services.md`: `{ provide: EmailOrderNotifier, useClass: EmailOrderNotifierImpl }`, `{ provide: SmsOrderNotifier, useClass: SmsOrderNotifierImpl }`. Cada implementação chega ao canal pelo contrato da capacidade dele, nunca pela classe de vendor de outra capacidade (`infrastructure/services.md`). A de e-mail delega ao `OrderConfirmationSender`, e a composição do e-mail é dele (`infrastructure/mail.md`):
+
+```ts
+// infra/services/notification/email-order-notifier.impl.ts
+@Injectable()
+export class EmailOrderNotifierImpl extends EmailOrderNotifier {
+  constructor(private readonly orderConfirmationSender: OrderConfirmationSender) {
+    super();
+  }
+
+  async send(notification: OrderNotification): Promise<void> {
+    await this.orderConfirmationSender.send({
+      orderId: notification.orderId,
+      customerEmail: notification.customerEmail,
+      customerName: notification.customerName,
+    });
+  }
+}
+```
 
 O consumidor injeta os contratos das variações, nunca implementação, e monta a tabela de despacho no construtor:
 
@@ -120,22 +140,21 @@ Pontos-chave:
 
 ## Lógica comum entre variações: Template Method
 
-Quando duas ou mais variações duplicam a mesma preparação (montar a mensagem, validar o payload, registrar o resultado), a base deixa de ser só contrato: o método público concreto orquestra o passo comum e delega às variações apenas o passo que de fato varia, agora `protected` e abstrato. Vale para as duas casas, a família pura de `enterprise/` e o contrato de integração; o exemplo abaixo evolui o segundo.
+Quando duas ou mais variações duplicam a mesma preparação (validar o payload, registrar o resultado), a base deixa de ser só contrato: o método público concreto orquestra o passo comum e delega às variações apenas o passo que de fato varia, agora `protected` e abstrato. Vale para as duas casas, a família pura de `enterprise/` e o contrato de integração; o exemplo abaixo evolui o segundo.
 
 ```ts
 // domain/application/services/notification/order-notifier.contract.ts
 export abstract class OrderNotifier {
   async send(notification: OrderNotification): Promise<void> {
-    const totalInReais = (notification.totalInCents / 100).toFixed(2);
-    const message = `Pedido ${notification.orderId} confirmado. Total: R$ ${totalInReais}.`;
+    // passo comum: payload fora do contrato é bug de programação, não resultado de negócio
+    if (notification.totalInCents < 0) {
+      throw new Error(`Notificação do pedido ${notification.orderId} com total negativo`);
+    }
 
-    await this.deliver(message, notification);
+    await this.deliver(notification);
   }
 
-  protected abstract deliver(
-    message: string,
-    notification: OrderNotification,
-  ): Promise<void>;
+  protected abstract deliver(notification: OrderNotification): Promise<void>;
 }
 ```
 
@@ -143,6 +162,7 @@ Pontos-chave:
 
 - Nada muda para o consumidor: o `Record` e a chamada `send()` continuam idênticos. A refatoração é interna à família de estratégias.
 - `protected` no passo variável impede um caller de pular a preparação comum chamando `deliver()` direto.
+- A composição da mensagem não sobe para a base: no e-mail ela é do sender (`infrastructure/mail.md`), e a variação entrega a ele só dado de domínio.
 - Template Method entra quando a duplicação já existe entre variações, nunca antes: uma base com orquestração especulativa engessa a família no primeiro caso que não seguir o roteiro. Contrato sem lógica comum permanece só abstrato, como na seção anterior.
 
 ## Verificação rápida

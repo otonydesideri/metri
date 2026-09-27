@@ -24,7 +24,7 @@ Quando o artefato é uma capacidade claramente compartilhada, com ownership pró
 
 **Proibido.** Pacote catch-all que junte domínios diferentes, inclusive `@metri/contracts` como agregador global de contratos.
 
-Quando aparece um segundo consumidor real: **Obrigatório.** Reavaliar a casa pelo critério de ownership. O segundo consumidor é gatilho de reavaliação, não promoção automática; o que sobe leva a decisão registrada junto ao código que sobe.
+Quando aparece um segundo consumidor real: **Obrigatório.** Reavaliar a casa pelo critério de ownership. O segundo consumidor é gatilho de reavaliação, não promoção automática; o que sobe leva a decisão registrada na casa de `methodology/authoring.md`, "Decisões específicas de projeto".
 
 A reavaliação percorre esta árvore, sempre pelo ownership:
 

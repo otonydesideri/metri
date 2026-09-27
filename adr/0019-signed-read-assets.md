@@ -1,4 +1,4 @@
-# ADR-0019 Asset com leitura assinada: redação de log, limite de `requestUpload` e bucket privado
+# ADR-0019 Limite de taxa de `requestUpload`
 
 status: proposed
 area: infrastructure
@@ -6,7 +6,7 @@ kind: decision
 
 ## Contexto
 
-A redação de logs que contenham URL assinada (a assinatura é bearer token em query string) entra na lista de `redact` de `infrastructure/logging.md` quando existir asset com leitura assinada: o bucket público deriva a URL da chave, sem assinatura. Um limite de taxa mais restrito no endpoint de `requestUpload` fecha junto, pelo mesmo motivo. Os métodos de URL assinada e o bucket privado da classe de infra nascem com o primeiro asset que precisar deles.
+O endpoint de `requestUpload` emite permissão de escrita no storage e pode pedir um limite de taxa mais restrito que o do throttler global. O resto do que este ADR juntava já está decidido no texto: a URL assinada fica fora de log manual e o `location` da resposta entra no `redact` (`infrastructure/logging.md`, "Redação de campo sensível"); o bucket privado e a leitura por URL assinada estão em `infrastructure/storage.md`, "Por que dois buckets" e "Contrato por asset: dois eixos".
 
 ## Decisão
 
