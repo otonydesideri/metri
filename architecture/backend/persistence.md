@@ -10,6 +10,7 @@ applies_to:
   - "apps/app-api/src/domain/application/repositories/**"
   - "apps/app-api/src/infra/persistence/prisma/repositories/**"
   - "apps/app-api/src/infra/persistence/prisma/mappers/**"
+  - "packages/db/**/models/*.prisma"
 keywords: [repositório, mapper, toDomain, toPrisma, reconstitute, save, upsert, createMany, deleteMany, delta, WatchedList, leitura em lote, N+1, findManyByIds, Map, PrismaService, PrismaClient, UncheckedCreateInput, SQL cru, $queryRaw, $queryRawUnsafe, outcome de persistência, "models/<módulo>.prisma"]
 not_covered:
   - "atomicidade entre agregados, contrato de transação, unit of work, concorrência e a escada de locking → backend/transactions"
@@ -47,7 +48,7 @@ Persistência é a borda entre o agregado em memória e o banco: o repositório 
 
 > **Por quê.** A decisão sai da entidade e vai para o repositório, onde passa a existir em duas cópias, a real e a do dublê de teste.
 
-**Proibido.** Escrita que não é o estado do agregado carregado no contrato do repositório: outra tabela, duas linhas na mesma transação ou condição que só o banco avalia na gravação são contrato de transação (`backend/transactions.md`, "Contrato de transação").
+**Proibido.** Escrita que não é o estado do agregado carregado no contrato do repositório: outra tabela, duas linhas na mesma transação ou condição que só o banco avalia na gravação são contrato de transação (`backend/transactions.md`, "Contrato de transação" e "Concorrência e locking").
 
 - **Exceção.** Enfileiramento transacional de `backend/async-jobs.md`, "Quem enfileira": quando nem a janela entre o commit e o enqueue é aceitável, o job é enfileirado dentro da mesma `$transaction` da escrita, pelo caminho de exceção que aquele documento descreve.
 
@@ -77,7 +78,7 @@ Quando um filho parece precisar de contrato de repositório: **Obrigatório.** T
 
 **Obrigatório.** O nome do método de escrita descreve o efeito dele na linha, e um método atende todos os fluxos que produzem o mesmo efeito.
 
-> **Por quê.** Nome que carrega a ação de negócio é decisão vazando para o repositório (`domain/model.md`, "Propriedade do agregado: quem escreve a tabela") ou peça na categoria errada (`backend/transactions.md`).
+> **Por quê.** Nome que carrega a ação de negócio é decisão vazando para o repositório (`domain/model.md`, "Entidade: criação e reconstituição são caminhos separados") ou peça na categoria errada (`backend/transactions.md`).
 
 **Proibido.** Upsert em escrita que precisa recusar duplicata.
 

@@ -12,7 +12,6 @@ applies_to:
 keywords: [cache, TTL, validade, invalidação, expiração, chave, namespace, versão da chave, escopo do dono, cache de leitura, cache local, provider de cache, CacheKey, CacheProviderService, OrderListCache, OrderListCacheImpl, fonte de verdade, dado velho]
 not_covered:
   - "o cache de servidor do frontend, que é o do React Query → frontend/data-fetching"
-  - "o cache de servidor do frontend, que é o do React Query → frontend/state"
   - "a query de exibição e o caminho de leitura → backend/reading"
   - "o escopo do dono → backend/access-scope"
   - "a regra dos níveis de service de infra → infrastructure/services"

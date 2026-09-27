@@ -97,6 +97,7 @@ Pontos-chave:
 - A implementação nunca chama outros repositórios, que gravariam fora da transação. Ela reusa os mappers dos agregados e escreve direto no `tx`.
 - Nomeação segue o formato de persistência de `backend/persistence.md`, com o fluxo no lugar do agregado e `transaction` no lugar de `repository`: `order-invoicing-transaction.contract.ts` em `domain/application/transactions/`, `order-invoicing.prisma-transaction.impl.ts` em `infra/persistence/prisma/transactions/`, dublê `order-invoicing.in-memory-transaction.impl.ts` em `test/transactions/`.
 - O dublê em memória recebe no construtor os repositórios em memória dos agregados envolvidos e escreve nos `items` deles, para o spec observar o estado nos mesmos lugares de sempre. Registrado em `makeInMemoryRepositories()` como os demais.
+- O despacho dos eventos dos agregados envolvidos, depois do commit, segue `backend/events.md`, "A entidade registra, o repositório despacha".
 - Integração externa (e-mail, API de terceiro) nunca entra na transação: acontece depois do commit, pelo mecanismo que `backend/operation-routing.md` escolher.
 - Um fluxo, um contrato, um método. O contrato de transação não é um unit of work genérico: um segundo método é sinal de que a peça virou atalho de persistência, não fronteira de fluxo.
 

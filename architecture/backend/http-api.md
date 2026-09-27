@@ -104,7 +104,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`, como parte do contrato de API; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
 - O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes (`@metri/contracts`): é o catch-all que `overview.md` proíbe.
 - Qual pacote é dono de cada contrato é decisão de projeto (`activation.md`, "Matriz de delegações").
-- O limite que a API impõe sai do contrato canônico, e o schema de request o usa; o schema de form do frontend importa o mesmo valor, e pode ser mais estrito que ele (`frontend/forms.md`):
+- O limite que a API impõe sai do contrato canônico, e o schema de request o usa; o schema de form do frontend importa o mesmo valor, e pode ser mais estrito que ele (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 
 ```ts
 // no contrato canônico, no pacote dono do conceito

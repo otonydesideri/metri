@@ -11,6 +11,9 @@ applies_to:
   - "apps/app-web/src/shared/rules/**"
   - "apps/app-web/src/shared/constants/**"
   - "apps/app-web/src/shared/types/**"
+  - "packages/utils/src/**"
+  - "packages/ui/src/hooks/**"
+  - "packages/ui/src/lib/**"
 keywords: [helper, "<módulo>.helpers.ts", util.ts, rule, orderRules, constante, PER_PAGE, tipo compartilhado, z.infer, Pick, type plain, Zod schema, formatBRL, parseBRLToCents, Intl, "@metri/utils", "@metri/ui", "@metri/core", ApiErrorType, "@metri/core/errors"]
 status: active
 ---
@@ -193,7 +196,7 @@ export type OrderListItem = Pick<
 >;
 ```
 
-Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/http-api.md` ("Contrato de API compartilhado"), no pacote dono do conceito e sem `@metri/contracts`; tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
+Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/http-api.md` ("Contrato de API compartilhado"), no pacote dono do conceito e sem `@metri/contracts` (`backend/http-api.md`, "Aplicação"); tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
 
 ## Zod schema vs. type plain
 

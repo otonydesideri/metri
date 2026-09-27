@@ -23,7 +23,7 @@ Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o con
 
 Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `backend/modules.md`.
 
-**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`activation.md`, "Matriz de delegações"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "O que a decisão final não muda". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
+**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`activation.md`, "Matriz de delegações"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
 
 ## Worker é adaptador de entrada
 
@@ -99,7 +99,7 @@ Três produtores, em ordem de frequência esperada:
 
 ```ts
 await this.prisma.$transaction(async (tx) => {
-  // ...upserts do fluxo, como em backend/transactions.md...
+  // ...upserts do fluxo, como em backend/persistence.examples.md#orderprismarepositoryimpl...
   await this.pgBoss.sendInTransaction(tx, SEND_ORDER_CONFIRMATION_QUEUE.name, input);
 });
 ```
@@ -149,7 +149,7 @@ Parâmetros de retry são por fila, na constante do worker, decididos pelo custo
 
 ## Registro e ciclo de vida
 
-O `PgBossService`, em `src/infra/jobs/pg-boss.service.ts`, é o único arquivo que conhece a biblioteca, no mesmo papel que o `PrismaService` tem para o Prisma: workers e impls o recebem por injeção direta, sem contrato próprio (infra falando com infra, mesma lógica das queries de `backend/reading.md`).
+O `PgBossService`, em `src/infra/jobs/pg-boss.service.ts`, é o único arquivo que conhece a biblioteca, no mesmo papel que o `PrismaService` tem para o Prisma: workers e impls o recebem por injeção direta, sem contrato próprio (infra falando com infra, mesma lógica de `infrastructure/services.md`, "A regra dos níveis para um serviço de infraestrutura compartilhado").
 
 ```ts
 @Injectable()

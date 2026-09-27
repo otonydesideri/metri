@@ -75,7 +75,7 @@ Exemplo completo: testing.examples.md#orderinmemoryrepositoryimpl
 ## Como escrever spec de entidade e value object (`enterprise/<entidade>.entity.spec.ts`, `enterprise/value-objects/<nome>.spec.ts`)
 
 - Sem repositório, sem Nest, sem I/O: instancia a classe direto e chama os métodos de domínio.
-- A entidade sob prova nasce por `create()`, nunca pela factory de teste da seção anterior: a factory reconstitui de propósito para não pagar validação duas vezes, e é exatamente a validação de nascimento que este spec existe para provar. O que é só insumo do arranjo (a entidade filha que preenche a raiz, e que tem spec próprio) vem da factory normalmente. Mesmo princípio de "o que está sob prova não usa atalho" que separa, no e2e, a pré-condição montada por factory do fluxo HTTP real.
+- A entidade sob prova nasce por `create()`, nunca pela factory de teste (seção "Como criar uma factory de teste"): a factory reconstitui de propósito para não pagar validação duas vezes, e é exatamente a validação de nascimento que este spec existe para provar. O que é só insumo do arranjo (a entidade filha que preenche a raiz, e que tem spec próprio) vem da factory normalmente. Mesmo princípio de "o que está sob prova não usa atalho" que separa, no e2e, a pré-condição montada por factory do fluxo HTTP real.
 - Prova invariante de criação (entrada inválida vira `failure` com a classe certa) e transição de estado por método de domínio (mudança de prop, `touch()` quando a entidade tem `updatedAt`, evento registrado quando o método emite um).
 - Asserção de falha é `instanceof`, nunca comparando `message` (`backend/errors.md`).
 

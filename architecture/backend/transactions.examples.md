@@ -19,6 +19,9 @@ export class OrderInvoicingPrismaTransactionImpl implements OrderInvoicingTransa
 
       await tx.invoice.create({ data: invoiceData });
     });
+
+    DomainEvents.dispatchEventsForAggregate(params.order.id);
+    DomainEvents.dispatchEventsForAggregate(params.invoice.id);
   }
 }
 ```

@@ -166,7 +166,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | descrição                                 | `description`                                    | O que a regra decide, em uma linha; é a linha do `INDEX.md` gerado e do `rules-for`           |
 | usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
 | ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
-| não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`)                                      |
+| não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
 | id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
 | ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita                                                                 |
 | status da regra                           | `status: active \| draft \| deprecated`          | Estado de uma regra                                                                           |

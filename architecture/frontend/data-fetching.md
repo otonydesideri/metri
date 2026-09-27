@@ -160,7 +160,7 @@ A hierarquia é o que dá invalidação granular: `orderKeys.all` invalida tudo 
 
 ## Hooks de query
 
-Componente nunca chama `useQuery` direto: sempre um custom hook em `hooks/<módulo>/`, um por arquivo (`frontend/structure.md`, "Nomeação de arquivo"). O hook liga a key factory à função de `api/`. Leitura de item único é `useOrder`, de lista é `useOrders`.
+Componente nunca chama `useQuery` direto: sempre um custom hook em `hooks/<módulo>/`, um por arquivo (`frontend/structure.md`, "Estrutura de pastas"). O hook liga a key factory à função de `api/`. Leitura de item único é `useOrder`, de lista é `useOrders`.
 
 ```ts
 // hooks/order/use-order.ts

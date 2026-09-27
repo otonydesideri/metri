@@ -200,7 +200,7 @@ Um lugar só resolve default: se a query também aplicasse `?? 20`, os dois valo
 
 ## Agregação: dashboard e relatório
 
-Tela que não pertence a nenhum agregado (dashboard, relatório) é módulo de tela: mesmo critério da seção anterior, com o módulo do controller sendo o conceito da tela (`dashboard`, `reports`) em vez de um agregado. Ganha a própria pasta em `domain/application/queries/<módulo>/`, `infra/persistence/prisma/queries/<módulo>/` e `controllers/<módulo>/`, sem entidade, repositório de agregado ou caso de uso.
+Tela que não pertence a nenhum agregado (dashboard, relatório) é módulo de tela: mesmo critério de "A query de exibição", com o módulo do controller sendo o conceito da tela (`dashboard`, `reports`) em vez de um agregado. Ganha a própria pasta em `domain/application/queries/<módulo>/`, `infra/persistence/prisma/queries/<módulo>/` e `controllers/<módulo>/`, sem entidade, repositório de agregado ou caso de uso.
 
 Agregação usa a API do Prisma enquanto ela expressa a consulta (`count`, `aggregate`, `groupBy`). Quando o SQL preciso é mais claro ou mais eficiente (window function, `DATE_TRUNC`, join com agregação), `$queryRaw` com template tag é bem-vindo:
 

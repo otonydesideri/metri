@@ -60,7 +60,7 @@ export abstract class OrderConfirmationSender {
 
 Exemplo completo: mail.examples.md#orderconfirmationsenderimpl
 
-Quem dispara a confirmação (o caso de uso do fluxo, ver `backend/operation-routing.md`, "Job") entrega só dado de domínio, nunca HTML pronto:
+Quem dispara a confirmação (o caso de uso do fluxo, ver `backend/async-jobs.md`, "O worker") entrega só dado de domínio, nunca HTML pronto:
 
 ```ts
 // domain/application/use-cases/notification/send-order-confirmation.use-case.ts (trecho)

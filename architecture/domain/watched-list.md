@@ -92,7 +92,7 @@ O mapper monta a lista na reconstituição (`new ProductPhotoList(photos)` dentr
 
 O ponto que decide se o padrão funciona: a substituição precisa preservar a identidade que `compareItems` usa. Numa coleção de itens com conteúdo próprio, essa identidade é o id da linha, então item mantido entra na substituição como a instância corrente, localizada por id na própria coleção, nunca recriado. Recriar todos os itens do input com ids novos faria `compareItems` não reconhecer nada, e o delta degeneraria em deletar e reinserir a coleção inteira a cada edição; com arquivo físico, em novo upload de tudo.
 
-O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. A chave do item novo chega já resolvida neste exemplo, pra manter o foco no delta; de onde ela vem de verdade (upload direto, registro pendente) é o fluxo de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro".
+O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. A chave do item novo chega já resolvida neste exemplo, pra manter o foco no delta; de onde ela vem de verdade (upload direto, registro pendente) é o fluxo de `infrastructure/storage.md`, "O upload direto e o registro pendente".
 
 Exemplo completo: watched-list.examples.md#replaceproductphotosusecase
 
@@ -141,7 +141,7 @@ O critério entre as duas formas: item com conteúdo próprio (a foto, o item de
 
 ## O repositório persiste o delta
 
-A escrita upsert com `createMany` dos novos e `deleteMany` dos removidos na mesma transação da raiz, e o despacho de eventos depois dela, já são o padrão de `backend/persistence.md` ("Escrita canônica do agregado"); esta seção não muda nada dele, só fixa um limite. O `save()` de `Product` segue aquele desenho com `ProductPhotoPrismaMapper`.
+A escrita upsert com `createMany` dos novos e `deleteMany` dos removidos na mesma transação da raiz, e o despacho de eventos depois dela, já são o padrão de `backend/persistence.md` ("Escrita canônica do agregado", com o upsert em persistence.examples.md#orderprismarepositoryimpl) e de `backend/events.md` ("A entidade registra, o repositório despacha"); esta seção não muda nada dele, só fixa um limite. O `save()` de `Product` segue aquele desenho com `ProductPhotoPrismaMapper`.
 
 O limite que este documento fixa: o delta rastreia pertencimento, não conteúdo. Um item que permaneceu na coleção mas mudou um campo interno não aparece em `getNewItems()` nem em `getRemovedItems()`, e a escrita canônica do agregado não persiste essa edição. Fluxo que precisa editar item filho no lugar ainda não tem instância nem desenho decidido; quando aparecer, parar e decidir antes de implementar (ver "Pontos em aberto").
 

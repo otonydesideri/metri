@@ -47,12 +47,21 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - [x] 2.3 Piloto de refinamento: http-api e components
   - use_when = Consultar antes de; chave vazia não é escrita; Caminhos do projeto no INDEX
 - [x] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
-  - `not_covered` mantém a seção citada no tema (`<tema> ("<Seção>") → <id>`); `activation` e `overview` valem como id até o 2.5.
 - [ ] 2.5 Extrair as regras do `overview.md` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation.md` → template de INDEX de projeto (3.4), `authoring.md` → absorvido pela metodologia (apagar no fim da fase)
 - [ ] 2.6 Pontos em aberto → ADRs `proposed` (D8)
 - [ ] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
+
+Lacunas conhecidas, citações que nenhum arquivo sustenta (revisão do 2.4; a citação fica até existir o texto):
+
+- `domain/specification.md`, "A forma": `isPending(now)` como precedente de receber `now` de quem chama; nenhum arquivo mostra `isPending(now)`.
+- `domain/domain-services.md`, "A regra não coordena IO": "a mesma razão de a specification receber o instante"; `domain/specification.md` dá outra razão (os dois lados avaliarem o mesmo momento).
+- `frontend/data-fetching.md`, "Comando de biblioteca externa fica no handler": id em `useState` para a linha em voo; "O estado em voo cobre a ação inteira" usa o `variables` da mutation e proíbe flag manual.
+- `frontend/data-fetching.md`, "O cliente HTTP": convenção `to<Alvo>`/`from<Origem>`, um por arquivo, atribuída a `backend/errors.md`, que não a define.
+- `frontend/components.md`, "Estados de leitura": a exceção "salvo quando a tela ramifica por código e mostra estado próprio" não está em `frontend/data-fetching.md`, "Erro e sucesso".
+- `frontend/testing.md`, "Limite do contrato compartilhado": "formato de identificador" como limite do contrato canônico; `backend/http-api.md`, "União fechada e limite do contrato", só cobre comprimento e quantidade.
+- `infrastructure/observability.md`, "Referências": `backend/events.md` como "consistência eventual que pede conferência posterior"; `events.md` não trata disso.
 
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 

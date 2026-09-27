@@ -8,6 +8,8 @@ use_when:
   - "usar framework, Prisma ou Zod dentro de `domain/`"
 applies_to:
   - "apps/app-api/**"
+  - "packages/core/src/**"
+  - "packages/utils/src/**"
 keywords: [import, grafo de dependência, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
 not_covered:
   - "as regras próprias do frontend → frontend/structure"

@@ -9,6 +9,7 @@ use_when:
   - "decidir o que uma recusa revela sobre recurso de outro dono"
 applies_to:
   - "apps/app-api/src/domain/enterprise/errors/**"
+  - "packages/core/src/errors/**"
 keywords: [DomainError, DomainErrorType, ApiErrorType, type, code, Either, failure, throw, toHttpException, STATUS_MAP, "Record<DomainErrorType, number>", toInvalidRequestException, ZodValidationPipe, APP_PIPE, UnexpectedErrorFilter, APP_FILTER, envelope, INVALID_REQUEST, INTERNAL_ERROR, REQUEST_REJECTED, erros sensíveis, anti-enumeração, "@metri/core/errors"]
 examples: [backend/errors.examples.md]
 status: active
