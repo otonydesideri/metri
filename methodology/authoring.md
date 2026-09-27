@@ -4,7 +4,7 @@ Dono de: como a Architecture Source é escrita e mantida — ownership de decis�
 
 Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
-Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`methodology/templates/architecture-INDEX.md`); a regra de escape (`AGENTS.md`, "How to work here").
+Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`methodology/METHODOLOGY.md`, "6.14 Ativação da arquitetura"); a regra de escape (`AGENTS.md`, "How to work here").
 
 Este documento é o contrato de escrita da Source: onde cada decisão mora, que forma um documento tem e como uma regra se distingue de explicação, exemplo e verificação. Não decide nada sobre o sistema; decide como o que foi decidido fica escrito.
 
@@ -277,4 +277,4 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 - `backend/boundaries.md`: verificação por comando executável.
 - `infrastructure/storage.md`: implementação de referência declarada.
 - `docs/adr/`: casa dos ADRs do projeto.
-- `methodology/templates/architecture-INDEX.md`: ativação num projeto e decisões delegadas a ele.
+- `methodology/METHODOLOGY.md`, 6.14: ativação num projeto e decisões delegadas a ele.

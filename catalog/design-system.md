@@ -26,8 +26,8 @@ Pergunta: O projeto tem interface?
 
 ## O que fica para o projeto
 
-- Decide: a identidade visual, em `docs/DESIGN.md`, a partir da base neutra `methodology/templates/DESIGN.md`.
-- Decide: a regra de vocabulário visual das telas, em `docs/architecture/frontend/` (exemplo: `methodology/templates/examples/design-system.md`).
+- Decide: a identidade visual, em `docs/DESIGN.md`, a partir da base neutra `template/docs/DESIGN.md`.
+- Decide: a regra de vocabulário visual das telas, em `docs/architecture/frontend/`.
 - Default: a base neutra e o kit shadcn/ui.
 - Registro: `docs/DESIGN.md`.
 - ADR quando: o projeto troca o kit de UI (METHODOLOGY 8.5).

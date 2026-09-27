@@ -59,7 +59,7 @@ export {
 - Os tokens são as CSS variables de tema do shadcn (`--background`, `--foreground`, `--primary`, `--radius`...), em `packages/ui/src/styles/globals.css`.
 - Valor claro em `:root`, valor escuro em `.dark`; o `@theme inline` expõe cada variável ao Tailwind (`bg-background`, `text-foreground`).
 - Cor nova entra como variável em `:root` e em `.dark` e é exposta no `@theme inline`.
-- Os valores de partida são os do `DESIGN.md`; a base neutra é `methodology/templates/DESIGN.md`.
+- Os valores de partida são os do `DESIGN.md`; a base neutra é `template/docs/DESIGN.md`.
 - O escuro liga pela classe no `documentElement`. O `ThemeProvider` do `@metri/ui` parte do provider da doc do shadcn para Vite (ui.shadcn.com/docs/dark-mode/vite) e segue o contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 
 ## O que é do projeto

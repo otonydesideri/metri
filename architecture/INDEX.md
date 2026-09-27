@@ -42,7 +42,7 @@ Como a Source é escrita e mantida — owner de cada decisão, anatomia de docum
 
 ## Ativação
 
-O que a ativação da arquitetura num projeto pergunta, quando pergunta e onde a resposta fica — as classes de decisão e a matriz das decisões delegadas ao projeto — está no template `methodology/templates/architecture-INDEX.md`.
+O que a ativação da arquitetura num projeto pergunta, quando pergunta e onde a resposta fica — as classes de decisão e a matriz das decisões delegadas ao projeto — está em `methodology/METHODOLOGY.md`, "6.14 Ativação da arquitetura".
 
 ## Decisões transversais
 

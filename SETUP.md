@@ -65,11 +65,11 @@ Passos feitos; a fase segue aberta pelas decisões pendentes abaixo.
 - [x] 3.1 `methodology/VOCABULARY.md`
   - Texto da 4.3 movido sem reescrever; a 4.3 virou ponteiro; modalidades ficam em `methodology/authoring.md`.
 - [x] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; ADR `stack` para `architecture/defaults/stack.md`, que já existe (os dois ADRs pegam os próximos números livres de `adr/`)
-  - ADR-0020 (shadcn/ui dentro do `@metri/ui`, compound por re-export, um só formato de import; AlignUI sai) e ADR-0021; o `DESIGN.md` base é o próprio `methodology/templates/DESIGN.md`, no formato da especificação do Google.
+  - ADR-0020 (shadcn/ui dentro do `@metri/ui`, compound por re-export, um só formato de import; AlignUI sai) e ADR-0021; o `DESIGN.md` base é o próprio `template/docs/DESIGN.md`, no formato da especificação do Google.
 - [x] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
   - design-system, async-jobs, mail, storage, cache e observability; `catalog/INDEX.md` gerado; as linhas delas saíram da matriz de ativação.
-- [x] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX (o de architecture INDEX, com "Caminhos do projeto", já existe desde o 2.5); aqui se decide o formato de `methodology/templates/examples/design-system.md`
-  - `examples/design-system.md` é regra de projeto de exemplo, com frontmatter; o Apêndice A aponta para os arquivos.
+- [x] 3.4 Starter em `template/`
+  - Cada arquivo no caminho que terá no projeto (`AGENTS.md`, `CLAUDE.md`, `docs/`); regra, slice e ADR voltam ao Apêndice A; a ativação vai para a METHODOLOGY 6.14; o exemplo de regra de design system sai.
 
 Decisões pendentes (seguram a fase):
 
@@ -112,6 +112,8 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 
 ## Fase 5: skills (seção 16)
 
+Cada skill leva o formato do artefato que escreve; o Apêndice A passa a apontar para as skills.
+
 - [ ] 5.1 `writing-for-agents` primeiro (adaptada do Matt; é usada para escrever as outras)
 - [ ] 5.2 Adaptar do Matt: `grilling`, `tdd`, `research`, `domain-language` (a partir de `domain-modeling`)
 - [ ] 5.3 Escrever `guardrail`
@@ -127,7 +129,7 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 ## Fase 7: projeto piloto (outro repositório)
 
 - [ ] 7.1 Criar o repositório e adicionar o source em `.metri/` (submódulo ou pacote, versão fixada)
-- [ ] 7.2 Aplicar os templates e criar o `AGENTS.md`
+- [ ] 7.2 Copiar `template/` para o projeto
 - [ ] 7.3 `/shape` (com triagem de design) → `/look-across`
 - [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui
 - [ ] 7.5 2–3 slices até o aceite e um release

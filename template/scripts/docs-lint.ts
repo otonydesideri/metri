@@ -1,6 +1,7 @@
 // docs-lint: lint estrutural do source (METHODOLOGY 6.13).
 // Checa o frontmatter das regras e do catálogo, as citações em architecture/, catalog/, methodology/ e adr/,
 // a presença de cada regra em "Como ler" do architecture/INDEX.md e o rules-index:check.
+// template/ fica fora: é o starter do projeto, e as citações dele são caminhos do projeto (METHODOLOGY 6.13).
 // Uso: docs-lint   (roda na raiz do source)
 // Saída: arquivo:linha: mensagem (aviso com o prefixo "aviso:"). Sai com código 1 se houver erro.
 // Arquivo planejado (docs-lint.planned.json, arquivo → passo do SETUP que o cria): citação a ele é aviso;
