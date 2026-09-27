@@ -118,6 +118,25 @@ Forma canônica:
 
 - **Exceção.** Ferramenta escolhida do monorepo, ou ferramenta que o documento classifica na seção "Ferramentas": entra pelo nome real.
 
+### Domínio didático
+
+Nomes que os exemplos da Source usam.
+
+| Termo | Identificadores |
+| --- | --- |
+| Pedido (agregado de referência) | `Order`, `OrderItem`, `OrderStatus`, `OrderConfirmedEvent` |
+| Valor monetário | `Money` |
+| Cliente (o dono no escopo de acesso) | `Customer`, `CustomerTier` |
+| Fatura | `Invoice`, `InvoiceLine`, `InvoiceDocument` |
+| Notificação | `OrderNotifier`, `NotificationChannel`, `SendOrderConfirmationUseCase` |
+| Produto | `Product`, `ProductPhoto`, `ProductTagIds` |
+| Frete | `ShippingCostCalculator`, `DeliveryMethod` |
+| Desconto | `calculateLoyaltyDiscount` |
+| Reembolso | `RefundableOrderSpecification` |
+| Relatório de pedidos | `OrderReportStorage` |
+| Carrinho | `CartItem`, `useCartStore` |
+| Pagamento | `PaymentReceivedEvent` |
+
 ### Ferramentas
 
 | Status | Significado |

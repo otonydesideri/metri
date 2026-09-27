@@ -20,7 +20,7 @@ status: active
 
 O envio de e-mail: uma classe de infra que expõe o client do vendor e um contrato por fluxo real do produto (confirmação de pedido, aviso de fatura vencida), consumido por quem dispara aquele fluxo, nunca pela classe de infra direto.
 
-O vendor de e-mail é delegação de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `backend/modules.md`.
+O vendor de e-mail é delegação de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `methodology/authoring.md`, "Domínio didático".
 
 ## A classe de infra
 

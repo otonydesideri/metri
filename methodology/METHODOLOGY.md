@@ -117,7 +117,7 @@ Referências:
 
 | O quê                                                                                               | Idioma                            |
 | --------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Código, identificadores, nomes de arquivos de código                                                | Inglês                            |
+| Código, identificadores, nomes de arquivos de código                                                | `defaults/stack.md`, "Stack"     |
 | Chaves de frontmatter, campos da matriz, ids, status, tipos                                         | Inglês, fixos, validados por lint |
 | Skills e `AGENTS.md`                                                                                | Inglês                            |
 | `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz | Português                         |
@@ -163,7 +163,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | aplica a                                  | `applies_to`                                     | Globs de caminho onde uma regra vale                                                          |
 | imposto por                               | `enforced_by`                                    | Ids dos checks ou lints que automatizam a regra; ausente enquanto não houver                  |
 | SOT keyword                               | `keywords`                                       | Palavra-chave que torna um arquivo encontrável por grep                                       |
-| descrição                                 | `description`                                    | O que a regra decide, em uma linha; é a linha do `INDEX.md` gerado e do `rules-for`           |
+| descrição                                 | `description`                                    | O texto do "Dono de" da regra (seção 7.2); é a linha do `INDEX.md` gerado e do `rules-for`   |
 | usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
 | ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
 | não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
@@ -1074,7 +1074,7 @@ Template em `methodology/templates/architecture-INDEX.md`.
 ````markdown
 ---
 id: <área>/<tema>
-description: <o que a regra decide, em uma linha, começando pelo tema>
+description: <o texto do "Dono de": o que a regra decide (seção 7.2)>
 use_when: [<situação em que o agente lê a regra>]
 applies_to: [<globs>]                  # opcional
 keywords: [<SOT keywords>]             # opcional

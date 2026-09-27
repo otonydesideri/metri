@@ -17,7 +17,8 @@ not_covered:
   - "estado guardado na URL → frontend/state"
   - "o que o cache descarta quando um guard lê um dado pra decidir rota → frontend/data-fetching"
   - "a pasta e o nome de arquivo de guard, layout e página → frontend/structure"
-  - "o token e o vocabulário visual → project:DESIGN"
+  - "uso de token e tema no código → frontend/theming"
+  - "valores e vocabulário visual → project:DESIGN"
   - "o spec de rota e guard → frontend/testing"
 status: active
 ---

@@ -22,7 +22,7 @@ status: active
 
 Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o contrato de fila, o worker, o enfileiramento transacional, tarefas agendadas, idempotência e o destino de um job que falha.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `backend/modules.md`.
+Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `methodology/authoring.md`, "Domínio didático".
 
 **A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
 

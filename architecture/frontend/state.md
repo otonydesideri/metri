@@ -176,7 +176,7 @@ Enquanto a troca de dono acontecer por navegação top-level, que recria a aplic
 
 ## Tema não é estado de store
 
-Preferência de tema (claro/escuro) não passa pela árvore acima: não é `useState`, não é Context ad-hoc, não é Zustand. É o provider de tema de `docs/DESIGN.md`, montado em `app/`, que persiste a escolha e aplica a classe na raiz do documento.
+Preferência de tema (claro/escuro) não passa pela árvore acima: não é `useState`, não é Context ad-hoc, não é Zustand. É o provider de tema de `frontend/theming.md`, montado em `app/`, que persiste a escolha e aplica a classe na raiz do documento.
 
 ## Persistência: o que sobrevive a refresh
 

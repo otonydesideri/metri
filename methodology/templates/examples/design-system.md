@@ -1,10 +1,10 @@
 # Design system no frontend
 
-Dono de: o consumo do design system pelo app — os tokens de UI, o tema (o contrato de classe do `@metri/ui` e o provider por framework) e o vocabulário visual que as telas falam: navegação, página, superfície, tabela, paginação, status, lista de propriedades, formulário, ação em voo e ação irreversível.
+Dono de: o consumo do design system pelo app — o vocabulário visual que as telas falam: navegação, página, superfície, tabela, paginação, status, lista de propriedades, formulário, ação em voo e ação irreversível.
 
-Consultar antes de: escolher cor, espaçamento ou tipografia; mexer em tema ou no provider de tema; montar header, superfície, tabela, paginação, status em `StatusBadge`, lista de propriedades, layout de formulário ou ação de uma tela.
+Consultar antes de: montar header, superfície, tabela, paginação, status em `StatusBadge`, lista de propriedades, layout de formulário ou ação de uma tela.
 
-Não cobre: o desenho do sistema de tokens e dos componentes, que é do `@metri/ui`; composição de página e componente e estados de leitura (`frontend/components.md`); comportamento de formulário e acessibilidade de campo (`frontend/forms.md`); rota, modal de tarefa e fallback de carregamento (`frontend/routing.md`); a casa da config de navegação e da constante (`frontend/structure.md`, `frontend/helpers.md`); a promoção de peça ao pacote (`overview.md`).
+Não cobre: o desenho do sistema de tokens e dos componentes, que é do `@metri/ui`; o uso de token e tema no código (`frontend/theming.md`); composição de página e componente e estados de leitura (`frontend/components.md`); comportamento de formulário e acessibilidade de campo (`frontend/forms.md`); rota, modal de tarefa e fallback de carregamento (`frontend/routing.md`); a casa da config de navegação e da constante (`frontend/structure.md`, `frontend/helpers.md`); a promoção de peça ao pacote (`overview.md`).
 
 O `@metri/ui` é o dono do design system do monorepo; este documento fixa só como o `app-web` o consome, sem inventar valor nem vocabulário próprio. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -15,38 +15,6 @@ O `@metri/ui` é o dono do design system do monorepo; este documento fixa só co
 | `@metri/ui` (tokens na config do Tailwind, vocabulário AlignUI) | DECIDIDA | `overview.md`, "Stack" |
 
 ## Regras
-
-### Tokens de UI vêm do design system
-
-**Obrigatório.** Cor, espaçamento e tipografia vêm dos tokens do `@metri/ui` (config do Tailwind): `text-title-h6`, `bg-bg-white-0`, `text-text-strong-950`.
-
-**Proibido.** Valor arbitrário cravado no componente (`text-[20px]`, `bg-[#fff]`, `p-[16px]`).
-
-> **Por quê.** Valor arbitrário foge do design system e não acompanha token nem tema.
-
-Quando falta um token: **Obrigatório.** Checar primeiro se ele já existe no `@metri/ui`; se for genuinamente novo, a adição é no `@metri/ui`, nunca um valor solto no app.
-
-### Tema: contrato de classe no `@metri/ui`, provider por framework do app
-
-**Obrigatório.** O claro/escuro é uma classe (`light`/`dark`) no `documentElement`, e os tokens do `@metri/ui` trocam por ela (`packages/ui/src/styles/globals.css`, `@custom-variant dark`); esse contrato de classe é do pacote.
-
-**Obrigatório.** Quem alterna a classe é o provider de tema do framework do app consumidor; no Vite/SPA (o `app-web`), é o `ThemeProvider` hand-rolled do `@metri/ui` (`@metri/ui/components/providers/theme-provider`), montado em `app/index.tsx`.
-
-**Proibido.** O `@metri/ui` depender de `next-themes`: o pacote é agnóstico de framework, e quem traz a lib é o app.
-
-**Obrigatório.** No app Vite, o `index.html` aplica a classe antes do primeiro paint, num script inline com a mesma chave e o mesmo default do provider.
-
-> **Por quê.** O `useEffect` do provider só roda depois do primeiro paint; sem o script, o primeiro frame sai no tema errado para quem escolheu o escuro.
-
-**Obrigatório.** O tema tem dois valores; a preferência do sistema operacional não entra: sem `system`, e a `prefers-color-scheme` não é consultada nem no provider nem no script inline.
-
-> **Por quê.** Sem `system`, `theme` é sempre o que está na tela, então todo controle lê o mesmo valor e não existe diferença entre o que o usuário pediu e o que está pintado. Trazer `system` de volta reabre essa diferença e exige um segundo valor no contrato do provider, porque um switch claro/escuro não tem como se desenhar a partir de uma escolha de três estados.
-
-**Obrigatório.** O valor para quem nunca escolheu é `light`.
-
-**Obrigatório.** O provider mora no `@metri/ui`, não no app: tema é UI compartilhável entre apps (`overview.md`, "Código pode nascer no pacote dono quando nada nele é do app").
-
-**Proibido.** Componente do pacote chamar o `useTheme()`: quando precisa ramificar por tema, recebe `dark?` por prop, para valer seja qual for o provider do consumidor.
 
 ### Vocabulário visual
 
@@ -66,24 +34,10 @@ Forma canônica:
 
 ## Aplicação
 
-```tsx
-// CORRETO
-<div className="bg-bg-white-0 text-text-strong-950 p-4 rounded-md">
-
-// EVITAR
-<div className="bg-[#ffffff] text-[#0a0a0a] p-[16px] rounded-[6px]">
-```
-
-- Um app Next usaria o `next-themes` com `attribute="class"`, que escreve a mesma classe; é esse o motivo de o pacote não depender dele.
-- O `ThemeProvider` do `@metri/ui` inicializa do `localStorage`, e um `useEffect` remove `light`/`dark` do `documentElement` e adiciona a classe do tema; `useTheme()` expõe `theme` e `setTheme` para o toggle.
-- Preferência de tema não é estado de store (`frontend/state.md`, "Tema não é estado de store"): é este provider, montado em `app/`.
 - O `AppSplash` e o `index.html` pintam o fundo com o token do canvas (`frontend/routing.md`, "Página carregada com lazy").
 
 ## Verificação
 
-- As classes de UI usam token do `@metri/ui`, sem valor arbitrário (`bg-[#...]`, `p-[16px]`)?
-- Tema: app Vite monta o `ThemeProvider` do `@metri/ui` (app Next usaria `next-themes`), com a classe aplicada pelo script inline antes do primeiro paint, dois valores e default `light`?
-- Componente do pacote ramifica por `dark?`, não pelo `useTheme()` do pacote?
 - A tela fala o vocabulário visual inteiro: header com ícone e divider, corpo no container canônico, tabela com numérico à direita e link acessível por linha, status em `StatusBadge`, formulário com par Cancelar/submissão?
 - Ação irreversível intercepta com modal de confirmação, e escrita em andamento mostra spinner + gerúndio no próprio botão?
 - O menu vem da config declarativa de `shared/config/`, com link desabilitado usando `aria-disabled` + `tabIndex={-1}`?
@@ -93,7 +47,6 @@ Forma canônica:
 - `frontend/components.md`: composição, compound do app e um arquivo por componente.
 - `frontend/forms.md`: comportamento e acessibilidade do formulário.
 - `frontend/routing.md`: o fallback de carregamento que usa o token do canvas.
-- `frontend/state.md`: tema fora da árvore de estado cliente.
 - `frontend/structure.md`: a casa de `shared/config/` e `shared/components/`.
 - `frontend/helpers.md`: a casa da constante.
 - `overview.md`: a promoção de peça ao pacote.

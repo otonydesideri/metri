@@ -25,7 +25,7 @@ export function fetchOrders(filters?: FetchOrdersFilters): Promise<OrderList> {
   });
 }
 
-export function createOrder(input: CreateOrderInput): Promise<{ id: string }> {
+export function createOrder(input: CreateOrderInput): Promise<{ order: Order }> {
   return httpClient('/orders', { method: 'POST', body: input });
 }
 

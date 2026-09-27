@@ -13,7 +13,8 @@ keywords: [página, componente, modal, guard, handler, compound, "import * as", 
 not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
   - "formulário, schema de form e campo → frontend/forms"
-  - "tokens, tema e vocabulário visual → project:DESIGN"
+  - "uso de token e tema no código → frontend/theming"
+  - "valores e vocabulário visual → project:DESIGN"
   - "a casa e o nome de arquivo → frontend/structure"
   - "o dado da tela e o feedback de escrita → frontend/data-fetching"
   - "estado cliente → frontend/state"

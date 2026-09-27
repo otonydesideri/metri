@@ -26,7 +26,7 @@ status: active
 
 Como o `app-web` busca e envia dado pro app-api: o cliente HTTP, as funções de `api/`, os hooks de React Query (query e mutation), a key factory, a sincronização de cache e o caminho de erro.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático".
 
 ## A árvore de decisão
 
@@ -105,7 +105,7 @@ server: {
 
 Por que better-fetch e não `fetch` cru: valida a resposta contra um schema Zod pelo `output`, e carrega o corpo de erro parseado no `BetterFetchError`. A escolha é reversível sem tocar `api/`, porque tudo passa por este facade; se um dia outro mecanismo bastar, só o `client.ts` muda.
 
-A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção de tradução de erro do backend (`to<Alvo>`/`from<Origem>`, um por arquivo, como o `toHttpException` de `backend/errors.md`). O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro"); este arquivo não redefine o formato, lê ele.
+A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro"); este arquivo não redefine o formato, lê ele.
 
 ```ts
 // lib/http/to-user-facing-message.ts

@@ -64,7 +64,7 @@ Quando os conceitos combinados pertencem a bounded contexts diferentes: **Proibi
 
 **Obrigatório.** O instante e o identificador de que a regra depende chegam por argumento, de quem chama.
 
-> **Por quê.** É o que mantém a regra pura e testável sem dublê, a mesma razão de a specification receber o instante de quem a constrói (`domain/specification.md`).
+> **Por quê.** É o que mantém a regra pura e testável sem dublê.
 
 Quando decidir exige um fato que só IO obtém: **Obrigatório.** O caso de uso obtém o fato e o entrega à regra (`backend/application.md`), e a regra continua sem a dependência.
 

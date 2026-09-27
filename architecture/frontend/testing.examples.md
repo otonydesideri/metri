@@ -32,10 +32,13 @@ describe('orderRules.resolveDestination', () => {
 const APP_URL = window.location.origin;
 
 describe('useConfirmOrder', () => {
-  it('confirmação bem-sucedida → detalhe do pedido descartado do cache', async () => {
+  it('confirmação bem-sucedida → detalhe do pedido atualizado no cache', async () => {
     server.use(
       http.post(`${APP_URL}/api/orders/order-1/confirm`, () =>
-        HttpResponse.json({ orderId: 'order-1' }),
+        HttpResponse.json({
+          order: { id: 'order-1', status: 'confirmed', updatedAt: '2026-01-01T00:00:00.000Z' },
+          invoice: { id: 'invoice-1' },
+        }),
       ),
     );
 
@@ -53,7 +56,10 @@ describe('useConfirmOrder', () => {
     result.current.mutate('order-1');
 
     await waitFor(() => {
-      expect(queryClient.getQueryData(orderKeys.detail('order-1'))).toBeUndefined();
+      expect(queryClient.getQueryData(orderKeys.detail('order-1'))).toMatchObject({
+        status: 'confirmed',
+        invoice: { id: 'invoice-1' },
+      });
     });
   });
 });

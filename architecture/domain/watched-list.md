@@ -20,7 +20,7 @@ status: active
 
 A coleção filha com delta rastreado: um agregado dono de uma coleção de itens filhos responde "o que mudou nessa coleção" com uma `WatchedList<T>`.
 
-Os exemplos usam o domínio didático de pedidos de `backend/modules.md`, estendido aqui com um agregado `Product` e a coleção de fotos dele.
+Os exemplos usam o domínio didático de pedidos de `methodology/authoring.md`, "Domínio didático", estendido aqui com um agregado `Product` e a coleção de fotos dele.
 
 ## O problema
 

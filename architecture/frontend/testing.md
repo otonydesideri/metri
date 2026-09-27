@@ -226,7 +226,7 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 
 ## Limite do contrato compartilhado
 
-Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no contrato canônico (`backend/http-api.md`, "União fechada e limite do contrato"), e o frontend a importa. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
+Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no contrato canônico, e o frontend a importa. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
 
 Schema de form mais estrito que o do backend não é divergência, é decisão de produto (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes"). Nesse caso o spec do frontend leva um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
 

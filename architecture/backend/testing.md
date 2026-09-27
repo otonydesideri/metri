@@ -20,7 +20,7 @@ status: active
 
 Como o backend do produto prova comportamento: os três níveis da pirâmide, o que cada um prova e onde mora, as factories e dublês compartilhados entre eles.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`. Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático". Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica.
 
 ## A pirâmide
 
@@ -106,7 +106,8 @@ beforeEach(() => {
   sendOrderConfirmation = new SendOrderConfirmationUseCase(/* dublês */);
   executeSpy = vi.spyOn(sendOrderConfirmation, 'execute');
 
-  new OnOrderConfirmedSubscriber(sendOrderConfirmation);
+  const logger = { setContext: vi.fn(), error: vi.fn() } as unknown as PinoLogger;
+  new OnOrderConfirmedSubscriber(sendOrderConfirmation, logger);
 });
 
 it('envia a confirmação quando o pedido é confirmado', async () => {

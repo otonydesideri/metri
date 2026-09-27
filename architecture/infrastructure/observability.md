@@ -107,7 +107,6 @@ Quando o caminho síncrono não garante a consistência — operação distribu�
 - `backend/operation-routing.md`: tarefa agendada como mecanismo.
 - `infrastructure/storage.md`: o órfão de storage e o registro pendente.
 - `backend/transactions.md`: o risco aceito e a condição de revisita.
-- `backend/events.md`: consistência eventual que pede conferência posterior.
 - `backend/application.md`: contrato neutro para fato do caso de uso.
 - `backend/boundaries.md`: o que `src/domain` importa.
 - `methodology/authoring.md`: casa do ADR de exceção.

@@ -17,7 +17,7 @@ status: active
 ---
 # Escopo de acesso
 
-Este documento fixa a forma do contrato de escopo do dono, igual para qualquer projeto; quem é o dono em cada projeto é decisão daquele projeto. Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backend/modules.md`, com o cliente no papel de dono.
+Este documento fixa a forma do contrato de escopo do dono, igual para qualquer projeto; quem é o dono em cada projeto é decisão daquele projeto. Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `methodology/authoring.md`, "Domínio didático", com o cliente no papel de dono.
 
 ## Regras
 

@@ -58,12 +58,12 @@ Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy
 Lacunas conhecidas, citações que nenhum arquivo sustenta (revisão do 2.4; a citação fica até existir o texto):
 
 - `domain/specification.md`, "A forma": `isPending(now)` como precedente de receber `now` de quem chama; nenhum arquivo mostra `isPending(now)`.
-- `domain/domain-services.md`, "A regra não coordena IO": "a mesma razão de a specification receber o instante"; `domain/specification.md` dá outra razão (os dois lados avaliarem o mesmo momento).
 - `frontend/data-fetching.md`, "Comando de biblioteca externa fica no handler": id em `useState` para a linha em voo; "O estado em voo cobre a ação inteira" usa o `variables` da mutation e proíbe flag manual.
-- `frontend/data-fetching.md`, "O cliente HTTP": convenção `to<Alvo>`/`from<Origem>`, um por arquivo, atribuída a `backend/errors.md`, que não a define.
 - `frontend/components.md`, "Estados de leitura": a exceção "salvo quando a tela ramifica por código e mostra estado próprio" não está em `frontend/data-fetching.md`, "Erro e sucesso".
-- `frontend/testing.md`, "Limite do contrato compartilhado": "formato de identificador" como limite do contrato canônico; `backend/http-api.md`, "União fechada e limite do contrato", só cobre comprimento e quantidade.
-- `infrastructure/observability.md`, "Referências": `backend/events.md` como "consistência eventual que pede conferência posterior"; `events.md` não trata disso.
+
+Lacunas conhecidas, exemplo que diverge dentro do próprio dono (revisão do 2.5/2.6):
+
+- `infrastructure/storage.md`: a foto de produto passa pelo backend em "Quando o binário do usuário passa pelo backend", mas o contrato `ProductPhotoStorage` ("Contrato por asset: dois eixos"), "Arquivo físico segue o destino do registro" e `domain/watched-list.md` a tratam por upload direto com registro pendente.
 
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 

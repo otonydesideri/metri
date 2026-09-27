@@ -48,7 +48,7 @@ export function useListParams() {
   // query string é entrada do usuário: valida antes de virar filtro
   const statusParam = orderStatusSchema.safeParse(searchParams.get('status'));
   const status = statusParam.success ? statusParam.data : undefined;
-  const search = searchParams.get('search') ?? undefined;
+  const search = searchParams.get('q') ?? undefined;
   const page = Number(searchParams.get('page') ?? '1');
 
   // recorte novo invalida a página atual: todo setter de recorte passa aqui

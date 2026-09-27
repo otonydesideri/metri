@@ -17,7 +17,7 @@ status: active
 ---
 # Roteamento de operação
 
-Uma operação de negócio raramente termina na própria gravação: ela confirma um pedido e emite uma fatura, avisa o cliente, alimenta um relatório. Este documento decide por qual mecanismo cada parte acontece; os documentos de cada mecanismo dizem como ela é construída depois de escolhida. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`, `notification`) de `backend/modules.md`.
+Uma operação de negócio raramente termina na própria gravação: ela confirma um pedido e emite uma fatura, avisa o cliente, alimenta um relatório. Este documento decide por qual mecanismo cada parte acontece; os documentos de cada mecanismo dizem como ela é construída depois de escolhida. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`, `notification`) de `methodology/authoring.md`, "Domínio didático".
 
 ## Árvore de decisão
 

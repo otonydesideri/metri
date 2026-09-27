@@ -15,7 +15,7 @@ status: active
 
 A regra booleana com mais de um consumidor: uma classe de domínio que sabe responder pela mesma regra em memória e como filtro de query.
 
-Os exemplos usam o domínio didático de pedidos de `backend/modules.md`.
+Os exemplos usam o domínio didático de pedidos de `methodology/authoring.md`, "Domínio didático".
 
 ## O problema
 
