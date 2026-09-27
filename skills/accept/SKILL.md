@@ -27,7 +27,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 2. Gather the inputs
 
-- **Contract**: the contract header at the top of the file named by the slice's `entry`; in `docs/plan/MATRIX.md`, each UC with `slice: S<id>`, with its criteria and the text of its BRs, and each T of the slice, with its `what` and `criteria`.
+- **Contract**: the contract header at the top of the file named by the slice's `entry`; in `docs/plan/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
 - **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns sub-agent and say so.
 
 ### 3. Spawn the sub-agents in parallel
@@ -60,7 +60,7 @@ Walk the human through:
 - the QA of its UCs, which the human runs from the steps you give per UC criterion, with visual conformity to `docs/DESIGN.md`; and of the feature, when this is its last slice (every other slice in the feature's `slices` is done);
 - the diff of every ticket with `sensitive: true` or `type: pattern`.
 
-A finding to fix reopens its UC (`in_progress`, with the finding in `notes`), or becomes a T of the slice when no UC covers it (`.metri/skills/look-across/MATRIX-FORMAT.md`). With a reopened UC or a new T, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
+A finding to fix reopens its UC (`in_progress`, with the finding in its ticket file's "Notas"), or becomes a T of the slice when no UC covers it (`.metri/skills/look-across/MATRIX-FORMAT.md`). With a reopened UC or a new T, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
 
 ### 6. Knowledge gate
 
@@ -68,7 +68,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md` (each done UC becomes one line pointing to its tests, and the done slice one line with its `entry`), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs and new T tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

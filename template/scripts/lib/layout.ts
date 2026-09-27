@@ -9,6 +9,7 @@ export type Layout = { isProject: boolean; globalDir: string; projectDir?: strin
 
 export const PROJECT_INDEX = 'docs/architecture/INDEX.md';
 export const MATRIX = 'docs/plan/MATRIX.md';
+export const TICKETS_DIR = 'docs/plan/tickets';
 
 // Pastas que a varredura de arquivos do projeto não percorre.
 const SKIPPED_DIRS = ['node_modules', '.git', '.metri'];
@@ -62,8 +63,15 @@ export function asList(value: unknown): string[] {
   return Array.isArray(value) ? value.map(String) : [];
 }
 
-// Itens "- ..." da seção "## <título>" de um markdown, com o número da linha.
+// Itens "- ..." da seção "## <título>" de um markdown, sem o prefixo "- ", com o número da linha.
 export function sectionItems(source: string, title: string): { text: string; line: number }[] {
+  return sectionLines(source, title)
+    .filter(({ text }) => text.startsWith('- '))
+    .map(({ text, line }) => ({ text: text.slice(2).trim(), line }));
+}
+
+// Linhas não vazias da seção "## <título>" de um markdown, com o número da linha (inclui as que não são "- ").
+export function sectionLines(source: string, title: string): { text: string; line: number }[] {
   const lines = source.split('\n');
   const start = lines.indexOf(`## ${title}`);
   if (start === -1) {
@@ -71,8 +79,8 @@ export function sectionItems(source: string, title: string): { text: string; lin
   }
   const items: { text: string; line: number }[] = [];
   for (let index = start + 1; index < lines.length && !lines[index].startsWith('## '); index++) {
-    if (lines[index].startsWith('- ')) {
-      items.push({ text: lines[index].slice(2).trim(), line: index + 1 });
+    if (lines[index].trim() !== '') {
+      items.push({ text: lines[index].trim(), line: index + 1 });
     }
   }
   return items;

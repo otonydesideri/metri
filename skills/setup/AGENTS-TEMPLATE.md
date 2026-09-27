@@ -3,7 +3,6 @@
 ## How to work here
 
 - Talk to the user in Brazilian Portuguese (pt-BR); keys, ids and code stay in English.
-
 - New request: if it fits one slice in docs/plan/MATRIX.md, in one ticket, with no new rule and outside sensitive areas, build it directly (at most one ticket: a UC with that `slice`, or a T of that slice); if a new rule, a sensitive area or a second slice turns up, route it again. A bug goes to /diagnose. Otherwise use /shape or /look-across.
 - Find before you create: `pnpm rules-for <paths>` for rules; grep SOT keywords and CONTEXT.md identifiers for code. Assume it already exists.
 - When a real case doesn't fit the rules, don't force it or invent a variation: stop, flag it and ask before implementing.
@@ -15,7 +14,8 @@
 - Product intent and scope → docs/PRODUCT.md (when discussing requirements)
 - Domain terms and code identifiers → docs/CONTEXT.md (whenever you name something)
 - Visual identity and component usage → docs/DESIGN.md (when building UI)
-- Plan, slice contracts, UCs, tickets, checks → docs/plan/MATRIX.md (read only your ticket's section)
+- Plan, features, slices and contracts → docs/plan/MATRIX.md
+- Your ticket (a UC or a T), its criteria and checks → docs/plan/tickets/<id>.md (read only your ticket's file)
 - Architecture rules → `pnpm rules-for` (never read the whole tree)
 - Stack deviations, active capabilities, delegations, project paths → docs/architecture/INDEX.md (when a choice depends on them)
 - Decisions and exceptions → docs/adr/ (when a rule or ticket cites one)

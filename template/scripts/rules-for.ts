@@ -7,14 +7,13 @@ import {
   asList,
   frontmatterOf,
   layoutOf,
-  MATRIX,
   PROJECT_INDEX,
   projectFiles,
   ruleFiles,
   sectionItems,
   takeOption,
+  TICKETS_DIR,
 } from './lib/layout.ts';
-import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
 
 const HELP = `rules-for: lista as regras de arquitetura que valem para caminhos ou para um ticket.
 
@@ -33,8 +32,7 @@ Entrada:
     Caminho que depende de decisão de projeto (ex.: o pacote do contrato de API) não entra no applies_to global:
     fica em "Caminhos do projeto".
   - Glob: expandido contra os arquivos da raiz (fora de node_modules, .git e .metri); glob sem arquivo gera aviso.
-  - --ticket: lê o bloco do UC (em Features) ou do ticket T (em Slices) em docs/plan/MATRIX.md e usa os ids
-    de "areas".
+  - --ticket: lê o frontmatter de docs/plan/tickets/<id>.md (um UC ou um ticket T) e usa os ids de "areas".
   - Nos dois casos, entram também as regras de read_first, em cadeia. Destino project: sai numa linha "ler antes:".
 
 Capacidades condicionais:
@@ -53,7 +51,7 @@ Erros (saem com código 1, prefixo "erro:"):
   - Id de regra do projeto igual a id global, a não ser que "Exceções e defaults trocados" declare a
     substituição: "- <id> substituída pela regra do projeto → ADR-NNNN" (a linha cita o id, "substitu" e o
     ADR). Declarada, a regra do projeto entra no lugar da global.
-  - Ticket que não existe na MATRIX, ticket sem "areas" e chamada sem caminho nem ticket.
+  - Ticket cujo arquivo não existe, ticket sem "areas" e chamada sem caminho nem ticket.
 `;
 
 const BUDGET = 5;
@@ -189,18 +187,14 @@ for (const input of inputs) {
 }
 
 if (ticket !== undefined) {
-  if (!existsSync(MATRIX)) {
-    fail(`${MATRIX} não existe`);
+  const ticketPath = `${TICKETS_DIR}/${ticket}.md`;
+  if (!existsSync(ticketPath)) {
+    fail(`ticket ${ticket} não existe (${ticketPath})`);
   }
-  const block = parseMatrix(readFileSync(MATRIX, 'utf8')).blocks.find(
-    ({ kind, id }) => (kind === 'ticket' || kind === 'uc') && id === ticket,
-  );
-  if (!block) {
-    fail(`ticket ${ticket} não existe em ${MATRIX}`);
-  }
-  const areas = listOf(fieldOf(block, 'areas')?.value ?? '');
-  if (!areas || areas.length === 0) {
-    fail(`ticket ${ticket} sem areas em ${MATRIX}`);
+  const frontmatter = frontmatterOf(readFileSync(ticketPath, 'utf8'));
+  const areas = asList(frontmatter?.areas);
+  if (areas.length === 0) {
+    fail(`ticket ${ticket} sem areas em ${ticketPath}`);
   }
   for (const id of areas) {
     if (rules.has(id)) {

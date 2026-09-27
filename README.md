@@ -33,7 +33,8 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `docs/DESIGN.md`        | Identidade visual e design system (se houver interface)                |
 | `docs/architecture/`    | Estado da ativação (`INDEX.md`) e regras só deste projeto, por área    |
 | `docs/adr/`             | Decisões, trade-offs e exceções                                        |
-| `docs/plan/MATRIX.md`   | Plano único: features, casos de uso, slices e contratos, tickets e checks |
+| `docs/plan/MATRIX.md`   | Plano: features, slices e contratos, Fog, Gaps, Pattern proposals     |
+| `docs/plan/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas    |
 | `.metri/`               | Regras de padronização globais, skills e scripts, somente leitura, só em desenvolvimento |
 | Código                  | Padrões, cabeçalhos inline (e o contrato da slice construída), SOT keywords, tokens e checks |
 
@@ -121,7 +122,8 @@ docs/
     <área>/*.md               regras só do projeto          (+ INDEX.md gerado)
   adr/NNNN-*.md
   plan/
-    MATRIX.md                 plano vivo
+    MATRIX.md                 plano vivo: features, slices e contratos, Fog, Gaps, Pattern proposals
+    tickets/<id>.md            um arquivo por ticket (UC ou T): frontmatter, critérios e notas
     tech/                     [reservado] technical design de features complexas
 .evidence/                    [reservado, fora do git] evidências por ticket
 ```
@@ -161,7 +163,8 @@ docs/
 | Linguagem            | `docs/CONTEXT.md`       | Termos do domínio, PT ↔ EN                                       | Moldar, Look across                     | Ao nomear qualquer coisa               |
 | Produto              | `docs/PRODUCT.md`       | Intenção e escopo                                                | Moldar                                  | Ao discutir requisitos                 |
 | Design               | `docs/DESIGN.md`        | Identidade visual, uso de componentes                            | Moldar (triagem de design), Aprender    | Via ponteiro em regras de `frontend/`  |
-| Plano                | `docs/plan/MATRIX.md`   | Features, UCs, BRs, slices, tickets, checks                      | Moldar, Look across, Construir (status) | Só a seção do ticket em trabalho       |
+| Plano                | `docs/plan/MATRIX.md`   | Features, slices e contratos, Fog, Gaps, Pattern proposals       | Moldar, Look across                     | Ao planejar                            |
+| Ticket                | `docs/plan/tickets/<id>.md` | Um UC ou um T: frontmatter, BRs ou "O que entrega", critérios e notas | Moldar (draft), Look across, Construir (status) | Só o arquivo do ticket em trabalho |
 | Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | Setup, Aprender                         | Sempre (~20 linhas)                    |
 | Código               | `src/` etc.             | Padrões, cabeçalhos inline, tokens, checks                       | Construir                               | Grep por SOT keyword, exemplo canônico |
 
@@ -216,8 +219,9 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | Código (tema)                             | `DESIGN.md` (depois da slice de design system) |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
-| Features, UCs, BRs planejadas, tickets, status | `MATRIX.md`, a fonte única dos tickets; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX pelo formato estrito dela | chat, handoff                                  |
-| Comportamento já construído                    | testes + código                           | matriz (a linha colapsa num ponteiro)          |
+| Features, slices e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles | chat, handoff                                  |
+| Cada UC ou T: BRs ou "O que entrega", critérios, status | `docs/plan/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
+| Comportamento já construído                    | testes + código                           | matriz (a slice colapsa num ponteiro para o `entry`; o arquivo do ticket fica, com `status: done`) |
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
 | Procedimentos do agente                        | `AGENTS.md` + skills                      | regras de arquitetura                          |
 
@@ -288,7 +292,7 @@ Todo o resto é trabalho do agente.
 | -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Planejamento → arquitetura | A slice precisa de um padrão que não existe           | Cobertura arquitetural no look across + ticket `pattern` primeiro, com revisão humana |
 | Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato na matriz enquanto é plano; construído, no cabeçalho do `entry`              |
-| Planejamento → execução    | Regra de negócio discutida some entre sessões         | UCs e BRs gravados na matriz desde o Moldar; depois migram para testes                |
+| Planejamento → execução    | Regra de negócio discutida some entre sessões         | UCs e BRs gravados no arquivo do ticket desde o Moldar (`draft`); depois migram para testes |
 | Planejamento → execução    | Agentes nomeiam o mesmo conceito de formas diferentes | `CONTEXT.md` com identificador EN; chaves da metodologia fixas e validadas            |
 | Arquitetura → execução     | O agente lê regras demais ou de menos                 | `applies_to` + `rules-for` + orçamento de ~5 regras por ticket                        |
 | Arquitetura → execução     | O builder altera padrões em silêncio                  | O builder não edita arquitetura; proposta de padrão                                   |

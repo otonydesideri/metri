@@ -16,13 +16,13 @@ Look across every feature, `now` and `planned`, to find the **slices** they shar
 
 ### 1. Gather context
 
-Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, all of `docs/plan/MATRIX.md` (Features, Slices, Gaps and Pattern proposals), the "Capacidades condicionais" table of `.metri/architecture/INDEX.md` and the area indexes (`.metri/architecture/<área>/INDEX.md`, `docs/architecture/<área>/INDEX.md`). Grep the code for what already exists.
+Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, all of `docs/plan/MATRIX.md` (Features, Slices, Gaps and Pattern proposals), every draft UC's ticket file in `docs/plan/tickets/`, the "Capacidades condicionais" table of `.metri/architecture/INDEX.md` and the area indexes (`.metri/architecture/<área>/INDEX.md`, `docs/architecture/<área>/INDEX.md`). Grep the code for what already exists.
 
 Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill tool with "domain-language" when a term is new or fuzzy, and with "grilling" when a decision branch is open.
 
 ### 2. Features → use cases
 
-Give each feature its `horizon` and, when it makes sense, its `milestone`. Give each `now` feature its UCs, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`.
+Give each feature its `horizon` and, when it makes sense, its `milestone`. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `docs/plan/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`.
 
 ### 3. Look across
 
@@ -53,9 +53,9 @@ Each `now` UC is a **tracer bullet** ticket.
 
 </tracer-bullet-rules>
 
-A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket keys and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel.
+A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel.
 
-A ticket `T` only for work without a UC, with its `type`, `what` and `criteria`: `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket.
+A ticket `T` only for work without a UC, its own file (`docs/plan/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket.
 
 **Wide refactors are the exception to tracer bullets.** A **wide refactor** is one mechanical change (rename a column, retype a shared symbol) whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no tracer bullet can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**, in `task` tickets. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket; green is promised only there.
 
@@ -85,12 +85,12 @@ Iterate until the user approves the plan.
 
 ### 9. Write the matrix
 
-Write the approved plan to `docs/plan/MATRIX.md`, keeping every id already there; new terms go to `docs/CONTEXT.md` and hard decisions to ADRs (domain-language). The human commits the result: the agent never commits on main.
+Write the approved plan to `docs/plan/MATRIX.md` (features, slices, Fog, Gaps and Pattern proposals) and each ticket to its own file in `docs/plan/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md` and hard decisions to ADRs (domain-language). The human commits the result: the agent never commits on main.
 
 Done when:
 
-- every `now` UC is `open`, with `slice`, `mode` and `checks`;
-- every T has `type`, `what` and `criteria`;
+- every `now` UC is `open`, with `slice`, `mode` and `checks`, and its id in its feature's `ucs`;
+- every T has `type`, "O que entrega" and "Critérios";
 - every `now` slice has the rules it needs, or a `pattern` T that writes them;
 - nothing is orphan;
 - `pnpm rules-for --ticket <id>` lists about 5 rules or fewer for every UC and T id;

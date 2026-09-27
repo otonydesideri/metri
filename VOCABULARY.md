@@ -16,10 +16,11 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | regra de negócio                          | `business rule`, id `BR<n>`                      | Regra do domínio dentro de um UC                                                              |
 | horizonte agora / prevista / névoa / fora | `horizon: now \| planned \| fog \| out`          | Estado de uma feature ou slice                                                                |
 | marco                                     | `milestone`                                      | Versão do produto a que a feature pertence (`v1`, `v2`...)                                    |
-| campos reservados                         | `tech_design`, `evidence`, `metrics`, `notes`    | Opcionais em qualquer bloco da matriz; só escritos quando têm valor                           |
-| ticket                                    | `ticket`: o UC ou um ticket `T<s>.<n>`           | Unidade de entrega e de aceite: o UC (o tracer) ou um ticket T, que só existe para trabalho sem UC |
-| entrega                                   | `what`                                           | Só no ticket T: o que ele entrega, em 1 a 3 linhas                                            |
-| critérios                                 | `criteria`                                       | Só no ticket T: os critérios de pronto, um item `- [ ]` por linha abaixo da chave             |
+| campos reservados                         | `milestone`, `tech_design` (feature); `metrics` (ticket) | Opcionais no bloco que os leva; só escritos quando têm valor. `notes` não é campo: é a seção "Notas" do arquivo do ticket |
+| ticket                                    | `ticket`: o UC ou um ticket `T<s>.<n>`           | Unidade de entrega e de aceite: o UC (o tracer) ou um ticket T, que só existe para trabalho sem UC. Cada um no seu arquivo, `docs/plan/tickets/<id>.md` |
+| entrega                                   | `what` (seção "O que entrega")                   | Só no ticket T: o que ele entrega, em 1 a 3 linhas, na seção "O que entrega" do arquivo do ticket |
+| critérios                                 | `criteria` (seção "Critérios")                   | Os critérios de pronto do ticket, um item `- [ ]` por linha, na seção "Critérios" do arquivo do ticket |
+| lista de UCs da feature                   | `ucs`                                             | Ids dos UCs da feature, na feature da MATRIX; todo UC fora de draft aparece aqui              |
 | tipo padrão / tarefa / release            | `type: pattern \| task \| release`               | Tipo do ticket T; o tracer é o UC e não é valor de `type`                                     |
 | modo                                      | `mode: afk \| hitl`                              | Se o agente faz sozinho ou com humano                                                         |
 | status                                    | `status: draft \| open \| in_progress \| blocked \| done` | Estado do UC, do ticket T ou da slice; `draft` só no UC, escrito pelo `/shape` até o `/look-across` planejá-lo |

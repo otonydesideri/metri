@@ -15,8 +15,11 @@ import {
   ruleFiles,
   sectionItems,
   takeOption,
+  TICKETS_DIR,
 } from './lib/layout.ts';
+import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
 import { CONTRACT_LABELS, matrixProblems } from './lib/matrix-lint.ts';
+import { ticketProblems } from './lib/ticket-lint.ts';
 
 const HELP = `docs-lint: lint estrutural. Roda na raiz (ou em --root <dir>) e detecta o modo:
 com .metri/ na raiz, é projeto; sem .metri/, é o source.
@@ -58,25 +61,30 @@ Só no projeto:
   - AGENTS.md com mais de 30 linhas: aviso.
   - applies_to sem casamento: glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum
     arquivo gera aviso, não erro; a regra é candidata a poda.
-  - MATRIX.md:
+  - MATRIX.md, só o plano:
     - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
-    - ids: ### F<n> e #### UC<f>.<n> em Features, ### S<n> e #### T<s>.<n> em Slices, GAP-<n> e PP-<n> nas
-      listas; sem id repetido; UC dentro da feature F<f> e ticket T dentro da slice S<s>;
-    - chaves de VOCABULARY.md por bloco, sem chave repetida; valores de horizon, status, type,
-      mode e sensitive dentro do permitido (status draft só no UC; type do T só pattern, task ou release);
-      listas em [a, b];
-    - nenhuma chave vazia;
-    - obrigatórias: horizon na feature; status no UC e, fora de draft e antes da poda, mode e checks; type,
-      mode, status, checks, what (1 a 3 linhas) e criteria (com ao menos um item "- ") no ticket T;
-    - UC fora de draft e antes da poda: checks com ao menos um comando além de pnpm verify, o teste ou padrão
-      de teste que prova os critérios (a poda cita o arquivo dele em status: done → <arquivo de teste>);
-    - nada órfão: UC fora de draft tem slice; ticket T pertence a uma slice; slice now serve a uma feature now
-      (a feature a lista em slices ou tem um UC com ela em slice);
-    - slices, slice e blocked_by apontam para um id que existe na matriz (blocked_by: UC, T ou slice);
+    - ids: ### F<n> em Features, ### S<n> em Slices, GAP-<n> e PP-<n> nas listas; sem id repetido;
+    - chaves de VOCABULARY.md por bloco (feature: horizon, slices, outcome, ucs, milestone, tech_design;
+      slice: horizon, blocked_by, contract, entry, status), sem chave repetida; valores de horizon dentro do
+      permitido; listas em [a, b]; nenhuma chave vazia;
+    - obrigatória: horizon na feature;
+    - slice now serve a uma feature now (a feature a lista em slices) ou um ticket com ela em slice;
+    - slices e blocked_by (da slice) apontam para uma slice que existe na matriz;
     - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou entry, nunca os
       dois; slice done tem entry;
     - o entry existe e tem o cabeçalho de contrato (/** ... */) com os rótulos ${CONTRACT_LABELS.join(', ')};
     - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
+  - Tickets (docs/plan/tickets/<id>.md, um UC ou um T; formato: skills/look-across/MATRIX-FORMAT.md,
+    "Ticket files"):
+    - o nome do arquivo é UC<f>.<n>.md ou T<s>.<n>.md, e o frontmatter id é igual a ele;
+    - frontmatter válido: as chaves de VOCABULARY.md (id, title, status e, no UC, feature; no T, slice, type,
+      mode e checks sempre; no UC, slice, mode e checks fora de draft), sem chave fora dela nem vazia; status,
+      mode, type e sensitive dentro do permitido (status draft só no UC);
+    - feature (UC) e slice (T sempre; UC fora de draft) apontam para algo que existe na matriz, com o número
+      depois da letra do id batendo com o da feature ou da slice;
+    - blocked_by aponta para um ticket ou uma slice que existe;
+    - todo UC fora de draft aparece em ucs da feature dele, em MATRIX.md;
+    - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]").
   - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
     superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
     Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.
@@ -548,8 +556,61 @@ function lintDocsTree(): void {
       lintFrontmatter(path, 'docs/architecture');
     } else if (/^docs\/adr\/\d{4}-[a-z0-9-]+\.md$/.test(path)) {
       lintAdr(path);
+    } else if (path.startsWith(`${TICKETS_DIR}/`)) {
+      continue; // checado em lintTickets, que também confere o nome do arquivo.
     } else {
       report(path, 1, 'árvore de docs/: arquivo fora da lista fechada (docs-lint --help)');
+    }
+  }
+}
+
+// Ids da feature (F<n>) e da slice (S<n>) presentes na matriz, e o valor de "ucs" de cada feature.
+function matrixIds(matrixSource: string): {
+  featureIds: Set<string>;
+  sliceIds: Set<string>;
+  featureUcs: Map<string, string[]>;
+  featureSlices: Map<string, string[]>;
+} {
+  const matrix = parseMatrix(matrixSource);
+  const featureIds = new Set(matrix.blocks.filter((block) => block.kind === 'feature').map((block) => block.id));
+  const sliceIds = new Set(matrix.blocks.filter((block) => block.kind === 'slice').map((block) => block.id));
+  const featureUcs = new Map<string, string[]>();
+  const featureSlices = new Map<string, string[]>();
+  for (const block of matrix.blocks.filter((block) => block.kind === 'feature')) {
+    featureUcs.set(block.id, listOf(fieldOf(block, 'ucs')?.value ?? '') ?? []);
+    featureSlices.set(block.id, listOf(fieldOf(block, 'slices')?.value ?? '') ?? []);
+  }
+  return { featureIds, sliceIds, featureUcs, featureSlices };
+}
+
+// Tickets (docs/plan/tickets/<id>.md): frontmatter, corpo e referências para a MATRIX.
+function lintTickets(): void {
+  const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
+  const { featureIds, sliceIds, featureUcs, featureSlices } = matrixIds(matrixSource);
+  const files = existsSync(TICKETS_DIR)
+    ? readdirSync(TICKETS_DIR)
+        .filter((name) => name.endsWith('.md'))
+        .sort()
+    : [];
+  const ticketIds = new Set(files.map((name) => name.replace(/\.md$/, '')));
+  const servedSlices = new Set([...featureSlices.values()].flat());
+  for (const name of files) {
+    const path = join(TICKETS_DIR, name);
+    const expectedId = name.replace(/\.md$/, '');
+    const source = readFileSync(path, 'utf8');
+    const problems = ticketProblems(path, source, expectedId, { featureIds, sliceIds, ticketIds, featureUcs });
+    for (const { line, message } of problems) {
+      report(path, line, message);
+    }
+    const slice = frontmatterOf(source)?.slice;
+    if (typeof slice === 'string') {
+      servedSlices.add(slice);
+    }
+  }
+  const matrix = parseMatrix(matrixSource);
+  for (const block of matrix.blocks) {
+    if (block.kind === 'slice' && fieldOf(block, 'horizon')?.value === 'now' && !servedSlices.has(block.id)) {
+      report(MATRIX, block.line, `${block.id}: slice now que nenhuma feature now serve (slices da feature ou slice de um ticket)`);
     }
   }
 }
@@ -641,6 +702,7 @@ function lintProject(): void {
   lintDocsTree();
   lintAgents();
   lintMatrix();
+  lintTickets();
   lintAppliesTo();
   if (existsSync(PROJECT_INDEX)) {
     lintGenerated('docs/architecture');

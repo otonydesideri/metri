@@ -1,4 +1,6 @@
-// Checagens do docs/plan/MATRIX.md no modo projeto do docs-lint. A lista está no --help do docs-lint.
+// Checagens do docs/plan/MATRIX.md no modo projeto do docs-lint: só o plano (features, slices, Fog, Gaps,
+// Pattern proposals). O que valida cada ticket (UC ou T), em docs/plan/tickets/<id>.md, está em ticket-lint.ts.
+// A lista está no --help do docs-lint.
 import { existsSync, readFileSync } from 'node:fs';
 import { type Block, fieldOf, type Kind, listOf, parseMatrix } from './matrix.ts';
 
@@ -6,36 +8,22 @@ export type MatrixProblem = { line: number; message: string };
 
 const SECTIONS = ['Features', 'Slices', 'Fog', 'Gaps', 'Pattern proposals'];
 // Campos reservados: opcionais em qualquer bloco, só escritos quando têm valor.
-const RESERVED = ['milestone', 'tech_design', 'evidence', 'metrics', 'notes'];
-// Chaves de ticket: o UC (o tracer) e o ticket T levam as mesmas.
-const TICKET_KEYS = ['mode', 'status', 'blocked_by', 'sensitive', 'areas', 'touches', 'checks', 'subtasks'];
+const RESERVED = ['milestone', 'tech_design'];
 const KEYS: Record<Kind, string[]> = {
-  feature: ['horizon', 'slices', 'outcome', ...RESERVED],
-  uc: ['actor', 'slice', ...TICKET_KEYS, ...RESERVED],
-  slice: ['horizon', 'blocked_by', 'contract', 'entry', 'status', ...RESERVED],
-  ticket: ['type', 'what', 'criteria', ...TICKET_KEYS, ...RESERVED],
+  feature: ['horizon', 'slices', 'outcome', 'ucs', ...RESERVED],
+  slice: ['horizon', 'blocked_by', 'contract', 'entry', 'status'],
 };
 const REQUIRED: Record<Kind, string[]> = {
   feature: ['horizon'],
-  uc: ['status'],
   slice: [],
-  ticket: ['type', 'mode', 'status', 'checks', 'what', 'criteria'],
 };
-// Obrigatórias no UC fora de draft e ainda não podado (status: done → <testes>); slice sai em lintOrphans.
-const UC_TICKET_REQUIRED = ['mode', 'checks'];
-// O check que todo ticket roda; o UC leva, além dele, o teste que prova os critérios.
-const VERIFY = 'pnpm verify';
-const WHAT_MAX_LINES = 3;
 const CONTRACT_KEYS = ['responsibility', 'interface', 'invariants', 'consumers', 'planned'];
 const CONTRACT_REQUIRED = ['responsibility', 'interface', 'invariants', 'consumers'];
 const VALUES: Record<string, string[]> = {
   horizon: ['now', 'planned', 'fog', 'out'],
-  status: ['open', 'in_progress', 'blocked', 'done'],
-  type: ['pattern', 'task', 'release'],
-  mode: ['afk', 'hitl'],
-  sensitive: ['true', 'false'],
+  status: ['done'],
 };
-const LISTS = ['slices', 'blocked_by', 'areas', 'touches', 'checks', 'subtasks', 'consumers'];
+const LISTS = ['slices', 'blocked_by', 'ucs', 'consumers'];
 // Rótulos do cabeçalho de contrato no entry (A.7), no idioma de comentário do default.
 export const CONTRACT_LABELS = [
   'O quê',
@@ -93,29 +81,9 @@ export function matrixProblems(source: string): MatrixProblem[] {
   }
 
   for (const block of matrix.blocks) {
-    lintParent(block, report);
     lintFields(block, ids, report);
   }
-  lintOrphans(matrix.blocks, report);
   return problems.sort((a, b) => a.line - b.line);
-}
-
-function numberOf(id: string): string {
-  return /^[A-Z]+(\d+)/.exec(id)?.[1] ?? '';
-}
-
-function lintParent(block: Block, report: (line: number, message: string) => void): void {
-  if (block.kind !== 'uc' && block.kind !== 'ticket') {
-    return;
-  }
-  const owner = block.kind === 'uc' ? 'feature' : 'slice';
-  if (!block.parent) {
-    report(block.line, `${block.id} fora de uma ${owner}`);
-    return;
-  }
-  if (numberOf(block.id) !== numberOf(block.parent.id)) {
-    report(block.line, `id: ${block.id} dentro de ${block.parent.id}; o número depois da letra é o da ${owner}`);
-  }
 }
 
 function lintFields(
@@ -133,60 +101,18 @@ function lintFields(
       report(field.line, `chave ${field.key} repetida em ${block.id}`);
     }
     seen.add(field.key);
-    if (field.key === 'contract' || field.key === 'criteria') {
+    if (field.key === 'contract') {
       continue;
     }
     lintValue(block, field.key, field.value, field.line, ids, report);
   }
-  const required = isUcInPlay(block) ? [...REQUIRED.uc, ...UC_TICKET_REQUIRED] : REQUIRED[block.kind];
-  for (const key of required) {
+  for (const key of REQUIRED[block.kind]) {
     if (!seen.has(key)) {
-      report(block.line, `${block.id}: falta a chave ${key}${block.kind === 'uc' ? ' (UC fora de draft)' : ''}`);
+      report(block.line, `${block.id}: falta a chave ${key}`);
     }
   }
   if (block.kind === 'slice') {
     lintSlice(block, seen, ids, report);
-  }
-  if (block.kind === 'ticket') {
-    lintTicket(block, report);
-  }
-  if (isUcInPlay(block)) {
-    lintUcChecks(block, report);
-  }
-}
-
-// UC em jogo: checks com ao menos um comando além de pnpm verify, o teste que a poda cita.
-function lintUcChecks(block: Block, report: (line: number, message: string) => void): void {
-  const checks = fieldOf(block, 'checks');
-  const commands = listOf(checks?.value ?? '');
-  if (!checks || !commands || commands.length === 0) {
-    return;
-  }
-  if (commands.every((command) => command.replaceAll('`', '').trim() === VERIFY)) {
-    report(checks.line, `checks de ${block.id}: só ${VERIFY}; falta o teste ou padrão de teste que prova os critérios`);
-  }
-}
-
-// UC que já é ticket: fora de draft e ainda não podado para "status: done → <testes>".
-function isUcInPlay(block: Block): boolean {
-  if (block.kind !== 'uc') {
-    return false;
-  }
-  const status = fieldOf(block, 'status')?.value ?? '';
-  return status !== 'draft' && !/^done → \S+$/.test(status);
-}
-
-// Ticket T: what em 1 a 3 linhas e criteria com ao menos um item.
-function lintTicket(block: Block, report: (line: number, message: string) => void): void {
-  const what = fieldOf(block, 'what');
-  if (what && (block.whatLines ?? 1) > WHAT_MAX_LINES) {
-    report(what.line, `what de ${block.id}: ${block.whatLines} linhas, mais de ${WHAT_MAX_LINES}`);
-  }
-  const criteria = fieldOf(block, 'criteria');
-  if (criteria && criteria.value !== '') {
-    report(criteria.line, `criteria de ${block.id}: os critérios vêm nas linhas "- " abaixo da chave`);
-  } else if (criteria && (block.criteria ?? []).length === 0) {
-    report(criteria.line, `criteria de ${block.id} sem item`);
   }
 }
 
@@ -202,12 +128,8 @@ function lintValue(
     report(line, `chave ${key} vazia em ${block.id}`);
     return;
   }
-  const isUcStatus = block.kind === 'uc' && key === 'status';
-  const allowed = isUcStatus ? ['draft', ...VALUES.status] : VALUES[key];
-  const plain = isUcStatus ? value.replace(/^done → \S+$/, 'done') : value;
-  if (key === 'status' && plain === 'draft' && !isUcStatus) {
-    report(line, `status: draft só no UC (${block.id})`);
-  } else if (allowed && !allowed.includes(plain)) {
+  const allowed = VALUES[key];
+  if (allowed && !allowed.includes(value)) {
     report(line, `${key}: ${value} fora de ${allowed.join(' | ')}`);
   }
   if (LISTS.includes(key)) {
@@ -220,9 +142,6 @@ function lintValue(
       lintReference(block, key, item, line, ids, report);
     }
   }
-  if (key === 'slice') {
-    lintReference(block, key, value, line, ids, report);
-  }
 }
 
 function lintReference(
@@ -233,7 +152,7 @@ function lintReference(
   ids: Map<string, Block>,
   report: (line: number, message: string) => void,
 ): void {
-  const kinds: Record<string, Kind[]> = { slices: ['slice'], blocked_by: ['slice', 'ticket', 'uc'], slice: ['slice'] };
+  const kinds: Record<string, Kind[]> = { slices: ['slice'], blocked_by: ['slice'] };
   const expected = kinds[key];
   if (!expected) {
     return;
@@ -295,26 +214,4 @@ function entryProblem(path: string): string | undefined {
   }
   const missing = CONTRACT_LABELS.filter((label) => !new RegExp(`^\\s*\\*\\s*${label}:`, 'm').test(header));
   return missing.length === 0 ? undefined : `entry: cabeçalho de ${path} sem ${missing.join(', ')}`;
-}
-
-// Nada órfão: UC fora de draft tem slice; slice now serve a uma feature now, que a lista em slices ou tem um UC
-// com ela em slice. Ticket T fora de slice sai em lintParent.
-function lintOrphans(blocks: Block[], report: (line: number, message: string) => void): void {
-  const isNow = (block: Block) => fieldOf(block, 'horizon')?.value === 'now';
-  const servedNow = new Set([
-    ...blocks
-      .filter((block) => block.kind === 'feature' && isNow(block))
-      .flatMap((block) => listOf(fieldOf(block, 'slices')?.value ?? '') ?? []),
-    ...blocks
-      .filter((block) => block.kind === 'uc' && block.parent !== undefined && isNow(block.parent))
-      .map((block) => fieldOf(block, 'slice')?.value ?? ''),
-  ]);
-  for (const block of blocks) {
-    if (isUcInPlay(block) && !fieldOf(block, 'slice')) {
-      report(block.line, `${block.id}: UC fora de draft sem slice`);
-    }
-    if (block.kind === 'slice' && isNow(block) && !servedNow.has(block.id)) {
-      report(block.line, `${block.id}: slice now que nenhuma feature now serve (slices da feature ou slice de um UC)`);
-    }
-  }
 }

@@ -34,10 +34,10 @@ Do NOT interview the user again; synthesize what the interview settled:
 
 - `docs/PRODUCT.md`, in the format of [PRODUCT-FORMAT.md](PRODUCT-FORMAT.md);
 - an ADR for each hard decision already taken (domain-language, which also kept `docs/CONTEXT.md` current during the interview);
-- the candidate features and their UCs in the Features section of `docs/plan/MATRIX.md`, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): each feature with `horizon` and `outcome`, each UC with `actor`, `status: draft`, its BRs and its criteria; /look-across plans it and opens it.
+- the candidate features in the Features section of `docs/plan/MATRIX.md`, each with `horizon`, `outcome` and `ucs` (the ids of its UCs); each UC of a candidate feature as its own file, `docs/plan/tickets/UC<f>.<n>.md`, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its BRs and its criteria. /look-across plans it and opens it.
 
 ### 5. Direction gate
 
 Show the user the direction (the product, the terms, the features and UCs) and iterate until they approve it. The human commits the result: the agent never commits on main.
 
-Done when the direction is approved, every term has its English identifier in `docs/CONTEXT.md`, the candidate features and UCs are in the matrix, and `pnpm docs-lint` is green. Recommend /look-across next, in the same session.
+Done when the direction is approved, every term has its English identifier in `docs/CONTEXT.md`, the candidate features are in the matrix with each draft UC in its own ticket file, and `pnpm docs-lint` is green. Recommend /look-across next, in the same session.

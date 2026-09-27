@@ -4,6 +4,7 @@ import { copyFixture, copySource, edit, FIXTURE, REPO, removeCopies, run, write 
 afterAll(removeCopies);
 
 const MATRIX = 'docs/plan/MATRIX.md';
+const TICKETS = 'docs/plan/tickets';
 
 function lint(dir: string): { status: number | null; lines: string[] } {
   return run('docs-lint.ts', ['--root', dir]);
@@ -19,6 +20,10 @@ function lintChanged(change: (dir: string) => void): { status: number | null; ou
 
 function inMatrix(from: string, to: string): (dir: string) => void {
   return (dir) => edit(dir, MATRIX, (source) => source.replace(from, to));
+}
+
+function inTicket(id: string, from: string, to: string): (dir: string) => void {
+  return (dir) => edit(dir, `${TICKETS}/${id}.md`, (source) => source.replace(from, to));
 }
 
 describe('docs-lint', { timeout: 30_000 }, () => {
@@ -109,110 +114,31 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(output).toContain('seções: ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals, nessa ordem');
   });
 
-  it('MATRIX: ids no formato e dentro do pai certo', () => {
+  it('MATRIX: ids no formato', () => {
     expect(lintChanged(inMatrix('### F2 · Relatórios', '### Feature 2 · Relatórios')).output).toContain(
       'título fora do formato: ### Feature 2 · Relatórios',
-    );
-    expect(lintChanged(inMatrix('#### T2.1 ·', '#### T1.2 ·')).output).toContain(
-      'id: T1.2 dentro de S2; o número depois da letra é o da slice',
     );
     expect(lintChanged(inMatrix('- GAP-1 · filtro', '- GAP · filtro')).output).toContain('Gaps: "GAP · filtro');
   });
 
   it('MATRIX: chaves e valores do VOCABULARY', () => {
-    expect(lintChanged(inMatrix('actor: operador', 'owner: operador')).output).toContain(
-      'chave owner fora do VOCABULARY para uc',
-    );
     expect(lintChanged(inMatrix('horizon: planned', 'horizon: later')).output).toContain(
       'horizon: later fora de now | planned | fog | out',
     );
-    expect(lintChanged(inMatrix('slice: S1 · mode: afk', 'slice: S1 · mode: solo')).output).toContain(
-      'mode: solo fora de afk | hitl',
+    expect(lintChanged(inMatrix('ucs: [UC1.1, UC1.2]', 'featured: [UC1.1, UC1.2]')).output).toContain(
+      'chave featured fora do VOCABULARY para feature',
     );
   });
 
-  it('MATRIX: nenhuma chave vazia', () => {
-    const { status, output } = lintChanged(inMatrix('touches: [router:orders]', 'touches: []'));
-    expect(status).toBe(1);
-    expect(output).toContain('chave touches vazia em UC1.1');
-  });
-
-  it('MATRIX: nada órfão', () => {
-    const noSlice = lintChanged(inMatrix('status: in_progress · slice: S1 · ', 'status: in_progress · '));
-    expect(noSlice.status).toBe(1);
-    expect(noSlice.output).toContain('UC1.1: UC fora de draft sem slice');
-    expect(lintChanged(inMatrix('status: in_progress · slice: S1 · mode: afk · sensitive: false', 'status: draft')).status).toBe(0);
+  it('MATRIX: slice now serve a uma feature now (slices da feature ou slice de um ticket)', () => {
     expect(lintChanged(inMatrix('horizon: now · slices: [S1, S2]', 'horizon: now · slices: [S1]')).status).toBe(0);
     const unserved = lintChanged((dir) => {
       inMatrix('horizon: now · slices: [S1, S2]', 'horizon: now · slices: [S1]')(dir);
-      inMatrix('slice: S2', 'slice: S1')(dir);
+      inTicket('UC1.2', 'slice: S2', 'slice: S1')(dir);
+      inTicket('T2.1', 'slice: S2', 'slice: S1')(dir);
     });
     expect(unserved.status).toBe(1);
     expect(unserved.output).toContain('S2: slice now que nenhuma feature now serve');
-    expect(lintChanged(inMatrix('## Slices\n', '## Slices\n\n#### T0.1 · Solto\n')).output).toContain(
-      'T0.1 fora de uma slice',
-    );
-  });
-
-  it('MATRIX: blocked_by aponta para um UC, T ou slice que existe', () => {
-    const { status, output } = lintChanged(inMatrix('blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.9, T2.1]'));
-    expect(status).toBe(1);
-    expect(output).toContain('blocked_by de UC1.2: UC1.9 não existe na matriz');
-    expect(lintChanged(inMatrix('blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.1, T2.1, S1]')).status).toBe(0);
-  });
-
-  it('MATRIX: chaves de ticket obrigatórias no UC fora de draft', () => {
-    expect(lintChanged(inMatrix('slice: S1 · mode: afk · ', 'slice: S1 · ')).output).toContain(
-      'UC1.1: falta a chave mode (UC fora de draft)',
-    );
-    expect(lintChanged(inMatrix('checks: [`pnpm verify`, `pnpm test orders-page`]\n\n- BR1', '- BR1')).output).toContain(
-      'UC1.1: falta a chave checks (UC fora de draft)',
-    );
-    const pruned = lintChanged((dir) =>
-      edit(dir, MATRIX, (source) =>
-        source.replace(/actor: cliente · status: open[^\n]*\nareas: [^\n]*\nchecks: [^\n]*\n/, 'status: done → apps/app-api/test/order-confirmation.e2e-spec.ts\n'),
-      ),
-    );
-    expect(pruned).toEqual({ status: 0, output: '' });
-  });
-
-  it('MATRIX: UC fora de draft tem em checks um teste além de pnpm verify', () => {
-    const checks = 'checks: [`pnpm verify`, `pnpm test orders-page`]';
-    const onlyVerify = lintChanged(inMatrix(checks, 'checks: [`pnpm verify`]'));
-    expect(onlyVerify.status).toBe(1);
-    expect(onlyVerify.output).toContain(
-      'checks de UC1.1: só pnpm verify; falta o teste ou padrão de teste que prova os critérios',
-    );
-    const testFile = 'checks: [`pnpm verify`, `pnpm vitest run apps/app-web/src/pages/orders/orders-page.test.tsx`]';
-    expect(lintChanged(inMatrix(checks, testFile))).toEqual({ status: 0, output: '' });
-  });
-
-  it('MATRIX: what e criteria obrigatórios no ticket T', () => {
-    const what = 'what: A conta no provedor de e-mail, com o domínio de envio verificado e a chave de API no env do app-api.\n';
-    expect(lintChanged(inMatrix(what, '')).output).toContain('T2.1: falta a chave what');
-    expect(lintChanged(inMatrix(what, `${what}  linha 2.\n  linha 3.\n`)).status).toBe(0);
-    expect(lintChanged(inMatrix(what, `${what}  linha 2.\n  linha 3.\n  linha 4.\n`)).output).toContain(
-      'what de T2.1: 4 linhas, mais de 3',
-    );
-    const items = '- [ ] O domínio de envio está verificado no provedor.\n- [ ] A chave de API existe no env de desenvolvimento do app-api.\n';
-    expect(lintChanged(inMatrix(`criteria:\n${items}`, '')).output).toContain('T2.1: falta a chave criteria');
-    expect(lintChanged(inMatrix(items, '')).output).toContain('criteria de T2.1 sem item');
-  });
-
-  it('MATRIX: type do ticket T só pattern, task ou release; uc não é chave', () => {
-    const tracer = lintChanged(inMatrix('type: task', 'type: tracer'));
-    expect(tracer.status).toBe(1);
-    expect(tracer.output).toContain('type: tracer fora de pattern | task | release');
-    expect(lintChanged(inMatrix('type: task', 'type: pattern')).status).toBe(0);
-    expect(lintChanged(inMatrix('type: task', 'uc: UC1.2 · type: task')).output).toContain(
-      'chave uc fora do VOCABULARY para ticket',
-    );
-  });
-
-  it('MATRIX: status draft só no UC', () => {
-    const draft = lintChanged(inMatrix('status: open · sensitive: true', 'status: draft · sensitive: true'));
-    expect(draft.status).toBe(1);
-    expect(draft.output).toContain('status: draft só no UC (T2.1)');
   });
 
   it('MATRIX: slice com contract ou entry, e done com entry', () => {
@@ -238,6 +164,102 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(lintChanged(inMatrix('orders/orders-page.tsx', 'orders/page.tsx')).output).toContain(
       'entry: apps/app-web/src/pages/orders/page.tsx não existe',
     );
+  });
+
+  it('Tickets: a árvore aceita docs/plan/tickets/<id>.md, e o nome do arquivo tem que ser um id de UC ou T', () => {
+    const { status, output } = lintChanged((dir) => write(dir, `${TICKETS}/notes.md`, '---\nid: notes\n---\n# Notas\n'));
+    expect(status).toBe(1);
+    expect(output).toContain('nome de arquivo: notes.md fora do formato UC<f>.<n>.md ou T<s>.<n>.md');
+    expect(output).not.toContain('árvore de docs/: arquivo fora da lista fechada');
+  });
+
+  it('Tickets: o frontmatter id bate com o nome do arquivo', () => {
+    const { status, output } = lintChanged(inTicket('UC1.1', 'id: UC1.1', 'id: UC1.2'));
+    expect(status).toBe(1);
+    expect(output).toContain('frontmatter: id UC1.2 diferente do nome do arquivo UC1.1.md');
+  });
+
+  it('Tickets: frontmatter válido (chave fora de VOCABULARY, chave vazia)', () => {
+    expect(lintChanged(inTicket('UC1.1', 'actor: operador', 'owner: operador')).output).toContain(
+      'frontmatter: chave owner fora de VOCABULARY.md para UC',
+    );
+    expect(lintChanged(inTicket('T2.1', 'type: task', 'uc: UC1.2\ntype: task')).output).toContain(
+      'frontmatter: chave uc fora de VOCABULARY.md para T',
+    );
+    expect(lintChanged(inTicket('UC1.1', 'touches: [router:orders]', 'touches: []')).output).toContain(
+      'frontmatter: chave touches vazia',
+    );
+  });
+
+  it('Tickets: status, mode, type e sensitive dentro do permitido; draft só no UC', () => {
+    expect(lintChanged(inTicket('T2.1', 'mode: hitl', 'mode: solo')).output).toContain('mode: solo fora de afk | hitl');
+    expect(lintChanged(inTicket('T2.1', 'type: task', 'type: tracer')).output).toContain('type: tracer fora de pattern | task | release');
+    expect(lintChanged(inTicket('T2.1', 'type: task', 'type: pattern')).status).toBe(0);
+    expect(lintChanged(inTicket('T2.1', 'status: open', 'status: draft')).output).toContain(
+      'status: draft fora de open | in_progress | blocked | done',
+    );
+    expect(lintChanged(inTicket('T2.1', 'sensitive: true', 'sensitive: "true"')).output).toContain(
+      'sensitive: precisa ser true ou false (booleano, sem aspas)',
+    );
+  });
+
+  it('Tickets: UC fora de draft sem slice, mode ou checks; T sempre exige type, slice, mode e checks', () => {
+    expect(lintChanged(inTicket('UC1.1', 'slice: S1\n', '')).output).toContain('UC1.1: falta a chave slice (UC fora de draft)');
+    expect(lintChanged(inTicket('UC1.1', 'mode: afk\n', '')).output).toContain('UC1.1: falta a chave mode (UC fora de draft)');
+    expect(lintChanged(inTicket('UC1.1', 'status: in_progress', 'status: draft')).status).toBe(0);
+    const noType = lintChanged(inTicket('T2.1', 'type: task\n', ''));
+    expect(noType.output).toContain('T2.1: falta a chave type');
+    expect(lintChanged(inTicket('T2.1', 'status: open', 'status: done')).status).toBe(0);
+  });
+
+  it('Tickets: UC fora de draft tem em checks um teste além de pnpm verify', () => {
+    const checks = 'checks: ["`pnpm verify`", "`pnpm test orders-page`"]';
+    const onlyVerify = lintChanged(inTicket('UC1.1', checks, 'checks: ["`pnpm verify`"]'));
+    expect(onlyVerify.status).toBe(1);
+    expect(onlyVerify.output).toContain(
+      'checks de UC1.1: só pnpm verify; falta o teste ou padrão de teste que prova os critérios',
+    );
+    const testFile = 'checks: ["`pnpm verify`", "`pnpm vitest run apps/app-web/src/pages/orders/orders-page.test.tsx`"]';
+    expect(lintChanged(inTicket('UC1.1', checks, testFile))).toEqual({ status: 0, output: '' });
+  });
+
+  it('Tickets: feature (UC) e slice (T) apontam para algo que existe, com o número certo', () => {
+    expect(lintChanged(inTicket('UC1.1', 'feature: F1', 'feature: F9')).output).toContain('feature: F9 não existe na matriz');
+    expect(lintChanged(inTicket('UC1.1', 'feature: F1', 'feature: F2')).output).toContain(
+      'UC1.1: feature F2 diferente de F1; o número depois da letra no id é o de feature',
+    );
+    expect(lintChanged(inTicket('T2.1', 'slice: S2', 'slice: S9')).output).toContain('slice: S9 não existe na matriz');
+    expect(lintChanged(inTicket('T2.1', 'slice: S2', 'slice: S1')).output).toContain(
+      'T2.1: slice S1 diferente de S2; o número depois da letra no id é o de slice',
+    );
+  });
+
+  it('Tickets: blocked_by aponta para um ticket ou uma slice que existe', () => {
+    const { status, output } = lintChanged(inTicket('UC1.2', 'blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.9, T2.1]'));
+    expect(status).toBe(1);
+    expect(output).toContain('blocked_by de UC1.2: UC1.9 não existe');
+    expect(lintChanged(inTicket('UC1.2', 'blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.1, T2.1, S1]')).status).toBe(0);
+  });
+
+  it('Tickets: todo UC fora de draft aparece em ucs da feature dele', () => {
+    const { status, output } = lintChanged(inMatrix('ucs: [UC1.1, UC1.2]', 'ucs: [UC1.2]'));
+    expect(status).toBe(1);
+    expect(output).toContain('UC1.1: fora da lista ucs da feature F1 em docs/plan/MATRIX.md');
+    // Draft não precisa aparecer em ucs (nem a chave precisa existir).
+    expect(lintChanged(inMatrix('ucs: [UC2.1]\n', '')).status).toBe(0);
+  });
+
+  it('Tickets: T tem "O que entrega" (1 a 3 linhas) e "Critérios" (com item)', () => {
+    const what = 'A conta no provedor de e-mail, com o domínio de envio verificado e a chave de API no env do app-api.';
+    expect(lintChanged(inTicket('T2.1', `## O que entrega\n\n${what}\n`, '## O que entrega\n')).output).toContain(
+      'T2.1: falta a seção "O que entrega"',
+    );
+    expect(lintChanged(inTicket('T2.1', what, `${what}\nlinha 2.\nlinha 3.`)).status).toBe(0);
+    expect(lintChanged(inTicket('T2.1', what, `${what}\nlinha 2.\nlinha 3.\nlinha 4.`)).output).toContain(
+      '"O que entrega" de T2.1: 4 linhas, mais de 3',
+    );
+    const items = '- [ ] O domínio de envio está verificado no provedor.\n- [ ] A chave de API existe no env de desenvolvimento do app-api.\n';
+    expect(lintChanged(inTicket('T2.1', items, '')).output).toContain('T2.1: "Critérios" sem item');
   });
 
   it('ADR: status permitido e as seções do formato', () => {

@@ -1,6 +1,6 @@
 # Ticket types
 
-A T is work without a UC; what each `type` means: `.metri/skills/look-across/MATRIX-FORMAT.md`, "Ticket types". What /build does for each type, on top of the T's `what` and `criteria`:
+A T is work without a UC; what each `type` means: `.metri/skills/look-across/MATRIX-FORMAT.md`, "Ticket types". What /build does for each type, on top of the T's "O que entrega" and "Critérios":
 
 ## pattern
 
