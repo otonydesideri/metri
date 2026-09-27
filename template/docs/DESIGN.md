@@ -300,7 +300,7 @@ Geist no texto e Geist Mono no código, da análise da Vercel. A documentação 
 
 ## Layout
 
-A escala `spacing` vai de 4px a 64px, da análise da Vercel.
+A escala `spacing` vai de 4px a 64px, da análise da Vercel. Ela coincide com a escala padrão do Tailwind, em múltiplos de 4px: `xxs` = `1`, `xs` = `2`, `sm` = `3`, `md` = `4`, `lg` = `6`, `xl` = `8`, `2xl` = `10`, `3xl` = `12` e `4xl` = `16` (`p-4` = 16px). O `@metri/ui` não declara espaçamento próprio (`architecture/defaults/ui.md`, "Tipografia e espaçamento").
 
 A densidade é a dos componentes do shadcn/ui: botão e campo com 36px de altura, cartão e dialog com 24px de padding.
 

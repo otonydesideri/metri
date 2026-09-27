@@ -93,7 +93,7 @@ Regras de uso:
 - O `listen()` fica no **topo do arquivo de setup, nunca dentro de `beforeAll`**. Client que resolve o `fetch` uma vez, na criação, faz isso na avaliação do módulo, que roda antes de qualquer hook. Com o `listen()` em `beforeAll`, esse client fica com o `fetch` original: as chamadas dele escapam do dublê e vão para a rede de verdade, sem erro nenhum, e o teste passa ou falha pelo que houver no ambiente. É a falha mais silenciosa da suíte, porque só parte da superfície escapa e o resto continua dublado normalmente.
 - Handler com URL absoluta, construída a partir de `window.location.origin`. Rota REST fica sob `/api`.
 - O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda contra composição silenciosa de `baseURL`, não uma segunda prova da operação de domínio.
-- `vi.mock` fica reservado a fronteira que não é rede: o hook de notificação do `@metri/ui`, quando o teste afirma título e descrição do toast sem montar o provider, e uma função de `lib/<integração>/` cujo efeito é sobre a biblioteca, não sobre a tela. Nunca para substituir uma chamada de rede.
+- `vi.mock` fica reservado a fronteira que não é rede: o `toast` do Sonner (`@metri/ui/components/ui/sonner`), quando o teste afirma título e descrição sem montar o `Toaster`, e uma função de `lib/<integração>/` cujo efeito é sobre a biblioteca, não sobre a tela. Nunca para substituir uma chamada de rede.
 
 ```ts
 // test/msw/server.ts
@@ -158,7 +158,7 @@ Exemplo completo: testing.examples.md#useconfirmorder
 - O que a página envia é asserção de primeira classe: capturar o corpo da requisição no handler do MSW e afirmar sobre ele. Só verificar que a tela mudou deixa passar campo errado, valor não normalizado e id trocado.
 - Estado em voo (botão travado, linha marcada, campo desabilitado) é provado com handler atrasado, não com mock de função.
 - Falha da escrita é caso obrigatório de toda página que escreve: o que o usuário vê, e que a tela não navega.
-- A notificação da falha de escrita nasce no `catch` do handler que disparou a ação (`frontend/data-fetching.md`, "Erro e sucesso: quem dispara a ação nomeia o resultado"), então ela é observável no spec de página: título e descrição afirmados com o hook de notificação mockado, sem montar o provider. Junto dela, o spec afirma o que a página faz na falha: continua na tela, mantém a ação disponível, recarrega a lista. A escrita confirmada afirma a notificação de sucesso do mesmo jeito: título nomeando o resultado e descrição dizendo onde ele aparece, ou o efeito além dele.
+- A notificação da falha de escrita nasce no `catch` do handler que disparou a ação (`frontend/data-fetching.md`, "Erro e sucesso: quem dispara a ação nomeia o resultado"), então ela é observável no spec de página: título e descrição afirmados com o `Sonner.toast` mockado, sem montar o `Toaster`. Junto dela, o spec afirma o que a página faz na falha: continua na tela, mantém a ação disponível, recarrega a lista. A escrita confirmada afirma a notificação de sucesso do mesmo jeito: título nomeando o resultado e descrição dizendo onde ele aparece, ou o efeito além dele.
 
 ## Como escrever spec de rota e guard (`app/router/guards/<nome>-guard.spec.tsx`)
 

@@ -141,7 +141,7 @@ Quando o controle da linha é botão: **Obrigatório.** O título é `div` com a
 
 Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** Ele leva `aria-label` com o alvo junto, começando pelo rótulo visível.
 
-**Obrigatório.** O primitivo de qualificador de rótulo do `@metri/ui` é qualificador inline, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
+**Obrigatório.** O qualificador de rótulo é texto `text-muted-foreground` dentro do `Field.Label`, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
 
 ## Aplicação
 

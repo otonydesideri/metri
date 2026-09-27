@@ -71,13 +71,14 @@ Passos feitos; a fase segue aberta pelas decisões pendentes abaixo.
 - [x] 3.4 Starter em `template/`
   - Cada arquivo no caminho que terá no projeto (`AGENTS.md`, `CLAUDE.md`, `docs/`); regra, slice e ADR voltam ao Apêndice A; a ativação vai para a METHODOLOGY 6.14; o exemplo de regra de design system sai.
 
-Decisões pendentes (seguram a fase):
+Decisões da fase (aplicadas):
 
-- Notificação: `notification()` e `NotificationProvider` são a API do AlignUI (`frontend/data-fetching.md`, exemplos e `frontend/testing.md`); o shadcn usa o `toast()` do Sonner.
-- Sonner: o `sonner.tsx` gerado pelo shadcn importa `useTheme` de `next-themes`; sem editar o gerado, o toast fica em `system` e o `@metri/ui` depende de `next-themes`.
-- Style do shadcn: `new-york` (o do `DESIGN.md`) ou `base-nova` (o da doc de monorepo), fixado no `defaults/ui.md` junto com `baseColor` e os `exports` do `@metri/ui`.
-- Tipografia e espaçamento do `DESIGN.md`: nenhuma regra os leva ao `@theme` do `@metri/ui`.
-- Ajuste visual que o token não resolve: onde entra, se o arquivo gerado não é editado.
+- Notificação: o re-export do Sonner expõe o `toast` (`Sonner.toast.error(title, { description })`); `NotificationProvider` e `notification()` saem.
+- Tema: o next-themes é o provider de tema do `@metri/ui` (`attribute="class"`, `light` e `dark`, `enableSystem={false}`); o Sonner gerado funciona sem wrapper.
+- Style: `new-york` e `baseColor` `neutral` no `components.json`; os `exports` expõem de componente só `components/ui/*`; o app não importa o arquivo gerado.
+- Tipografia e espaçamento: `--font-sans`, `--font-mono` e os níveis de texto do `DESIGN.md` no `@theme`; espaçamento na escala padrão do Tailwind.
+- Ajuste que o token não resolve: wrapper no arquivo de re-export, com o gerado intocado e os mesmos nomes de parte.
+- `EmptyState` sai: as telas usam o `Empty` do `@metri/ui`, e o `LoadErrorState` é composto sobre ele; o qualificador de rótulo é texto dentro do `Field.Label`.
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
@@ -107,8 +108,9 @@ Checks candidatos (item de verificação sem check até o check existir; depois 
 - frontend/components: nenhum `cond ? null : <X />`
 - frontend/components: handler local `handle*` e prop de callback `on*`
 - frontend/components: booleanos com prefixo `is`, `has`, `can` ou `should`
-- frontend/components: `EmptyState` exige ação de saída no tipo das props
+- frontend/components: `LoadErrorState` exige `onRetry` no tipo das props
 - frontend/components: nenhum import nomeado de `@metri/ui/components/ui/*`; só `import * as`
+- frontend/components: nenhum import de `packages/ui/src/shadcn/` no app, por caminho relativo ou pelo pacote
 
 ## Fase 5: skills (seção 16)
 

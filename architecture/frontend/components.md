@@ -9,7 +9,7 @@ use_when:
 applies_to:
   - "apps/app-web/src/pages/**/*.tsx"
   - "apps/app-web/src/shared/components/**/*.tsx"
-keywords: [página, componente, modal, guard, handler, compound, "import * as", Skeleton, EmptyState, load-error-state, isLoading, isBusy, isPending, estado vazio, erro de leitura, erro de escrita, "@metri/ui"]
+keywords: [página, componente, modal, guard, handler, compound, "import * as", Skeleton, Empty, LoadErrorState, load-error-state, shadcn, isLoading, isBusy, isPending, estado vazio, erro de leitura, erro de escrita, "@metri/ui"]
 not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
   - "formulário, schema de form e campo → frontend/forms"
@@ -85,6 +85,8 @@ Compound component (`Tabs.List`, `Field.Label`) é do `@metri/ui`: o app monta a
 
 **Proibido.** Import nomeado de primitivo do `@metri/ui` (`import { Tabs, TabsList } from '@metri/ui/components/ui/tabs'`).
 
+**Proibido.** O app importar o arquivo gerado pela CLI do shadcn (`packages/ui/src/shadcn/`), por qualquer caminho: o primitivo entra só pelo re-export de `@metri/ui/components/ui/*` (`defaults/ui.md`, "Componente novo").
+
 O padrão de composição também vale pra peça do app: componente de `shared/components/` cujas partes as telas montam em ordens e combinações próprias — um cabeçalho de página com ícone, título, descrição e ações opcionais — é compound como os do pacote, um arquivo com as fatias exportadas num bloco `export { X as Root, ... }` e consumido via `import * as`. Cada página monta as partes inline, na ordem que a tela pede, sem variável de render e sem uma prop nova no componente pra cada variação de anatomia.
 
 ## Estados de leitura: loading, vazio e erro
@@ -92,7 +94,7 @@ O padrão de composição também vale pra peça do app: componente de `shared/c
 Três estados, três formas, escolhidas pelo que a tela sabe no momento:
 
 - **Loading** usa o `Skeleton` do `@metri/ui`, desenhado com a forma do conteúdo que vai chegar (uma linha por linha de texto, círculo no lugar do avatar). Skeleton com a silhueta do resultado evita o salto de layout que um spinner centralizado provoca quando o dado chega. Ação disparada pelo usuário mostra o spinner no próprio botão, onde não há layout a reservar (`docs/DESIGN.md`).
-- **Vazio** e **erro de leitura** usam o `EmptyState`, sempre com uma ação que tire o usuário dali. Estado vazio sem saída é o que transforma uma tela intermediária em beco sem saída. Quando o erro de leitura só muda de título entre telas, ele é um componente compartilhado (`shared/components/load-error-state.tsx` no `app-web`), não o bloco copiado em cada página. Tela com filtro ativo distingue os dois vazios: "não existe nada" convida a criar; "nada com esse filtro" oferece limpar o filtro — o primeiro texto no segundo caso mente pro usuário.
+- **Vazio** e **erro de leitura** usam o `Empty` do `@metri/ui` direto ("Um arquivo, um componente"), sempre com uma ação que tire o usuário dali. Estado vazio sem saída é o que transforma uma tela intermediária em beco sem saída. Quando o erro de leitura só muda de título entre telas, ele é um componente compartilhado composto sobre o `Empty` (`shared/components/load-error-state.tsx` no `app-web`), não o bloco copiado em cada página. Tela com filtro ativo distingue os dois vazios: "não existe nada" convida a criar; "nada com esse filtro" oferece limpar o filtro — o primeiro texto no segundo caso mente pro usuário.
 - **Erro de escrita** vai pra notificação no `catch` do handler que disparou a ação, não pro corpo da página; a exceção e a escrita confirmada, que também notifica no mesmo handler, estão em `frontend/data-fetching.md`, "Erro e sucesso".
 
 O erro de leitura não apaga a tela inteira: o chrome que não depende do dado que falhou permanece — o header com o título genérico da tela (sem o que só o dado preencheria: identificador, descrição, ações) e o caminho de volta. O erro é estado do conteúdo e fica no corpo, com a saída de tentar de novo.
@@ -105,4 +107,4 @@ O erro de leitura não apaga a tela inteira: o chrome que não depende do dado q
 - O arquivo declara um componente só, com as peças da tela em arquivos próprios na pasta da página?
 - Nenhum componente existe só pra repassar prop pro primitivo do pacote, e peça compartilhada de anatomia variável é compound consumido via `import * as`?
 - Peça mais global subiu pro pacote pela regra de colocação, sem redefinir o compound do `@metri/ui`?
-- Todo primitivo do `@metri/ui` entra por `import * as` e é usado pelas partes, sem import nomeado?
+- Todo primitivo do `@metri/ui` entra por `import * as` e é usado pelas partes, sem import nomeado nem import do arquivo gerado?
