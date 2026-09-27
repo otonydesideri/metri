@@ -7,6 +7,7 @@ import picomatch from 'picomatch';
 import { parse } from 'yaml';
 import {
   asList,
+  frontmatterOf,
   layoutOf,
   MATRIX,
   PROJECT_INDEX,
@@ -567,9 +568,15 @@ function lintAppliesTo(): void {
   const files = projectFiles();
   const globs: { glob: string; file: string; line: number }[] = [];
   for (const path of ruleFiles('docs/architecture')) {
-    const read = readFrontmatter(path);
-    for (const glob of asList(read?.frontmatter.applies_to)) {
-      globs.push({ glob, file: path, line: keyLine(read?.lines ?? [], 'applies_to') });
+    const source = readFileSync(path, 'utf8');
+    let frontmatter: Record<string, unknown> | undefined;
+    try {
+      frontmatter = frontmatterOf(source);
+    } catch {
+      continue; // YAML inválido já sai como erro na checagem do frontmatter.
+    }
+    for (const glob of asList(frontmatter?.applies_to)) {
+      globs.push({ glob, file: path, line: keyLine(source.split('\n'), 'applies_to') });
     }
   }
   if (existsSync(PROJECT_INDEX)) {

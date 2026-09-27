@@ -1,7 +1,7 @@
 // Raiz, modo e leitura comum aos scripts.
 // Modo: com .metri/ na raiz, é projeto (regras globais em .metri/architecture, do projeto em docs/architecture);
 // sem .metri/, é o source (regras globais em architecture/).
-import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 
@@ -90,8 +90,4 @@ export function projectFiles(dir = '.'): string[] {
       }
       return stat.isFile() ? [path] : [];
     });
-}
-
-export function readText(path: string): string {
-  return readFileSync(path, 'utf8');
 }

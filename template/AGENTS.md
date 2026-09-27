@@ -5,7 +5,7 @@
 - New request: if it fits one slice in docs/plan/MATRIX.md, in one ticket, with no new rule and outside sensitive areas, build it directly. A bug goes to /diagnose. Otherwise use /shape or /look-across.
 - Find before you create: `rules-for <paths>` for rules; grep SOT keywords and CONTEXT.md identifiers for code. Assume it already exists.
 - When a real case doesn't fit the rules, don't force it or invent a variation: stop, flag it and ask before implementing.
-- Before handing off: `<verify command>` green.
+- Before handing off: `pnpm verify` green.
 
 ## Where things live (read only when needed)
 

@@ -105,7 +105,9 @@ Decisões da fase (aplicadas):
 - Cabeçalho de contrato de slice: os rótulos seguem o idioma dos comentários de `defaults/stack.md` (A.7).
 - Caminho de uma request: o diagrama e os bullets saíram do template do INDEX para `backend/layers.md`, "O caminho de uma request"; o INDEX do projeto guarda só os desvios, com ADR.
 
-## ▶ Agora: Fase 4, scripts (seções 6.11 e 6.13)
+## Fase 4: scripts (seções 6.11 e 6.13)
+
+Fase 4 fechada: `rules-for`, `docs-lint` no projeto e `verify`, com testes em Vitest; `pnpm verify` verde neste repositório.
 
 - [x] 4.0 Decidir a linguagem dos scripts (sugestão: TypeScript/Node)
   - TypeScript com tsx, sem build; `package.json` na raiz, com pnpm; scripts em `template/scripts/`.
@@ -118,10 +120,12 @@ Decisões da fase (aplicadas):
   - Modo pela presença de `.metri/`; a lista de checagens saiu da 6.13 para o `--help`. O aviso de `applies_to` sem casamento vale para as regras do projeto e para "Caminhos do projeto"; `docs/plan/tech/` fica fora da árvore até ser usada; slice em construção (`horizon` com `entry`, sem `contract`) é válida (A.7).
 - [x] 4.4 `verify`: roda os checks do projeto
   - docs-lint e rules-index:check pelos scripts irmãos (não dependem do `package.json`); typecheck, lint e test por `pnpm run`, se existirem; a saída do check que falha vem abaixo da linha dele.
+- [x] 4.5 `pnpm verify` verde neste repositório
+  - O comando de verificação do `template/AGENTS.md` passa a ser `pnpm verify`.
 
 Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 
-## Fase 5: skills (seção 16)
+## ▶ Agora: Fase 5, skills (seção 16)
 
 - [ ] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
 - [ ] 5.2 Escrever as nossas: `guardrail`, `/setup`, `/shape`, `/look-across`, `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os formatos saem de `template/` e do Apêndice A:
