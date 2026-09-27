@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### O que muda
+
+- **Id de ADR global.** O ADR global do pacote se cita `metri:ADR-NNNN`; `ADR-NNNN` é do projeto, em `docs/adr/`, com
+  numeração própria desde 0001. O `docs-lint` procura cada id só na casa dele.
+
+### Migrar de v1.2.0
+
+Nos arquivos do projeto, citação a ADR global passa a `metri:ADR-0001` (biblioteca de UI) e `metri:ADR-0002` (contrato
+de API); os ADRs do projeto não mudam.
+
 ## v1.2.0 (2026-09-27)
 
 Refinamento pós-piloto: o source vira o pacote `metri`, com CLI; o backend é a fonte do contrato de API; decisões e
@@ -17,7 +29,7 @@ portões em três blocos; a camada de UI/UX com evidência; agentes por função
   estado da metodologia (ARCHITECTURE.md, rules/, MATRIX.md, tickets/<id>.md e tickets/<id>/*.png). Saem o
   `matrix-view`, o `.evidence/`, o `docs/plan/tech/` e os campos `evidence` e `tech_design`. Ticket e MATRIX citam só
   ids. O destino `project:architecture/INDEX` passa a `project:ARCHITECTURE`.
-- **Contrato de API** (ADR-0002). Os DTOs Zod do app-api são a fonte; o OpenAPI é gerado deles, e o app-web gera o
+- **Contrato de API** (metri:ADR-0002). Os DTOs Zod do app-api são a fonte; o OpenAPI é gerado deles, e o app-web gera o
   client e os schemas pelo Orval. O `verify` roda o `api:generate` do projeto e falha com diff (`api:drift`). Saem o
   pacote de contrato compartilhado e a delegação "Pacote do contrato de API".
 - **Decisões e portões.** O `grilling` classifica cada decisão em definida, inferida ou perguntar, e todo portão mostra

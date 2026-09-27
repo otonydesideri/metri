@@ -44,7 +44,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
 | ponto de entrada                          | `entry`                                          | Caminho do arquivo de entrada de uma slice, que leva o cabeçalho de contrato; campo da slice na matriz que o roteamento lê |
 | id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
-| ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita                                                                 |
+| ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita: `ADR-NNNN` do projeto, `metri:ADR-NNNN` global                 |
 | status da regra                           | `status: active \| draft \| deprecated`          | Estado de uma regra                                                                           |
 | marca de check                            | `(check: <id>)`                                  | Opcional, no item de verificação automatizado por um check; o id vai em `enforced_by`         |
 | tracer                                    | `tracer`                                         | O UC: o ticket que corta um caminho fino e completo, demonstrável                             |

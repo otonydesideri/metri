@@ -333,6 +333,20 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     ).toContain('ADR: seções Contexto, Decisão, Alternativas consideradas, Consequências, Imposto por, nessa ordem');
   });
 
+  it('adr: metri:ADR-NNNN é global e ADR-NNNN é do projeto, sem cair de um no outro', () => {
+    // A fixture tem docs/adr/0001; o pacote tem os globais 0001 e 0002.
+    const rule = '.metri/rules/frontend/order-list.md';
+    const { output } = lintChanged((dir) =>
+      edit(dir, rule, (source) => source.replace('adr: [ADR-0001]', 'adr: [ADR-0001, metri:ADR-0001, ADR-0002]')),
+    );
+    expect(output.split('\n').filter((line) => line.includes(': adr: '))).toEqual([
+      `${rule}:9: adr: ADR-0002 não existe em docs/adr/`,
+    ]);
+    const source = copySource();
+    edit(source, 'architecture/defaults/ui.md', (text) => text.replace('adr: [metri:ADR-0001]', 'adr: [ADR-0001]'));
+    expect(lint(source).lines).toContain('architecture/defaults/ui.md:24: adr: ADR-0001 não existe em docs/adr/');
+  });
+
   it('evidência: ticket done de frontend tem desktop e mobile por critério, até a poda da slice', () => {
     const done = inTicket('UC1.1', 'status: in_progress', 'status: done');
     const missing = lintChanged(done);

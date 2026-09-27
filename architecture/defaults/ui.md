@@ -21,14 +21,14 @@ not_covered:
   - "o formato de import e a composição no app → frontend/components"
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
-adr: [ADR-0001]
+adr: [metri:ADR-0001]
 status: active
 ---
 # Biblioteca de UI padrão
 
 ## Kit
 
-- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn (ADR-0001): `shadcn init --monorepo` no monorepo que nasce dele.
+- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn (metri:ADR-0001): `shadcn init --monorepo` no monorepo que nasce dele.
 - Monorepo que não nasceu do shadcn segue o caminho manual da documentação (https://ui.shadcn.com/docs/monorepo):
   - `packages/ui/components.json` com o `style`, o `baseColor` e os aliases de "Componente novo", e `"tailwind": { "config": "", "css": "src/styles/globals.css" }` (Tailwind v4);
   - o `globals.css` abre com `@import "tailwindcss"` e um `@source` para os arquivos de `apps/`, relativo a ele, para o Tailwind achar as classes dos apps;

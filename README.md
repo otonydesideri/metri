@@ -169,7 +169,7 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 
 ### Architecture Source (global)
 
-**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é sustentada por ADR global (ADR-0001), e a stack tem o `architecture/defaults/stack.md` como registro.
+**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é sustentada por ADR global (metri:ADR-0001), e a stack tem o `architecture/defaults/stack.md` como registro.
 
 **Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (`architecture/defaults/ui.md`): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
 
@@ -217,7 +217,7 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 | Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | `DESIGN.md`; o tema segue ele (`metri design-tokens`) | valor solto no código |
-| Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend (ADR-0002) |
+| Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend (metri:ADR-0002) |
 | Evidência de um critério de UI                 | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, até a poda da slice; depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
 | Features, slices e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles | chat, handoff                                  |
@@ -235,7 +235,7 @@ Não é uma etapa própria do fluxo; é uma camada que atravessa as etapas:
 - **Moldar:** a triagem de design procura o DS já dado, pergunta só o que falta e propõe os princípios de experiência (`skills/shape/DESIGN-TRIAGE.md`); os tokens do `DESIGN.md` são a fonte do tema.
 - **Look across:** critérios de UI por UC; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 monta tema e shell com aprovação visual.
 - **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério, com autocrítica de até 2 rodadas.
-- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md` (ADR-0001).
+- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md` (metri:ADR-0001).
 
 ### O fluxo
 

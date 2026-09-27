@@ -36,8 +36,8 @@ Nos dois modos:
     - id igual ao caminho <área>/<tema>;
     - os ids de read_first e not_covered existem ou são destinos project: da lista fechada de
       VOCABULARY.md, e a seção que not_covered cita existe na regra;
-    - os arquivos citados em examples existem, e os ids de adr existem em adr/ (docs/adr/ ou os globais no
-      projeto).
+    - os arquivos citados em examples existem, e os ids de adr existem: metri:ADR-NNNN nos ADRs globais do pacote,
+      ADR-NNNN em docs/adr/ do projeto.
     Arquivos *.examples.md não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo
     nem número de linhas.
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
@@ -113,9 +113,8 @@ const root = resolve(takeOption(args, '--root') ?? '.');
 process.chdir(root);
 
 const layout = layoutOf();
-// Pastas de regra e de ADR onde um id é procurado: o projeto primeiro, depois o global do pacote.
+// Pastas de regra onde um id é procurado: o projeto primeiro, depois o global do pacote.
 const RULE_DIRS = layout.isProject ? [PROJECT_RULES, layout.globalDir] : ['architecture'];
-const ADR_DIRS = layout.isProject ? ['docs/adr', layout.globalAdrDir] : ['adr'];
 const ARCHITECTURE = 'architecture';
 const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'agents', 'cli/templates', 'VOCABULARY.md', 'README.md'];
 // Onde o README não é citado: as regras, as skills (com os formatos de cada uma), os agents e os templates.
@@ -357,18 +356,19 @@ function rulePath(id: string): string | undefined {
   return RULE_DIRS.map((dir) => join(dir, `${id}.md`)).find((path) => existsSync(path) && isRuleFile(path));
 }
 
+// Pasta de um id de ADR, sem cair de uma na outra: metri:ADR-NNNN é global (adr/ do pacote), ADR-NNNN é do projeto.
+function adrDir(id: string): string {
+  return id.startsWith('metri:') ? layout.globalAdrDir : 'docs/adr';
+}
+
 function adrPath(id: string): string | undefined {
-  const number = /^ADR-(\d{4})$/.exec(id)?.[1];
-  if (number === undefined) {
+  const number = /^(?:metri:)?ADR-(\d{4})$/.exec(id)?.[1];
+  const dir = adrDir(id);
+  if (number === undefined || !existsSync(dir)) {
     return undefined;
   }
-  for (const dir of ADR_DIRS.filter((candidate) => existsSync(candidate))) {
-    const name = readdirSync(dir).find((candidate) => candidate.startsWith(`${number}-`));
-    if (name) {
-      return join(dir, name);
-    }
-  }
-  return undefined;
+  const name = readdirSync(dir).find((candidate) => candidate.startsWith(`${number}-`));
+  return name ? join(dir, name) : undefined;
 }
 
 // Destino de read_first e not_covered: id de regra ou destino project: da lista fechada.
@@ -450,7 +450,7 @@ function lintFrontmatter(path: string, dir: string): void {
   }
   for (const id of asList(frontmatter.adr)) {
     if (!adrPath(id)) {
-      report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em ${ADR_DIRS[0]}/`);
+      report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em ${adrDir(id)}/`);
     }
   }
   if ('activation' in frontmatter && typeof frontmatter.activation !== 'string') {
@@ -762,7 +762,7 @@ function lintAdr(path: string): void {
   if (!status || !statusMatch) {
     report(path, status?.line ?? 1, 'ADR: status accepted ou superseded by ADR-NNNN');
   } else if (statusMatch[2] && !adrPath(statusMatch[2])) {
-    report(path, status.line, `ADR: ${statusMatch[2]} não existe em ${ADR_DIRS[0]}/`);
+    report(path, status.line, `ADR: ${statusMatch[2]} não existe em ${adrDir(statusMatch[2])}/`);
   }
   if (!field('area')) {
     report(path, 1, 'ADR: falta area');
