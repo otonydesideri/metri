@@ -18,7 +18,7 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - [x] Metodologia consolidada (v1.1)
 - [x] Arquivos de arquitetura existentes colocados no repositório
 
-## ▶ Agora: Fase 1, fundação do repositório
+## Fase 1: fundação do repositório
 
 - [x] 1.1 Salvar a metodologia em `methodology/METHODOLOGY.md` e este arquivo em `SETUP.md` (manual)
   - Este arquivo estava em `methodology/SETUP.md`; movido para a raiz no commit do 1.2.
@@ -27,7 +27,7 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - [x] 1.3 Criar a estrutura de pastas do source (metodologia, seção 5.3), **sem mover as regras ainda**: `catalog/`, `defaults/`, `methodology/templates/`, `template/`, `adr/`, `skills/`, `CHANGELOG.md`
 - [x] 1.4 `AGENTS.md` deste repositório (até ~15 linhas): o que é este repo, onde está a metodologia, que o progresso está em `SETUP.md`
 
-## Fase 2: regras existentes → novo formato (seções 6.2, 6.3 e 7)
+## ▶ Agora: Fase 2, regras existentes → novo formato (seções 6.2, 6.3 e 7)
 
 - [x] 2.1 Inventário: cada arquivo de regra com área, tema, seções que já tem e classificação **global** ou **específico de projeto**. Saída: tabela no chat para aprovação (não vira arquivo)
   - D1 Stack repetida vira default global (`architecture/defaults/stack.md` + ADR global): só a lista `## Stack` do `overview` vai para lá; as menções à stack no texto das regras ficam; sem seção "Stack padrão"; outra stack = ADR + regra de projeto.
@@ -55,6 +55,17 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
   - Source montado em `.metri/`; `defaults/` → `architecture/defaults/` (ids iguais); `general/overview` e `architecture/README` absorvidos pela parte à mão de `architecture/INDEX.md`; token e tema → `frontend/theming`; `INDEX.md` gerados (4.0 e 4.1 adiantados).
 
 Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy, segurança HTTP, error boundary, acessibilidade.
+
+Fase 2 aberta: decisões pendentes da revisão de fechamento (cada uma vira edição no dono ou ADR):
+
+- P1 Ferramenta tornada obrigatória fora de `architecture/defaults/stack.md` e sem "Ferramentas": `@faker-js/faker` (backend/testing, frontend/testing), Tailwind e `next-themes` (frontend/theming), `@better-fetch/fetch` (frontend/data-fetching), MSW, Testing Library e jsdom (frontend/testing), Zustand "deste projeto" (frontend/state, ADR-0012), `@nestjs/throttler` (infrastructure/runtime), React Email (infrastructure/mail).
+- P2 Corpo HTTP no frontend: o detalhe chega como `{ order }` (backend/reading), mas `fetchOrder` e o builder `makeOrder` usam o recurso solto; o envelope de escrita é tipado à mão em `api/order.ts`; `OrderStatus` em maiúsculas (helpers, data-fetching) × minúsculas (testing, components).
+- P3 Escopo do dono nos exemplos: `ConfirmOrderUseCase` sem `requesterId` em backend/errors e backend/transactions; e2e de backend/testing.examples sem credencial; a forma da credencial é de projeto.
+- P4 `applies_to` largo: backend/application (controllers, events, jobs), backend/errors (tradução e filtro sem caminho fixo), frontend/forms, data-fetching e routing (`pages/**`), frontend/theming (sem `applies_to`), infrastructure/logging (`infra/common/**` ou `infra/**`); pesa no orçamento de ~5 regras.
+- P5 E-mail de confirmação: domain/strategy monta a mensagem na base e usa `NotifyOrderConfirmationUseCase` × infrastructure/mail (composição no sender, `SendOrderConfirmationUseCase`); domain/strategy cita infrastructure/services para a classe de vendor; o mesmo efeito é evento (operation-routing, events) e job (async-jobs).
+- P6 Storage e services: prefixo da chave da foto de produto (storage, "O namespace de um asset" × exemplo); ADR-0019 deixa aberto o que a regra já decide; risco de consumo concorrente aceito no global × backend/transactions; `{ key }` aceito do cliente em watched-list.examples; classe de infra sem export × health check que a injeta; stub da impl de cache fora da exceção de infrastructure/services.
+- P7 Metodologia: frontmatter do A.7 e INDEX de slices (o `rules-index` quebra); lint de `applies_to` sem casamento (15.6 × 6.13); `## Regras` obrigatório em authoring × A.6; "Project Brain" e a casa da Project Architecture (authoring × 5.2); formato de `methodology/templates/examples/design-system.md`; cabeçalhos "Dono de" em `methodology/authoring.md`.
+- P8 Soltos: D4 nem aplicada nem revogada; AGENTS.md só autoriza editar `architecture/` em passo da Fase 2; tags `ORDER-003` sem dono (× `BR<n>`); Tabs do `@metri/ui` importadas por nome × compound; "decisão registrada junto ao código" em general/code-placement × authoring.
 
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
