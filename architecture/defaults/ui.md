@@ -130,7 +130,7 @@ export {
 - Os tokens são as CSS variables de tema do shadcn (`--background`, `--foreground`, `--primary`, `--radius`...), em `packages/ui/src/styles/globals.css`.
 - Valor claro em `:root`, valor escuro em `.dark`; o `@theme inline` expõe cada variável ao Tailwind (`bg-background`, `text-foreground`).
 - Cor nova entra como variável em `:root` e em `.dark` e é exposta no `@theme inline`.
-- Os valores de partida são os do `DESIGN.md`; a base neutra é `template/docs/DESIGN.md`.
+- Os valores de partida são os do `DESIGN.md`; a base neutra é `skills/shape/DESIGN-TEMPLATE.md`.
 - O escuro liga pela classe no `documentElement`. O provider de tema do `@metri/ui` é o next-themes: o `ThemeProvider` do pacote o configura com `attribute="class"`, `themes={['light', 'dark']}` e `enableSystem={false}`, pelo contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 - O script inline do `index.html` do `app-web` aplica a classe antes do primeiro paint e lê a mesma chave de armazenamento que o `ThemeProvider` usa (a `theme` do next-themes): `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 - O `sonner.tsx` gerado lê o tema pelo `useTheme()` do next-themes e funciona sem wrapper, montado dentro do `ThemeProvider`.

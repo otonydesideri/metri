@@ -192,11 +192,10 @@ docs/
     general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
     defaults/                   escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
   methodology/
-    METHODOLOGY.md              a metodologia (Apêndice A: formatos de regra, slice e ADR; ponteiros para o starter)
-    authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
-  template/                     starter do projeto, cada arquivo no caminho que terá no projeto: AGENTS.md, CLAUDE.md, docs/ e, quando existir, o código (block, registry, adapters, regras de lint); scripts em template/scripts/
+    METHODOLOGY.md              a metodologia
+  template/                     scripts em template/scripts/ e, quando existir, o código do starter (block, registry, adapters, regras de lint)
   adr/                          decisões globais (inclusive as que sustentam os defaults)
-  skills/                       as skills da metodologia
+  skills/                       as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e o arquivo copiado igual para o projeto (<ARQUIVO>-TEMPLATE.md)
   VOCABULARY.md                 vocabulário da metodologia (chaves canônicas)
   AGENTS.md, CLAUDE.md          instruções do agente neste repositório
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
@@ -258,7 +257,7 @@ Critério, formato, status e numeração: `skills/domain-language/ADR-FORMAT.md`
 
 ### 6.6 `PRODUCT.md`
 
-Contém **para quem, qual problema, o resultado esperado, escopo e fora de escopo**. Não contém linguagem do domínio (vai para o `CONTEXT.md`), lista de features (vai para a matriz) nem detalhe de implementação.
+Formato: `skills/shape/PRODUCT-FORMAT.md`.
 
 ### 6.7 `CONTEXT.md` (linguagem compartilhada)
 
@@ -266,11 +265,11 @@ Formato: `skills/domain-language/CONTEXT-FORMAT.md`; a disciplina que o mantém:
 
 ### 6.8 `DESIGN.md`
 
-Ver seção 8.
+Formato, triagem e onde cada decisão de design mora: `skills/shape/DESIGN-TRIAGE.md`; base neutra: `skills/shape/DESIGN-TEMPLATE.md`.
 
 ### 6.9 `AGENTS.md` (ou `CLAUDE.md`)
 
-Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a condição de uso**. Não descreve arquitetura nem repete o que o ambiente já mostra (scripts, estrutura de pastas). `CLAUDE.md`, se existir, é uma linha apontando para o `AGENTS.md`.
+Starter e regras de escrita: `skills/setup/SKILL.md` e `skills/setup/AGENTS-TEMPLATE.md`.
 
 ### 6.10 O código como fonte
 
@@ -313,125 +312,7 @@ O `docs-lint` (`template/scripts/docs-lint.ts`) confere a estrutura do source e 
 
 ### 6.14 Ativação da arquitetura
 
-O projeto registra o resultado no `docs/architecture/INDEX.md` (starter em `template/docs/architecture/INDEX.md`): em "Capacidades ativas", uma linha por id da tabela "Capacidades condicionais" do `architecture/INDEX.md` que o projeto ativou, com os valores que o `not_covered` da regra deixa ao projeto; em "Delegações", uma linha por delegação resolvida da matriz abaixo; em "Stack", só o que difere de `architecture/defaults/stack.md`; em "Caminho linear", só os desvios de `backend/layers.md`, "O caminho de uma request", com o ADR; e em "Exceções e defaults trocados", o ADR de cada desvio.
-
-Dono de: a ativação da arquitetura num projeto — as três classes de decisão (GLOBAL, GLOBAL_CONDITIONAL, PROJECT_SPECIFIC), o que a ativação pergunta e o que não pergunta, a ordem de ativação, o registro do que ela resolve, o encaminhamento de uma necessidade sem cobertura como ARCHITECTURE DECISION REQUIRED e a matriz das decisões delegadas ao projeto.
-
-Consultar antes de: ativar a arquitetura num projeto novo; ligar uma capacidade condicional num projeto existente; escolher um valor que a Source deixa ao projeto (provider, identidade do dono, pacote dono, topologia); registrar essa escolha.
-
-Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto"); a regra de escape (`AGENTS.md`, "How to work here"); a regra de transição (`skills/writing-for-agents/RULE-FORMAT.md`, "Regra de transição"); a descoberta do repositório.
-
-A Source decide como o sistema é construído; o projeto decide o que só ele sabe: se precisa de uma capacidade, qual provider usa, quem é o dono dos dados. Esta seção é o contrato entre os dois: o que a ativação pergunta, quando pergunta e onde a resposta fica.
-
-#### Regras
-
-##### Três classes de decisão
-
-| Classe | O que é | Na ativação |
-| --- | --- | --- |
-| GLOBAL | Regra que vale em todo projeto | Aplicada, sem pergunta |
-| GLOBAL_CONDITIONAL | Capacidade que o projeto pode não ter; quando tem, a forma já está decidida pelo owner | Uma pergunta: o projeto precisa dela? |
-| PROJECT_SPECIFIC | Valor concreto que só o projeto conhece: provider, entidade do dono, pacote, topologia | Resolvido antes do primeiro ponto que depende dele |
-
-**Obrigatório.** A ativação não pergunta o que a Source já decidiu.
-
-**Obrigatório.** Decisão GLOBAL é aplicada como está.
-
-Quando a capacidade é GLOBAL_CONDITIONAL: **Obrigatório.** A pergunta é só se o projeto precisa dela; sem necessidade, ela não é ativada e nada dela é perguntado.
-
-Quando uma capacidade GLOBAL_CONDITIONAL é ativada: **Obrigatório.** Ela segue o owner global, pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`, e a ativação resolve só os valores PROJECT_SPECIFIC dela.
-
-Quando um valor é PROJECT_SPECIFIC: **Obrigatório.** Ele é resolvido antes do primeiro ponto do projeto que depende dele.
-
-**Proibido.** Preencher valor PROJECT_SPECIFIC com escolha que a Source não declarou como default.
-
-##### A ativação não é questionário
-
-**Obrigatório.** Cada pergunta depende do gatilho da delegação correspondente: sem gatilho no projeto, a pergunta não existe.
-
-**Proibido.** Questionário fixo que percorre a matriz inteira.
-
-> **Por quê.** Pergunta sem gatilho força uma escolha que o projeto não tem como fazer bem, e a escolha feita sem necessidade vira dependência que ninguém pediu.
-
-##### Ordem
-
-**Obrigatório.** A ativação segue esta ordem:
-
-1. identificar as capacidades do projeto;
-2. aplicar o GLOBAL;
-3. avaliar os gatilhos GLOBAL_CONDITIONAL;
-4. resolver os PROJECT_SPECIFIC aplicáveis;
-5. registrar na Project Architecture e, quando cabe, em ADR;
-6. validar a arquitetura ativada pela verificação de cada owner ativado.
-
-Quando o gatilho de uma delegação aparece depois da ativação inicial, como o primeiro job ou o primeiro asset: **Obrigatório.** A delegação é resolvida naquele momento, pelos passos 3 a 6.
-
-##### Registro
-
-**Obrigatório.** A Project Architecture registra quais capacidades GLOBAL_CONDITIONAL foram ativadas e o valor escolhido para cada delegação resolvida.
-
-Quando a delegação resolvida cumpre a condição de "ADR quando" da matriz, que aplica a ela o critério de `skills/writing-for-agents/RULE-FORMAT.md`, ou, numa capacidade condicional, esse critério direto: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
-
-##### Necessidade sem cobertura
-
-Quando uma necessidade do projeto não tem regra global, não está declarada como PROJECT_SPECIFIC, contradiz regra existente, exige exceção nova ou exige mecanismo estrutural não coberto: **Obrigatório.** A ativação para e aplica a regra de escape do `AGENTS.md`, com o caso nomeado ARCHITECTURE DECISION REQUIRED:
-
-```text
-parar → ARCHITECTURE DECISION REQUIRED → decidir → atualizar a Source (regra global) ou registrar ADR (exceção ou decisão estrutural do projeto) → atualizar a Project Architecture → continuar
-```
-
-**Proibido.** A ativação improvisar valor, mecanismo ou exceção.
-
-##### Matriz de delegações
-
-**Obrigatório.** Toda decisão que a Source delega ao projeto tem uma linha na matriz abaixo, que é forma canônica, com nove campos: assunto, classe da capacidade, gatilho, owner global, o que o projeto decide, restrições que a Source já fixou, default (só quando a Source o declara), registro e condição de ADR.
-
-Quando a decisão é de uma capacidade condicional (`architecture/INDEX.md`, "Capacidades condicionais"): **Obrigatório.** Ela mora na regra dona, não na matriz: o gatilho é a chave `activation`, e o que o projeto decide é uma entrada `not_covered` com destino `project:architecture/INDEX`.
-
-Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** A linha dela entra na matriz, ou na regra dona da capacidade condicional, na mesma edição.
-
-| Assunto | Classe | Gatilho | Owner global | O projeto decide | Restrições da Source | Default | Registro | ADR quando |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Autenticação | PROJECT_SPECIFIC | O produto tem identidade autenticada | `backend/boundaries.md`, `backend/application.md`, `backend/access-scope.md` | Mecanismo e provider; modelo concreto de sessão ou token | Resolvida na fronteira de request (`infrastructure/runtime.md`); same-origin (`general/http-surface.md`); tabela escrita pelo provider segue a propriedade do agregado de `domain/model.md` | — | Project Architecture | O mecanismo molda a estrutura, como sessão × token ou provider com schema próprio |
-| Autorização | PROJECT_SPECIFIC | Ações ou recursos com políticas de acesso diferentes | `backend/access-scope.md`, `backend/errors.md`, `backend/boundaries.md` | O modelo concreto de permissão; os papéis e as políticas reais | Recusa na forma de `backend/errors.md`, "Erros sensíveis"; nenhum modelo nem biblioteca de permissão global | — | Project Architecture | O modelo de permissão é estrutural |
-| Identidade do dono | PROJECT_SPECIFIC | Isolamento por organização, cliente ou outro dono | `backend/access-scope.md` | A entidade que representa o dono; o identificador; a origem dele na identidade ou na request | Origem validada na fronteira; escopo em todo `where`; prova A/B | — | Project Architecture | A escolha define a fronteira de isolamento dos dados |
-| Bounded contexts | GLOBAL_CONDITIONAL | Um dos sinais de `domain/bounded-contexts.md` | `domain/bounded-contexts.md` | Os contextos, os nomes, as fronteiras, os módulos de cada um e os contratos entre eles | Sem entidade nem contrato de repositório entre contextos; interação por contrato explícito | Um contexto | Project Architecture | A divisão é decisão estrutural |
-| Domain Service / Policy | GLOBAL_CONDITIONAL | Regra de domínio sem dono natural em value object, entidade ou agregado | `domain/domain-services.md` | A regra concreta; o conceito e o módulo a que ela pertence; a forma mínima | Sem IO nem framework; fatos carregados pelo caso de uso | Regra no modelo | O código da regra | — |
-| Módulos e agregados | PROJECT_SPECIFIC | O primeiro módulo; antes do primeiro contrato de cada agregado | `backend/modules.md`, `domain/model.md` | A divisão de módulos; a propriedade e a forma de cada agregado | Módulo por conceito de negócio; as formas de `domain/model.md` | Agregado do app | Project Architecture | A tabela é escrita por sistema externo, com o acordo da integração |
-| Apps e pacotes | PROJECT_SPECIFIC | Ativação inicial; capacidade nova | `general/code-placement.md` | Os apps e pacotes reais; o pacote dono de cada capacidade | Colocação por ownership (`general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app"); nenhum pacote catch-all | O artefato fica no app enquanto o ownership compartilhado não é inequívoco | Project Architecture | App ou pacote novo muda a estrutura do monorepo |
-| Pacote do contrato de API | PROJECT_SPECIFIC | Frontend e backend consomem o mesmo contrato | `backend/http-api.md`, `general/code-placement.md` | O pacote dono de cada contrato | Uma representação canônica; nunca `@metri/contracts`; o schema de form fica no frontend | — | Project Architecture | O contrato cria pacote novo |
-| Destino do log | GLOBAL | O runtime roda num ambiente com coletor de log | `infrastructure/logging.md` | O destino das linhas (coletor, agregador); a confiança no `x-request-id` de um proxy | `nestjs-pino`, nível por ambiente, redação e contexto de `infrastructure/logging.md` | JSON no stdout | Project Architecture | O `x-request-id` de um proxy passa a ser aceito |
-| Topologia de deploy | PROJECT_SPECIFIC | Antes da primeira entrega executável | `infrastructure/runtime.md` | A hospedagem; o runtime; o processo de worker; a topologia; o deploy por ambiente | Same-origin sob `/api` (`general/http-surface.md`, "Superfície HTTP"); env por `EnvService`; shutdown gracioso quando o runtime depende dele | — | Project Architecture | A topologia é estrutural |
-
-#### Aplicação
-
-- Um projeto que envia e-mail de confirmação, guarda foto de produto e não tem leitura cara ativa e-mail e storage e resolve vendor, provider e buckets; cache e observabilidade não geram pergunta, e bounded context fica no default de um contexto.
-- O primeiro job aparece meses depois da ativação inicial: a delegação de fila é resolvida ali, pelos passos 3 a 6 de "Ordem".
-- A exigência de rodar workers em app próprio cai em necessidade sem cobertura, porque o desenho está em aberto em `backend/async-jobs.md`: a ativação para em ARCHITECTURE DECISION REQUIRED.
-
-#### Verificação
-
-- A ativação perguntou só o que tem gatilho no projeto, sem pergunta sobre decisão GLOBAL?
-- Capacidade GLOBAL_CONDITIONAL ativada segue o owner, com só os valores PROJECT_SPECIFIC resolvidos?
-- Todo valor PROJECT_SPECIFIC foi resolvido antes do primeiro ponto que depende dele, sem default que a Source não declarou?
-- A Project Architecture guarda as capacidades ativadas e os valores escolhidos?
-- Delegação que cumpre a condição de "ADR quando" tem ADR?
-- Necessidade sem cobertura parou como ARCHITECTURE DECISION REQUIRED, sem valor, mecanismo ou exceção improvisados?
-- Toda decisão que a Source delega ao projeto tem linha na matriz, com os nove campos, ou está na regra dona da capacidade condicional, em `activation` e `not_covered`?
-
-#### Referências
-
-- `skills/writing-for-agents/RULE-FORMAT.md`: casas de decisão, critério de ADR e regra de transição.
-- `AGENTS.md`: regra de escape.
-- `general/code-placement.md`, `general/http-surface.md`: apps, pacotes, colocação e superfície HTTP.
-- `backend/modules.md`, `domain/model.md`: módulos e forma dos agregados.
-- `domain/domain-services.md`, `domain/bounded-contexts.md`: capacidades condicionais de domínio.
-- `backend/access-scope.md`, `backend/errors.md`, `backend/boundaries.md`, `backend/application.md`: identidade, autorização e autenticação.
-- `backend/http-api.md`: o contrato de API compartilhado.
-- `backend/operation-routing.md`, `backend/async-jobs.md`: fila e jobs.
-- `infrastructure/runtime.md`, `infrastructure/logging.md`: runtime, deploy e log.
-- `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `infrastructure/observability.md`: capacidades condicionais de infraestrutura.
-- `architecture/INDEX.md`, "Capacidades condicionais": a pergunta de ativação de cada capacidade condicional.
+Classes de decisão, ordem, registro no `docs/architecture/INDEX.md`, necessidade sem cobertura e matriz de delegações: `skills/setup/ACTIVATION.md`.
 
 ---
 
@@ -451,147 +332,21 @@ Quando o projeto não decide nada diferente:
 
 - **Biblioteca de componentes:** **shadcn/ui**, registrada em `.metri/architecture/defaults/ui.md` com um ADR global.
 - **Estratégia:** **instala a biblioteca e estiliza por cima** conforme o `DESIGN.md`, via tokens de tema. Os componentes prontos da biblioteca são usados como base; ninguém recria componentes do zero.
-- **Base visual:** um `DESIGN.md` neutro do próprio global (`template/docs/DESIGN.md`).
+- **Base visual:** um `DESIGN.md` neutro do próprio global (`skills/shape/DESIGN-TEMPLATE.md`).
 
 Trocar o default (ex.: Coss UI) é uma decisão registrada em ADR do projeto.
 
-### 8.2 Triagem de design (dentro do `/shape`, uma vez por projeto com interface)
+### 8.2 a 8.5
 
-Quatro perguntas, cada uma com default:
-
-| Pergunta                             | Exemplos de resposta                                               | Default                           |
-| ------------------------------------ | ------------------------------------------------------------------ | --------------------------------- |
-| Referência visual                    | Um `DESIGN.md` do getdesign.md, a URL de um site, imagens, a marca | Base neutra do global             |
-| Biblioteca de componentes            | shadcn/ui, Coss UI, outra                                          | shadcn/ui                         |
-| Ícones, densidade, tom, claro/escuro | —                                                                  | Os da biblioteca e da base neutra |
-| Restrições                           | Acessibilidade, idiomas, dispositivos                              | Nenhuma além das regras globais   |
-
-O resultado é o `docs/DESIGN.md` do projeto (e um ADR, se o default de biblioteca for trocado).
-
-### 8.3 `DESIGN.md`
-
-- **Segue a especificação DESIGN.md do Google** (https://github.com/google-labs-code/design.md/blob/main/docs/spec.md), a mesma do getdesign.md: tokens no frontmatter YAML e as seções com os títulos e a ordem dela. Isso permite **colar uma referência pronta e adaptá-la**.
-- **Migração da fonte:** quando a slice de design system é construída, **os valores dos tokens passam a morar no tema do código**, e o `DESIGN.md` troca os valores por um ponteiro para o arquivo de tema. Continua guardando princípios, justificativas e orientação de uso dos componentes.
-- É lido **por ponteiro**: as regras de `frontend/` que tratam de visual apontam para ele.
-
-### 8.4 Design por iniciativa
-
-Quando a dúvida é "como deve parecer", usa-se um **protótipo descartável** com variações de UI (o `prototype` do Matt; o Perrin faz o mesmo com referências visuais). O que for decidido vai para o `DESIGN.md` (visual) ou para regras de `frontend/` (implementação). O protótipo é descartado.
-
-### 8.5 Onde cada decisão mora
-
-| Decisão                                                                     | Casa                                                                              |
-| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Identidade visual, princípios, uso de componentes                           | `docs/DESIGN.md`                                                                  |
-| Valores dos tokens                                                          | Tema no código                                                                    |
-| Biblioteca padrão                                                           | `architecture/defaults/ui.md` + ADR global                                        |
-| Troca da biblioteca                                                         | ADR do projeto + regra em `docs/architecture/frontend/`                           |
-| Como construímos componentes (global vs. rota, slots, variantes, só tokens) | Regras globais em `frontend/`                                                     |
-| Design system como capacidade                                               | `activation` de `defaults/ui`; a slice entra na slice 0 de todo projeto com interface |
-
-**Verificação:** o lint "sem cores ou espaçamentos fixos fora do tema" garante o uso dos tokens. A conformidade visual é conferida no QA do aceite.
+Triagem de design, formato do `DESIGN.md`, design por iniciativa e onde cada decisão mora: `skills/shape/DESIGN-TRIAGE.md` e `skills/shape/SKILL.md`.
 
 ---
 
 ## 9. A Slice Matrix (`docs/plan/MATRIX.md`)
 
-### 9.1 Formato estrito
+### 9.1 a 9.4
 
-As **chaves e títulos de seção são em inglês e fixos**; a prosa é em português. O formato é legível por humanos e por máquina, e é validado pelo lint. Isso é o que permite, no futuro, gerar o diagrama da matriz e alimentar um orquestrador sem mudar nada.
-
-```markdown
-# MATRIX
-
-## Features
-
-### F1 · Formulários no site
-
-horizon: now · milestone: v1 · slices: [S2, S3] · tech_design: none
-outcome: O editor publica formulários em páginas do site e recebe respostas.
-
-#### UC1.1 · Publicar formulário numa página
-
-actor: editor · status: open
-
-- BR1 (sensitive): Um formulário só é exibido se estiver publicado.
-- [ ] Ao publicar, o formulário aparece na página em até uma recarga.
-- [ ] Formulário despublicado não é exibido nem aceita envio.
-
-#### UC1.2 · Receber resposta
-
-status: done → tests/forms/submit.spec.ts
-
-### F2 · Enquetes no site
-
-horizon: planned · milestone: v2
-
-## Slices
-
-### S2 · Montagem de componentes
-
-horizon: now · blocked_by: [S0]
-contract:
-  responsibility: Monta numa página os componentes registrados no registry.
-  interface: `mountComponent(page, key, props)`; registry `components`.
-  invariants: Só componente registrado é montado; as props passam pelo schema do registro.
-  consumers: [F1, F2]
-  planned: Enquetes (F2) montadas pelo mesmo registry.
-
-#### T2.0 · Padrão de montagem de componentes
-
-type: pattern · mode: afk · status: open · sensitive: true
-areas: [frontend/components] · touches: [registry:components]
-checks: [`pnpm verify`]
-
-#### T2.1 · Montar componente registrado numa página
-
-uc: UC1.1 · type: tracer · mode: afk · status: open · blocked_by: [T2.0] · sensitive: false
-areas: [frontend/components, backend/http-api] · touches: [registry:components]
-checks: [`pnpm verify`, `pnpm test mounter`]
-subtasks: [registro no mounter, renderização no site]
-
-## Fog
-
-- Como relatórios agregam respostas de formulários e enquetes.
-
-## Gaps
-
-- GAP-3 · validação de tamanho de arquivo → T3.4
-
-## Pattern proposals
-
-- PP-1 · de T2.1 · o endpoint de upload precisa de streaming; backend/http-api não cobre → próximo look across
-```
-
-**Campos reservados** (opcionais, existem desde já para não bloquear o futuro): `milestone`, `tech_design`, `evidence`, `metrics`, `notes`. Só aparecem quando têm valor; campo vazio não é escrito.
-
-### 9.2 Horizontes
-
-| `horizon` | Significado                                                   |
-| --------- | ------------------------------------------------------------- |
-| `now`     | Vai ser construído                                            |
-| `planned` | A arquitetura acomoda (está no contrato), mas não se constrói |
-| `fog`     | Pressentida, ainda não especificável                          |
-| `out`     | Fora de escopo; não volta sem nova decisão                    |
-
-### 9.3 Tipos de ticket
-
-| `type`    | Quando                                                                                                               | Particularidade                                                                                                                             |
-| --------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pattern` | Primeiro exemplar de um padrão novo, ou atualização da versão do source                                              | Única exceção em que o builder escreve em `docs/architecture/`. **Revisão humana obrigatória** antes de liberar os tickets que ele bloqueia |
-| `tracer`  | Entrega de um UC ou parte dele                                                                                       | Serve a um UC com `horizon: now`                                                                                                            |
-| `task`    | Trabalho que não entrega um UC, mas desbloqueia outros (criar conta, credencial, painel de terceiro, preparar dados) | Com `mode: afk`, o agente faz sozinho. Com `mode: hitl`, o agente prepara um roteiro passo a passo e o ticket fecha com confirmação humana  |
-| `release` | Levar entregas para produção                                                                                         | Segue `docs/architecture/infrastructure/release.md`                                                                                         |
-
-### 9.4 Regras da matriz
-
-1. **Nada órfão:** todo ticket pertence a uma slice e, se for tracer, a um UC; toda slice `now` serve a pelo menos uma feature `now`.
-2. **Todo ticket serve ao agora.** A slice cresce sob demanda; nada é construído para uma feature `planned`.
-3. **Padrão novo vem primeiro:** se uma slice precisa de uma regra que não existe, o primeiro ticket é `type: pattern`.
-4. **Checks são imutáveis para o `/build`.** Ele pode acrescentar testes, nunca remover ou afrouxar. Mudar um check exige voltar ao look across.
-5. **Mesmo `touches`, sem paralelismo.** Mudanças de schema seguem expand–contract ou ficam num ticket de fundação.
-6. **Critérios escritos uma vez, no UC.** O ticket lista só os checks que os provam.
-7. **Poda:** o contrato sai da matriz para o cabeçalho do `entry` quando o primeiro ticket da slice é construído (A.7); UC concluído colapsa em uma linha apontando para os testes; slice concluída colapsa numa linha com o `entry` (`status: done · entry: <caminho>`). O git guarda o histórico. A matriz fica pequena.
+Formato, horizontes, tipos de ticket e regras da matriz: `skills/look-across/MATRIX-FORMAT.md`.
 
 ---
 
@@ -610,194 +365,43 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
                                                    (checks, regras, ADRs, contexto, design, source global)
 ```
 
-### Etapa 0: Rotear
+### Etapas
 
-- **Objetivo:** escolher o caminho mais barato. A maior economia de tokens acontece aqui.
-- **Entrada:** o pedido + a seção Slices da matriz (o `entry` de cada slice).
-- **Saída:** uma de três rotas.
-  - **Direta:** cabe numa slice existente e em um ticket, sem regra nova, fora de área sensível.
-  - **Bug:** vai para Diagnosticar.
-  - **Iniciativa:** vai para Moldar.
-- **Artefato:** nenhum (na rota direta, no máximo uma linha de ticket).
-- **Skill/processo:** regra de roteamento no `AGENTS.md`. Não é uma skill.
-- **Agente separado:** nunca.
-- **Condição de saída da rota direta:** se durante o trabalho surgir regra nova, área sensível ou uma segunda slice, reclassifica.
-- **Como a próxima etapa acha o contexto:** a rota direta segue para Construir com o ponto de entrada da slice (o `entry`, na matriz).
-
-### Etapa 1: Moldar
-
-- **Objetivo:** entender problema, resultado e limites, e alinhar a linguagem. **Não planejar ainda.**
-- **Entrada:** a ideia (texto ou voz, desorganizada) + `PRODUCT.md` + `CONTEXT.md` (+ `DESIGN.md` se existir).
-- **Processo:**
-  - grilling (entrevista até resolver cada ramo de decisão);
-  - linguagem do domínio (desafiar termos, cenários de borda, identificadores em inglês);
-  - exploração de abordagens ("me ajude a entender o caminho, não gere o plano");
-  - **triagem de design** (seção 8.2), se o projeto tem interface e ainda não tem `DESIGN.md`;
-  - protótipo descartável quando a dúvida é de forma ou de comportamento.
-- **Saída:** `PRODUCT.md` e `CONTEXT.md` atualizados; `DESIGN.md` quando houver triagem de design; ADRs das decisões difíceis já tomadas; **features e casos de uso candidatos** gravados na matriz, para nada se perder entre sessões.
-- **Skill:** `/shape` (usa `grilling` + `domain-language`; a triagem de design fica num arquivo de referência lido só quando necessário).
-- **Agente separado:** só **pesquisa externa**, quando uma decisão depende de um fato fora do repositório. Roda em segundo plano, devolve uma conclusão curta com fontes, e a conclusão vira decisão (ADR) ou é descartada.
-- **Portão humano:** aprovar a direção.
-- **Como a próxima etapa acha o contexto:** `PRODUCT.md`, `CONTEXT.md` e features em rascunho na matriz. Recomenda-se rodar Look across na mesma sessão.
-
-### Etapa 2: Look across
-
-- **Objetivo:** transformar features em capacidades e capacidades em slices; garantir cobertura arquitetural; gerar tickets verificáveis.
-- **Entrada:** `PRODUCT.md`, `CONTEXT.md`, features em rascunho, a seção Slices da matriz, **a tabela "Capacidades condicionais" do `.metri/architecture/INDEX.md`**, `INDEX.md` das áreas (global e projeto) e código via grep.
-- **Passos da skill:**
-  1. **Features → casos de uso**, com critérios verificáveis e BRs (marcando as sensíveis). Definir `horizon` e, se fizer sentido, `milestone`.
-  2. **Look across:** para cada UC, identificar as capacidades necessárias e perguntar, nesta ordem: já existe no projeto (reusar)? É capacidade condicional do global, na tabela "Capacidades condicionais" (ativar e instanciar)? É nova (criar slice)?
-  3. **Contrato** de cada slice nova ou alterada, no bloco `contract` dela na matriz (A.7), desenhado para acomodar o que está `planned`; em slice construída, a mudança entra por ticket, no cabeçalho do `entry`.
-  4. **Cobertura arquitetural:** para cada slice, quais áreas e regras ela precisa. **Regra faltando vira ticket `type: pattern`**, o primeiro da slice.
-  5. **Tickets:** tracer bullets por UC `now`, com tipo, modo, áreas, `touches`, `sensitive`, checks executáveis, bloqueios e, quando der para paralelizar, subtarefas. Refatoração ampla segue expand–contract. Incluir `task` e `release` onde houver.
-  6. **Slice 0:** em projeto novo, **fundação** (instanciar o template da versão X do source, `verify` verde e, se houver interface, a slice `design-system` com a biblioteca instalada e estilizada pelo `DESIGN.md`). Em projeto existente, **mapeamento** (survey do código gera a seção Slices da matriz, com o `entry` de cada slice, e as regras do projeto, com revisão humana).
-- **Critério de conclusão:** todo UC `now` tem ticket; todo ticket tem slice, tipo e checks; toda slice `now` tem as regras de que precisa ou um ticket `pattern` que as cria; nada órfão; a matriz passa no lint.
-- **Saída:** matriz atualizada, com os contratos das slices, ADRs, termos novos no `CONTEXT.md`.
-- **Skill:** `/look-across`.
-- **Agente separado:** opcional, um **crítico sem contexto** em iniciativas grandes. Ele lê só `PRODUCT.md` e a matriz e procura feature sem slice, consumidor esquecido e UC sem critério. No mapeamento de projeto existente, o survey roda em agente separado.
-- **Portão humano:** aprovar granularidade, ordem, contratos e cobertura.
-- **Como a próxima etapa acha o contexto:** o **id do ticket** (seção 11).
-
-### Etapa 3: Construir
-
-- **Objetivo:** levar **um** ticket ao verde.
-- **Entrada:** id do ticket → seção do ticket + UC + contrato da slice (bloco na matriz ou cabeçalho do `entry`) + `rules-for --ticket` + exemplo canônico + grep por SOT keywords.
-- **Disciplina (skill `guardrail`):**
-  - **Procurar antes de criar:** assumir que já existe e buscar pelas keywords.
-  - Seguir o exemplo canônico e passar pelo block / pelos pontos centrais do padrão.
-  - Usar os identificadores em inglês do `CONTEXT.md`.
-  - **TDD no seam** quando o ticket mexe em regra de domínio.
-  - Todo arquivo novo ganha cabeçalho inline e SOT keywords.
-  - Em interface: componentes da biblioteca base, estilizados só por tokens.
-  - O que ficar para depois vira **lacuna sinalizada** (`GAP-n` + seção Gaps). Nada fica incompleto em silêncio.
-  - **Não edita** `docs/architecture/`, ADRs, `CONTEXT.md` nem `DESIGN.md`. Se a regra não serve, **para e registra uma proposta de padrão** (`PP-n`). A única exceção é o ticket `pattern`.
-  - **Não altera nem afrouxa** os checks planejados.
-- **Ticket `pattern`:** entrega a regra (arquivo em `docs/architecture/`, ou uma proposta para o global), o exemplo canônico e o enforcement (lint, tipo ou check). Fica aguardando revisão humana antes de liberar os tickets dependentes.
-- **Saída:** código + testes, commit na branch/worktree do ticket com o id, status atualizado (e `metrics` preenchido quando a ferramenta expõe o dado); no primeiro ticket construído da slice, o contrato movido para o cabeçalho do `entry`.
-- **Skill:** `/build` (usa `guardrail`, `tdd`).
-- **Agente separado:** **sim, por isolamento de contexto.** Cada ticket roda em sessão nova ou num worker. Paralelismo para tickets e subtarefas desbloqueados, sem `touches` em comum (seção 12).
-- **Como a próxima etapa acha o contexto:** os checks listados no ticket.
-
-### Etapa 4: Verificar (portão automático)
-
-- **Objetivo:** provar que o ticket está pronto sem precisar do humano.
-- **Entrada:** checks do ticket e da slice + `verify` (tipos, lint de arquitetura, lint estrutural, testes).
-- **Saída:** verde fecha o ticket; vermelho devolve para Construir. Ticket com `mode: hitl` fecha com confirmação humana. Um ticket que quebra depois volta a `in_progress`.
-- **Artefato:** nenhum (log do check).
-- **Processo:** script. É o critério de conclusão do `/build`, não uma skill própria.
-- **Agente separado:** não.
-- **Como a próxima etapa acha o contexto:** quando todos os tickets da slice estão verdes, a slice está pronta para aceite.
-
-### Etapa 5: Aceitar
-
-- **Objetivo:** julgar o que check nenhum julga. Aceitar a **slice** e, quando ela é a última de uma feature, a **feature**.
-- **Entrada:** diff desde o início da branch da slice + contrato (cabeçalho do `entry`) + regras resolvidas para os caminhos tocados (com seus **itens de verificação sem check**) + UCs envolvidos. **Nada da conversa do construtor.**
-- **Processo:**
-  - **Dois revisores em paralelo:**
-    - **Contrato e UCs:** faltou algo, sobrou algo, implementou errado, os checks cobrem os critérios?
-    - **Padrões:** os itens de verificação ("Verificação" ou "Verificação rápida") das regras do ticket que não têm check; os que têm check já passaram no portão.
-  - **Humano:**
-    - leitura do caminho linear da slice ("me mostre o fluxo e as fontes da verdade");
-    - QA dos UCs (e da feature, quando for a última slice), incluindo conformidade visual com o `DESIGN.md`;
-    - **diff dos tickets sensíveis e de padrão**.
-  - **Teste do consumidor sem contexto**, só quando a slice tem um consumidor externo (API pública, biblioteca, guia para agentes, fluxo de usuário crítico). Um agente que só conhece a interface pública tenta usá-la.
-  - **Portão de conhecimento** (seção 15): as lições propostas passam pelas cinco perguntas; o humano aprova o destino de cada uma.
-- **Saída:** merge da slice na principal ou tickets de correção; UCs concluídos colapsados em ponteiros para os testes; conhecimento aprovado gravado no destino certo.
-- **Skill:** `/accept`.
-- **Agente separado:** **sim, obrigatório.** O trabalho não avalia a si mesmo.
-- **Como a próxima etapa acha o contexto:** a matriz mostra o que está pronto para release.
-
-### Etapa 6: Release (simples)
-
-- **Objetivo:** levar para produção com segurança.
-- **Quando:** por feature, por `milestone` ou por lote de entregas. Nunca por ticket.
-- **Entrada:** ticket `release` + `docs/architecture/infrastructure/release.md` (regras do projeto).
-- **Processo:** checklist curto:
-  - migrações (expand–contract);
-  - variáveis e segredos;
-  - flags;
-  - deploy;
-  - smoke test;
-  - rollback conhecido.
-
-  Passos que só o humano pode fazer viram roteiro guiado (`mode: hitl`).
-
-- **Saída:** versão em produção, tag no git.
-- **Skill:** nenhuma; é tipo de ticket tratado pelo `/build`.
-- **Agente separado:** não.
-- **Como a próxima etapa acha o contexto:** problemas em produção entram por Diagnosticar.
-
-### Etapa 7: Aprender e evoluir
-
-- **Objetivo:** transformar lições **que passam no portão** em proteção durável, sem acumular texto (seção 15).
-- **Entrada:** achados do aceite, propostas de padrão, lacunas, bugs, correções repetidas.
-- **Processo:** passo final do `/accept` e do `/diagnose`, seguindo o portão de conhecimento.
-- **Saída:** check/lint, alteração de regra, ADR, termo no `CONTEXT.md`, ajuste no `DESIGN.md`, PR para o global, ou **nada** (o resultado mais comum).
-- **Skill:** não é separada; vive dentro de `/accept` e `/diagnose`.
-- **Agente separado:** só num survey de arquitetura, quando uma slice "doeu" (varredura ampla da qual interessa só a conclusão).
-- **Como a próxima etapa acha o contexto:** o próximo look across encontra as capacidades e regras novas pela tabela "Capacidades condicionais", pela seção Slices da matriz e pelo `rules-for`.
-
-### ↺ Diagnosticar (bugs)
-
-- **Objetivo:** corrigir com regressão garantida.
-- **Entrada:** relato, alerta de produção ou falha.
-- **Processo:** construir um **check que fica vermelho com o bug** → minimizar → formular hipótese → instrumentar → corrigir → o check fica como regressão.
-- **Saída:** ticket fechado + resposta a "por que o guardrail não pegou?", que passa pelo portão de conhecimento.
-- **Skill:** `/diagnose`.
-- **Agente separado:** não.
+| Etapa | Onde |
+| --- | --- |
+| 0 Rotear | `skills/setup/AGENTS-TEMPLATE.md`, "How to work here" |
+| 1 Moldar | `skills/shape/SKILL.md` |
+| 2 Look across | `skills/look-across/SKILL.md` |
+| 3 Construir | `skills/build/SKILL.md` |
+| 4 Verificar | `skills/build/SKILL.md`, passo 5, e o `verify` |
+| 5 Aceitar | `skills/accept/SKILL.md` |
+| 6 Release | `skills/build/TICKET-TYPES.md`, "release" |
+| 7 Aprender e evoluir | `skills/guardrail/KNOWLEDGE-GATE.md`, no fim do `/accept` e do `/diagnose` |
+| ↺ Diagnosticar | `skills/diagnose/SKILL.md` |
 
 ---
 
 ## 11. A cadeia de contexto
 
-Tudo se encontra por ponteiro. Nada depende da conversa anterior.
-
-```
-id do ticket
-  → docs/plan/MATRIX.md (só a seção do ticket): uc, slice, type, areas, touches, sensitive, checks
-  → contrato da slice: bloco contract na matriz ou cabeçalho do entry
-  → rules-for --ticket: regras globais + regras do projeto + ADRs citados
-  → exemplo canônico de cada regra (+ DESIGN.md, se a regra de frontend apontar)
-  → grep por SOT keywords e identificadores do CONTEXT.md → só os arquivos relevantes
-```
-
-O que fica sempre carregado: `AGENTS.md` (~20 linhas) e as descriptions das skills.
+`skills/build/SKILL.md`, passo 1.
 
 ---
 
 ## 12. Agentes, paralelismo e git
 
-**Um agente separado se justifica em três casos:**
-
-1. **Julgamento, que precisa de isolamento:** revisores do aceite, teste do consumidor sem contexto, crítico da matriz.
-2. **Varredura da qual interessa só a conclusão:** pesquisa externa, survey de arquitetura, mapeamento de projeto existente.
-3. **Paralelismo real:** tickets ou subtarefas desbloqueados, sem `touches` em comum, em áreas diferentes.
+Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/build/SKILL.md`, "Git"; revisores isolados e teste do consumidor: `skills/accept/SKILL.md`; crítico sem contexto e mapeamento: `skills/look-across/SKILL.md`; pesquisa externa: `skills/research/SKILL.md`.
 
 **Não usar:** personas (PM, arquiteto, QA), passagem de trabalho entre agentes, revisor por ticket, agente planejador separado do humano.
-
-**Coordenador e workers:**
-
-- **Coordenador:** a sessão da slice (ou da iniciativa). Distribui tickets e subtarefas, integra na branch da slice e conversa com o humano.
-- **Worker:** um por ticket ou subtarefa, em worktree própria, com contexto limpo. **Reporta só ao coordenador; workers nunca conversam entre si.** A comunicação passa por artefatos: status, `PP`, `GAP` e `notes` do ticket.
-- Schema e migrations: serializados, nunca em paralelo.
-
-**Git:**
-
-- Branches: `slice/<id>` e `ticket/<id>` (ex.: `slice/S2`, `ticket/T2.1`).
-- O worker commita só na branch/worktree do ticket, com o id no commit.
-- O coordenador integra na branch da slice depois que os checks passam.
-- O merge na principal acontece só depois do aceite da slice.
-- O agente nunca faz commit, reset ou push forçado na principal.
 
 ---
 
 ## 13. Portões humanos
 
-1. **Direção:** fim de Moldar (inclui a triagem de design).
-2. **Plano:** fim do Look across (granularidade, ordem, contratos, cobertura).
-3. **Padrões e partes sensíveis:** revisão dos tickets `pattern` e dos diffs `sensitive` (auth, escopo de dados, pagamentos, migrações destrutivas, BRs sensíveis).
-4. **Aceite:** QA da slice e da feature, e aprovação do destino de cada lição.
-5. **Release:** passos que só o humano pode fazer.
+1. **Direção:** `skills/shape/SKILL.md`, "5. Direction gate".
+2. **Plano:** `skills/look-across/SKILL.md`, "8. Quiz the user".
+3. **Padrões e partes sensíveis:** `skills/build/TICKET-TYPES.md`, "pattern", e `skills/accept/SKILL.md`, "5. Human gate".
+4. **Aceite:** `skills/accept/SKILL.md`, "5. Human gate" e "6. Knowledge gate".
+5. **Release:** `skills/build/TICKET-TYPES.md`, "release".
 
 Todo o resto é trabalho do agente.
 
@@ -831,58 +435,9 @@ Definição, as cinco perguntas, o que nunca é conhecimento, quem grava e quand
 
 ## 16. Skills
 
-### 16.1 Conjunto
-
-**Invocadas pelo usuário** (orquestram; nunca chamam outra skill deste grupo):
-
-| Skill          | Faz                                                                                                                     | Usa                                       | Critério de conclusão                                                                                         |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `/shape`       | Entrevista, linguagem, direção, triagem de design → `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md`, ADRs, features em rascunho | `grilling`, `domain-language`, `research` | Direção aprovada; termos resolvidos com identificador EN; features e UCs candidatos gravados                  |
-| `/look-across` | Features → UCs → capacidades → slices → contratos → cobertura → tickets                                                 | `domain-language`, `grilling`             | Todo UC `now` tem ticket; toda slice `now` tem cobertura; nada órfão; matriz passa no lint; plano aprovado    |
-| `/build`       | Um ticket (ou a próxima fronteira) até o verde; modo coordenador para paralelismo                                       | `guardrail`, `tdd`                        | Checks verdes; commit com id; status atualizado; lacunas e propostas registradas                              |
-| `/accept`      | Revisores em paralelo + roteiro humano + teste do consumidor + portão de conhecimento                                   | revisores, `guardrail`                    | Slice mergeada ou tickets de correção criados; UCs colapsados; cada lição aprovada com destino, ou descartada |
-| `/setup`       | Instancia o starter no projeto: `AGENTS.md`, `CLAUDE.md` e `docs/architecture/INDEX.md`, com a ativação (seção 6.14)   | —                                         | Arquivos no lugar; capacidade condicional com gatilho respondida no INDEX; `docs-lint` verde                  |
-| `/diagnose`    | Bug até o check vermelho virar verde                                                                                    | `tdd`, `guardrail`                        | Regressão verde; "por que o guardrail não pegou" respondido                                                   |
-
-**Invocadas pelo modelo** (guardam a disciplina):
-
-| Skill                | Disciplina                                                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `grilling`           | Entrevistar até resolver cada ramo de decisão, uma pergunta por vez                                                                   |
-| `domain-language`    | Desafiar termos, cenários de borda, manter o `CONTEXT.md` com identificadores EN, critério de ADR                                     |
-| `guardrail`          | Procurar antes de criar, `rules-for`, SOT keywords, exemplo canônico, tokens de design, lacunas, proposta de padrão, escada de regras |
-| `tdd`                | Red → green → refactor no seam; testar comportamento, não implementação                                                               |
-| `research`           | Pesquisa em fontes primárias, em segundo plano; conclusão curta com fontes; efêmera                                                   |
-| `writing-for-agents` | Como escrever e podar skills, `AGENTS.md` e regras                                                                                    |
+Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/setup`, `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents`. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
 **Scripts no template** (código, não skill; TypeScript rodando com `tsx`, sem build): `verify`, `rules-for`, `rules-index` (gera os INDEX; `rules-index:check` confere), `docs-lint` (lint estrutural + formato da matriz).
-
-### 16.2 Como as skills são escritas (estilo Matt)
-
-- **Em inglês.**
-- **Description = ponteiro.** Palavra-guia na frente, um gatilho por caso. É a única parte sempre carregada, então cada palavra conta.
-- **Passos com critério de conclusão verificável e exigente.** Ex.: "todo arquivo novo tem SOT keywords", nunca "documente".
-- **Palavras-guia repetidas como termo, não como frase:** as de `VOCABULARY.md`.
-- **Instruções positivas.** Dizer o que fazer; proibição só como guardrail, sempre acompanhada do comportamento correto.
-- **Revelação progressiva.** O que só alguns casos usam vai para arquivos ao lado da skill, lidos quando preciso (ex.: esquema da matriz, triagem de design).
-- **O ambiente é a fonte.** Nunca repetir scripts, estrutura de pastas ou regras que o `rules-for` entrega.
-- **Separar passos só quando os seguintes induzem pressa.** Cada skill faz uma coisa.
-
-### 16.3 Esqueleto de exemplo
-
-```markdown
----
-name: build
-description: Build one ticket from docs/plan/MATRIX.md to green. Use with a ticket id, or with none to take the next frontier ticket; use coordinator mode to run unblocked tickets in parallel.
-disable-model-invocation: true
----
-
-1. Load the ticket section, its UC, its slice contract, and `rules-for --ticket <id>`. Done when you can name the seam, the canonical examples and the checks.
-2. Find before you create: grep the SOT keywords and CONTEXT.md identifiers, list files, open only the relevant ones. Done when every block you will reuse is named.
-3. Build with /guardrail; use /tdd at the seam when domain rules change. Mark anything deferred as GAP-n with a line in Gaps. When a rule does not fit, record a pattern proposal (PP-n) and stop.
-4. Run the ticket checks and verify. Done when all are green.
-5. Commit on ticket/<id> with the ticket id; set status: done in the matrix.
-```
 
 ---
 
@@ -948,15 +503,15 @@ Os resultados alimentam a v1.2 desta metodologia.
 
 ## Apêndice A: Templates
 
-O starter do projeto mora em `.metri/template/`, cada arquivo no caminho que terá no projeto; as seções de arquivo único apontam para ele. Os formatos que se repetem (regra, slice, ADR) ficam aqui.
+Cada formato mora na skill que escreve o artefato (`<ARTEFATO>-FORMAT.md`), e cada arquivo copiado igual para o projeto, na skill que o copia (`<ARQUIVO>-TEMPLATE.md`).
 
 ### A.1 `AGENTS.md`
 
-Starter em `template/AGENTS.md`; `template/CLAUDE.md` é a linha `@AGENTS.md`.
+`skills/setup/AGENTS-TEMPLATE.md`; `skills/setup/CLAUDE-TEMPLATE.md` é a linha `@AGENTS.md`.
 
 ### A.2 `docs/PRODUCT.md`
 
-Starter em `template/docs/PRODUCT.md`.
+`skills/shape/PRODUCT-FORMAT.md`.
 
 ### A.3 `docs/CONTEXT.md`
 
@@ -964,11 +519,11 @@ Starter em `template/docs/PRODUCT.md`.
 
 ### A.4 `docs/DESIGN.md`
 
-Starter e base neutra em `template/docs/DESIGN.md`, no formato da especificação DESIGN.md (seção 8.3).
+`skills/shape/DESIGN-TEMPLATE.md` (base neutra), no formato de `skills/shape/DESIGN-TRIAGE.md`.
 
 ### A.5 `docs/architecture/INDEX.md`
 
-Starter em `template/docs/architecture/INDEX.md`; como preencher: seção 6.14.
+`skills/setup/INDEX-TEMPLATE.md`; como preencher: `skills/setup/ACTIVATION.md`, "Record".
 
 ### A.6 Regra (global ou do projeto)
 
@@ -976,35 +531,7 @@ Starter em `template/docs/architecture/INDEX.md`; como preencher: seção 6.14.
 
 ### A.7 Contrato de slice
 
-Enquanto a slice é plano, o contrato é o bloco `contract` da slice na matriz:
-
-```markdown
-horizon: now · blocked_by: [S<n>]
-contract:
-  responsibility: <o que a slice garante, numa frase>
-  interface: <o que os consumidores chamam>
-  invariants: <o que vale sempre>
-  consumers: [<F<n>, S<n> ou agente>]
-  planned: <o que o contrato já acomoda, mas não está construído>
-```
-
-Depois do primeiro ticket construído, o contrato vai para o cabeçalho do arquivo de entrada, e a slice troca o bloco por `entry: <caminho>` na linha de `horizon`:
-
-```ts
-/**
- * O quê: <responsibility>
- * Por quê: <por que a capacidade é compartilhada>
- * Onde: <onde se conecta: pacote, pontos centrais, consumidores>
- * Como usar: <interface, com o uso mínimo>
- * Invariantes: <invariants>
- * Consumidores: <consumers>
- * Previsto: <planned>
- * Checks: <comandos que provam o contrato>
- * SOT keywords: <keyword>, <keyword>
- */
-```
-
-Os rótulos seguem o idioma dos comentários (`architecture/defaults/stack.md`, "Stack"); os de cima são os do default.
+`skills/look-across/MATRIX-FORMAT.md`, "Contrato de slice".
 
 ### A.8 ADR
 
@@ -1012,4 +539,4 @@ Os rótulos seguem o idioma dos comentários (`architecture/defaults/stack.md`, 
 
 ### A.9 `docs/plan/MATRIX.md`
 
-Starter em `template/docs/plan/MATRIX.md`; formato na seção 9.1.
+`skills/look-across/MATRIX-FORMAT.md`.

@@ -130,12 +130,13 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 
 - [x] 5.1 Adaptar do Matt: `grilling`, `tdd`, `research`, `writing-for-agents` (recebe o `methodology/authoring.md`) e `domain-language` (a partir de `domain-modeling`, com o formato do `CONTEXT.md`)
   - `skills/<nome>/SKILL.md`, cada uma abrindo com "Adapted from mattpocock/skills@c55ee46 (MIT)"; o `authoring.md` e o formato de regra (A.6 e seção 7) viraram `skills/writing-for-agents/RULE-FORMAT.md`; o formato de ADR é da `domain-language`.
-- [ ] 5.2 Escrever as nossas: `guardrail`, `/setup`, `/shape`, `/look-across`, `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os formatos saem de `template/` e do Apêndice A:
+- [x] 5.2 Escrever as nossas: `guardrail`, `/setup`, `/shape`, `/look-across`, `/build`, `/accept` (portão de conhecimento e ADR) e `/diagnose`; cada skill leva o formato do que escreve, e os formatos saem de `template/` e do Apêndice A:
   - `/setup`: `template/AGENTS.md`, `template/CLAUDE.md` e `template/docs/architecture/INDEX.md`, com as classes de ativação e as delegações (hoje na METHODOLOGY 6.14);
   - `/shape`: `template/docs/PRODUCT.md` e `template/docs/DESIGN.md`;
   - `/look-across`: `template/docs/plan/MATRIX.md` e o contrato de slice (A.7);
   - `domain-language` (5.1): `template/docs/CONTEXT.md`;
   - `template/` fica com o código do starter e os scripts.
+  - Formatos em `skills/<nome>/<ARTEFATO>-FORMAT.md` e arquivos copiados em `skills/<nome>/<ARQUIVO>-TEMPLATE.md`; `template/` ficou só com `scripts/`. A 6.14 virou `skills/setup/ACTIVATION.md` (o `/look-across` ativa capacidade condicional pelos passos 3 a 6 dela); o portão de conhecimento (seção 15) mora na `guardrail`, que o `/accept` e o `/diagnose` chamam; a METHODOLOGY e o Apêndice A apontam para as skills.
 - [ ] 5.3 Teste a seco de cada skill
 - [x] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
   - Fica, na raiz do source (`VOCABULARY.md`); as skills e os formatos apontam para ele.

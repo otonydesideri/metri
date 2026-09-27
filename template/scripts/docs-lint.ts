@@ -37,15 +37,14 @@ Nos dois modos:
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
 
 Só no source:
-  - METHODOLOGY: regra (architecture/), skill (skills/) e template (template/**/*.md) não citam a METHODOLOGY, nem
-    em frontmatter nem em bloco de código; citação a ela é erro, e o texto cita a regra dona.
+  - METHODOLOGY: regra (architecture/) e skill (skills/, com os formatos e templates de cada uma) não citam a
+    METHODOLOGY, nem em frontmatter nem em bloco de código; citação a ela é erro, e o texto cita o dono.
   - Citações (em architecture/, methodology/, adr/, skills/ e VOCABULARY.md, fora de bloco de código): todo caminho
     .md citado existe;
     quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
     \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
     toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., AGENTS.md, CONTEXT.md,
-    PRODUCT.md, DESIGN.md, MATRIX.md) não é conferido. template/ fica fora: é o starter do projeto, e as citações
-    dele são caminhos do projeto.
+    PRODUCT.md, DESIGN.md, MATRIX.md) não é conferido; na skill, .metri/<caminho> é <caminho> do source.
   - Arquivos planejados: template/scripts/docs-lint.planned.json lista cada arquivo que ainda não existe e o
     passo do SETUP.md que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe
     é erro ("tire da lista"), para a lista não ficar velha.
@@ -92,10 +91,10 @@ const RULE_DIRS = layout.isProject ? ['docs/architecture', '.metri/architecture'
 const ADR_DIRS = layout.isProject ? ['docs/adr', '.metri/adr'] : ['adr'];
 const ARCHITECTURE = 'architecture';
 const CITATION_ROOTS = ['architecture', 'methodology', 'adr', 'skills', 'VOCABULARY.md'];
-// Onde a METHODOLOGY não é citada: as regras, as skills e os templates.
-const NO_METHODOLOGY_ROOTS = ['architecture', 'skills', 'template'];
+// Onde a METHODOLOGY não é citada: as regras e as skills (com os formatos e templates de cada uma).
+const NO_METHODOLOGY_ROOTS = ['architecture', 'skills'];
 const SKILLS = 'skills';
-// Pastas fora da varredura de markdown do source: a fixture de teste é um projeto, não template.
+// Pastas fora da varredura de markdown do source: a fixture de teste é um projeto.
 const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
 const REQUIRED_KEYS = ['id', 'description', 'use_when', 'status'];
@@ -469,7 +468,7 @@ function lintMethodologyCitations(path: string): void {
   }
   source.split('\n').forEach((text, index) => {
     if (text.includes('METHODOLOGY')) {
-      report(path, index + 1, 'citação: regra e template não citam a METHODOLOGY (cite a regra dona)');
+      report(path, index + 1, 'citação: regra e skill não citam a METHODOLOGY (cite o dono)');
     }
   });
 }
