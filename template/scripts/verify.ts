@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { layoutOf, takeOption } from './lib/layout.ts';
+import { layoutOf, MATRIX, takeOption } from './lib/layout.ts';
 
 const HELP = `verify: roda os checks e soma o resultado.
 
@@ -12,7 +12,8 @@ Uso: verify [--root <dir>]
 Ordem (todos rodam, mesmo depois de uma falha):
   1. docs-lint;
   2. rules-index:check (rules-index --check em docs/architecture/ no projeto, em architecture/ no source);
-  3. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
+  3. matrix-view:check (só com docs/plan/MATRIX.md: a visão gerada no topo dela está atualizada);
+  4. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
      (pnpm run <nome>).
 
 Saída: uma linha por check, "ok <nome>" ou "falha <nome>"; a saída do check que falhou vem logo abaixo da
@@ -42,6 +43,9 @@ const checks: Check[] = [
     args: tsx('rules-index.ts', layout.projectDir ?? layout.globalDir, '--check'),
   },
 ];
+if (existsSync(MATRIX)) {
+  checks.push({ name: 'matrix-view:check', command: process.execPath, args: tsx('matrix-view.ts', '--check') });
+}
 const scripts: Record<string, string> = existsSync('package.json')
   ? (JSON.parse(readFileSync('package.json', 'utf8')).scripts ?? {})
   : {};

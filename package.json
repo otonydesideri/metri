@@ -7,6 +7,8 @@
     "rules-index": "tsx template/scripts/rules-index.ts",
     "rules-index:check": "tsx template/scripts/rules-index.ts --check",
     "docs-lint": "tsx template/scripts/docs-lint.ts",
+    "matrix-view": "tsx template/scripts/matrix-view.ts",
+    "matrix-view:check": "tsx template/scripts/matrix-view.ts --check",
     "rules-for": "tsx template/scripts/rules-for.ts",
     "test": "vitest run template/scripts",
     "verify": "tsx template/scripts/verify.ts"

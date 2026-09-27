@@ -140,3 +140,20 @@ export function listOf(value: string): string[] | undefined {
 export function fieldOf(block: Block, key: string): Field | undefined {
   return block.fields.find((field) => field.key === key);
 }
+
+// A visão gerada (matrix-view.ts) fica entre estes marcadores, logo abaixo do título "# MATRIX".
+export const MATRIX_VIEW_START = '<!-- matrix-view -->';
+export const MATRIX_VIEW_END = '<!-- /matrix-view -->';
+
+// Troca o bloco da visão gerada por linhas em branco (mesma contagem de linhas), para o parser ignorá-lo sem
+// deslocar o número das linhas do resto do arquivo. Sem os marcadores, devolve a fonte como está.
+export function blankMatrixView(source: string): string {
+  const start = source.indexOf(MATRIX_VIEW_START);
+  const end = source.indexOf(MATRIX_VIEW_END);
+  if (start === -1 || end === -1) {
+    return source;
+  }
+  const endOfBlock = end + MATRIX_VIEW_END.length;
+  const removedLines = source.slice(start, endOfBlock).split('\n').length - 1;
+  return source.slice(0, start) + '\n'.repeat(removedLines) + source.slice(endOfBlock);
+}

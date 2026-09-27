@@ -13,14 +13,14 @@ describe('verify', { timeout: 60_000 }, () => {
   it('passa quando todos os checks passam', () => {
     expect(run('verify.ts', ['--root', projectWithTest(0)])).toEqual({
       status: 0,
-      lines: ['ok docs-lint', 'ok rules-index:check', 'ok test'],
+      lines: ['ok docs-lint', 'ok rules-index:check', 'ok matrix-view:check', 'ok test'],
     });
   });
 
   it('um check que falha faz o verify falhar, e os outros continuam rodando', () => {
     const { status, lines } = run('verify.ts', ['--root', projectWithTest(1)]);
     expect(status).toBe(1);
-    expect(lines.slice(0, 3)).toEqual(['ok docs-lint', 'ok rules-index:check', 'falha test']);
+    expect(lines.slice(0, 4)).toEqual(['ok docs-lint', 'ok rules-index:check', 'ok matrix-view:check', 'falha test']);
   });
 
   it('falha do docs-lint aparece com a saída dele', () => {
@@ -32,6 +32,7 @@ describe('verify', { timeout: 60_000 }, () => {
       'falha docs-lint',
       '  docs/notes.md:1: árvore de docs/: arquivo fora da lista fechada (docs-lint --help)',
       'ok rules-index:check',
+      'ok matrix-view:check',
       'ok test',
     ]);
   });

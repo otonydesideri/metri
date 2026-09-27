@@ -76,7 +76,9 @@ Let them edit before writing.
   "docs-lint": "tsx .metri/template/scripts/docs-lint.ts",
   "rules-for": "tsx .metri/template/scripts/rules-for.ts",
   "rules-index": "tsx .metri/template/scripts/rules-index.ts docs/architecture",
-  "rules-index:check": "tsx .metri/template/scripts/rules-index.ts docs/architecture --check"
+  "rules-index:check": "tsx .metri/template/scripts/rules-index.ts docs/architecture --check",
+  "matrix-view": "tsx .metri/template/scripts/matrix-view.ts",
+  "matrix-view:check": "tsx .metri/template/scripts/matrix-view.ts --check"
   ```
 
 ### 5. Done

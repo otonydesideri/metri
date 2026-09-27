@@ -17,7 +17,7 @@ import {
   takeOption,
   TICKETS_DIR,
 } from './lib/layout.ts';
-import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
+import { blankMatrixView, fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
 import { CONTRACT_LABELS, matrixProblems } from './lib/matrix-lint.ts';
 import { ticketProblems } from './lib/ticket-lint.ts';
 
@@ -62,6 +62,8 @@ Só no projeto:
   - applies_to sem casamento: glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum
     arquivo gera aviso, não erro; a regra é candidata a poda.
   - MATRIX.md, só o plano:
+    - a seção gerada pelo matrix-view, entre <!-- matrix-view --> e <!-- /matrix-view --> logo abaixo do
+      título, não é conferida aqui (matrix-view:check confere se está atualizada, no verify);
     - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
     - ids: ### F<n> em Features, ### S<n> em Slices, GAP-<n> e PP-<n> nas listas; sem id repetido;
     - chaves de VOCABULARY.md por bloco (feature: horizon, slices, outcome, ucs, milestone, tech_design;
@@ -585,7 +587,7 @@ function matrixIds(matrixSource: string): {
 
 // Tickets (docs/plan/tickets/<id>.md): frontmatter, corpo e referências para a MATRIX.
 function lintTickets(): void {
-  const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
+  const matrixSource = existsSync(MATRIX) ? blankMatrixView(readFileSync(MATRIX, 'utf8')) : '';
   const { featureIds, sliceIds, featureUcs, featureSlices } = matrixIds(matrixSource);
   const files = existsSync(TICKETS_DIR)
     ? readdirSync(TICKETS_DIR)
@@ -661,7 +663,7 @@ function lintMatrix(): void {
   if (!existsSync(MATRIX)) {
     return;
   }
-  for (const { line, message } of matrixProblems(readFileSync(MATRIX, 'utf8'))) {
+  for (const { line, message } of matrixProblems(blankMatrixView(readFileSync(MATRIX, 'utf8')))) {
     report(MATRIX, line, message);
   }
 }
