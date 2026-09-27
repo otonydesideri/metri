@@ -137,11 +137,13 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
   - `domain-language` (5.1): `template/docs/CONTEXT.md`;
   - `template/` fica com o código do starter e os scripts.
   - Formatos em `skills/<nome>/<ARTEFATO>-FORMAT.md` e arquivos copiados em `skills/<nome>/<ARQUIVO>-TEMPLATE.md`; `template/` ficou só com `scripts/`. A 6.14 virou `skills/setup/ACTIVATION.md` (o `/look-across` ativa capacidade condicional pelos passos 3 a 6 dela); o portão de conhecimento (seção 15) mora na `guardrail`, que o `/accept` e o `/diagnose` chamam; a METHODOLOGY e o Apêndice A apontam para as skills.
-- [ ] 5.3 Teste a seco de cada skill
+- [x] 5.3 Teste a seco de cada skill
+  - `/setup` → `/shape` (cancelar pedido não enviado) → `/look-across` numa cópia da fixture, com o source montado como submódulo: `docs-lint` e `verify` verdes; `/build`, `/accept` e `/diagnose` por subagente com contexto novo, só com a skill e o T1.1; as ambiguidades mecânicas foram corrigidas nas skills.
 - [x] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
   - Fica, na raiz do source (`VOCABULARY.md`); as skills e os formatos apontam para ele.
 - [ ] 5.5 A METHODOLOGY vira `README.md` (porquê, princípios, limiares, mapa e referências), e `methodology/` é apagada
-- [ ] 5.6 Decidir como skills e scripts chegam aos projetos
+- [x] 5.6 Decidir como skills e scripts chegam aos projetos
+  - Skills: o `/setup` liga `.claude/skills/<nome>` → `../../.metri/skills/<nome>` (symlink relativo, commitado), e os arquivos existem só em `.metri/`, na versão fixada. Fonte: code.claude.com/docs/en/skills, tabela de locais (projeto: `.claude/skills/<skill-name>/SKILL.md`, "Commit it so your team gets it too") e "Symlinked folders" ("a `<skill-name>` entry in the enterprise, personal, or project location can be a symlink to a directory elsewhere on disk"). Plugin descartado: pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa as skills (`/<plugin>:<skill>`), segundo code.claude.com/docs/en/plugins/loading. Scripts: `tsx .metri/template/scripts/<script>.ts` no `package.json` do projeto, com `tsx`, `yaml` e `picomatch` e `allowBuilds: { esbuild: false }` no `pnpm-workspace.yaml`.
 
 ## Fase 6: release do source
 
@@ -151,6 +153,7 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
 ## Fase 7: projeto piloto (outro repositório)
 
 - [ ] 7.1 Criar o repositório e adicionar o source em `.metri/` (submódulo ou pacote, versão fixada)
+  - O `/setup` mora em `.metri/`: antes de rodá-lo, `mkdir -p .claude/skills && ln -s ../../.metri/skills/setup .claude/skills/setup` e `/reload-skills`; o `/setup` liga as demais.
 - [ ] 7.2 Rodar `/setup`
 - [ ] 7.3 `/shape` (com triagem de design) → `/look-across`
 - [ ] 7.4 Slice 0 (fundação). Se ainda não existir um template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter e os `.examples.md` viram ponteiro

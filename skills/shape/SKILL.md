@@ -36,6 +36,6 @@ Do NOT interview the user again; synthesize what the interview settled:
 
 ### 5. Direction gate
 
-Show the user the direction (the product, the terms, the features and UCs) and iterate until they approve it.
+Show the user the direction (the product, the terms, the features and UCs) and iterate until they approve it. The human commits the result: the agent never commits on main.
 
 Done when the direction is approved, every term has its English identifier in `docs/CONTEXT.md`, the candidate features and UCs are in the matrix, and `pnpm docs-lint` is green. Recommend /look-across next, in the same session.

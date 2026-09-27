@@ -17,54 +17,58 @@ The work never judges itself: both axes run as **parallel sub-agents** that get 
 
 ### 1. Pin the fixed point
 
+Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. Every ticket of the slice is `done`, and each command in their `checks` and `pnpm verify` exit 0.
+
 The fixed point is where `slice/<id>` left main: `git merge-base main slice/<id>`. Capture the diff command once: `git diff <fixed-point>...slice/<id>` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..slice/<id> --oneline`.
 
-Before going further, confirm the slice's tickets are all `done` with their checks green, the fixed point resolves and the diff is non-empty. A bad ref or an empty diff should fail here, not inside the sub-agents.
+Before going further, confirm the fixed point resolves and the diff is non-empty. A bad ref or an empty diff should fail here, not inside the sub-agents.
 
 ### 2. Gather the inputs
 
-- **Contract**: the header of the slice `entry`, and the UCs its tickets serve (criteria and BRs) in `docs/plan/MATRIX.md`.
-- **Patterns**: `pnpm rules-for <each path the diff touches>`, and in each listed rule the items of its verification section ("Verificação" or "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`.
+- **Contract**: the contract header at the top of the file named by the slice's `entry`, and the UCs its tickets serve in `docs/plan/MATRIX.md`, with their criteria and the text of their BRs.
+- **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns sub-agent and say so.
 
 ### 3. Spawn the sub-agents in parallel
 
-**Contract sub-agent prompt** should include:
+They may read the repository at `slice/<id>`, nothing else of this session.
+
+**Contract sub-agent prompt** includes:
 
 - The diff command and the commit list.
 - The contract and the UCs, pasted in full.
-- The brief: "Report: (a) contract items or UC criteria that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no check proves. Quote the contract or UC line for each finding. Under 400 words."
+- The brief: "Report: (a) contract items or UC criteria that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep), leaving out the edits to `docs/plan/`; (c) items that look implemented but where the implementation looks wrong; (d) UC criteria that no test run by the tickets' `checks` proves. Quote the contract or UC line for each finding. Under 400 words."
 
-**Patterns sub-agent prompt** should include:
+**Patterns sub-agent prompt** includes:
 
 - The diff command and the commit list.
 - The unchecked verification items, pasted with their rule id.
-- The brief: "Report, per file/hunk, every verification item the diff fails: cite the rule id and the item, and quote the hunk. Skip anything tooling enforces. Under 400 words."
+- The brief: "Report, per file/hunk, every verification item the diff fails: cite the rule id and the item, and quote the hunk. Under 400 words."
 
-**Consumer sub-agent**, only when the slice has an external consumer (a public API, a library, a guide for agents, a critical user flow): an agent that knows only the public interface (the contract's `interface`) tries to use it, and reports where it got stuck.
+**Consumer sub-agent**, only when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure): an agent that knows only the public interface (the contract's `interface`) tries to use it, and reports where it got stuck.
 
 ### 4. Aggregate
 
-Present the reports under `## Contract` and `## Patterns` (and `## Consumer`), verbatim or lightly cleaned. Do **not** merge or rerank findings, because the axes are deliberately separate (see _Why two axes_).
+Present the reports in the chat under `## Contract` and `## Patterns` (and `## Consumer`), verbatim or lightly cleaned. Do **not** merge or rerank findings, because the axes are deliberately separate (see _Why two axes_).
 
 ### 5. Human gate
 
 Walk the human through:
 
-- the slice's linear path: "show me the flow and the sources of truth";
-- the QA of its UCs (and of the feature, when this is its last slice), with visual conformity to `docs/DESIGN.md`;
-- the diff of every `sensitive` and `pattern` ticket.
+- the slice's linear path, "show me the flow and the sources of truth": from the `entry` to each source of truth, as file:line;
+- the QA of its UCs, which the human runs from the steps you give per UC criterion, with visual conformity to `docs/DESIGN.md`; and of the feature, when this is its last slice (every other slice in the feature's `slices` is done);
+- the diff of every ticket with `sensitive: true` or `type: pattern`.
 
-A finding to fix becomes a ticket in the slice (`.metri/skills/look-across/MATRIX-FORMAT.md`) and goes back to /build; the slice isn't accepted yet.
+A finding to fix becomes a correction ticket in the slice (`.metri/skills/look-across/MATRIX-FORMAT.md`). With correction tickets, run step 6 and stop, without pruning or merging: /accept runs again, whole, after /build closes them.
 
 ### 6. Knowledge gate
 
-Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each with its evidence. Call the Skill tool with "guardrail" and put each one through its knowledge gate. The human approves the destination of each lesson; write the approved ones in their destination, on `slice/<id>`.
+Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each with its evidence. When the slice hurt (many findings, proposals or fixes), an architecture survey in a sub-agent brings back only its conclusion, as one more lesson. Call the Skill tool with "guardrail" and put each lesson through its knowledge gate. The human approves the destination of each; write the approved ones in their destination, on `slice/<id>`. A lesson for the Source goes as a PR to the Source's repository: `.metri/` is read-only.
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by rule 7 of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md`: each done UC becomes one line pointing to its tests, and the done slice one line with its `entry`. Then, with the human's approval, merge `slice/<id>` into main: a merge, never a direct commit, reset or force push on main.
+On `slice/<id>`, prune the matrix by rule 7 of "Matrix rules" in `.metri/skills/look-across/MATRIX-FORMAT.md`, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
-Done when the slice is merged, or its correction tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
+Done when the slice is on main, or its correction tickets are in the matrix; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
 ## Why two axes
 

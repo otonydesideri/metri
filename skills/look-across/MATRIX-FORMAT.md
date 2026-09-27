@@ -57,7 +57,11 @@ status: done · entry: <arquivo de entrada, com o contrato no cabeçalho>
 - PP-<n> · de T<s>.<n> · <o que a regra não cobre> → próximo look across
 ````
 
-A key without a value is not written. The reserved fields `milestone`, `tech_design`, `evidence`, `metrics` and `notes` are optional in any block and appear only with a value.
+Ids are numbered across the whole matrix, except that a UC carries its feature's number and a ticket its slice's (`UC<f>.<n>`, `T<s>.<n>`): the next BR, GAP or PP takes the highest number in the matrix plus one. A key without a value is not written. The reserved fields `milestone`, `tech_design`, `evidence`, `metrics` and `notes` are optional in any block and appear only with a value; a value never holds ` · `, the field separator.
+
+- `sensitive: true` when the ticket touches authentication, data scope, payments, a destructive migration or a sensitive BR; its diff gets the human's review in /accept.
+- `metrics`: only the numbers the tool reports, as `metrics: <tokens> tokens, <n> regras`.
+- Gaps: the arrow points to the ticket that closes the gap; while none is planned, to the ticket that left it. Pattern proposals: `de T<s>.<n>` is the ticket that raised it, and the arrow its destination.
 
 ## Example
 
@@ -151,7 +155,7 @@ subtasks: [registro no mounter, renderização no site]
 4. **Checks are immutable for /build.** It may add tests, never remove or loosen a check. Changing a check means going back to look across.
 5. **Same `touches`, no parallelism.** Schema changes follow expand–contract or stay in a foundation ticket.
 6. **Criteria written once, in the UC.** The ticket lists only the checks that prove them.
-7. **Pruning:** the contract leaves the matrix for the header of the `entry` when the slice's first ticket is built ("Contrato de slice", below); a done UC collapses into one line pointing to its tests (`status: done → <test file>`); a done slice collapses into one line with its `entry` (`status: done · entry: <path>`). Git keeps the history. The matrix stays small.
+7. **Pruning:** the contract leaves the matrix for the header of the `entry` when the slice's first ticket is built ("Contrato de slice", below); a UC is done when every ticket whose `uc` it is is done, and it collapses into one line pointing to the tests its tickets' checks run (`status: done → <test file>`); a done slice collapses, tickets included, into one line with its `entry` (`status: done · entry: <path>`). A done slice that takes a new ticket goes back to `horizon: now` with its `entry`, until it collapses again. Git keeps the history. The matrix stays small.
 
 ## Contrato de slice
 

@@ -35,7 +35,7 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 7. **Property / fuzz loop.** If the bug is "sometimes wrong output", run 1000 random inputs and look for the failure mode.
 8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate "boot at state X, check, repeat" so you can `git bisect run` it.
 9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.
-10. **HITL bash script.** Last resort. If a human must click, drive _them_ with `scripts/hitl-loop.template.sh` so the loop is still structured. Captured output feeds back to you.
+10. **HITL bash script.** Last resort. If a human must click, drive _them_ with this skill's `scripts/hitl-loop.template.sh` so the loop is still structured. Captured output feeds back to you.
 
 Build the right feedback loop, and the bug is 90% fixed.
 
@@ -116,9 +116,15 @@ Tool preference:
 
 ## Phase 5: Fix + regression test
 
-The fix is a ticket. Add it to the slice that owns the broken code, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md`: `type: tracer` with the `uc` whose behaviour broke (`task` when no UC covers it), the Phase 1 command in `checks`, `status: in_progress`, and `sensitive` as its area asks. Work on its branch, by the Git rules of `.metri/skills/build/SKILL.md`, with the guardrail skill (call the Skill tool with "guardrail").
+Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md`, in the slice whose code the fix changes (a done slice reopens by its rule 7), with the next free id of that slice:
 
-Write the regression test **before the fix**, but only if there is a **correct seam** for it (call the Skill tool with "tdd").
+- `uc`: the UC whose behaviour broke, with `type: tracer`; when no UC covers it, `type: task` and no `uc`;
+- `mode: afk`; `status: in_progress`; `areas` and `touches` of the code the fix changes; `sensitive` by the criterion of MATRIX-FORMAT.md;
+- `checks`: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
+
+Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `.metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
+
+Write the regression test **before the fix**, but only if there is a **correct seam** for it (call the Skill tool with "tdd"). A Phase 1 test that already sits at a correct seam, minimised, is that regression test.
 
 A correct seam is one where the test exercises the **real bug pattern** as it occurs at the call site. If the only available seam is too shallow (single-caller test when the bug needs multiple callers, unit test that can't replicate the chain that triggered the bug), a regression test there gives false confidence.
 
@@ -141,10 +147,10 @@ Required before declaring done:
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
 - [ ] The hypothesis that turned out correct is stated in the commit message, with the ticket id, so the next debugger learns
-- [ ] The ticket's checks and `pnpm verify` are green, and its `status` is `done`
+- [ ] The ticket's checks and `pnpm verify` are green
 
 ## Phase 7: Why didn't the guardrail catch it?
 
-Answer it: which check, pattern, header or rule would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded.
+Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`.metri/` is read-only). Then set the ticket's `status: done` and commit, with its id.
 
-Done when the regression check is green, the ticket is `done` and the answer has passed the knowledge gate. Tell the user to run /accept on the slice to take the fix to main.
+Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main.

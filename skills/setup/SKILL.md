@@ -29,7 +29,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 - `package.json` (scripts, dev dependencies) and `.claude/skills/`.
 - The code: the apps and packages (`pnpm-workspace.yaml`, `apps/*`, `packages/*`) and the signs of each trigger in [ACTIVATION.md](ACTIVATION.md) and in the "Capacidades condicionais" table of `.metri/architecture/INDEX.md`.
 
-On a project already set up (`docs/architecture/INDEX.md` exists), run only what the new trigger needs: steps 3 to 6 of "Order" in [ACTIVATION.md](ACTIVATION.md), then step 5 below.
+On a project already set up, every step keeps what exists and adds only what is missing; a trigger that showed up since (the first job, the first asset) is resolved by steps 3 to 6 of "Order" in [ACTIVATION.md](ACTIVATION.md).
 
 ### 2. Present findings and ask
 
@@ -41,7 +41,7 @@ Lead each section with the recommended answer so the user can accept it in a wor
 
 **Section B: Capabilities.** Name the project's capabilities from what exploration found and what the user says the project is. For each row of the "Capacidades condicionais" table of `.metri/architecture/INDEX.md` whose trigger shows up, ask its `activation` question; on yes, resolve the values its rule's `not_covered` leaves to the project (`→ project:architecture/INDEX`).
 
-**Section C: Delegations.** For each row of the delegation matrix in [ACTIVATION.md](ACTIVATION.md) whose trigger is present now, ask what the project decides, showing the Source's constraints and the default.
+**Section C: Delegations.** For each row of the delegation matrix in [ACTIVATION.md](ACTIVATION.md) whose trigger is present now, ask what the project decides, showing the Source's constraints and the default. A value nothing depends on yet may wait: it is resolved before the first point that depends on it, at the latest in the /look-across that plans that point.
 
 **Section D: Stack.** Only what differs from `.metri/architecture/defaults/stack.md`, each difference with its ADR.
 
@@ -67,7 +67,7 @@ Let them edit before writing.
   for dir in .metri/skills/*/; do name=$(basename "$dir"); ln -sfn "../../.metri/skills/$name" ".claude/skills/$name"; done
   ```
 
-- **Scripts.** In `package.json`, the dev dependencies `tsx`, `yaml` and `picomatch`, and these scripts; then `pnpm install`:
+- **Scripts.** In `package.json`, the dev dependencies `tsx`, `yaml` and `picomatch`, and these scripts; in `pnpm-workspace.yaml`, `allowBuilds: { esbuild: false }`, as in the Source (without it, `pnpm install` stops at the build script of `esbuild`, a dependency of `tsx`); then `pnpm install`:
 
   ```json
   "verify": "tsx .metri/template/scripts/verify.ts",
@@ -85,4 +85,4 @@ Done when:
 - every conditional capability with a trigger is answered in `docs/architecture/INDEX.md`, and the "Check" list of [ACTIVATION.md](ACTIVATION.md) holds;
 - `pnpm verify` is green.
 
-Tell the user the setup is complete, and to run /shape next.
+Tell the user the setup is complete, to commit it (the agent never commits on main), and to run /shape next (after /reload-skills when `.claude/skills/` didn't exist when the session started).
