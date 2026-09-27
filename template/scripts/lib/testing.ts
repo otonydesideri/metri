@@ -2,7 +2,7 @@
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const SCRIPTS = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,6 +23,15 @@ export function copyFixture(): string {
   cpSync(FIXTURE, dir, { recursive: true, filter: (source) => !source.includes('/.metri') });
   mkdirSync(join(dir, '.metri'));
   symlinkSync(join(REPO, 'architecture'), join(dir, '.metri/architecture'));
+  copies.push(dir);
+  return dir;
+}
+
+// Cópia deste repositório (modo source) numa pasta temporária, sem node_modules, .git e a fixture de projeto.
+export function copySource(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'metri-source-'));
+  const isSkipped = (source: string) => /(^|\/)(node_modules|\.git|__fixtures__)(\/|$)/.test(relative(REPO, source));
+  cpSync(REPO, dir, { recursive: true, filter: (source) => !isSkipped(source) });
   copies.push(dir);
   return dir;
 }

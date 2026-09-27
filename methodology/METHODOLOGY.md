@@ -8,11 +8,11 @@
 **O que mudou da v1.1 para a v1.1.3**
 
 - v1.1.3: ADR só com decisão tomada, e a pergunta em aberto fica na regra, em "Em aberto" (6.5); a pergunta de ativação é a chave `activation` da regra dona, e o catálogo sai (6.11 e 6.14); o contrato de slice fica na matriz e, depois do primeiro ticket, no cabeçalho do `entry` (A.7); regra e template não citam a METHODOLOGY (6.13); limiares na seção 3.
-- Frontmatter das regras com `description`, `use_when` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (`methodology/VOCABULARY.md` e seção 7.2).
+- Frontmatter das regras com `description`, `use_when` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (`VOCABULARY.md` e seção 7.2).
 - Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `architecture/defaults/stack.md` (seção 6.2).
 - Release segue `docs/architecture/infrastructure/release.md` (seções 9.3 e 10).
 - Regras existentes são refinadas, não reescritas (7.2); sem limite de linhas; sem marca check/manual por regra.
-- "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (`methodology/VOCABULARY.md` e seções 6.11, 6.13, 7.2 e A.5).
+- "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (`VOCABULARY.md` e seções 6.11, 6.13, 7.2 e A.5).
 - O source é montado nos projetos em `.metri/`; os defaults ficam em `architecture/defaults/`, com os mesmos ids; `INDEX.md` de área gerado pelo `rules-index` e `INDEX.md` raiz com parte escrita à mão acima do marcador `<!-- rules-index -->` (seções 5, 6.2, 6.11 e 6.13).
 
 **O que mudou da v1.0 para a v1.1**
@@ -140,11 +140,11 @@ A regra que evita deriva: **a conversa pode ser em português, mas toda chave, c
 | Glossário                      | Conteúdo                                   | Onde mora                                               |
 | ------------------------------ | ------------------------------------------ | ------------------------------------------------------- |
 | **Linguagem do domínio**       | Termos do produto (ex.: Pedido → `Order`)  | `docs/CONTEXT.md`, por projeto (seção 6.7)              |
-| **Vocabulário da metodologia** | Termos do processo (ex.: toca → `touches`) | `.metri/methodology/VOCABULARY.md`, global |
+| **Vocabulário da metodologia** | Termos do processo (ex.: toca → `touches`) | `.metri/VOCABULARY.md`, global |
 
 ### 4.3 Vocabulário da metodologia (chaves canônicas)
 
-Mora em `methodology/VOCABULARY.md`: as chaves canônicas e o frontmatter de regra.
+Mora em `VOCABULARY.md`: as chaves canônicas e o frontmatter de regra.
 
 ---
 
@@ -193,11 +193,11 @@ docs/
     defaults/                   escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
   methodology/
     METHODOLOGY.md              a metodologia (Apêndice A: formatos de regra, slice e ADR; ponteiros para o starter)
-    VOCABULARY.md               vocabulário da metodologia (chaves canônicas)
     authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
   template/                     starter do projeto, cada arquivo no caminho que terá no projeto: AGENTS.md, CLAUDE.md, docs/ e, quando existir, o código (block, registry, adapters, regras de lint); scripts em template/scripts/
   adr/                          decisões globais (inclusive as que sustentam os defaults)
   skills/                       as skills da metodologia
+  VOCABULARY.md                 vocabulário da metodologia (chaves canônicas)
   AGENTS.md, CLAUDE.md          instruções do agente neste repositório
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
   package.json                  scripts do source (pnpm): rules-index, rules-index:check, docs-lint, rules-for, verify, test (+ pnpm-workspace.yaml, pnpm-lock.yaml)
@@ -314,7 +314,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 | ---------------------------------------------- | ----------------------------------------- | ---------------------------------------------- |
 | Intenção e escopo                              | `PRODUCT.md`                              | ticket, regra                                  |
 | Termos do domínio (PT ↔ EN)                    | `CONTEXT.md`                              | `PRODUCT.md`, código solto                     |
-| Vocabulário da metodologia                     | `methodology/VOCABULARY.md` (global)      | projeto                                        |
+| Vocabulário da metodologia                     | `VOCABULARY.md` (global)      | projeto                                        |
 | Padronização (como construímos)                | Architecture Source                       | projeto                                        |
 | Escolha padrão de tecnologia                   | `architecture/defaults/` (global)         | projeto                                        |
 | Regras só do projeto                           | `docs/architecture/<área>/`               | global, README                                 |
@@ -470,7 +470,7 @@ Serve para o global e para o projeto.
 
 ### 7.1 Formato
 
-- Toda regra começa com frontmatter, com as chaves de `methodology/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
+- Toda regra começa com frontmatter, com as chaves de `VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
 - O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades de `methodology/authoring.md`, blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
@@ -973,7 +973,7 @@ Entra por PR no repositório do source, com nova versão e registro no `CHANGELO
 - **Em inglês.**
 - **Description = ponteiro.** Palavra-guia na frente, um gatilho por caso. É a única parte sempre carregada, então cada palavra conta.
 - **Passos com critério de conclusão verificável e exigente.** Ex.: "todo arquivo novo tem SOT keywords", nunca "documente".
-- **Palavras-guia repetidas como termo, não como frase:** as de `methodology/VOCABULARY.md`.
+- **Palavras-guia repetidas como termo, não como frase:** as de `VOCABULARY.md`.
 - **Instruções positivas.** Dizer o que fazer; proibição só como guardrail, sempre acompanhada do comportamento correto.
 - **Revelação progressiva.** O que só alguns casos usam vai para arquivos ao lado da skill, lidos quando preciso (ex.: esquema da matriz, triagem de design).
 - **O ambiente é a fonte.** Nunca repetir scripts, estrutura de pastas ou regras que o `rules-for` entrega.
@@ -1124,7 +1124,7 @@ flowchart TD
 - <Pergunta de sim ou não que confere a norma>? (check: <id>)
 ````
 
-Chave marcada `# opcional` só é escrita quando tem valor (`methodology/VOCABULARY.md`). Exemplo do formato: `frontend/components.md`.
+Chave marcada `# opcional` só é escrita quando tem valor (`VOCABULARY.md`). Exemplo do formato: `frontend/components.md`.
 
 `(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
 

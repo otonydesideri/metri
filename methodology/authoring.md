@@ -32,7 +32,7 @@ Um documento se relaciona com uma decisão arquitetural de uma destas formas:
 
 **Obrigatório.** Toda decisão arquitetural tem exatamente um owner, o documento que a define (DEFINED).
 
-Onde a decisão entra no arquivo do owner: `methodology/VOCABULARY.md` (frontmatter) e METHODOLOGY 7 (corpo).
+Onde a decisão entra no arquivo do owner: `VOCABULARY.md` (frontmatter) e METHODOLOGY 7 (corpo).
 
 **Obrigatório.** Documento que não é owner de uma decisão se relaciona com ela só como APPLIED, REFERENCED, VERIFIED ou EXAMPLE.
 
@@ -42,7 +42,7 @@ Onde a decisão entra no arquivo do owner: `methodology/VOCABULARY.md` (frontmat
 
 ### Anatomia do documento
 
-O formato do arquivo de regra está na METHODOLOGY: frontmatter em `methodology/VOCABULARY.md`, corpo na seção 7.
+O formato do arquivo de regra está na METHODOLOGY: frontmatter em `VOCABULARY.md`, corpo na seção 7.
 
 **Permitido.** Heading de subseção afirmar o princípio ("Retornando erro: sempre `Either`, nunca `throw`") em vez de rótulo neutro.
 

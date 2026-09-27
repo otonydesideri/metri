@@ -136,7 +136,8 @@ Os demais checks candidatos ficam para a Fase 8, depois do piloto.
   - `domain-language` (5.1): `template/docs/CONTEXT.md`;
   - `template/` fica com o código do starter e os scripts.
 - [ ] 5.3 Teste a seco de cada skill
-- [ ] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
+- [x] 5.4 Decidir se o `methodology/VOCABULARY.md` fica ou é absorvido pelos formatos das skills
+  - Fica, na raiz do source (`VOCABULARY.md`); as skills e os formatos apontam para ele.
 - [ ] 5.5 A METHODOLOGY vira `README.md` (porquê, princípios, limiares, mapa e referências), e `methodology/` é apagada
 - [ ] 5.6 Decidir como skills e scripts chegam aos projetos
 

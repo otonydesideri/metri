@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { copyFixture, edit, FIXTURE, REPO, removeCopies, run, write } from './lib/testing.ts';
+import { copyFixture, copySource, edit, FIXTURE, REPO, removeCopies, run, write } from './lib/testing.ts';
 
 afterAll(removeCopies);
 
@@ -25,6 +25,19 @@ describe('docs-lint', { timeout: 30_000 }, () => {
   it('passa: a fixture de projeto e este repositório (modo source)', () => {
     expect(lint(FIXTURE)).toEqual({ status: 0, lines: [] });
     expect(lint(REPO)).toEqual({ status: 0, lines: [] });
+  });
+
+  it('skills (source): SKILL.md com name igual à pasta e description', () => {
+    const dir = copySource();
+    write(dir, 'skills/good/SKILL.md', '---\nname: good\ndescription: Does X. Use when Y.\n---\nBody.\n');
+    write(dir, 'skills/demo/SKILL.md', '---\nname: other\n---\nBody.\n');
+    write(dir, 'skills/empty/NOTES.md', '# Notas\n');
+    const { status, lines } = lint(dir);
+    expect(status).toBe(1);
+    expect(lines).toContain('skills/demo/SKILL.md:2: skill: name other diferente da pasta demo');
+    expect(lines).toContain('skills/demo/SKILL.md:1: skill: falta a description');
+    expect(lines).toContain('skills/empty:1: skill: pasta sem SKILL.md');
+    expect(lines.join('\n')).not.toContain('skills/good');
   });
 
   it('árvore fechada de docs/: arquivo fora da lista é erro', () => {

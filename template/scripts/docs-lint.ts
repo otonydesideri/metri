@@ -26,20 +26,21 @@ Saída: arquivo:linha: mensagem, com o prefixo "aviso:" no aviso. Sai com códig
 
 Nos dois modos:
   - Regras: o frontmatter de cada <área>/<tema>.md (architecture/ no source, docs/architecture/ no projeto):
-    - as quatro chaves obrigatórias de methodology/VOCABULARY.md (id, description, use_when, status), nenhuma
+    - as quatro chaves obrigatórias de VOCABULARY.md (id, description, use_when, status), nenhuma
       chave vazia, nenhuma chave fora dele, status com um valor dele e activation, quando existe, em texto;
     - id igual ao caminho <área>/<tema>;
     - os ids de read_first e not_covered existem ou são destinos project: da lista fechada de
-      methodology/VOCABULARY.md, e a seção que not_covered cita existe na regra;
+      VOCABULARY.md, e a seção que not_covered cita existe na regra;
     - os arquivos citados em examples existem, e os ids de adr existem em adr/ (docs/adr/ no projeto).
     Arquivos *.examples.md não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo
     nem número de linhas.
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
 
 Só no source:
-  - METHODOLOGY: regra (architecture/) e template (template/**/*.md) não citam a METHODOLOGY, nem em frontmatter
-    nem em bloco de código; citação a ela é erro, e o texto cita a regra dona.
-  - Citações (em architecture/, methodology/ e adr/, fora de bloco de código): todo caminho .md citado existe;
+  - METHODOLOGY: regra (architecture/), skill (skills/) e template (template/**/*.md) não citam a METHODOLOGY, nem
+    em frontmatter nem em bloco de código; citação a ela é erro, e o texto cita a regra dona.
+  - Citações (em architecture/, methodology/, adr/, skills/ e VOCABULARY.md, fora de bloco de código): todo caminho
+    .md citado existe;
     quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
     \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
     toda âncora #... resolve para um título do arquivo. Arquivo do projeto (docs/..., AGENTS.md, CONTEXT.md,
@@ -49,6 +50,7 @@ Só no source:
     passo do SETUP.md que o cria. Citação a arquivo planejado é aviso, não erro; arquivo planejado que já existe
     é erro ("tire da lista"), para a lista não ficar velha.
   - "Como ler": todo id de regra do source aparece em "Como ler" do architecture/INDEX.md.
+  - Skills: cada pasta de skills/ tem SKILL.md, com frontmatter: name igual ao nome da pasta e description.
 
 Só no projeto:
   - Árvore fechada de docs/: PRODUCT.md, CONTEXT.md, DESIGN.md, architecture/INDEX.md,
@@ -61,7 +63,7 @@ Só no projeto:
     - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
     - ids: ### F<n> e #### UC<f>.<n> em Features, ### S<n> e #### T<s>.<n> em Slices, GAP-<n> e PP-<n> nas
       listas; sem id repetido; UC dentro da feature F<f> e ticket dentro da slice S<s>;
-    - chaves de methodology/VOCABULARY.md por bloco, sem chave repetida; valores de horizon, status, type,
+    - chaves de VOCABULARY.md por bloco, sem chave repetida; valores de horizon, status, type,
       mode e sensitive dentro do permitido; listas em [a, b];
     - nenhuma chave vazia;
     - obrigatórias: horizon na feature; status no UC; type, mode, status e checks no ticket;
@@ -89,9 +91,10 @@ const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 const RULE_DIRS = layout.isProject ? ['docs/architecture', '.metri/architecture'] : ['architecture'];
 const ADR_DIRS = layout.isProject ? ['docs/adr', '.metri/adr'] : ['adr'];
 const ARCHITECTURE = 'architecture';
-const CITATION_ROOTS = ['architecture', 'methodology', 'adr'];
-// Onde a METHODOLOGY não é citada: as regras e os templates.
-const NO_METHODOLOGY_ROOTS = ['architecture', 'template'];
+const CITATION_ROOTS = ['architecture', 'methodology', 'adr', 'skills', 'VOCABULARY.md'];
+// Onde a METHODOLOGY não é citada: as regras, as skills e os templates.
+const NO_METHODOLOGY_ROOTS = ['architecture', 'skills', 'template'];
+const SKILLS = 'skills';
 // Pastas fora da varredura de markdown do source: a fixture de teste é um projeto, não template.
 const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
@@ -139,9 +142,13 @@ function warn(file: string, line: number, message: string): void {
   problems.push({ file, line, message, isWarning: true });
 }
 
+// Os .md de uma pasta, recursivamente; um arquivo .md entra sozinho.
 function listMarkdown(dir: string): string[] {
   if (!existsSync(dir)) {
     return [];
+  }
+  if (!statSync(dir).isDirectory()) {
+    return dir.endsWith('.md') ? [dir] : [];
   }
   return readdirSync(dir)
     .sort()
@@ -374,7 +381,7 @@ function lintFrontmatter(path: string, dir: string): void {
   for (const [key, value] of Object.entries(frontmatter)) {
     const line = keyLine(lines, key);
     if (!KNOWN_KEYS.includes(key)) {
-      report(path, line, `frontmatter: chave ${key} fora de methodology/VOCABULARY.md`);
+      report(path, line, `frontmatter: chave ${key} fora de VOCABULARY.md`);
     }
     if (isEmpty(value)) {
       report(path, line, `frontmatter: chave ${key} vazia`);
@@ -477,6 +484,35 @@ function lintPlanned(): void {
   }
 }
 
+// Cada pasta de skills/ tem SKILL.md, com name igual ao nome da pasta e description no frontmatter.
+function lintSkills(): void {
+  if (!existsSync(SKILLS)) {
+    return;
+  }
+  for (const name of readdirSync(SKILLS).sort()) {
+    const dir = join(SKILLS, name);
+    if (!statSync(dir).isDirectory()) {
+      continue;
+    }
+    const path = join(dir, 'SKILL.md');
+    if (!existsSync(path)) {
+      report(dir, 1, 'skill: pasta sem SKILL.md');
+      continue;
+    }
+    const read = readFrontmatter(path);
+    if (!read) {
+      continue;
+    }
+    const { frontmatter, lines } = read;
+    if (frontmatter.name !== name) {
+      report(path, keyLine(lines, 'name'), `skill: name ${String(frontmatter.name)} diferente da pasta ${name}`);
+    }
+    if (typeof frontmatter.description !== 'string' || frontmatter.description.trim() === '') {
+      report(path, keyLine(lines, 'description'), 'skill: falta a description');
+    }
+  }
+}
+
 function lintSource(): void {
   const rules = ruleFiles(ARCHITECTURE);
   for (const path of rules) {
@@ -489,6 +525,7 @@ function lintSource(): void {
     lintMethodologyCitations(path);
   }
   lintReadingOrder(rules);
+  lintSkills();
   lintPlanned();
   lintGenerated(ARCHITECTURE);
 }
