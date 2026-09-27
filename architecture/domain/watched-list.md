@@ -158,8 +158,9 @@ photos: Array<{ photoId: string } | { uploadId: string }>;
 
 ```ts
 // item novo: resolver e validar o upload antes de tocar o domínio
+// (stat e consumo: infrastructure/storage.md, "O upload direto e o registro pendente")
 const upload = await this.uploadRepository.findById(photo.uploadId);
-if (!upload) {
+if (!upload || upload.consumed || upload.assetType !== 'product-photo') {
   return failure(new UploadNotFoundError());
 }
 

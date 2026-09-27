@@ -9,6 +9,7 @@ use_when:
 applies_to:
   - "apps/app-web/src/pages/**/*.tsx"
   - "apps/app-web/src/shared/components/**/*.tsx"
+  - "apps/app-web/src/app/layouts/**/*.tsx"
 keywords: [página, componente, modal, guard, handler, compound, "import * as", Skeleton, EmptyState, load-error-state, isLoading, isBusy, isPending, estado vazio, erro de leitura, erro de escrita, "@metri/ui"]
 not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"

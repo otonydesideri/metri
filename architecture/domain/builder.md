@@ -13,11 +13,11 @@ status: active
 
 A construção passo a passo: os casos comuns que o padrão promete resolver já têm casa em outros desenhos, e esta é a referência de onde cada um mora e dos gatilhos raros em que um builder de verdade entraria.
 
-Os exemplos são didáticos e não existem no produto.
+Os exemplos são didáticos.
 
 ## O problema que ele promete resolver
 
-Builder promete montar um objeto complexo por passos encadeados (`withCustomer().withItems().build()`): muitos campos opcionais, montagem condicional, ordem controlada. O padrão nasceu em linguagens sem parâmetro nomeado nem literal de objeto. Em TypeScript, e neste projeto em particular, cada caso que ele promete resolver já tem uma casa mais simples; este documento diz onde cada caso mora e registra os gatilhos raros em que um builder de verdade entraria.
+Builder promete montar um objeto complexo por passos encadeados (`withCustomer().withItems().build()`): muitos campos opcionais, montagem condicional, ordem controlada. O padrão nasceu em linguagens sem parâmetro nomeado nem literal de objeto. Em TypeScript, e nesta arquitetura, cada caso que ele promete resolver já tem uma casa mais simples; este documento diz onde cada caso mora e registra os gatilhos raros em que um builder de verdade entraria.
 
 ## A árvore de decisão
 
@@ -43,7 +43,7 @@ flowchart TD
 
 ## Os gatilhos que fariam o padrão entrar
 
-Três, nenhum com instância no produto:
+Três:
 
 - Montagem incremental de documento com partes opcionais combinatórias: uma fatura em PDF com cabeçalho com ou sem marca, N linhas, blocos opcionais, rodapé por país. Um objeto de props com quinze opcionais vira sopa; acumular passos é a forma natural desse problema.
 - O mesmo processo de montagem produzindo mais de uma representação: a mesma fatura saindo como PDF e como HTML pelos mesmos passos. Reuso de processo de construção entre formatos de saída é a única promessa do padrão que nenhuma casa existente cobre.
@@ -80,7 +80,7 @@ Pontos-chave:
 - `build()` é o único ponto de saída: valida a invariante da montagem (`Either`, nunca `throw`) e é onde o derivado nasce (`totalInCents`), como derivado nasce dentro do `create()` em `domain/model.md`.
 - Passo opcional ausente vira `null` explícito na estrutura, e quem renderiza decide o que fazer com a ausência; o builder não inventa default de apresentação.
 - Quando a ordem dos passos importar (terceiro gatilho), a forma evolui: cada passo devolve um tipo que só expõe o próximo passo legal (type-state), em vez de `this`. A forma acumuladora acima basta enquanto a ordem for livre.
-- A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra de escape do AGENTS.md; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo"). A decisão vira edição desta seção.
+- A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra de escape do AGENTS.md; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo"). A decisão fecha o ADR-0008.
 
 ## Verificação rápida
 
@@ -89,7 +89,7 @@ Pontos-chave:
 - Nenhum `build()` lançando para campo faltante; falha esperada é `Either`, com derivado nascendo no `build()`?
 - Nenhum builder de cenário de teste (Arrange inline, `backend/testing.md`)?
 - Classe de config com `build()` continua composição única, sem `withX()` encadeado?
-- Gatilho real (documento combinatório, mais de uma representação, ordem por tipo): parou e decidiu antes de implementar, com a decisão virando edição da seção?
+- Gatilho real (documento combinatório, mais de uma representação, ordem por tipo): parou e decidiu antes de implementar, com a decisão fechando o ADR-0008?
 
 **Pontos em aberto:**
 

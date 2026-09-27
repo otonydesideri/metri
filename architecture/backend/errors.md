@@ -36,11 +36,11 @@ Vivem em `packages/core/src/errors`. Com o `ApiErrorType` do protocolo ("O forma
 
 ```ts
 export enum DomainErrorType {
-  BUSINESS_RULE = "BUSINESS_RULE",
-  RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND",
-  CONFLICT = "CONFLICT",
-  AUTHORIZATION = "AUTHORIZATION",
-  VALIDATION = "VALIDATION",
+  BUSINESS_RULE = 'BUSINESS_RULE',
+  RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
+  CONFLICT = 'CONFLICT',
+  AUTHORIZATION = 'AUTHORIZATION',
+  VALIDATION = 'VALIDATION',
 }
 
 export abstract class DomainError extends Error {
@@ -145,8 +145,8 @@ expect(result.value).toBeInstanceOf(OrderNotFoundError);
 Nenhum controller escreve `switch` por erro. A tradução é uma tabela declarativa mais uma função, na infra do app.
 
 ```ts
-import { HttpException, HttpStatus } from "@nestjs/common";
-import { DomainError, DomainErrorType } from "@metri/core/errors";
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { DomainError, DomainErrorType } from '@metri/core/errors';
 
 const STATUS_MAP: Record<DomainErrorType, number> = {
   [DomainErrorType.BUSINESS_RULE]: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -201,9 +201,9 @@ O cliente discrimina por `code`; `type` e o status HTTP dão a categoria. O `typ
 // packages/core/src/errors
 export type ApiErrorType =
   | `${DomainErrorType}`
-  | "INVALID_REQUEST"
-  | "INTERNAL_ERROR"
-  | "REQUEST_REJECTED";
+  | 'INVALID_REQUEST'
+  | 'INTERNAL_ERROR'
+  | 'REQUEST_REJECTED';
 ```
 
 - `INVALID_REQUEST`: erro de formato HTTP (`toInvalidRequestException`, adiante).

@@ -12,6 +12,7 @@ applies_to:
   - "apps/app-web/src/**/*.spec.tsx"
   - "apps/app-web/test/**"
   - "apps/app-web/dev-server-proxy.spec.ts"
+  - "apps/app-web/vite.config.ts"
 keywords: [pirâmide, spec, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"

@@ -4,8 +4,8 @@
 
 ```ts
 // domain/enterprise/specifications/refundable-order.specification.ts
-import { OrderStatus } from "../enums/order-status.enum";
-import type { Order } from "../order.entity";
+import { OrderStatus } from '../enums/order-status.enum';
+import type { Order } from '../order.entity';
 
 const REFUND_WINDOW_IN_DAYS = 7;
 

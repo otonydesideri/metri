@@ -1,9 +1,5 @@
 # Arquitetura
 
-Dono de: a autoridade e a precedência da Architecture Source; a navegação, com a ordem de leitura e o índice do documento dono de cada assunto; o resumo das decisões transversais, cada uma definida no owner indicado.
-
-Consultar antes de: localizar o documento dono de um assunto antes de criar módulo, endpoint, evento, job ou integração nova; resolver divergência entre a Source, o código e uma instrução de projeto.
-
 A Architecture Source: a arquitetura do sistema, em documentos por área — o que cada área deve ser, as fronteiras entre camadas e as regras que valem para qualquer módulo ou aplicação do monorepo.
 
 Estes documentos são a referência de construção do projeto. Lidos em ordem, ensinam a base inteira; consultados por área, respondem "como se faz isso aqui". Caso real que não se encaixa em nenhuma regra escrita segue a regra de escape do `AGENTS.md`.

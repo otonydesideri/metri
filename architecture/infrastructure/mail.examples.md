@@ -36,7 +36,7 @@ export class OrderConfirmationSenderImpl implements OrderConfirmationSender {
 
     if (response.error) {
       throw new Error(
-        `Falha ao enviar e-mail via Resend: ${response.error.message}`,
+        `Falha ao enviar o e-mail de confirmação do pedido ${orderId}: ${response.error.message}`,
       );
     }
   }

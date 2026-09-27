@@ -7,7 +7,7 @@
 
 **O que mudou da v1.1 para a v1.1.2**
 
-- Frontmatter das regras com `description`, `read_first` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (seções 4.3 e 7.2).
+- Frontmatter das regras com `description`, `use_when` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (seções 4.3 e 7.2).
 - ADR com status `proposed`; ponto em aberto vira ADR `proposed` (seção 6.5 e A.8).
 - Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `architecture/defaults/stack.md` + ADR global (seção 6.2).
 - Release segue `docs/architecture/infrastructure/release.md` (seções 9.3 e 10).
@@ -152,7 +152,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | modo                                      | `mode: afk \| hitl`                              | Se o agente faz sozinho ou com humano                                                         |
 | status                                    | `status: open \| in_progress \| blocked \| done` | Estado do ticket ou UC                                                                        |
 | bloqueado por                             | `blocked_by`                                     | Tickets ou slices que precisam terminar antes                                                 |
-| áreas                                     | `areas`                                          | Áreas de arquitetura envolvidas (ex.: `backend/endpoints`)                                    |
+| áreas                                     | `areas`                                          | Áreas de arquitetura envolvidas (ex.: `backend/http-api`)                                     |
 | toca                                      | `touches`                                        | Ponto central que o ticket altera (registry, schema, migrations)                              |
 | sensível                                  | `sensitive`                                      | Exige revisão humana do diff                                                                  |
 | checks                                    | `checks`                                         | Comandos executáveis que provam os critérios                                                  |
@@ -227,12 +227,13 @@ architecture-source/            repositório próprio, versionado por tags (vX.Y
   methodology/
     VOCABULARY.md               vocabulário da metodologia (seção 4.3)
     authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
-    templates/                  modelos de AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX
+    templates/                  modelos de AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX, regra, slice, ADR, MATRIX (+ examples/: regras de projeto de exemplo)
   template/                     código executável: block, registry, adapters, regras de lint, scripts (template/scripts/)
   adr/                          decisões globais (inclusive as que sustentam os defaults)
   skills/                       as skills da metodologia
+  AGENTS.md, CLAUDE.md          instruções do agente neste repositório
   CHANGELOG.md                  o que mudou em cada versão e como atualizar
-  package.json                  scripts do source (pnpm): rules-index, rules-index:check
+  package.json                  scripts do source (pnpm): rules-index, rules-index:check, docs-lint (+ pnpm-workspace.yaml, pnpm-lock.yaml)
 ```
 
 `general/` guarda as regras que valem para mais de uma área (princípios transversais, colocação de código entre app e pacote). As áreas podem crescer conforme a necessidade (ex.: `mobile/`, `ai/`, `data/`).
@@ -515,7 +516,7 @@ checks: [`pnpm verify`]
 #### T2.1 · Montar componente registrado numa página
 
 uc: UC1.1 · type: tracer · mode: afk · status: open · blocked_by: [T2.0] · sensitive: false
-areas: [frontend/components, backend/endpoints] · touches: [registry:components]
+areas: [frontend/components, backend/http-api] · touches: [registry:components]
 checks: [`pnpm verify`, `pnpm test mounter`]
 subtasks: [registro no mounter, renderização no site]
 
@@ -529,7 +530,7 @@ subtasks: [registro no mounter, renderização no site]
 
 ## Pattern proposals
 
-- PP-1 · de T2.1 · o endpoint de upload precisa de streaming; backend/endpoints não cobre → próximo look across
+- PP-1 · de T2.1 · o endpoint de upload precisa de streaming; backend/http-api não cobre → próximo look across
 ```
 
 **Campos reservados** (opcionais, existem desde já para não bloquear o futuro): `milestone`, `tech_design`, `evidence`, `metrics`, `notes`. Só aparecem quando têm valor; campo vazio não é escrito.

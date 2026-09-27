@@ -12,7 +12,7 @@ not_covered:
   - "value object, entidade, agregado e a mutação por método de domínio → domain/model"
   - "caso de uso, contrato injetável e orquestração → backend/application"
   - "variação de comportamento escolhida por dado → domain/strategy"
-  - "regra booleana consumida em memória e em query → domain/specification"
+  - "regra booleana de domínio com mais de um consumidor → domain/specification"
   - "service de integração com vendor → infrastructure/services"
   - "interação entre contextos → domain/bounded-contexts"
   - "a regra concreta de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
@@ -34,7 +34,7 @@ flowchart TD
     qown -- sim --> model[Método do dono, domain/model.md]
     qown -- não --> qcomb{Ela combina conceitos de domínio que nenhum deles possui sozinho?}
     qcomb -- não --> other[Não é regra de domínio: orquestração do caso de uso ou só reuso de código]
-    qcomb -- sim --> qpat{É regra booleana consumida em memória e em query, ou variação escolhida por dado?}
+    qcomb -- sim --> qpat{É regra booleana com mais de um consumidor, ou variação escolhida por dado?}
     qpat -- booleana --> spec[Specification, domain/specification.md]
     qpat -- variação --> strategy[Strategy, domain/strategy.md]
     qpat -- nenhuma das duas --> ds[Domain service ou policy, este documento]
@@ -146,7 +146,7 @@ await this.orderRepository.save(order);
 - `domain/model.md`: a casa padrão da regra e a mudança de estado por método de intenção.
 - `backend/application.md`: o caso de uso que carrega os fatos e coordena o IO.
 - `domain/strategy.md`: variação de comportamento escolhida por dado.
-- `domain/specification.md`: regra booleana em memória e em query.
+- `domain/specification.md`: regra booleana de domínio com mais de um consumidor.
 - `domain/bounded-contexts.md`: regra entre contextos.
 - `backend/errors.md`: `Either` e classe de erro do módulo.
 - `backend/operation-routing.md`: o mecanismo da escrita que o caso de uso escolhe.

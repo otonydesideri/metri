@@ -110,11 +110,11 @@ A página no router, com o import mapeado para o default que o `lazy` espera:
 
 ```tsx
 // app/router/routes.tsx
-import { lazy } from "react";
+import { lazy } from 'react';
 
 // página usa named export, então o import mapeia pro default que o lazy espera
 const OrderListPage = lazy(() =>
-  import("@/pages/order/list/list-page").then((m) => ({
+  import('@/pages/order/list/list-page').then((m) => ({
     default: m.OrderListPage,
   })),
 );

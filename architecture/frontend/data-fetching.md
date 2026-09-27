@@ -133,7 +133,7 @@ Cada operação REST do app-api é uma função em `api/<módulo>.ts` (`frontend
 
 Exemplo completo: data-fetching.examples.md#apiorderts
 
-O tipo da resposta é o que o contrato canônico exporta, derivado do schema por `z.infer` e nomeado lá, e é importado do pacote, nunca redeclarado à mão nem escrito como `z.infer<typeof schema>` na própria assinatura (`frontend/helpers.md`, "Tipos compartilhados" e "Zod schema vs. type plain"). Escrita sem retorno de corpo (`cancelOrder`) não precisa de `output` nem de tipo.
+O tipo da resposta é o que o contrato canônico exporta, derivado do schema por `z.infer` e nomeado lá, e é importado do pacote, nunca redeclarado à mão nem escrito como `z.infer<typeof schema>` na própria assinatura (`frontend/helpers.md`, "Tipos compartilhados" e "Zod schema vs. type plain"). Escrita não passa `output`.
 
 O input segue a mesma regra: o tipo do filtro de listagem e o do payload de escrita vêm do contrato canônico, não declarados em `api/<módulo>.ts`. A key factory consome o tipo do filtro, e com ele declarado em `api/` a fronteira inverte — `hooks/` passa a importar de `api/` um tipo que não é da chamada HTTP. O retorno de cada função é anotado explicitamente (`Promise<OrderList>`): a assinatura é o contrato que o hook lê, não uma inferência que muda quando o corpo muda.
 

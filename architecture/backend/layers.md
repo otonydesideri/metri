@@ -26,6 +26,8 @@ src/
 │       ├── use-cases/<módulo>/  # casos de uso
 │       ├── queries/<módulo>/    # contratos e DTOs de leitura de exibição
 │       ├── repositories/        # contratos de repositório (abstract class)
+│       ├── transactions/        # contratos de transação (abstract class)
+│       ├── queues/              # contratos de fila (abstract class)
 │       └── services/<capacidade>/  # contratos de service (abstract class)
 ├── infra/
 │   ├── http/                    # controllers por ação, DTOs Zod, presenters
@@ -50,7 +52,7 @@ O que cada camada pode conhecer, em resumo (regras completas de import e exceç�
 
 1. Regra de negócio mora na entidade ou no value object. O use case orquestra; o controller adapta HTTP. Invariante dentro de controller está no lugar errado. Detalhe em `domain/model.md` e `backend/application.md`.
 2. Erro esperado é valor de retorno (`Either`), nunca exceção. `throw` fica reservado para bug de programação. Ver `backend/errors.md`.
-3. Use case não importa Zod. Schema Zod é fronteira HTTP (`infra/http/dtos/`); o request/response do use case é tipo próprio, local ao arquivo, mesmo quando estruturalmente idêntico ao schema. Detalhe em `backend/application.md`.
+3. Use case não importa Zod. Schema Zod é fronteira (`backend/boundaries.md`, "Zod é fronteira, não vocabulário interno"); o request/response do use case é tipo próprio, local ao arquivo, mesmo quando estruturalmente idêntico ao schema. Detalhe em `backend/application.md`.
 4. Quem injeta pede o contrato (`abstract class`), nunca a implementação concreta. Detalhe em `backend/application.md`.
 5. Toda escrita passa por use case e entidade de domínio, e leitura que alimenta decisão de negócio também. Leitura de exibição expõe contrato e DTO na aplicação, com implementação direta no banco pela infra; o critério e as regras estão em `backend/reading.md`.
 
@@ -77,6 +79,8 @@ O que cada camada pode conhecer, em resumo (regras completas de import e exceç�
 | Mapper | `src/infra/persistence/prisma/mappers/<agregado>.prisma-mapper.ts` | `backend/persistence.md` |
 | Contrato + DTO de query de exibição | `src/domain/application/queries/<módulo>/<ação>.query.ts` | `backend/reading.md` |
 | Implementação Prisma de query | `src/infra/persistence/prisma/queries/<módulo>/<ação>.prisma-query.impl.ts` | `backend/reading.md` |
+| Contrato de transação | `src/domain/application/transactions/<fluxo>-transaction.contract.ts` | `backend/transactions.md` |
+| Implementação Prisma de transação | `src/infra/persistence/prisma/transactions/<fluxo>.prisma-transaction.impl.ts` | `backend/transactions.md` |
 | Subscriber de evento | `src/infra/events/on-<evento>.subscriber.ts` | `backend/events.md` |
 | Contrato de fila | `src/domain/application/queues/<fluxo>-queue.contract.ts` | `backend/async-jobs.md` |
 | Worker de job | `src/infra/jobs/<job>.worker.ts` | `backend/async-jobs.md` |
@@ -85,6 +89,7 @@ O que cada camada pode conhecer, em resumo (regras completas de import e exceç�
 | Factory de teste | `test/factories/make-<agregado>.factory.ts` | `backend/testing.md` |
 | Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` | `backend/testing.md` |
 | Fila em memória | `test/queues/<fluxo>.in-memory-queue.impl.ts` | `backend/async-jobs.md` |
+| Dublê de transação | `test/transactions/<fluxo>.in-memory-transaction.impl.ts` | `backend/transactions.md` |
 | Primitivo de domínio compartilhado | `packages/core/src/<área>/` | instruções de projeto de `packages/core` |
 | Schema, migrations, client de banco | `packages/db/src/postgres/<banco>/` | instruções de projeto de `packages/db` |
 

@@ -70,14 +70,11 @@ Exemplo completo: state.examples.md#orderdetailstabs
 Filtro e paginação seguem o mesmo mecanismo, e o valor lido da URL vira parâmetro do hook de React Query. Trocar filtro reescreve a URL, a chave da query muda, e o React Query refetcha com a chave nova (`frontend/data-fetching.md`, "A key factory" e "Paginação: a página anterior fica na tela, a próxima já chega"). A URL é a fonte única do filtro; o componente não guarda uma segunda cópia em `useState`.
 
 ```tsx
-import { useSearchParams } from 'react-router';
 import { useOrders } from '@/hooks/order/use-orders';
+import { useListParams } from './use-list-params';
 
 export function OrderListPage() {
-  const [searchParams] = useSearchParams();
-  const status = searchParams.get('status') ?? undefined;
-  const page = Number(searchParams.get('page') ?? '1');
-  const search = searchParams.get('q') ?? undefined;
+  const { status, page, search } = useListParams();
 
   const orders = useOrders({ status, page, search });
   // ...

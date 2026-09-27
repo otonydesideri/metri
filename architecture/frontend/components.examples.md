@@ -12,6 +12,7 @@ export function OrderPage() {
     refetch: refetchOrder,
   } = useOrder();
   const updateOrder = useUpdateOrder();
+  const [isSaving, startSaveTransition] = useTransition();
 
   const isLoading = isPending;
   const hasLoadError = isError && order === undefined;
@@ -32,12 +33,26 @@ export function OrderPage() {
   }
 
   function handleSave() {
-    updateOrder.mutate();
+    startSaveTransition(async () => {
+      try {
+        await updateOrder.mutateAsync();
+        notification({
+          status: 'success',
+          title: 'Pedido salvo',
+          description: `O pedido ${order.number} já aparece com as alterações.`,
+        });
+      } catch (error) {
+        notification({
+          status: 'error',
+          title: 'Não foi possível salvar o pedido',
+          description: toUserFacingMessage(error),
+        });
+      }
+    });
   }
 
   const hasItems = order.items.length > 0;
-  const canEdit = order.status === "draft";
-  const isSaving = updateOrder.isPending;
+  const canEdit = order.status === 'draft';
 
   if (!hasItems) {
     return <OrderEmptyState />;

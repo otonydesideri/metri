@@ -3,11 +3,11 @@
 ## order.errors.ts
 
 ```ts
-import { DomainError, DomainErrorType } from "@metri/core/errors";
+import { DomainError, DomainErrorType } from '@metri/core/errors';
 
 export class OrderNotFoundError extends DomainError {
   readonly type = DomainErrorType.RESOURCE_NOT_FOUND;
-  readonly code = "ORDER_NOT_FOUND";
+  readonly code = 'ORDER_NOT_FOUND';
 
   constructor(id: string) {
     super(`Pedido ${id} não encontrado`);
@@ -16,7 +16,7 @@ export class OrderNotFoundError extends DomainError {
 
 export class OrderNumberAlreadyUsedError extends DomainError {
   readonly type = DomainErrorType.CONFLICT;
-  readonly code = "ORDER_NUMBER_ALREADY_USED";
+  readonly code = 'ORDER_NUMBER_ALREADY_USED';
 
   constructor(orderNumber: string) {
     super(`O número de pedido ${orderNumber} já está em uso`);
@@ -25,10 +25,10 @@ export class OrderNumberAlreadyUsedError extends DomainError {
 
 export class EmptyOrderError extends DomainError {
   readonly type = DomainErrorType.VALIDATION;
-  readonly code = "EMPTY_ORDER";
+  readonly code = 'EMPTY_ORDER';
 
   constructor() {
-    super("Pedido precisa de ao menos um item");
+    super('Pedido precisa de ao menos um item');
   }
 }
 ```
@@ -42,8 +42,8 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
-} from "@nestjs/common";
-import type { FastifyReply } from "fastify";
+} from '@nestjs/common';
+import type { FastifyReply } from 'fastify';
 
 @Catch()
 export class UnexpectedErrorFilter implements ExceptionFilter {
@@ -55,7 +55,7 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
       const response = exception.getResponse();
 
       // toHttpException e toInvalidRequestException já montaram o envelope
-      if (typeof response === "object" && "code" in response && "type" in response) {
+      if (typeof response === 'object' && 'code' in response && 'type' in response) {
         reply.status(status).send(response);
         return;
       }
@@ -63,16 +63,16 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
       // HttpException nativa do framework: mesmo status, corpo no envelope
       reply.status(status).send({
         code: HttpStatus[status],
-        message: "Requisição não atendida",
-        type: "REQUEST_REJECTED",
+        message: 'Requisição não atendida',
+        type: 'REQUEST_REJECTED',
       });
       return;
     }
 
     reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Erro interno inesperado",
-      type: "INTERNAL_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Erro interno inesperado',
+      type: 'INTERNAL_ERROR',
     });
   }
 }

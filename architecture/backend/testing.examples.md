@@ -7,7 +7,8 @@
 import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
 import { UniqueEntityID } from '@metri/core/entities';
-import { Order, type OrderProps, OrderItemList } from '../../src/domain/enterprise/order.entity';
+import { Order, type OrderProps } from '../../src/domain/enterprise/order.entity';
+import { OrderItemList } from '../../src/domain/enterprise/order-item-list';
 import { OrderStatus } from '../../src/domain/enterprise/enums/order-status.enum';
 import { OrderPrismaMapper } from '../../src/infra/persistence/prisma/mappers/order.prisma-mapper';
 import { PrismaService } from '../../src/infra/persistence/prisma/prisma.service';
@@ -83,7 +84,7 @@ export class OrderInMemoryRepositoryImpl implements OrderRepository {
 ```ts
 describe('Order', () => {
   it('create() sem item → falha', () => {
-    const result = Order.create({ customerId: new UniqueEntityID(), items: [] });
+    const result = Order.create({ customerId: new UniqueEntityID(), items: new OrderItemList([]) });
 
     expect(result.isFailure()).toBe(true);
     expect(result.isFailure() && result.value).toBeInstanceOf(EmptyOrderError);
@@ -97,7 +98,7 @@ describe('Order', () => {
     }).value;
     const orderOrError = Order.create({
       customerId: new UniqueEntityID(),
-      items: [item],
+      items: new OrderItemList([item]),
     });
     const sut = orderOrError.value;
 

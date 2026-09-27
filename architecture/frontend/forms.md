@@ -45,7 +45,7 @@ Formulário é a parte da tela que recebe entrada do usuário: ele valida no nav
 
 ### Submit e handlers
 
-**Obrigatório.** Quem dispara a escrita vem de um hook de mutation em `hooks/<módulo>/` (`frontend/data-fetching.md`, "Hooks de mutation"), nunca embutido no form: o form monta os campos e chama o handler, que é da página ou do componente que o contém.
+**Obrigatório.** A escrita segue `frontend/data-fetching.md`: hook de mutation em `hooks/<módulo>/` para rota REST do app-api ("Hooks de mutation") ou o comando do client externo direto no handler ("Comando de biblioteca externa fica no handler"), nunca embutida no form: o form monta os campos e chama o handler, que é da página ou do componente que o contém.
 
 **Obrigatório.** O callback passado ao `handleSubmit` se chama `handleFormSubmit`.
 
@@ -95,7 +95,7 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 
 > **Por quê.** A entrada de telefone é fixa num país enquanto o value object do backend aceita qualquer E.164: mudar a regra de entrada depois mexe num arquivo só.
 
-**Obrigatório.** Depois do parse e da transformação do schema de form, a chamada usa o contrato canônico da API, importado do pacote dono, nunca uma cópia local nem o form; é ele que valida em runtime a resposta, passado como `output` do `httpClient` (`frontend/data-fetching.md`, "Funções de API").
+**Obrigatório.** Depois do parse e da transformação do schema de form, a chamada recebe o input tipado pelo contrato canônico da API, importado do pacote dono, nunca uma cópia local nem o tipo do form (`frontend/data-fetching.md`, "Funções de API").
 
 > **Por quê.** O schema de form muda por requisito de tela, o de API muda por contrato do backend, e um não arrasta o outro.
 
@@ -153,7 +153,7 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 
 ## Verificação
 
-- Formulário fica inline na página (ou dentro do componente-modal), sem camada "form genérico + wrapper", e a escrita vem de hook de mutation, não embutida no form?
+- Formulário fica inline na página (ou dentro do componente-modal), sem camada "form genérico + wrapper", e a escrita vem de hook de mutation ou de comando de client externo no handler, não embutida no form?
 - O submit usa `handleFormSubmit`, commit por campo usa `handleFieldCommit` com `trigger`/`getValues`, e o campo é string com a conversão no submit?
 - O `defaultValues` referencia const nomeada, fora do componente quando estática e dentro quando deriva de dado disponível na montagem?
 - Schema de form em `shared/schemas/<módulo>.schema.ts`, separado do schema de API, que vem do contrato canônico do pacote dono sem cópia local, cada tipo via `z.infer`?

@@ -178,7 +178,10 @@ if (!upload || upload.consumed || upload.assetType !== 'product-photo') {
 }
 
 const stat = await this.productPhotoStorage.stat(upload.key);
-if (!stat || stat.sizeInBytes > MAX_PRODUCT_PHOTO_SIZE_IN_BYTES) {
+if (!stat) {
+  return failure(new InvalidUploadError());
+}
+if (stat.sizeInBytes > MAX_PRODUCT_PHOTO_SIZE_IN_BYTES) {
   await this.productPhotoStorage.remove(upload.key);
   return failure(new InvalidUploadError());
 }

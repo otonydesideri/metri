@@ -30,8 +30,8 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 ## Fase 2: regras existentes → novo formato (seções 6.2, 6.3 e 7)
 
 - [x] 2.1 Inventário: cada arquivo de regra com área, tema, seções que já tem e classificação **global** ou **específico de projeto**. Saída: tabela no chat para aprovação (não vira arquivo)
-  - D1 Stack repetida vira default global (`defaults/stack.md` + ADR global): só a lista `## Stack` do `overview` vai para lá; as menções à stack no texto das regras ficam; sem seção "Stack padrão"; outra stack = ADR + regra de projeto.
-  - D2 Regras do `overview` saem primeiro: layer-first → `backend/`; princípios 6 e 7 e colocação app × pacote → `general/`; Stack → `defaults/stack.md`; caminho da request → template do INDEX de projeto; as extrações movem o texto como ele está, sem reescrever.
+  - D1 Stack repetida vira default global (`architecture/defaults/stack.md` + ADR global): só a lista `## Stack` do `overview` vai para lá; as menções à stack no texto das regras ficam; sem seção "Stack padrão"; outra stack = ADR + regra de projeto.
+  - D2 Regras do `overview` saem primeiro: layer-first → `backend/`; princípios 6 e 7 e colocação app × pacote → `general/`; Stack → `architecture/defaults/stack.md`; caminho da request → template do INDEX de projeto; as extrações movem o texto como ele está, sem reescrever.
   - D3 Capacidades condicionais são globais; a ativação fica no INDEX do projeto.
   - D4 Caso de uso, classe/registro de evento e erro de domínio → `domain/`; adaptador/DI, despacho/subscriber e tradução HTTP → `backend/`; variação de integração → `backend/` ou `infrastructure/`.
   - D5 O `design-system` do frontend vira exemplo de projeto; o global mantém "só token" e o contrato de tema.
@@ -59,9 +59,9 @@ Lacunas conhecidas (D9), sem regra por enquanto: migrações de banco, CI/deploy
 ## Fase 3: vocabulário, defaults, catálogo e templates (seções 4.3, 8 e Apêndice A)
 
 - [ ] 3.1 `methodology/VOCABULARY.md`
-- [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; `architecture/defaults/stack.md` + ADR `stack` (os dois ADRs pegam os próximos números livres de `adr/`)
+- [ ] 3.2 ADR `default-ui-library` (shadcn/ui) + `architecture/defaults/ui.md` + `DESIGN.md` base neutro; ADR `stack` para `architecture/defaults/stack.md`, que já existe (os dois ADRs pegam os próximos números livres de `adr/`)
 - [ ] 3.3 `catalog/design-system.md` + apenas as capacidades que você já reconstrói nos projetos (sem inventar)
-- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX (com "Caminhos do projeto"), regra, slice, ADR, MATRIX
+- [ ] 3.4 `methodology/templates/`: AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX (o de architecture INDEX, com "Caminhos do projeto", já existe desde o 2.5)
 
 ## Fase 4: scripts (seções 6.11 e 6.13)
 

@@ -2,7 +2,7 @@
 
 Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, pontos em aberto, regra de transição, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
 
-Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `docs/architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
+Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
 Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`methodology/templates/architecture-INDEX.md`); a regra de escape (`AGENTS.md`, "How to work here").
 
@@ -16,7 +16,7 @@ Este documento é o contrato de escrita da Source: onde cada decisão mora, que 
 
 **Permitido.** Texto escrito antes deste contrato continuar na forma anterior até ser refatorado, valendo como está escrito.
 
-> **Por quê.** A forma nova entra pelo trecho que já está sendo mudado, sem reescrever a Source inteira de uma vez. A cópia da regra de escape na abertura dos documentos anteriores, por exemplo, continua lá até o documento ser refatorado.
+> **Por quê.** A forma nova entra pelo trecho que já está sendo mudado, sem reescrever a Source inteira de uma vez.
 
 ### Ownership de decisão
 
@@ -225,7 +225,7 @@ O índice de cada área é gerado do frontmatter (METHODOLOGY 6.11).
 
 | Casa | Guarda |
 | --- | --- |
-| Architecture Source (`docs/architecture/`) | Decisão global e reutilizável |
+| Architecture Source (`architecture/`, em `.metri/` no projeto) | Decisão global e reutilizável |
 | ADR (`docs/adr/`) | Decisão específica do projeto que é estrutural, significativa, com trade-off, difícil de reverter e cujo rationale precisa ser preservado, incluindo a exceção deliberada a uma regra da Source |
 | Project Architecture | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages existentes, ativações, decisões operacionais vigentes |
 | Project Brain | Índice do projeto: ponteiros para a Project Architecture, o ADR e os demais documentos vigentes do projeto |

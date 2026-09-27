@@ -99,7 +99,7 @@ Três produtores, em ordem de frequência esperada:
 **Repositório, quando nem a janela entre commit e enqueue é aceitável.** Enfileirar dentro da `$transaction` faz o job e a escrita de domínio existirem ou desaparecerem juntos:
 
 ```ts
-await this.prisma.$transaction(async (tx) => {
+await this.prisma.client.$transaction(async (tx) => {
   // ...upserts do fluxo, como em backend/persistence.examples.md#orderprismarepositoryimpl...
   await this.pgBoss.sendInTransaction(tx, SEND_ORDER_CONFIRMATION_QUEUE.name, input);
 });

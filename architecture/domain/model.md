@@ -155,7 +155,7 @@ Exemplo completo: model.examples.md#orderitemlist
 Exemplo completo: model.examples.md#order
 
 - `Order` usa `WatchedList` porque a coleção de itens passa pela árvore de `domain/watched-list.md` (limitada, mutada pelo domínio, com invariante da raiz sobre ela). O getter expõe a lista porque o repositório lê o delta dela (`backend/persistence.md`); a mutação continua passando por `addItem()`.
-- Transição que interessa a outro contexto registra o evento no próprio método (`addDomainEvent(...)`, de `AggregateRoot`); registro e despacho seguem `backend/events.md`.
+- Transição que interessa a outras partes do sistema registra o evento no próprio método (`addDomainEvent(...)`, de `AggregateRoot`); registro e despacho seguem `backend/events.md`.
 - A coleção de vínculo a outro agregado (as tags de um produto) aplica a referência por identidade: a lista guarda os ids referenciados (`domain/watched-list.md`, "Coleção de vínculo").
 
 A atualização parcial, com o setter e o uso no caso de uso:

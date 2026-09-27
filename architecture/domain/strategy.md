@@ -33,7 +33,7 @@ O princípio só paga em ponto de variação comprovado. Proteger um ponto que n
 ```mermaid
 flowchart TD
     start[Comportamento varia dentro de uma operação] --> q1{A escolha acontece por dado de runtime?}
-    q1 -- não, por ambiente ou teste --> port[Porta: contrato com uma implementação, backend/application.md]
+    q1 -- não, por ambiente ou teste --> port[Contrato injetável com uma implementação, backend/application.md]
     q1 -- sim --> q2{Já existem duas ou mais variações reais?}
     q2 -- não --> inline[if onde a regra mora, sem padrão]
     q2 -- sim --> q3{A variação é regra de domínio ou integração externa?}
@@ -45,7 +45,7 @@ Os critérios por trás da árvore:
 
 - Duas ou mais variações reais, vivas ao mesmo tempo. Contrato de variação "para quando precisar" é especulação, mesma regra do método especulativo de contrato em `backend/application.md`: o padrão nasce quando a segunda variação chega, junto com o enum e o `Record`.
 - Um ou dois ramos simples e estáveis não pedem padrão: `if` onde a regra mora. O sinal de conversão é o mesmo ramo se repetindo em mais de um lugar, ou a lista de variações crescendo.
-- Porta não é Strategy. Contrato com uma implementação trocada por ambiente ou teste continua porta de `backend/application.md`; Strategy é o mesmo contrato com N implementações vivas na mesma build, escolhidas por dado.
+- Contrato injetável não é Strategy. Contrato com uma implementação trocada por ambiente ou teste continua o contrato de `backend/application.md`, "Contratos são `abstract class`"; Strategy é o mesmo contrato com N implementações vivas na mesma build, escolhidas por dado.
 - A chave é união fechada (enum de domínio ou union de literais), nunca string livre. Chave que chega de request valida na fronteira Zod como união fechada, mesma regra do identificador variável de `backend/persistence.md`.
 - O `Record` é total e não tem ramo default: variação nova entra como entrada explícita. Um "resto" silencioso esconderia variação sem tratamento, o mesmo motivo da rejeição do `switch` em `backend/errors.md`.
 - Strategy decide como, nunca se: a decisão de negócio de executar ou não (notificar? cobrar?) fica na entidade ou no caso de uso; a estratégia só executa a variação escolhida.

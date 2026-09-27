@@ -49,7 +49,8 @@ export function useListParams() {
   const statusParam = orderStatusSchema.safeParse(searchParams.get('status'));
   const status = statusParam.success ? statusParam.data : undefined;
   const search = searchParams.get('q') ?? undefined;
-  const page = Number(searchParams.get('page') ?? '1');
+  const pageParam = Number(searchParams.get('page'));
+  const page = Number.isInteger(pageParam) && pageParam >= 1 ? pageParam : 1;
 
   // recorte novo invalida a página atual: todo setter de recorte passa aqui
   function updateResettingPage(mutate: (params: URLSearchParams) => void) {

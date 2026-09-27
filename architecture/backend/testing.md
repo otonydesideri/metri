@@ -42,6 +42,7 @@ Cada nível prova uma camada diferente da mesma operação; o mesmo caso de uso 
 | E2e de controller | `src/infra/http/controllers/<módulo>/<ação>.e2e-spec.ts` |
 | Factory de teste | `test/factories/make-<agregado>.factory.ts` |
 | Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` |
+| Dublê de transação | `test/transactions/<fluxo>.in-memory-transaction.impl.ts` |
 | Registro de repositórios em memória | `test/factories/make-in-memory-repositories.factory.ts` |
 | Dublê de contrato de service ou fila | `test/services/<capacidade>/fake-<contrato>.impl.ts`, `test/queues/<fluxo>.in-memory-queue.impl.ts` |
 | Setup do banco isolado de e2e | `test/setup-e2e.ts` |
