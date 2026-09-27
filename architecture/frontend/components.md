@@ -14,6 +14,7 @@ not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
   - "formulário, schema de form e campo → frontend/forms"
   - "uso de token e tema no código → frontend/theming"
+  - "a entrada do primitivo no pacote e o re-export em compound → defaults/ui"
   - "valores e vocabulário visual → project:DESIGN"
   - "a casa e o nome de arquivo → frontend/structure"
   - "o dado da tela e o feedback de escrita → frontend/data-fetching"

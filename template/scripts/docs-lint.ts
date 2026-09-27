@@ -280,7 +280,7 @@ function lintFrontmatter(path: string): void {
   for (const [key, value] of Object.entries(frontmatter)) {
     const line = keyLine(lines, key);
     if (!KNOWN_KEYS.includes(key)) {
-      report(path, line, `frontmatter: chave ${key} fora da seção 4.3`);
+      report(path, line, `frontmatter: chave ${key} fora de methodology/VOCABULARY.md`);
     }
     if (isEmpty(value)) {
       report(path, line, `frontmatter: chave ${key} vazia`);

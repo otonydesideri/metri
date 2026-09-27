@@ -4,7 +4,7 @@ description: "a stack e o idioma do código, lista única das ferramentas que as
 use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
-adr: [ADR-0001, ADR-0012, ADR-0017]
+adr: [ADR-0001, ADR-0012, ADR-0017, ADR-0021]
 status: active
 ---
 # Stack padrão
@@ -32,7 +32,7 @@ Frontend (`app-web`):
 - Dado do servidor: React Query (frontend/data-fetching).
 - Cliente HTTP: `@better-fetch/fetch` (frontend/data-fetching).
 - Formulários: React Hook Form + Zod; `react-phone-number-input` e `use-mask-input` (sobre o Inputmask) (frontend/forms).
-- UI: consome `@metri/ui` (kit de componentes, tokens e tema), com os tokens na config do Tailwind (frontend/components, frontend/theming).
+- UI: consome `@metri/ui` (kit de componentes shadcn/ui, tokens e tema), com os tokens na config do Tailwind (defaults/ui, frontend/components, frontend/theming).
 - Estado global cliente: Zustand (frontend/state, ADR-0012).
 
 Testes:

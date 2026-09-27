@@ -7,12 +7,12 @@
 
 **O que mudou da v1.1 para a v1.1.2**
 
-- Frontmatter das regras com `description`, `use_when` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (seções 4.3 e 7.2).
+- Frontmatter das regras com `description`, `use_when` e `not_covered`, no lugar de "Dono de", "Consultar antes de" e "Não cobre" (`methodology/VOCABULARY.md` e seção 7.2).
 - ADR com status `proposed`; ponto em aberto vira ADR `proposed` (seção 6.5 e A.8).
 - Pastas `general/` e `infrastructure/` no Architecture Source (seção 5.3); stack padrão em `architecture/defaults/stack.md` + ADR global (seção 6.2).
 - Release segue `docs/architecture/infrastructure/release.md` (seções 9.3 e 10).
 - Regras existentes são refinadas, não reescritas (7.2); sem limite de linhas; sem marca check/manual por regra.
-- "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (seções 4.3, 6.11, 6.13, 7.2 e A.5).
+- "Consultar antes de" vai para `use_when` (o gatilho do arquivo), não para `read_first`, que fica opcional; obrigatórias só `id`, `description`, `use_when` e `status`, e chave vazia não é escrita; caminho que depende de decisão de projeto fica em "Caminhos do projeto" no INDEX do projeto; citação que não se sustenta vai para o dono (`methodology/VOCABULARY.md` e seções 6.11, 6.13, 7.2 e A.5).
 - O source é montado nos projetos em `.metri/`; os defaults ficam em `architecture/defaults/`, com os mesmos ids; `INDEX.md` de área gerado pelo `rules-index` e `INDEX.md` raiz com parte escrita à mão acima do marcador `<!-- rules-index -->` (seções 5, 6.2, 6.11 e 6.13).
 
 **O que mudou da v1.0 para a v1.1**
@@ -135,47 +135,7 @@ A regra que evita deriva: **a conversa pode ser em português, mas toda chave, c
 
 ### 4.3 Vocabulário da metodologia (chaves canônicas)
 
-Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. Funcionam como âncoras de comportamento para o agente.
-
-| Conversa (PT)                             | Chave canônica (EN)                              | Significado                                                                                   |
-| ----------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| look across                               | `look across`                                    | Olhar transversalmente todas as features (atuais e futuras) para descobrir o que têm em comum |
-| slice                                     | `slice`, id `S<n>`                               | Capacidade compartilhada, fonte da verdade, na qual várias features se conectam               |
-| contrato                                  | `contract`                                       | O que uma slice garante: interface, invariantes, consumidores                                 |
-| feature                                   | `feature`, id `F<n>`                             | Resultado de valor para o usuário. Atravessa uma ou mais slices                               |
-| caso de uso                               | `use case`, id `UC<f>.<n>`                       | Unidade de definição de uma feature. Tem o mesmo nome do caso de uso no código                |
-| regra de negócio                          | `business rule`, id `BR<n>`                      | Regra do domínio dentro de um UC                                                              |
-| horizonte agora / prevista / névoa / fora | `horizon: now \| planned \| fog \| out`          | Estado de uma feature ou slice                                                                |
-| marco                                     | `milestone`                                      | Versão do produto a que a feature pertence (`v1`, `v2`...)                                    |
-| ticket                                    | `ticket`, id `T<s>.<n>`                          | Unidade de entrega e de aceite                                                                |
-| tipo padrão / tracer / tarefa / release   | `type: pattern \| tracer \| task \| release`     | Tipo do ticket                                                                                |
-| modo                                      | `mode: afk \| hitl`                              | Se o agente faz sozinho ou com humano                                                         |
-| status                                    | `status: open \| in_progress \| blocked \| done` | Estado do ticket ou UC                                                                        |
-| bloqueado por                             | `blocked_by`                                     | Tickets ou slices que precisam terminar antes                                                 |
-| áreas                                     | `areas`                                          | Áreas de arquitetura envolvidas (ex.: `backend/http-api`)                                     |
-| toca                                      | `touches`                                        | Ponto central que o ticket altera (registry, schema, migrations)                              |
-| sensível                                  | `sensitive`                                      | Exige revisão humana do diff                                                                  |
-| checks                                    | `checks`                                         | Comandos executáveis que provam os critérios                                                  |
-| subtarefas                                | `subtasks`                                       | Trabalho paralelo dentro de um ticket, com os mesmos checks                                   |
-| lacuna                                    | `gap`, id `GAP-<n>`                              | Algo deixado de fora de propósito, sinalizado no código e na matriz                           |
-| proposta de padrão                        | `pattern proposal`, id `PP-<n>`                  | Registro feito pelo builder quando uma regra não serve                                        |
-| fronteira                                 | `frontier`                                       | Tickets desbloqueados e ainda não pegos                                                       |
-| exemplo canônico                          | `examples`                                       | Código de referência de um padrão                                                             |
-| aplica a                                  | `applies_to`                                     | Globs de caminho onde uma regra vale                                                          |
-| imposto por                               | `enforced_by`                                    | Ids dos checks ou lints que automatizam a regra; ausente enquanto não houver                  |
-| SOT keyword                               | `keywords`                                       | Palavra-chave que torna um arquivo encontrável por grep                                       |
-| descrição                                 | `description`                                    | O texto do "Dono de" da regra (seção 7.2); é a linha do `INDEX.md` gerado e do `rules-for`   |
-| usar quando                               | `use_when`                                       | Situações em que o agente lê a regra (o gatilho do arquivo); uma entrada por situação         |
-| ler antes                                 | `read_first`                                     | Ids das regras que o agente lê antes desta; só quando esta regra exige ler outra antes        |
-| não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
-| id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
-| ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita                                                                 |
-| status da regra                           | `status: active \| draft \| deprecated`          | Estado de uma regra                                                                           |
-| marca de check                            | `(check: <id>)`                                  | Opcional, no item de verificação automatizado por um check; o id vai em `enforced_by`         |
-| tracer                                    | `tracer`                                         | Ticket que corta um caminho fino e completo, demonstrável                                     |
-| portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
-
-**Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (seção 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:architecture/INDEX`.
+Mora em `methodology/VOCABULARY.md`: as chaves canônicas e o frontmatter de regra.
 
 ---
 
@@ -225,7 +185,7 @@ docs/
     defaults/                   escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
   catalog/<capacidade>.md       slices reutilizáveis (inclui design-system)
   methodology/
-    VOCABULARY.md               vocabulário da metodologia (seção 4.3)
+    VOCABULARY.md               vocabulário da metodologia (chaves canônicas)
     authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
     templates/                  modelos de AGENTS, CONTEXT, PRODUCT, DESIGN, architecture INDEX, regra, slice, ADR, MATRIX (+ examples/: regras de projeto de exemplo)
   template/                     código executável: block, registry, adapters, regras de lint, scripts (template/scripts/)
@@ -374,9 +334,9 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 
 - **Árvore permitida:** `AGENTS.md`, `CLAUDE.md`, `docs/{CONTEXT,PRODUCT,DESIGN}.md`, `docs/architecture/**`, `docs/adr/**`, `docs/plan/MATRIX.md`, `docs/plan/tech/**` (reservado). Nada mais em `docs/`.
 - **Regras:** o `docs-lint` checa o frontmatter:
-  - as quatro chaves obrigatórias da seção 4.3 (`id`, `description`, `use_when`, `status`), nenhuma chave vazia, nenhuma chave fora da seção 4.3 e `status` com um valor dela;
+  - as quatro chaves obrigatórias de `methodology/VOCABULARY.md` (`id`, `description`, `use_when`, `status`), nenhuma chave vazia, nenhuma chave fora dele e `status` com um valor dele;
   - `id` igual ao caminho `<área>/<tema>`;
-  - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada da seção 4.3, e a seção que `not_covered` cita existe na regra;
+  - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada de `methodology/VOCABULARY.md`, e a seção que `not_covered` cita existe na regra;
   - os arquivos citados em `examples` existem, e os ids de `adr` existem em `adr/`.
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
@@ -397,7 +357,7 @@ Serve para o global e para o projeto.
 
 ### 7.1 Formato
 
-- Toda regra começa com frontmatter, com as chaves da seção 4.3. É a única parte de formato fixo e a única que os scripts leem.
+- Toda regra começa com frontmatter, com as chaves de `methodology/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
 - O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades de `methodology/authoring.md`, blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
@@ -430,7 +390,7 @@ Quando o projeto não decide nada diferente:
 
 - **Biblioteca de componentes:** **shadcn/ui**, registrada em `.metri/architecture/defaults/ui.md` com um ADR global.
 - **Estratégia:** **instala a biblioteca e estiliza por cima** conforme o `DESIGN.md`, via tokens de tema. Os componentes prontos da biblioteca são usados como base; ninguém recria componentes do zero.
-- **Base visual:** um `DESIGN.md` neutro do próprio global.
+- **Base visual:** um `DESIGN.md` neutro do próprio global (`methodology/templates/DESIGN.md`).
 
 Trocar o default (ex.: Coss UI) é uma decisão registrada em ADR do projeto.
 
@@ -449,7 +409,7 @@ O resultado é o `docs/DESIGN.md` do projeto (e um ADR, se o default de bibliote
 
 ### 8.3 `DESIGN.md`
 
-- **Segue o spec usado pelo getdesign.md** (cores, tipografia, espaçamento, componentes e justificativa das escolhas). Isso permite **colar uma referência pronta e adaptá-la**.
+- **Segue a especificação DESIGN.md do Google** (https://github.com/google-labs-code/design.md/blob/main/docs/spec.md), a mesma do getdesign.md: tokens no frontmatter YAML e as seções com os títulos e a ordem dela. Isso permite **colar uma referência pronta e adaptá-la**.
 - **Migração da fonte:** quando a slice de design system é construída, **os valores dos tokens passam a morar no tema do código**, e o `DESIGN.md` troca os valores por um ponteiro para o arquivo de tema. Continua guardando princípios, justificativas e orientação de uso dos componentes.
 - É lido **por ponteiro**: as regras de `frontend/` que tratam de visual apontam para ele.
 
@@ -893,7 +853,7 @@ Entra por PR no repositório do source, com nova versão e registro no `CHANGELO
 - **Em inglês.**
 - **Description = ponteiro.** Palavra-guia na frente, um gatilho por caso. É a única parte sempre carregada, então cada palavra conta.
 - **Passos com critério de conclusão verificável e exigente.** Ex.: "todo arquivo novo tem SOT keywords", nunca "documente".
-- **Palavras-guia repetidas como termo, não como frase:** as do vocabulário da seção 4.3.
+- **Palavras-guia repetidas como termo, não como frase:** as de `methodology/VOCABULARY.md`.
 - **Instruções positivas.** Dizer o que fazer; proibição só como guardrail, sempre acompanhada do comportamento correto.
 - **Revelação progressiva.** O que só alguns casos usam vai para arquivos ao lado da skill, lidos quando preciso (ex.: esquema da matriz, triagem de design).
 - **O ambiente é a fonte.** Nunca repetir scripts, estrutura de pastas ou regras que o `rules-for` entrega.
@@ -1053,27 +1013,7 @@ Um `Order` tem um ou mais `OrderItem`; pertence a um `Customer`.
 
 ### A.4 `docs/DESIGN.md`
 
-```markdown
-# Design: <Produto>
-
-Referência: <DESIGN.md de origem, URL ou marca>
-Biblioteca: shadcn/ui (default global) | <outra> → ADR-NNNN
-Tokens: <caminho do arquivo de tema> ← depois da slice design-system, os valores moram lá
-
-## Cores
-
-## Tipografia
-
-## Espaçamento e raio
-
-## Componentes
-
-(Como usar e compor os componentes da biblioteca; variantes do projeto.)
-
-## Princípios e justificativas
-```
-
-(Seções conforme o spec do `DESIGN.md` usado pelo getdesign.md; antes da slice de design system, os valores ficam aqui; depois, só o ponteiro.)
+Template e base neutra em `methodology/templates/DESIGN.md`, no formato da especificação DESIGN.md (seção 8.3).
 
 ### A.5 `docs/architecture/INDEX.md`
 
@@ -1122,7 +1062,7 @@ flowchart TD
 - <Pergunta de sim ou não que confere a norma>? (check: <id>)
 ````
 
-Chave marcada `# opcional` só é escrita quando tem valor (seção 4.3).
+Chave marcada `# opcional` só é escrita quando tem valor (`methodology/VOCABULARY.md`).
 
 `(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`.
 

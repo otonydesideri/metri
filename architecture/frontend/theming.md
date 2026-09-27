@@ -10,6 +10,7 @@ applies_to:
   - "packages/ui/src/styles/globals.css"
 keywords: [token, tokens de UI, design system, "@metri/ui", Tailwind, valor arbitrário, tema, light, dark, documentElement, "@custom-variant dark", ThemeProvider, theme-provider, useTheme, script inline, primeiro paint, prefers-color-scheme, system]
 not_covered:
+  - "o kit, a entrada de componente no pacote e as CSS variables de tema → defaults/ui"
   - "valores e vocabulário visual → project:DESIGN"
   - "preferência de tema fora da árvore de estado cliente → frontend/state"
 status: active
