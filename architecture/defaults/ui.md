@@ -1,6 +1,6 @@
 ---
 id: defaults/ui
-description: "o kit de UI padrão — shadcn/ui dentro do `@metri/ui`, com o `components.json` e os `exports` do pacote; como um componente entra (CLI do shadcn no pacote) e como ganha a forma compound (re-export, sem editar o arquivo gerado); o ajuste visual pelo token e o wrapper quando o token não resolve; os tokens como CSS variables de tema, em claro e escuro, com a tipografia e o espaçamento; o provider de tema (next-themes); o que é do projeto."
+description: "o kit de UI padrão — shadcn/ui dentro do `@metri/ui`, com o `components.json` e os `exports` do pacote; como um componente entra (CLI do shadcn no pacote) e como ganha a forma compound (re-export, sem editar o arquivo gerado); o ajuste visual pelo token e o wrapper quando o token não resolve; os tokens como CSS variables de tema, em claro e escuro, com a tipografia e o espaçamento; o que é do projeto."
 use_when:
   - "adicionar ou atualizar um componente do shadcn no `@metri/ui`"
   - "expor um primitivo do `@metri/ui` em compound"
@@ -106,7 +106,7 @@ export {
 - Cor nova entra como variável em `:root` e em `.dark` e é exposta no `@theme inline`.
 - Os valores de partida são os do `DESIGN.md`; a base neutra é `template/docs/DESIGN.md`.
 - O escuro liga pela classe no `documentElement`. O provider de tema do `@metri/ui` é o next-themes: o `ThemeProvider` do pacote o configura com `attribute="class"`, `themes={['light', 'dark']}` e `enableSystem={false}`, pelo contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
-- O `sonner.tsx` gerado lê o tema pelo `useTheme()` do next-themes e funciona sem wrapper.
+- O `sonner.tsx` gerado lê o tema pelo `useTheme()` do next-themes e funciona sem wrapper, montado dentro do `ThemeProvider`.
 
 ## Tipografia e espaçamento
 

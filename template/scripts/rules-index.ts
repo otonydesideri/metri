@@ -67,6 +67,9 @@ function rootIndex(current: string, areas: Map<string, Rule[]>): string {
     const count = rules.length === 1 ? '1 regra' : `${rules.length} regras`;
     return `- \`${area}\` → \`${area}/INDEX.md\` (${count})`;
   });
+  if (lines.length === 0) {
+    return `${handWritten}\n`;
+  }
   return [handWritten, '', ...lines, ''].join('\n');
 }
 

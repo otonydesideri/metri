@@ -80,6 +80,14 @@ Decisões da fase (aplicadas):
 - Ajuste que o token não resolve: wrapper no arquivo de re-export, com o gerado intocado e os mesmos nomes de parte.
 - `EmptyState` sai: as telas usam o `Empty` do `@metri/ui`, e o `LoadErrorState` é composto sobre ele; o qualificador de rótulo é texto dentro do `Field.Label`.
 
+Decisões pendentes (seguram a fase):
+
+- Script inline do tema: o do `index.html` ficou, porque o script do next-themes não roda no app Vite (`frontend/theming.md`); confirmar, e decidir se o fundo do `index.html` pinta claro e escuro (`frontend/routing.md`).
+- `exports` × arquivos gerados: os gerados importam irmãos e o `cn` pelos aliases do `components.json`; sem `shadcn/*` e `lib/*` nos `exports`, não resolvem. Opção: campo `imports` com aliases `#` (doc de monorepo do shadcn).
+- `text-<nível>` × `cn`: o tailwind-merge trata `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
+- INDEX do projeto × `methodology/authoring.md`, "Decisões específicas de projeto": a tabela diz que o INDEX só aponta, e agora ele guarda o estado de ativação.
+- Vocabulário visual das telas: `catalog/design-system.md` o põe em regra de projeto; os `not_covered` e a METHODOLOGY 6.12 e 8.5, no `DESIGN.md`.
+
 ## Fase 4: scripts (seções 6.11 e 6.13)
 
 - [x] 4.0 Decidir a linguagem dos scripts (sugestão: TypeScript/Node)

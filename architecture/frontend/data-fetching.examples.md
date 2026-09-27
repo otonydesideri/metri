@@ -130,6 +130,7 @@ export function useOrders(filters: FetchOrdersFilters) {
 ```tsx
 // app/index.tsx
 import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@metri/ui/components/providers/theme-provider';
 import * as Sonner from '@metri/ui/components/ui/sonner';
 import { BrowserRouter } from 'react-router';
 import { queryClient } from './providers/query-client';
@@ -137,12 +138,14 @@ import { AppRoutes } from './router/routes';
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppRoutes />
-        <Sonner.Toaster />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppRoutes />
+          <Sonner.Toaster />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 ```

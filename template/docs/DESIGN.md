@@ -265,7 +265,7 @@ components:
 Base neutra do Architecture Source: o tema neutral do shadcn/ui, sem marca, em claro e escuro. É o default da triagem de design (METHODOLOGY 8.2): o projeto copia este arquivo para `docs/DESIGN.md` e troca nome, valores e prosa pela identidade dele.
 
 - Referência: o tema neutral do shadcn/ui, com tipografia e espaçamento da análise da Vercel no getdesign.md (seção "Fonte").
-- Biblioteca: shadcn/ui, default global (`architecture/defaults/ui.md`) | outra → ADR-NNNN.
+- Biblioteca: shadcn/ui, default global (`.metri/architecture/defaults/ui.md`) | outra → ADR-NNNN.
 - Tokens: `packages/ui/src/styles/globals.css`. Depois da slice design-system, os valores moram lá, e o frontmatter deste arquivo dá lugar a um ponteiro para ele.
 
 O tom é neutro: cinzas sem matiz (croma 0), com cor só em `destructive`, nos gráficos e no `sidebar-primary` do escuro.
@@ -300,7 +300,7 @@ Geist no texto e Geist Mono no código, da análise da Vercel. A documentação 
 
 ## Layout
 
-A escala `spacing` vai de 4px a 64px, da análise da Vercel. Ela coincide com a escala padrão do Tailwind, em múltiplos de 4px: `xxs` = `1`, `xs` = `2`, `sm` = `3`, `md` = `4`, `lg` = `6`, `xl` = `8`, `2xl` = `10`, `3xl` = `12` e `4xl` = `16` (`p-4` = 16px). O `@metri/ui` não declara espaçamento próprio (`architecture/defaults/ui.md`, "Tipografia e espaçamento").
+A escala `spacing` vai de 4px a 64px, da análise da Vercel. Ela coincide com a escala padrão do Tailwind, em múltiplos de 4px: `xxs` = `1`, `xs` = `2`, `sm` = `3`, `md` = `4`, `lg` = `6`, `xl` = `8`, `2xl` = `10`, `3xl` = `12` e `4xl` = `16` (`p-4` = 16px). O `@metri/ui` não declara espaçamento próprio (`.metri/architecture/defaults/ui.md`, "Tipografia e espaçamento").
 
 A densidade é a dos componentes do shadcn/ui: botão e campo com 36px de altura, cartão e dialog com 24px de padding.
 
@@ -324,7 +324,7 @@ O raio base é o `--radius` do shadcn/ui, 0.625rem (`rounded.lg`). Os demais sã
 
 ## Components
 
-Os primitivos são os do shadcn/ui, no estilo new-york, expostos pelo `@metri/ui` (`architecture/defaults/ui.md`).
+Os primitivos são os do shadcn/ui, no estilo new-york, expostos pelo `@metri/ui` (`.metri/architecture/defaults/ui.md`).
 
 - **Button:** `variant` `default`, `secondary`, `outline`, `ghost`, `destructive` e `link`; `size` `default` (36px), `xs` (24px), `sm` (32px), `lg` (40px), `icon`, `icon-xs`, `icon-sm` e `icon-lg`.
 - **Badge:** `variant` `default`, `secondary`, `destructive`, `outline`, `ghost` e `link`; 12px, peso 500, raio `full`.

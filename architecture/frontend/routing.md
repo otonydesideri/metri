@@ -137,7 +137,7 @@ O modal de tarefa montado por estado na página que o dispara:
 
 - No modelo Next.js isso é `next/dynamic`; aqui é `React.lazy` + `Suspense`, porque o roteamento é do react-router.
 - Navegação entre páginas irmãs nunca mostra o fallback: o react-router envolve a navegação em `startTransition`, e o React segura a tela anterior até o chunk novo resolver.
-- O token do canvas pintado no `index.html` é o `bg-white-0` do vocabulário visual (`docs/DESIGN.md`).
+- O token do canvas pintado no `index.html` é o `bg-background` (`docs/DESIGN.md`).
 - O modal de tarefa é peça da pasta do dono (`frontend/structure.md`, "A pasta do dono"); o formulário dentro dele é o caso "a UX é o componente" de `frontend/forms.md`, e o corpo dele segue `frontend/components.md`, "O corpo do modal".
 
 ## Verificação

@@ -22,7 +22,7 @@ status: active
 
 ### Tokens de UI vêm do design system
 
-**Obrigatório.** Cor, espaçamento e tipografia vêm dos tokens do `@metri/ui` (CSS variables de tema, `defaults/ui.md`): `bg-background`, `text-foreground`, `text-muted-foreground`.
+**Obrigatório.** Cor, espaçamento e tipografia vêm dos tokens do `@metri/ui` (CSS variables de tema, `defaults/ui.md`): `bg-background`, `text-foreground`, `text-muted-foreground`; a tipografia pelos níveis `text-<nível>` e o espaçamento pela escala padrão do Tailwind (`defaults/ui.md`, "Tipografia e espaçamento").
 
 **Proibido.** Valor arbitrário cravado no componente (`text-[20px]`, `bg-[#fff]`, `p-[16px]`).
 
