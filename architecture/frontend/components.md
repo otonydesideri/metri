@@ -13,7 +13,7 @@ keywords: [página, componente, modal, guard, handler, compound, "import * as", 
 not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
   - "formulário, schema de form e campo → frontend/forms"
-  - "tokens, tema e vocabulário visual → frontend/design-system"
+  - "tokens, tema e vocabulário visual → project:DESIGN"
   - "a casa e o nome de arquivo → frontend/structure"
   - "o dado da tela e o feedback de escrita → frontend/data-fetching"
   - "estado cliente → frontend/state"
@@ -71,13 +71,13 @@ A regra existe pelo caminho que ela fecha. Esqueleto de carregamento, estado de 
 
 A peça extraída recebe o que renderizar e o handler pronto, não o dado cru pra decidir sozinha: o estado de erro recebe `onContinue`, o item de lista recebe `onAccept` e as flags que já foram calculadas. Quem decide continua sendo a página.
 
-A extração tem um limite no outro sentido: componente nasce quando há markup ou decisão de verdade pra encapsular. Peça que só traduz um dado numa prop do primitivo do `@metri/ui` é indireção com nome de domínio — a tela usa o primitivo direto, e a variação fica num mapa de apresentação (ver "Status" em `frontend/design-system.md`, "Vocabulário visual").
+A extração tem um limite no outro sentido: componente nasce quando há markup ou decisão de verdade pra encapsular. Peça que só traduz um dado numa prop do primitivo do `@metri/ui` é indireção com nome de domínio — a tela usa o primitivo direto, e a variação fica num mapa de apresentação (ver `docs/DESIGN.md`).
 
 O compound é a exceção, e não contraria o parágrafo acima: as partes de um componente composto (`Root`, `Item`, `Trigger`) moram no mesmo arquivo e saem dele renomeadas num bloco de export, como no `@metri/ui`. Elas não disputam um arquivo entre si, são as fatias de um componente só, sempre consumidas juntas — separá-las não desfaz acúmulo nenhum, porque não há nada acumulado ali. O spec de estrutura reconhece o compound por esse bloco de export.
 
 ## Composição e o que sobe pro pacote
 
-Compound component (`Input.Root`, `Label.Asterisk`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
+Compound component (`Input.Root`, `Label.Asterisk`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
 
 O padrão de composição também vale pra peça do app: componente de `shared/components/` cujas partes as telas montam em ordens e combinações próprias — um cabeçalho de página com ícone, título, descrição e ações opcionais — é compound como os do pacote, um arquivo com as fatias exportadas num bloco `export { X as Root, ... }` e consumido via `import * as`. Cada página monta as partes inline, na ordem que a tela pede, sem variável de render e sem uma prop nova no componente pra cada variação de anatomia.
 
@@ -85,7 +85,7 @@ O padrão de composição também vale pra peça do app: componente de `shared/c
 
 Três estados, três formas, escolhidas pelo que a tela sabe no momento:
 
-- **Loading** usa o `Skeleton` do `@metri/ui`, desenhado com a forma do conteúdo que vai chegar (uma linha por linha de texto, círculo no lugar do avatar). Skeleton com a silhueta do resultado evita o salto de layout que um spinner centralizado provoca quando o dado chega. Ação disparada pelo usuário mostra o spinner no próprio botão, onde não há layout a reservar (`frontend/design-system.md`, "Vocabulário visual").
+- **Loading** usa o `Skeleton` do `@metri/ui`, desenhado com a forma do conteúdo que vai chegar (uma linha por linha de texto, círculo no lugar do avatar). Skeleton com a silhueta do resultado evita o salto de layout que um spinner centralizado provoca quando o dado chega. Ação disparada pelo usuário mostra o spinner no próprio botão, onde não há layout a reservar (`docs/DESIGN.md`).
 - **Vazio** e **erro de leitura** usam o `EmptyState`, sempre com uma ação que tire o usuário dali. Estado vazio sem saída é o que transforma uma tela intermediária em beco sem saída. Quando o erro de leitura só muda de título entre telas, ele é um componente compartilhado (`shared/components/load-error-state.tsx` no `app-web`), não o bloco copiado em cada página. Tela com filtro ativo distingue os dois vazios: "não existe nada" convida a criar; "nada com esse filtro" oferece limpar o filtro — o primeiro texto no segundo caso mente pro usuário.
 - **Erro de escrita** vai pra notificação no `catch` do handler que disparou a ação (`frontend/data-fetching.md`, "Erro e sucesso"), não pro corpo da página, salvo quando a tela ramifica por código e mostra estado próprio. Escrita confirmada também notifica, no mesmo handler — a regra completa mora lá.
 

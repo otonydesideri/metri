@@ -1,16 +1,72 @@
-# Ativação da arquitetura
+# Arquitetura do projeto
+
+source: architecture-source@vX.Y
+
+## Stack
+
+## Caminho linear
+
+(Camadas na ordem em que uma requisição passa, com o ponto de entrada de cada uma.)
+
+```mermaid
+flowchart TD
+    A["Request em /api/*"] --> B[Guards globais: throttler]
+    B --> C[ZodValidationPipe global]
+    C --> D["Controller da ação (infra/http)"]
+    D --> E["UseCase.execute() (domain/application)"]
+    E --> F["Contrato de repositório (abstract class)"]
+    F --> G["Repositório Prisma + mapper (infra/persistence)"]
+    G --> H[(Postgres)]
+    E --> I{Either}
+    I -->|failure| J[HttpException]
+    I -->|success| K[Resposta JSON]
+    D -.->|"leitura de exibição (backend/reading.md)"| Q["Contrato de query (domain/application)"]
+    Q --> R["Implementação Prisma (infra/persistence)"]
+    R --> H
+    Q --> K
+```
+
+- As rotas ficam sob `/api` (`general/http-surface.md`, "Superfície HTTP"). Guards e pipe globais, e o módulo dos endpoints de infra externa, entram no grafo de módulos pela regra de `infrastructure/runtime.md`.
+- `ZodValidationPipe` global valida body, query e path param na fronteira (`backend/http-api.md`).
+- Controller é por ação (`backend/http-api.md`) e traduz `Either.failure` em `HttpException` pela tabela de `backend/errors.md`.
+- Use case fala com o banco só pelo contrato; repositório concreto e mapper vivem em `infra/persistence`.
+- Endpoint de leitura de exibição substitui use case e repositório de agregado por um contrato de query da aplicação, implementado em infra e injetado no controller (`backend/reading.md`); guards, pipe e formato de erro são os mesmos.
+
+## Áreas ativas
+
+| área    | índice           |
+| ------- | ---------------- |
+| backend | backend/INDEX.md |
+
+## Caminhos do projeto
+
+(Globs que dependem de decisão de projeto, como o pacote do contrato de API; o `rules-for` os soma ao `applies_to` da regra.)
+
+- <glob> → <id>
+
+Exemplo, o pacote do contrato de API:
+
+- packages/<pacote-do-contrato>/src/** → backend/http-api
+- packages/<pacote-do-contrato>/src/** → frontend/data-fetching
+- packages/<pacote-do-contrato>/src/** → frontend/forms
+
+## Exceções e defaults trocados
+
+- <regra global ou default> → ADR-NNNN
+
+## Ativação da arquitetura
 
 Dono de: a ativação da arquitetura num projeto — as três classes de decisão (GLOBAL, GLOBAL_CONDITIONAL, PROJECT_SPECIFIC), o que a ativação pergunta e o que não pergunta, a ordem de ativação, o registro do que ela resolve, o encaminhamento de uma necessidade sem cobertura como ARCHITECTURE DECISION REQUIRED e a matriz das decisões delegadas ao projeto.
 
 Consultar antes de: ativar a arquitetura num projeto novo; ligar uma capacidade condicional num projeto existente; escolher um valor que a Source deixa ao projeto (provider, identidade do dono, pacote dono, topologia); registrar essa escolha.
 
-Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`authoring.md`, "Decisões específicas de projeto"); a regra de escape (`authoring.md`, "Regra de escape"); a regra de transição (`authoring.md`, "Regra de transição"); a localização e o formato físico da Project Architecture, que são do workflow; a descoberta do repositório.
+Não cobre: a arquitetura técnica de cada capacidade, que é do owner indicado na matriz; a casa de cada tipo de decisão e o critério de ADR (`methodology/authoring.md`, "Decisões específicas de projeto"); a regra de escape (`AGENTS.md`, "How to work here"); a regra de transição (`methodology/authoring.md`, "Regra de transição"); a localização e o formato físico da Project Architecture, que são do workflow; a descoberta do repositório.
 
 A Source decide como o sistema é construído; o projeto decide o que só ele sabe: se precisa de uma capacidade, qual provider usa, quem é o dono dos dados. Este documento é o contrato entre os dois: o que a ativação pergunta, quando pergunta e onde a resposta fica.
 
-## Regras
+### Regras
 
-### Três classes de decisão
+#### Três classes de decisão
 
 | Classe | O que é | Na ativação |
 | --- | --- | --- |
@@ -24,13 +80,13 @@ A Source decide como o sistema é construído; o projeto decide o que só ele sa
 
 Quando a capacidade é GLOBAL_CONDITIONAL: **Obrigatório.** A pergunta é só se o projeto precisa dela; sem necessidade, ela não é ativada e nada dela é perguntado.
 
-Quando uma capacidade GLOBAL_CONDITIONAL é ativada: **Obrigatório.** Ela segue o owner global, pela regra de transição de `authoring.md`, e a ativação resolve só os valores PROJECT_SPECIFIC dela.
+Quando uma capacidade GLOBAL_CONDITIONAL é ativada: **Obrigatório.** Ela segue o owner global, pela regra de transição de `methodology/authoring.md`, e a ativação resolve só os valores PROJECT_SPECIFIC dela.
 
 Quando um valor é PROJECT_SPECIFIC: **Obrigatório.** Ele é resolvido antes do primeiro ponto do projeto que depende dele.
 
 **Proibido.** Preencher valor PROJECT_SPECIFIC com escolha que a Source não declarou como default.
 
-### A ativação não é questionário
+#### A ativação não é questionário
 
 **Obrigatório.** Cada pergunta depende do gatilho da delegação correspondente: sem gatilho no projeto, a pergunta não existe.
 
@@ -38,7 +94,7 @@ Quando um valor é PROJECT_SPECIFIC: **Obrigatório.** Ele é resolvido antes do
 
 > **Por quê.** Pergunta sem gatilho força uma escolha que o projeto não tem como fazer bem, e a escolha feita sem necessidade vira dependência que ninguém pediu.
 
-### Ordem
+#### Ordem
 
 **Obrigatório.** A ativação segue esta ordem:
 
@@ -51,15 +107,15 @@ Quando um valor é PROJECT_SPECIFIC: **Obrigatório.** Ele é resolvido antes do
 
 Quando o gatilho de uma delegação aparece depois da ativação inicial, como o primeiro job ou o primeiro asset: **Obrigatório.** A delegação é resolvida naquele momento, pelos passos 3 a 6.
 
-### Registro
+#### Registro
 
 **Obrigatório.** A Project Architecture registra quais capacidades GLOBAL_CONDITIONAL foram ativadas e o valor escolhido para cada delegação resolvida.
 
-Quando a delegação resolvida cumpre a condição da coluna "ADR quando" da matriz, que aplica a ela o critério de `authoring.md`: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
+Quando a delegação resolvida cumpre a condição da coluna "ADR quando" da matriz, que aplica a ela o critério de `methodology/authoring.md`: **Obrigatório.** Ela ganha ADR, que guarda o porquê, e a Project Architecture continua guardando o estado vigente.
 
-### Necessidade sem cobertura
+#### Necessidade sem cobertura
 
-Quando uma necessidade do projeto não tem regra global, não está declarada como PROJECT_SPECIFIC, contradiz regra existente, exige exceção nova ou exige mecanismo estrutural não coberto: **Obrigatório.** A ativação para e aplica a regra de escape de `authoring.md`, com o caso nomeado ARCHITECTURE DECISION REQUIRED:
+Quando uma necessidade do projeto não tem regra global, não está declarada como PROJECT_SPECIFIC, contradiz regra existente, exige exceção nova ou exige mecanismo estrutural não coberto: **Obrigatório.** A ativação para e aplica a regra de escape do `AGENTS.md`, com o caso nomeado ARCHITECTURE DECISION REQUIRED:
 
 ```text
 parar → ARCHITECTURE DECISION REQUIRED → decidir → atualizar a Source (regra global) ou registrar ADR (exceção ou decisão estrutural do projeto) → atualizar a Project Architecture → continuar
@@ -67,7 +123,7 @@ parar → ARCHITECTURE DECISION REQUIRED → decidir → atualizar a Source (reg
 
 **Proibido.** A ativação improvisar valor, mecanismo ou exceção.
 
-### Matriz de delegações
+#### Matriz de delegações
 
 **Obrigatório.** Toda decisão que a Source delega ao projeto tem uma linha na matriz abaixo, que é forma canônica, com nove campos: assunto, classe da capacidade, gatilho, owner global, o que o projeto decide, restrições que a Source já fixou, default (só quando a Source o declara), registro e condição de ADR.
 
@@ -75,30 +131,30 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 
 | Assunto | Classe | Gatilho | Owner global | O projeto decide | Restrições da Source | Default | Registro | ADR quando |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Autenticação | PROJECT_SPECIFIC | O produto tem identidade autenticada | `backend/boundaries.md`, `backend/application.md`, `backend/access-scope.md` | Mecanismo e provider; modelo concreto de sessão ou token | Resolvida na fronteira de request (`infrastructure/runtime.md`); same-origin (`overview.md`); tabela escrita pelo provider segue a propriedade do agregado de `domain/model.md` | — | Project Architecture | O mecanismo molda a estrutura, como sessão × token ou provider com schema próprio |
+| Autenticação | PROJECT_SPECIFIC | O produto tem identidade autenticada | `backend/boundaries.md`, `backend/application.md`, `backend/access-scope.md` | Mecanismo e provider; modelo concreto de sessão ou token | Resolvida na fronteira de request (`infrastructure/runtime.md`); same-origin (`general/http-surface.md`); tabela escrita pelo provider segue a propriedade do agregado de `domain/model.md` | — | Project Architecture | O mecanismo molda a estrutura, como sessão × token ou provider com schema próprio |
 | Autorização | PROJECT_SPECIFIC | Ações ou recursos com políticas de acesso diferentes | `backend/access-scope.md`, `backend/errors.md`, `backend/boundaries.md` | O modelo concreto de permissão; os papéis e as políticas reais | Recusa na forma de `backend/errors.md`, "Erros sensíveis"; nenhum modelo nem biblioteca de permissão global | — | Project Architecture | O modelo de permissão é estrutural |
 | Identidade do dono | PROJECT_SPECIFIC | Isolamento por organização, cliente ou outro dono | `backend/access-scope.md` | A entidade que representa o dono; o identificador; a origem dele na identidade ou na request | Origem validada na fronteira; escopo em todo `where`; prova A/B | — | Project Architecture | A escolha define a fronteira de isolamento dos dados |
 | Bounded contexts | GLOBAL_CONDITIONAL | Um dos sinais de `domain/bounded-contexts.md` | `domain/bounded-contexts.md` | Os contextos, os nomes, as fronteiras, os módulos de cada um e os contratos entre eles | Sem entidade nem contrato de repositório entre contextos; interação por contrato explícito | Um contexto | Project Architecture | A divisão é decisão estrutural |
 | Domain Service / Policy | GLOBAL_CONDITIONAL | Regra de domínio sem dono natural em value object, entidade ou agregado | `domain/domain-services.md` | A regra concreta; o conceito e o módulo a que ela pertence; a forma mínima | Sem IO nem framework; fatos carregados pelo caso de uso | Regra no modelo | O código da regra | — |
 | Módulos e agregados | PROJECT_SPECIFIC | O primeiro módulo; antes do primeiro contrato de cada agregado | `backend/modules.md`, `domain/model.md` | A divisão de módulos; a propriedade e a forma de cada agregado | Módulo por conceito de negócio; as formas de `domain/model.md` | Agregado do app | Project Architecture | A tabela é escrita por sistema externo, com o acordo da integração |
-| Apps e pacotes | PROJECT_SPECIFIC | Ativação inicial; capacidade nova | `overview.md` | Os apps e pacotes reais; o pacote dono de cada capacidade | Colocação por ownership (`overview.md`, "Código pode nascer no pacote dono quando nada nele é do app"); nenhum pacote catch-all | O artefato fica no app enquanto o ownership compartilhado não é inequívoco | Project Architecture | App ou pacote novo muda a estrutura do monorepo |
-| Pacote do contrato de API | PROJECT_SPECIFIC | Frontend e backend consomem o mesmo contrato | `backend/http-api.md`, `overview.md` | O pacote dono de cada contrato | Uma representação canônica; nunca `@metri/contracts`; o schema de form fica no frontend | — | Project Architecture | O contrato cria pacote novo |
+| Apps e pacotes | PROJECT_SPECIFIC | Ativação inicial; capacidade nova | `general/code-placement.md` | Os apps e pacotes reais; o pacote dono de cada capacidade | Colocação por ownership (`general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app"); nenhum pacote catch-all | O artefato fica no app enquanto o ownership compartilhado não é inequívoco | Project Architecture | App ou pacote novo muda a estrutura do monorepo |
+| Pacote do contrato de API | PROJECT_SPECIFIC | Frontend e backend consomem o mesmo contrato | `backend/http-api.md`, `general/code-placement.md` | O pacote dono de cada contrato | Uma representação canônica; nunca `@metri/contracts`; o schema de form fica no frontend | — | Project Architecture | O contrato cria pacote novo |
 | Cache | GLOBAL_CONDITIONAL | Necessidade medida, pelo critério de `infrastructure/cache.md` | `infrastructure/cache.md` | Ativar ou não; o provider; a validade e a invalidação concretas de cada fluxo | Semântica no fluxo dono; escopo do dono na chave; cache fora da fonte de verdade; falha degrada para a fonte | Sem cache | Project Architecture, com a necessidade medida | O cache vira dependência de disponibilidade, ou o provider é infraestrutura nova |
 | Fila e jobs | GLOBAL_CONDITIONAL | `backend/operation-routing.md` leva uma operação a job ou tarefa agendada | `backend/async-jobs.md` | A ferramenta de fila; o processo em que os workers rodam | Contrato de fila, worker fino, idempotência e dead letter; pg-boss é ilustração; worker em app próprio ainda sem desenho | — | Project Architecture | Na escolha da ferramenta, que decide entre enfileiramento transacional e outbox |
 | E-mail | GLOBAL_CONDITIONAL | O projeto envia e-mail | `infrastructure/mail.md` | O vendor; a configuração; o domínio e o remetente | Classe de infra única com o nome do vendor; contrato por fluxo; Resend é ilustração | — | Project Architecture | O vendor não comporta a forma de `infrastructure/mail.md` |
 | Storage | GLOBAL_CONDITIONAL | O projeto guarda arquivos ou assets | `infrastructure/storage.md` | O provider; os dois buckets; o domínio público | Dois buckets por visibilidade, chave canônica, contrato por asset e escopo do dono; R2 é referência | — | Project Architecture | O provider não comporta a forma de `infrastructure/storage.md` |
 | Observabilidade | GLOBAL_CONDITIONAL | Pergunta operacional que pede métrica, alerta ou reconciliação | `infrastructure/observability.md` | A ferramenta; as métricas concretas; os thresholds; os destinos; as reconciliações concretas | Métrica com pergunta e cardinalidade controlada; alerta acionável; reconciliação idempotente a partir da fonte de verdade | — | Project Architecture | A ferramenta é infraestrutura nova, ou uma dimensão de identificador é aceita |
 | Destino do log | GLOBAL | O runtime roda num ambiente com coletor de log | `infrastructure/logging.md` | O destino das linhas (coletor, agregador); a confiança no `x-request-id` de um proxy | `nestjs-pino`, nível por ambiente, redação e contexto de `infrastructure/logging.md` | JSON no stdout | Project Architecture | O `x-request-id` de um proxy passa a ser aceito |
-| Topologia de deploy | PROJECT_SPECIFIC | Antes da primeira entrega executável | `infrastructure/runtime.md` | A hospedagem; o runtime; o processo de worker; a topologia; o deploy por ambiente | Same-origin sob `/api` (`overview.md`, "Superfície HTTP"); env por `EnvService`; shutdown gracioso quando o runtime depende dele | — | Project Architecture | A topologia é estrutural |
+| Topologia de deploy | PROJECT_SPECIFIC | Antes da primeira entrega executável | `infrastructure/runtime.md` | A hospedagem; o runtime; o processo de worker; a topologia; o deploy por ambiente | Same-origin sob `/api` (`general/http-surface.md`, "Superfície HTTP"); env por `EnvService`; shutdown gracioso quando o runtime depende dele | — | Project Architecture | A topologia é estrutural |
 
-## Aplicação
+### Aplicação
 
 - Um projeto que envia e-mail de confirmação, guarda foto de produto e não tem leitura cara ativa e-mail e storage e resolve vendor, provider e buckets; cache e observabilidade não geram pergunta, e bounded context fica no default de um contexto.
 - O primeiro job aparece meses depois da ativação inicial: a delegação de fila é resolvida ali, pelos passos 3 a 6 de "Ordem".
 - A exigência de rodar workers em app próprio cai em necessidade sem cobertura, porque o desenho está em aberto em `backend/async-jobs.md`: a ativação para em ARCHITECTURE DECISION REQUIRED.
-- A localização e o formato da Project Architecture seguem `authoring.md`, "Decisões específicas de projeto".
+- A localização e o formato da Project Architecture seguem `methodology/authoring.md`, "Decisões específicas de projeto".
 
-## Verificação
+### Verificação
 
 - A ativação perguntou só o que tem gatilho no projeto, sem pergunta sobre decisão GLOBAL?
 - Capacidade GLOBAL_CONDITIONAL ativada segue o owner, com só os valores PROJECT_SPECIFIC resolvidos?
@@ -108,10 +164,11 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - Necessidade sem cobertura parou como ARCHITECTURE DECISION REQUIRED, sem valor, mecanismo ou exceção improvisados?
 - Toda decisão que a Source delega ao projeto tem linha na matriz, com os nove campos?
 
-## Referências
+### Referências
 
-- `authoring.md`: casas de decisão, critério de ADR, regras de escape e de transição.
-- `overview.md`: apps, pacotes, colocação e superfície HTTP.
+- `methodology/authoring.md`: casas de decisão, critério de ADR e regra de transição.
+- `AGENTS.md`: regra de escape.
+- `general/code-placement.md`, `general/http-surface.md`: apps, pacotes, colocação e superfície HTTP.
 - `backend/modules.md`, `domain/model.md`: módulos e forma dos agregados.
 - `domain/domain-services.md`, `domain/bounded-contexts.md`: capacidades condicionais de domínio.
 - `backend/access-scope.md`, `backend/errors.md`, `backend/boundaries.md`, `backend/application.md`: identidade, autorização e autenticação.
@@ -119,3 +176,7 @@ Quando um owner passa a delegar uma decisão nova ao projeto: **Obrigatório.** 
 - `backend/operation-routing.md`, `backend/async-jobs.md`: fila e jobs.
 - `infrastructure/runtime.md`, `infrastructure/logging.md`: runtime, deploy e log.
 - `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `infrastructure/observability.md`: capacidades condicionais de infraestrutura.
+
+## Verificação
+
+`<comando verify>`

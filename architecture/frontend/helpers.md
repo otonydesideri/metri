@@ -25,7 +25,7 @@ Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `backe
 
 ## A hierarquia de código auxiliar
 
-Uma função auxiliar nasce na casa que corresponde ao que ela conhece, da mais estreita pra mais ampla. O eixo não é quantos consumidores ela tem hoje: é o conhecimento embutido nela — quem conhece um módulo mora com o módulo, quem conhece algo deste app mora no app, quem não conhece nem um nem outro pode nascer já no pacote dono do conceito, pela colocação de `overview.md`; esperar um segundo consumidor pra "promover" esse caso só cria a migração que a primeira casa certa evita.
+Uma função auxiliar nasce na casa que corresponde ao que ela conhece, da mais estreita pra mais ampla. O eixo não é quantos consumidores ela tem hoje: é o conhecimento embutido nela — quem conhece um módulo mora com o módulo, quem conhece algo deste app mora no app, quem não conhece nem um nem outro pode nascer já no pacote dono do conceito, pela colocação de `general/code-placement.md`; esperar um segundo consumidor pra "promover" esse caso só cria a migração que a primeira casa certa evita.
 
 ```mermaid
 flowchart TD
@@ -37,7 +37,7 @@ flowchart TD
     q3 -- sim --> shared["shared/utils/&lt;categoria&gt;.util.ts"]
     q3 -- não --> q4{Já existe em pacote?}
     q4 -- sim --> reuse[Usa o que existe; estende se faltar caso]
-    q4 -- não --> pkg["Pode nascer no pacote dono do conceito, overview.md:<br/>@metri/utils puro, @metri/ui de UI"]
+    q4 -- não --> pkg["Pode nascer no pacote dono do conceito, general/code-placement.md:<br/>@metri/utils puro, @metri/ui de UI"]
 ```
 
 O tamanho decide só o degrau mais estreito, entre continuar inline e sair pro arquivo do módulo.
@@ -98,7 +98,7 @@ Função que não é de um módulo sai de `pages/`, e a casa sai do que ela conh
 
 - **Conhece algo deste app** — uma regra local, um formato que só ele usa — sem conhecer domínio: `shared/utils/<categoria>.util.ts`. A categoria é o tipo de operação (formatar, parsear, validar), nunca o domínio. Essa casa tende a ficar pequena ou vazia: a maior parte do que é puro e sem domínio também não conhece o app, e então não é daqui.
 - **Existe só por causa do comportamento de uma biblioteca** e não teria sentido fora dela: `lib/<integração>/`, junto do client daquela integração.
-- **Pura e agnóstica de app e de domínio** (formatar moeda ou data, encurtar um identificador): pode nascer em `@metri/utils`, mesmo com um consumidor só: não é antecipação de reuso, é a casa certa — nada nela é deste app. Helper agnóstico **de UI** (hook React genérico como um debounce, helper de classe como o `cn`) pode nascer em `@metri/ui` (`hooks/` ou `lib/`), dono do conceito de UI compartilhada. A regra geral é a de `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app".
+- **Pura e agnóstica de app e de domínio** (formatar moeda ou data, encurtar um identificador): pode nascer em `@metri/utils`, mesmo com um consumidor só: não é antecipação de reuso, é a casa certa — nada nela é deste app. Helper agnóstico **de UI** (hook React genérico como um debounce, helper de classe como o `cn`) pode nascer em `@metri/ui` (`hooks/` ou `lib/`), dono do conceito de UI compartilhada. A regra geral é a de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app".
 
 ```ts
 // @metri/utils — src/currency.ts
@@ -209,7 +209,7 @@ Tipo que cruza a fronteira com o backend é o do contrato canônico de `backend/
 - Função trivial de uso único está inline, não numa função nomeada à parte?
 - Função específica de um módulo está no `<módulo>.helpers.ts` da pasta do módulo, um arquivo por módulo, nunca um por componente?
 - Helper consumido de fora do módulo subiu de nível, em vez de ser importado atravessando a fronteira?
-- Função fora do módulo foi pra casa pelo que conhece: algo do app em `shared/utils/`, nada do app no pacote dono (`@metri/utils` puro, `@metri/ui` UI) pela colocação de `overview.md`, comportamento de lib em `lib/<integração>/`?
+- Função fora do módulo foi pra casa pelo que conhece: algo do app em `shared/utils/`, nada do app no pacote dono (`@metri/utils` puro, `@metri/ui` UI) pela colocação de `general/code-placement.md`, comportamento de lib em `lib/<integração>/`?
 - Format e parse do mesmo conceito moram no mesmo arquivo?
 - Antes de criar helper, checou os pacotes e `shared/utils/` por equivalente?
 - Rule está em `shared/rules/<módulo>.rule.ts`, é função pura e usa `Pick` do tipo?

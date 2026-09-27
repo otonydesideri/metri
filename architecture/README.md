@@ -6,33 +6,33 @@ Consultar antes de: localizar o documento dono de um assunto antes de criar mód
 
 A Architecture Source: a arquitetura do sistema, em documentos por área — o que cada área deve ser, as fronteiras entre camadas e as regras que valem para qualquer módulo ou aplicação do monorepo.
 
-Estes documentos são a referência de construção do projeto. Lidos em ordem, ensinam a base inteira; consultados por área, respondem "como se faz isso aqui". Caso real que não se encaixa em nenhuma regra escrita segue a regra de escape de `authoring.md`.
+Estes documentos são a referência de construção do projeto. Lidos em ordem, ensinam a base inteira; consultados por área, respondem "como se faz isso aqui". Caso real que não se encaixa em nenhuma regra escrita segue a regra de escape do `AGENTS.md`.
 
 ## Como ler
 
 Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 
-1. **O sistema.** `overview.md` (o monorepo, as camadas, o caminho de uma request) e `backend/boundaries.md` (quem pode importar o quê). Os dois juntos dão o mapa.
+1. **O sistema.** `general/overview.md` (o mapa), `general/code-placement.md` (o monorepo), `backend/layers.md` (as camadas), o caminho de uma request (`docs/architecture/INDEX.md`, "Caminho linear") e `backend/boundaries.md` (quem pode importar o quê).
 2. **O módulo.** `backend/modules.md` (o que é um módulo e como módulos se comunicam), depois as peças dele: `domain/model.md` (entidade, value object, agregado), `backend/application.md` (contrato e caso de uso), `backend/persistence.md` (repositório e mapper) e `backend/http-api.md` (a porta HTTP). Depois `backend/errors.md` (erro esperado é valor de retorno), `backend/reading.md` (leitura de domínio vs. leitura de exibição) e `backend/access-scope.md` (o escopo do dono).
 3. **Os padrões de domínio.** Sob demanda, quando o caso aparece: `backend/operation-routing.md` (qual mecanismo executa a operação), `backend/events.md`, `backend/transactions.md`, `domain/watched-list.md`, `domain/strategy.md`, `domain/specification.md`, `domain/domain-services.md` (regra de domínio sem dono natural), `domain/builder.md` e, quando o domínio pede mais de um modelo, `domain/bounded-contexts.md`.
 4. **A infraestrutura.** `infrastructure/runtime.md` (bootstrap, providers globais, env), `infrastructure/services.md` (a regra dos níveis para serviço compartilhado), e as capacidades: `infrastructure/logging.md`, `infrastructure/observability.md` (métrica, alerta e reconciliação), `infrastructure/mail.md`, `infrastructure/storage.md`, `infrastructure/cache.md`, `backend/async-jobs.md`.
 5. **O teste.** `backend/testing.md` fecha o backend.
-6. **O frontend.** `frontend/structure.md` primeiro, depois `frontend/routing.md` e `frontend/components.md`; o resto (`frontend/forms.md`, `frontend/design-system.md`, `frontend/state.md`, `frontend/data-fetching.md`, `frontend/helpers.md`, `frontend/testing.md`) sob demanda.
+6. **O frontend.** `frontend/structure.md` primeiro, depois `frontend/routing.md` e `frontend/components.md`; o resto (`frontend/forms.md`, `frontend/state.md`, `frontend/data-fetching.md`, `frontend/helpers.md`, `frontend/testing.md`) sob demanda.
 
 ## O que mora aqui, o que mora em outro lugar
 
 - Aqui: a referência completa de arquitetura. O quê, o porquê, os limites e os padrões de construção de cada área, com exemplos de código.
-- Instruções de projeto de cada pacote: o que `authoring.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `docs/architecture/` certo.
+- Instruções de projeto de cada pacote: o que `methodology/authoring.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `docs/architecture/` certo.
 
 Em divergência entre um documento daqui e o código, o documento vale: o desenho evolui primeiro no documento, o código segue. Instrução de projeto que contradiz um documento daqui sem ADR que a sustente é bug de documentação, corrigido na instrução de projeto.
 
 ## Autoria
 
-Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, pontos em aberto, regras de transição e de escape, organização física e casa das decisões específicas de projeto — está em `authoring.md`. Ler antes de criar ou editar qualquer documento daqui.
+Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, pontos em aberto, regra de transição, organização física e casa das decisões específicas de projeto — está em `methodology/authoring.md`. Ler antes de criar ou editar qualquer documento daqui.
 
 ## Ativação
 
-O que a ativação da arquitetura num projeto pergunta, quando pergunta e onde a resposta fica — as classes de decisão e a matriz das decisões delegadas ao projeto — está em `activation.md`.
+O que a ativação da arquitetura num projeto pergunta, quando pergunta e onde a resposta fica — as classes de decisão e a matriz das decisões delegadas ao projeto — está no template `methodology/templates/architecture-INDEX.md`.
 
 ## Decisões transversais
 
@@ -40,29 +40,30 @@ Resumo das decisões que valem em todo documento e em todo app; cada uma é defi
 
 | Tema | Decisão |
 | --- | --- |
-| Organização de pastas | Definida em `overview.md`, "As camadas do backend (layer-first)" |
+| Organização de pastas | Definida em `backend/layers.md`, "As camadas do backend (layer-first)" |
 | Contrato injetável | Definida em `backend/application.md`, "Contratos são `abstract class`" |
 | Erro esperado | Definida em `backend/errors.md`, "Retornando erro: sempre `Either`, nunca `throw`" |
 | Domain events | Definida em `backend/events.md`, "A entidade registra, o repositório despacha" |
 | Controller | Definida em `backend/http-api.md`, "Controller por ação" |
-| Servidor HTTP | Definida em `overview.md`, "Stack" |
+| Servidor HTTP | Definida em `defaults/stack.md`, "Stack" |
 | Env | Definida em `infrastructure/runtime.md`, "Env e montagem de client" |
 | Transação | Definida em `backend/transactions.md`, "Contrato de transação" |
 | Id | Definida em `domain/model.md`, "Entidade: criação e reconstituição são caminhos separados" |
-| Idioma | Definida em `overview.md`, "Stack" |
-| Default silencioso | Definida em `overview.md`, "Princípios não negociáveis" |
+| Idioma | Definida em `defaults/stack.md`, "Stack" |
+| Default silencioso | Definida em `general/principles.md`, "Princípios não negociáveis" |
 
 ## Índice
 
-Agrupado pela pasta da área dona de cada documento (`authoring.md`, "Organização física").
+Agrupado pela pasta da área dona de cada documento (`methodology/authoring.md`, "Organização física").
 
-### Raiz
+### Geral (`general/`)
 
 | Documento | Cobre |
 | --- | --- |
-| `authoring.md` | Como a Source é escrita e mantida: ownership de decisão, anatomia, modalidades, exemplos, ferramentas, verificação, pontos em aberto, transição, escape, organização física e decisões de projeto |
-| `overview.md` | O sistema numa página: monorepo e colocação app × pacote, camadas, topologia HTTP e o caminho de uma request |
-| `activation.md` | Ativação num projeto: classes de decisão, perguntas condicionais, ordem, registro e matriz de delegações |
+| `general/overview.md` | O sistema numa página: onde vive o como construir cada artefato, observabilidade e testes |
+| `general/code-placement.md` | Monorepo e colocação de código entre app e pacote pelo ownership |
+| `general/http-surface.md` | Superfície HTTP same-origin sob `/api` |
+| `general/principles.md` | Princípios não negociáveis gerais: abstração só onde paga, default silencioso só onde a ausência é caso real |
 
 ### Domínio (`domain/`)
 
@@ -80,6 +81,7 @@ Agrupado pela pasta da área dona de cada documento (`authoring.md`, "Organizaç
 
 | Documento | Cobre |
 | --- | --- |
+| `backend/layers.md` | Camadas do backend (layer-first), princípios de camada, onde cada arquivo mora |
 | `backend/boundaries.md` | Grafo de dependência permitido entre camadas e pacotes, exceções, comandos de verificação |
 | `backend/modules.md` | Módulo: conceito, quando criar, granularidade, composição nas camadas, fronteira e comunicação entre módulos |
 | `backend/application.md` | Contrato injetável como `abstract class`, caso de uso, adaptador de entrada fino |
@@ -108,7 +110,7 @@ Agrupado pela pasta da área dona de cada documento (`authoring.md`, "Organizaç
 
 ### Frontend (`frontend/`)
 
-Os documentos de frontend descrevem `apps/app-web`, com a stack de `overview.md`, "Stack", e seguem o mesmo domínio didático de pedidos dos de backend.
+Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/stack.md`, "Stack", e seguem o mesmo domínio didático de pedidos dos de backend.
 
 | Documento | Cobre |
 | --- | --- |
@@ -116,7 +118,6 @@ Os documentos de frontend descrevem `apps/app-web`, com a stack de `overview.md`
 | `frontend/routing.md` | Grupo de rota e guard, rota × modal de tarefa, página lazy com `Suspense`, segmento de rota |
 | `frontend/components.md` | Construção de página e componente: ordem do corpo e condicionais, corpo do modal, um arquivo por componente, composição, estados de leitura |
 | `frontend/forms.md` | Formulário: onde mora, React Hook Form, `defaultValues`, schema de form × API, campo montado, rótulo e nome acessível |
-| `frontend/design-system.md` | Consumo do design system: tokens, tema, vocabulário visual das telas |
 | `frontend/state.md` | Divisão servidor/cliente, árvore de decisão, URL state, Context, Zustand, troca de dono |
 | `frontend/data-fetching.md` | Cliente HTTP same-origin, funções de `api/`, hooks de React Query, cache, erros, provider e defaults |
 | `frontend/helpers.md` | Hierarquia de código auxiliar, rules de UI, constantes, tipos compartilhados, Zod vs. type plain |

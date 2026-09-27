@@ -79,7 +79,7 @@ Pontos-chave:
 - `build()` é o único ponto de saída: valida a invariante da montagem (`Either`, nunca `throw`) e é onde o derivado nasce (`totalInCents`), como derivado nasce dentro do `create()` em `domain/model.md`.
 - Passo opcional ausente vira `null` explícito na estrutura, e quem renderiza decide o que fazer com a ausência; o builder não inventa default de apresentação.
 - Quando a ordem dos passos importar (terceiro gatilho), a forma evolui: cada passo devolve um tipo que só expõe o próximo passo legal (type-state), em vez de `this`. A forma acumuladora acima basta enquanto a ordem for livre.
-- A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra da abertura; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo"). A decisão vira edição desta seção.
+- A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra de escape do AGENTS.md; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo"). A decisão vira edição desta seção.
 
 ## Verificação rápida
 

@@ -13,12 +13,12 @@ not_covered:
   - "a porta HTTP → backend/http-api"
   - "o mecanismo de reação ou de atomicidade entre módulos → backend/operation-routing"
   - "o bounded context e a interação entre contextos → domain/bounded-contexts"
-  - "a divisão real de módulos de cada app, que é decisão de projeto → activation"
+  - "a divisão real de módulos de cada app, que é decisão de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
 status: active
 ---
 # Módulos
 
-Os exemplos de código usam um domínio didático de pedidos (`order`, `invoice`): módulo real raramente tem todos os casos que um padrão precisa mostrar, e exemplo espelhando código real convida a tratar o arquivo atual como canônico. Divisão de módulos e forma de cada agregado são decisão por app, registradas como decisão de projeto do app, nunca aqui (`authoring.md`, "Decisões específicas de projeto").
+Os exemplos de código usam um domínio didático de pedidos (`order`, `invoice`): módulo real raramente tem todos os casos que um padrão precisa mostrar, e exemplo espelhando código real convida a tratar o arquivo atual como canônico. Divisão de módulos e forma de cada agregado são decisão por app, registradas como decisão de projeto do app, nunca aqui (`methodology/authoring.md`, "Decisões específicas de projeto").
 
 ## A pergunta que precede tudo: isso merece ser um módulo?
 
@@ -30,7 +30,7 @@ Antes de criar o primeiro arquivo de um módulo novo, três perguntas:
 
 Se qualquer resposta é "não", o que está prestes a nascer provavelmente é outra coisa:
 
-- Conjunto de helpers puros e agnósticos de domínio pode ir para `packages/utils`, pela colocação de `overview.md`.
+- Conjunto de helpers puros e agnósticos de domínio pode ir para `packages/utils`, pela colocação de `general/code-placement.md`.
 - Constante ou infraestrutura transversal do app vai para `infra/common/`.
 - Wrapper de client externo vai para `infra/services/<capacidade>/` (`infrastructure/services.md`).
 - Subdivisão técnica de um módulo existente fica dentro do módulo dono.
@@ -45,7 +45,7 @@ Um módulo é o mesmo nome repetido nas camadas que ele usa:
 - Uma porta de entrada por ação: controller + DTO (`backend/http-api.md`).
 - Factories, repositórios em memória e e2e-specs correspondentes.
 
-A estrutura é layer-first (`overview.md`): módulo nunca é pasta com camadas dentro. Ele aparece como subpasta nas camadas que acumulam vários arquivos por módulo (`use-cases/<módulo>/`, `controllers/<módulo>/`, `dtos/<módulo>/`); as camadas com um arquivo por agregado ficam planas (`application/repositories/`, `persistence/prisma/repositories/`). `enterprise/` agrupa por tipo de artefato, nunca por módulo: entidade e lista rastreada de coleção filha na raiz; value objects, enums, eventos, classes de erro, famílias de regra e specifications nas subpastas `value-objects/`, `enums/`, `events/`, `errors/`, `strategies/`, `specifications/` e `policies/`. O caminho e o nome de cada artefato estão na tabela "Onde cada arquivo mora" do `overview.md`.
+A estrutura é layer-first (`backend/layers.md`): módulo nunca é pasta com camadas dentro. Ele aparece como subpasta nas camadas que acumulam vários arquivos por módulo (`use-cases/<módulo>/`, `controllers/<módulo>/`, `dtos/<módulo>/`); as camadas com um arquivo por agregado ficam planas (`application/repositories/`, `persistence/prisma/repositories/`). `enterprise/` agrupa por tipo de artefato, nunca por módulo: entidade e lista rastreada de coleção filha na raiz; value objects, enums, eventos, classes de erro, famílias de regra e specifications nas subpastas `value-objects/`, `enums/`, `events/`, `errors/`, `strategies/`, `specifications/` e `policies/`. O caminho e o nome de cada artefato estão na tabela "Onde cada arquivo mora" do `backend/layers.md`.
 
 Módulo de negócio não ganha módulo Nest próprio. Controller e caso de uso entram nas listas de `http.module.ts`, agrupados por um comentário de área (`// <Módulo>`); repositório concreto entra em `persistence.module.ts`. Área nova é um comentário novo nessas listas, nunca um `@Module` em `http/modules/`.
 

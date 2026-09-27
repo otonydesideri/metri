@@ -174,7 +174,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | tracer                                    | `tracer`                                         | Ticket que corta um caminho fino e completo, demonstrável                                     |
 | portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
 
-**Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (seção 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`.
+**Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (seção 9.1). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:architecture/INDEX`.
 
 ---
 
@@ -224,6 +224,7 @@ architecture-source/            repositório próprio, versionado por tags (vX.Y
   defaults/                     escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui)
   methodology/
     VOCABULARY.md               vocabulário da metodologia (seção 4.3)
+    authoring.md                como escrever uma regra: modalidades, exceções, exemplos, transição
     templates/                  modelos de AGENTS, CONTEXT, PRODUCT, DESIGN, regra, slice, ADR, MATRIX
   template/                     código executável: block, registry, adapters, regras de lint, scripts
   adr/                          decisões globais (inclusive as que sustentam os defaults)
@@ -370,7 +371,7 @@ Tem ~20 linhas, em inglês. Contém só **procedimentos** e **ponteiros com a co
 - **Regras:** o `docs-lint` checa só o frontmatter:
   - as quatro chaves obrigatórias da seção 4.3 (`id`, `description`, `use_when`, `status`) e nenhuma chave vazia;
   - `id` igual ao caminho `<área>/<tema>`;
-  - os ids de `read_first` e `not_covered` existem;
+  - os ids de `read_first` e `not_covered` existem ou são destinos `project:` da lista fechada da seção 4.3;
   - os arquivos citados em `examples` existem.
 
   Arquivos `*.examples.md` não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo nem número de linhas.
@@ -387,7 +388,7 @@ Serve para o global e para o projeto.
 ### 7.1 Formato
 
 - Toda regra começa com frontmatter, com as chaves da seção 4.3. É a única parte de formato fixo e a única que os scripts leem.
-- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades do `authoring.md`, "Por quê", "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
+- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades de `methodology/authoring.md`, "Por quê", "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
 ### 7.2 Refinar uma regra existente (sem reescrever)
@@ -397,7 +398,7 @@ Numa regra existente, muda só isto:
 1. Entra o frontmatter no topo. "Dono de", "Consultar antes de" e "Não cobre" passam para `description`, `use_when` e `not_covered` e saem do corpo. "Consultar antes de" é o gatilho do próprio arquivo, não uma lista de pré-requisitos: vai para `use_when` sem alteração, uma entrada por situação, e não para `read_first`.
 2. Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, idêntico, com um ponteiro no texto. Trecho curto que ilustra uma regra fica onde está.
 3. Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
-4. A cópia da regra de escape sai (ela vive em `authoring.md`).
+4. A cópia da regra de escape sai (ela vive no `AGENTS.md`, "How to work here").
 5. "Pontos em aberto" vira ADR `proposed`.
 6. Citação que não se sustenta, em que o arquivo e a seção citados não dizem o que foi citado: a frase vai para o arquivo dono, usando um texto que já existe em outro arquivo. Se esse texto não existe em lugar nenhum, vira dúvida.
 
@@ -989,6 +990,7 @@ Os templates definitivos moram em `architecture-source/methodology/templates/`. 
 - New request: if it fits a slice in docs/architecture/slices/INDEX.md, in one ticket, with no new rule and outside sensitive areas, do it directly. Otherwise use /shape or /look-across.
 - Find before you create: `rules-for <paths>` for rules; grep SOT keywords and CONTEXT.md identifiers for code. Assume it already exists.
 - Follow each rule's canonical example. When a rule does not fit, record a pattern proposal (PP-n) in the matrix and stop; while building, you never edit docs/architecture/, docs/adr/, CONTEXT.md or DESIGN.md (only /shape, /look-across, /accept and pattern tickets do).
+- When a real case doesn't fit the rules, don't force it or invent a variation: stop, flag it and ask before implementing.
 - Anything deferred: `GAP-<n>` in code and a line under Gaps in the matrix.
 - UI: base library components, styled only through theme tokens.
 - Before handing off: `<verify command>` green.
@@ -1065,37 +1067,7 @@ Tokens: <caminho do arquivo de tema> ← depois da slice design-system, os valor
 
 ### A.5 `docs/architecture/INDEX.md`
 
-```markdown
-# Arquitetura do projeto
-
-source: architecture-source@vX.Y
-
-## Stack
-
-## Caminho linear
-
-(Camadas na ordem em que uma requisição passa, com o ponto de entrada de cada uma.)
-
-## Áreas ativas
-
-| área    | índice           |
-| ------- | ---------------- |
-| backend | backend/INDEX.md |
-
-## Caminhos do projeto
-
-(Globs que dependem de decisão de projeto, como o pacote do contrato de API; o `rules-for` os soma ao `applies_to` da regra.)
-
-- <glob> → <id>
-
-## Exceções e defaults trocados
-
-- <regra global ou default> → ADR-NNNN
-
-## Verificação
-
-`<comando verify>`
-```
+Template em `methodology/templates/architecture-INDEX.md`.
 
 ### A.6 Regra (global ou do projeto)
 

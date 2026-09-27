@@ -77,7 +77,7 @@ import { createFetch } from '@better-fetch/fetch';
 
 export const httpClient = createFetch({
   // A origem é lida no momento da chamada, nunca de uma env: o frontend é
-  // servido pela mesma origem que atende /api (overview.md, "Superfície HTTP").
+  // servido pela mesma origem que atende /api (general/http-surface.md, "Superfície HTTP").
   baseURL: `${window.location.origin}/api`,
   // erro de HTTP vira exceção, não valor de retorno: o React Query só
   // popula o estado de erro se a queryFn/mutationFn lançar.
@@ -128,7 +128,7 @@ Só a mensagem sai daqui. O título da notificação é a ação que falhou, e q
 
 ## Funções de API
 
-Cada operação REST do app-api é uma função em `api/<módulo>.ts` (`frontend/structure.md`, casa `api/`): usa o `httpClient`, não tem lógica de UI e não conhece React Query. Leitura valida a resposta com o schema do contrato canônico, importado do pacote dono do conceito (`backend/http-api.md`, "Contrato de API compartilhado"), passado como `output`, garantindo em runtime que o backend devolveu o formato esperado. Escrita recebe o input já tipado. Nos exemplos, `@metri/<pacote-dono>` é esse pacote, cuja escolha segue a colocação de `overview.md`.
+Cada operação REST do app-api é uma função em `api/<módulo>.ts` (`frontend/structure.md`, casa `api/`): usa o `httpClient`, não tem lógica de UI e não conhece React Query. Leitura valida a resposta com o schema do contrato canônico, importado do pacote dono do conceito (`backend/http-api.md`, "Contrato de API compartilhado"), passado como `output`, garantindo em runtime que o backend devolveu o formato esperado. Escrita recebe o input já tipado. Nos exemplos, `@metri/<pacote-dono>` é esse pacote, cuja escolha segue a colocação de `general/code-placement.md`.
 
 Exemplo completo: data-fetching.examples.md#apiorderts
 
@@ -332,7 +332,7 @@ O `@tanstack/react-query-devtools` entra só em desenvolvimento, montado como ir
 
 ## Padrões de referência
 
-Sem instância no produto ainda; a primeira de cada segue este documento, pela regra de transição de `authoring.md`. Ficam aqui pra que a primeira implementação não reinvente o padrão.
+Sem instância no produto ainda; a primeira de cada segue este documento, pela regra de transição de `methodology/authoring.md`. Ficam aqui pra que a primeira implementação não reinvente o padrão.
 
 ### Optimistic update
 

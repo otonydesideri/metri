@@ -120,7 +120,7 @@ Quando o efeito secundário de um fluxo eventual falha depois do commit da opera
 - **Fila de inspeção (dead letter)**: o que falha repetidamente sai do fluxo e espera intervenção humana.
 - **Compensação explícita**: a falha do efeito dispara a operação inversa no agregado principal, como um evento de falha que reverte o status.
 
-**Obrigatório.** Fluxo novo com efeito pós-commit cabe numa destas formas, sem compensação improvisada: a operação cabe numa transação; o efeito é adiável e a falha dele é tolerável e visível; ou o fluxo segue `backend/async-jobs.md` por inteiro como primeira implementação da fila, pela regra de transição de `authoring.md`.
+**Obrigatório.** Fluxo novo com efeito pós-commit cabe numa destas formas, sem compensação improvisada: a operação cabe numa transação; o efeito é adiável e a falha dele é tolerável e visível; ou o fluxo segue `backend/async-jobs.md` por inteiro como primeira implementação da fila, pela regra de transição de `methodology/authoring.md`.
 
 ## Aplicação
 
@@ -149,4 +149,4 @@ Quando o efeito secundário de um fluxo eventual falha depois do commit da opera
 - `backend/async-jobs.md`: contrato de fila, worker, quem enfileira, tarefas agendadas, idempotência, retry e dead letter.
 - `backend/persistence.md`: escrita canônica do agregado.
 - `backend/application.md`: contrato injetado e caso de uso.
-- `authoring.md`: regra de transição.
+- `methodology/authoring.md`: regra de transição.

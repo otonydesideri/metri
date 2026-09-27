@@ -17,7 +17,7 @@ not_covered:
   - "o escopo do dono na assinatura e na recarga do registro → backend/access-scope"
   - "a regra transversal de organização — classe de infra sem contrato, contrato específico, registro, dublê → infrastructure/services"
   - "o mecanismo da tarefa agendada que limpa os órfãos → backend/async-jobs"
-  - "o provider, os buckets e o domínio público de cada projeto (\"Matriz de delegações\") → activation"
+  - "o provider, os buckets e o domínio público de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
 examples: [infrastructure/storage.examples.md]
 status: active
 ---
@@ -197,7 +197,7 @@ Quando um registro referencia um arquivo em storage (a foto de um produto), o ar
 2. A mutação do domínio e a escrita (`replacePhotos()` e `save()`, no exemplo de `domain/watched-list.md`).
 3. Remoção física dos arquivos dos itens removidos depois da escrita.
 
-A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada foi persistido e nenhuma referência quebrada existe no banco; o resíduo possível é um arquivo órfão no storage, invisível para o produto e coberto pela limpeza agendada da seção anterior. Se a remoção física falha depois da escrita, a operação continua concluída: o registro é a fonte de verdade, e a falha não desfaz a escrita. O binário que sobra fica órfão, e a limpeza agendada não o alcança, porque ela só varre registros pendentes: na arquitetura atual, esse órfão é risco operacional aceito, que uma reconciliação pode eliminar, na forma de `infrastructure/observability.md`, "Reconciliação"; o job concreto é delegação de projeto (`activation.md`). A ordem inversa produziria o dano real: remover o arquivo antes da escrita que falha deixa um registro apontando para um arquivo que não existe.
+A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada foi persistido e nenhuma referência quebrada existe no banco; o resíduo possível é um arquivo órfão no storage, invisível para o produto e coberto pela limpeza agendada da seção anterior. Se a remoção física falha depois da escrita, a operação continua concluída: o registro é a fonte de verdade, e a falha não desfaz a escrita. O binário que sobra fica órfão, e a limpeza agendada não o alcança, porque ela só varre registros pendentes: na arquitetura atual, esse órfão é risco operacional aceito, que uma reconciliação pode eliminar, na forma de `infrastructure/observability.md`, "Reconciliação"; o job concreto é delegação de projeto (`docs/architecture/INDEX.md`). A ordem inversa produziria o dano real: remover o arquivo antes da escrita que falha deixa um registro apontando para um arquivo que não existe.
 
 ## Quando o binário do usuário passa pelo backend
 

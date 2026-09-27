@@ -17,7 +17,7 @@ not_covered:
   - "estado guardado na URL → frontend/state"
   - "o que o cache descarta quando um guard lê um dado pra decidir rota → frontend/data-fetching"
   - "a pasta e o nome de arquivo de guard, layout e página → frontend/structure"
-  - "o token e o vocabulário visual → frontend/design-system"
+  - "o token e o vocabulário visual → project:DESIGN"
   - "o spec de rota e guard → frontend/testing"
 status: active
 ---
@@ -29,7 +29,7 @@ Num SPA tudo é client: o eixo que organiza uma tela é o acesso que ela exige, 
 
 | Ferramenta | Status | Decisão |
 | --- | --- | --- |
-| react-router | DECIDIDA | `overview.md`, "Stack" |
+| react-router | DECIDIDA | `defaults/stack.md`, "Stack" |
 
 ## Regras
 
@@ -136,7 +136,7 @@ O modal de tarefa montado por estado na página que o dispara:
 
 - No modelo Next.js isso é `next/dynamic`; aqui é `React.lazy` + `Suspense`, porque o roteamento é do react-router.
 - Navegação entre páginas irmãs nunca mostra o fallback: o react-router envolve a navegação em `startTransition`, e o React segura a tela anterior até o chunk novo resolver.
-- O token do canvas pintado no `index.html` é o `bg-white-0` do vocabulário visual (`frontend/design-system.md`, "Vocabulário visual").
+- O token do canvas pintado no `index.html` é o `bg-white-0` do vocabulário visual (`docs/DESIGN.md`).
 - O modal de tarefa é peça da pasta do dono (`frontend/structure.md`, "A pasta do dono"); o formulário dentro dele é o caso "a UX é o componente" de `frontend/forms.md`, e o corpo dele segue `frontend/components.md`, "O corpo do modal".
 
 ## Verificação
@@ -154,5 +154,5 @@ O modal de tarefa montado por estado na página que o dispara:
 - `frontend/structure.md`: a casa de `app/router/`, de guard, layout e página.
 - `frontend/state.md`: estado guardado na URL.
 - `frontend/data-fetching.md`: o cache que um guard lê.
-- `frontend/design-system.md`: o token do canvas.
+- `docs/DESIGN.md`: o token do canvas.
 - `frontend/testing.md`: spec de rota e guard e spec de fluxo.

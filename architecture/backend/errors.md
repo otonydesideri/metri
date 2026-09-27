@@ -257,7 +257,7 @@ Exemplo completo: errors.examples.md#unexpectederrorfilter
 providers: [{ provide: APP_FILTER, useClass: UnexpectedErrorFilter }];
 ```
 
-`FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O projeto já decidiu Fastify como única plataforma HTTP (`overview.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
+`FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O projeto já decidiu Fastify como única plataforma HTTP (`defaults/stack.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
 
 O filtro não recebe logger nenhum e não loga por conta própria: log é assunto de `infrastructure/logging.md`, não deste documento.
 

@@ -14,10 +14,10 @@ not_covered:
   - "o modal de tarefa que contém o form e a regra de Esc e clique fora → frontend/routing"
   - "a mutation que o form dispara, o estado em voo e a notificação → frontend/data-fetching"
   - "o contrato com o backend → backend/http-api"
-  - "o layout visual do formulário (\"Vocabulário visual\") → frontend/design-system"
+  - "o layout visual do formulário → project:DESIGN"
   - "a estrutura de pastas do frontend → frontend/structure"
   - "o tipo derivado de schema → frontend/helpers"
-  - "a promoção de peça ao pacote → overview"
+  - "a promoção de peça ao pacote → general/code-placement"
 status: active
 ---
 # Formulários do frontend
@@ -28,8 +28,8 @@ Formulário é a parte da tela que recebe entrada do usuário: ele valida no nav
 
 | Ferramenta | Status | Decisão |
 | --- | --- | --- |
-| React Hook Form | DECIDIDA | `overview.md`, "Stack" |
-| Zod | DECIDIDA | `overview.md`, "Stack" |
+| React Hook Form | DECIDIDA | `defaults/stack.md`, "Stack" |
+| Zod | DECIDIDA | `defaults/stack.md`, "Stack" |
 | `react-phone-number-input` | DECIDIDA | "Campo montado no app", abaixo |
 | `use-mask-input` (sobre o Inputmask) | DECIDIDA | "Campo montado no app", abaixo |
 
@@ -147,9 +147,9 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 
 - Base UI, shadcn e MUI resolvem a ligação de descrição com uma raiz de campo; é essa peça que ainda falta no `@metri/ui`.
 - O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `Hint` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
-- O layout do formulário (seções, campo, par Cancelar/submissão) é o do vocabulário visual (`frontend/design-system.md`, "Vocabulário visual").
+- O layout do formulário (seções, campo, par Cancelar/submissão) é o do vocabulário visual (`docs/DESIGN.md`).
 - O tipo de cada schema vem do `z.infer`, nunca redeclarado à mão (`frontend/helpers.md`, "Zod schema vs. type plain"), e o tipo de valores do form (`<Nome>Values`) fica no próprio arquivo de schema (`frontend/helpers.md`, "Tipos compartilhados").
-- Campo reusado por mais de um app tem a casa reavaliada pela colocação de `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app".
+- Campo reusado por mais de um app tem a casa reavaliada pela colocação de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app".
 
 ## Verificação
 
@@ -166,7 +166,7 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 - `frontend/routing.md`: o modal de tarefa que contém o formulário.
 - `frontend/data-fetching.md`: hook de mutation, estado em voo e notificação.
 - `backend/http-api.md`: o contrato canônico de API que a chamada usa.
-- `frontend/design-system.md`: o layout visual do formulário.
+- `docs/DESIGN.md`: o layout visual do formulário.
 - `frontend/structure.md`: a casa de `shared/schemas/` e `shared/components/`.
 - `frontend/helpers.md`: tipo derivado do schema.
-- `overview.md`: a promoção de peça ao pacote.
+- `general/code-placement.md`: a promoção de peça ao pacote.

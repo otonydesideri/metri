@@ -13,7 +13,7 @@ not_covered:
   - "retry, dead letter e tarefa agendada → backend/async-jobs"
   - "a divergência possível de cada capacidade, declarada pelo dono dela — o órfão de storage → infrastructure/storage"
   - "a divergência possível de cada capacidade, declarada pelo dono dela — o risco aceito de consistência → backend/transactions"
-  - "ferramenta, métricas concretas, thresholds, destinos e reconciliações concretas, que são delegação de projeto (\"Matriz de delegações\") → activation"
+  - "ferramenta, métricas concretas, thresholds, destinos e reconciliações concretas, que são delegação de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
 status: active
 ---
 # Observabilidade
@@ -47,7 +47,7 @@ Quando existe uma pergunta operacional que só um comportamento agregado respond
 
 **Proibido.** Identificador como dimensão: `userId`, `requestId`, id de entidade, escopo do dono, URL crua.
 
-- **Exceção.** Dimensão de identificador com cardinalidade comprovadamente limitada, decidida em ADR (`authoring.md`, "Decisões específicas de projeto"): permitida no escopo que o ADR registra.
+- **Exceção.** Dimensão de identificador com cardinalidade comprovadamente limitada, decidida em ADR (`methodology/authoring.md`, "Decisões específicas de projeto"): permitida no escopo que o ADR registra.
 
 > **Por quê.** Cada valor distinto vira uma série própria, e custo e consulta crescem com ele; o identificador que localiza um caso já está no log, com o `requestId` da request.
 
@@ -85,7 +85,7 @@ Quando o caminho síncrono não garante a consistência — operação distribu�
 
 - Dead letter: a pergunta "algum job falhou de vez?" é respondida pela profundidade da dead letter por fila (unidade: jobs; dimensão: fila) e pela idade do job mais antigo nela. Como profundidade maior que zero é incidente a investigar (`backend/async-jobs.md`, "Falha, retry e dead letter"), o alerta é profundidade maior que zero sustentada na janela, com a ação de investigar a causa e fazer o redrive. Janela, severidade e destino são do projeto.
 - Log e métrica da mesma request: a linha automática de `infrastructure/logging.md` localiza a request pelo `requestId`; a latência por rota é métrica com o template da rota (`/orders/:orderId`) como dimensão, nunca a URL crua, que carrega o id.
-- Órfão de storage: o binário que sobra quando a remoção física falha depois da escrita é risco aceito de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro". A reconciliação que o elimina tem como estado esperado as chaves referenciadas pelos registros, a fonte de verdade; como estado real, os objetos do bucket sob o prefixo do asset; como divergência, o objeto sem registro fora da janela em que um registro pendente ainda pode consumi-lo; como ação, remover o objeto e contar a remoção; como cadência, uma tarefa agendada que computa por estado. Registro sem objeto é a divergência inversa: vira alerta, nunca remoção do registro. O job concreto é delegação de projeto (`activation.md`).
+- Órfão de storage: o binário que sobra quando a remoção física falha depois da escrita é risco aceito de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro". A reconciliação que o elimina tem como estado esperado as chaves referenciadas pelos registros, a fonte de verdade; como estado real, os objetos do bucket sob o prefixo do asset; como divergência, o objeto sem registro fora da janela em que um registro pendente ainda pode consumi-lo; como ação, remover o objeto e contar a remoção; como cadência, uma tarefa agendada que computa por estado. Registro sem objeto é a divergência inversa: vira alerta, nunca remoção do registro. O job concreto é delegação de projeto (`docs/architecture/INDEX.md`).
 - Reconciliação que roda por tempo é tarefa agendada, pela árvore de `backend/operation-routing.md`, com worker fino e caso de uso (`backend/async-jobs.md`, "Tarefas agendadas").
 - Risco aceito de consistência (`backend/transactions.md`, "Concorrência e locking"): a condição de revisita registrada com ele pode ser uma métrica, como a contagem de conflitos por operação.
 
@@ -110,5 +110,5 @@ Quando o caminho síncrono não garante a consistência — operação distribu�
 - `backend/events.md`: consistência eventual que pede conferência posterior.
 - `backend/application.md`: contrato neutro para fato do caso de uso.
 - `backend/boundaries.md`: o que `src/domain` importa.
-- `authoring.md`: casa do ADR de exceção.
-- `activation.md`: ferramenta e valores concretos como decisão de projeto.
+- `methodology/authoring.md`: casa do ADR de exceção.
+- `docs/architecture/INDEX.md`: ferramenta e valores concretos como decisão de projeto.

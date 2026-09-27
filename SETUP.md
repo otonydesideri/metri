@@ -30,11 +30,11 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 ## Fase 2: regras existentes → novo formato (seções 6.2, 6.3 e 7)
 
 - [x] 2.1 Inventário: cada arquivo de regra com área, tema, seções que já tem e classificação **global** ou **específico de projeto**. Saída: tabela no chat para aprovação (não vira arquivo)
-  - D1 Stack repetida vira default global (`defaults/stack.md` + ADR global): só a lista `## Stack` do `overview.md` vai para lá; as menções à stack no texto das regras ficam; sem seção "Stack padrão"; outra stack = ADR + regra de projeto.
-  - D2 Regras do `overview.md` saem primeiro: layer-first → `backend/`; princípios 6 e 7 e colocação app × pacote → `general/`; Stack → `defaults/stack.md`; caminho da request → template do INDEX de projeto; as extrações movem o texto como ele está, sem reescrever.
+  - D1 Stack repetida vira default global (`defaults/stack.md` + ADR global): só a lista `## Stack` do `overview` vai para lá; as menções à stack no texto das regras ficam; sem seção "Stack padrão"; outra stack = ADR + regra de projeto.
+  - D2 Regras do `overview` saem primeiro: layer-first → `backend/`; princípios 6 e 7 e colocação app × pacote → `general/`; Stack → `defaults/stack.md`; caminho da request → template do INDEX de projeto; as extrações movem o texto como ele está, sem reescrever.
   - D3 Capacidades condicionais são globais; a ativação fica no INDEX do projeto.
   - D4 Caso de uso, classe/registro de evento e erro de domínio → `domain/`; adaptador/DI, despacho/subscriber e tradução HTTP → `backend/`; variação de integração → `backend/` ou `infrastructure/`.
-  - D5 `frontend/design-system.md` vira exemplo de projeto; o global mantém "só token" e o contrato de tema.
+  - D5 O `design-system` do frontend vira exemplo de projeto; o global mantém "só token" e o contrato de tema.
   - D6 Regras existentes são refinadas, não reescritas (METHODOLOGY 7.2).
   - D7 Exemplos didáticos no global; só a implementação completa vai para `<tema>.examples.md` (METHODOLOGY 7.2, item 2); `examples` aponta para ele e, quando existir, para `template/`; nas regras de projeto, para código real.
   - D8 Pontos em aberto viram ADR `proposed`; "o que a decisão não é" vira alternativas do ADR.
@@ -47,7 +47,8 @@ Metodologia de referência: `methodology/METHODOLOGY.md` (v1.1.2).
 - [x] 2.3 Piloto de refinamento: http-api e components
   - use_when = Consultar antes de; chave vazia não é escrita; Caminhos do projeto no INDEX
 - [x] 2.4 Refinar as demais regras, área por área (7.2), um commit por área, com conferência de citações (METHODOLOGY 7.2)
-- [ ] 2.5 Extrair as regras do `overview.md` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation.md` → template de INDEX de projeto (3.4), `authoring.md` → absorvido pela metodologia (apagar no fim da fase)
+- [x] 2.5 Extrair as regras do `overview` (D2); destinos dos meta: `README.md` → `INDEX.md` gerado (4.1), `activation` → template de INDEX de projeto (3.4), `authoring` → absorvido pela metodologia (apagar no fim da fase)
+  - overview → `backend/layers`, `general/{overview,code-placement,http-surface,principles}`, `defaults/stack` e o template de INDEX; activation → `methodology/templates/architecture-INDEX.md`; authoring → `methodology/authoring.md`; design-system → `methodology/templates/examples/`; destinos `project:` no frontmatter.
 - [ ] 2.6 Pontos em aberto → ADRs `proposed` (D8)
 - [ ] 2.7 Organizar pastas por área + `INDEX.md` raiz (decidir também o nome da pasta nos projetos, ex.: `.metri/`)
 

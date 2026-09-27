@@ -12,15 +12,15 @@ status: active
 ---
 # Visão geral do frontend
 
-O frontend numa página: onde cada arquivo do `app-web` mora. A colocação entre app e pacote compartilhado segue `overview.md`.
+O frontend numa página: onde cada arquivo do `app-web` mora. A colocação entre app e pacote compartilhado segue `general/code-placement.md`.
 
 Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
-Este documento cobre a estrutura de pastas. Cliente HTTP e hooks de React Query estão em `frontend/data-fetching.md`, estado cliente em `frontend/state.md`, rotas em `frontend/routing.md`, página e componente em `frontend/components.md`, formulário em `frontend/forms.md`, design system em `frontend/design-system.md`, código auxiliar em `frontend/helpers.md`.
+Este documento cobre a estrutura de pastas. Cliente HTTP e hooks de React Query estão em `frontend/data-fetching.md`, estado cliente em `frontend/state.md`, rotas em `frontend/routing.md`, página e componente em `frontend/components.md`, formulário em `frontend/forms.md`, design system em `docs/DESIGN.md`, código auxiliar em `frontend/helpers.md`.
 
 ## Stack
 
-A stack do `app-web` é a de `overview.md`, "Stack"; o nome de arquivo em kebab-case é regra deste documento ("Nomeação de arquivo").
+A stack do `app-web` é a de `defaults/stack.md`, "Stack"; o nome de arquivo em kebab-case é regra deste documento ("Nomeação de arquivo").
 
 ## Estrutura de pastas
 
@@ -65,7 +65,7 @@ Propósito e fronteira de cada casa:
 | `shared/stores/` | estado cliente lido por telas diferentes | store Zustand, sem Provider |
 | `shared/contexts/` | estado cliente de uma árvore específica | Provider montado local à árvore |
 | `shared/mocks/` | dado que monta uma tela antes de o backend responder | conteúdo de exemplo, apagável inteiro |
-| `shared/utils/` | função pura que conhece algo deste app | sem domínio, sem React; o agnóstico de app pode nascer em `@metri/utils` (`overview.md`) |
+| `shared/utils/` | função pura que conhece algo deste app | sem domínio, sem React; o agnóstico de app pode nascer em `@metri/utils` (`general/code-placement.md`) |
 | `shared/types/` | tipo TS compartilhado entre arquivos do app | sem runtime |
 
 `shared/` não é um catch-all: cada arquivo entra numa das casas listadas e mantém a fronteira dela. Código específico de página, hook, chamada ao app-api ou facade de dependência continua na casa top-level correspondente.
@@ -105,7 +105,7 @@ A pergunta é sobre identidade, não sobre quantos consomem hoje: se o dono some
 
 Contagem de consumidor não decide. O campo de telefone tem um consumidor só e mesmo assim não é peça de ninguém, porque continuaria existindo se a tela de perfil sumisse. Um segundo consumidor de fora não é a regra, é o sintoma: quando ele aparece, quase sempre a identidade nunca foi do dono, e a peça muda de casa.
 
-Peça com identidade própria vai pra casa mais estreita que cobre os donos dela: `pages/<módulo>/components/` quando serve páginas de um módulo só, `shared/components/` quando cruza módulos, e o pacote quando a colocação de `overview.md` o admite. `components/` do módulo nasce no primeiro caso real, não antes.
+Peça com identidade própria vai pra casa mais estreita que cobre os donos dela: `pages/<módulo>/components/` quando serve páginas de um módulo só, `shared/components/` quando cruza módulos, e o pacote quando a colocação de `general/code-placement.md` o admite. `components/` do módulo nasce no primeiro caso real, não antes.
 
 Peça privada inclui hook: um hook acoplado a um componente específico (o das bolinhas do carrossel) fica na pasta desse componente, não em `hooks/<módulo>/`, que é organizado por módulo de domínio.
 
@@ -121,17 +121,17 @@ A casa é o propósito, não a pasta: ela pode estar declarada aqui sem ter caso
 
 ## O que sobe pro pacote
 
-A colocação entre app e pacote segue `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app". No frontend, o pacote dono é o `@metri/utils` para função pura agnóstica, o `@metri/ui` para UI compartilhável (helper, hook, componente, provider) o `@metri/core/errors` para vocabulário de erro e o pacote dono do conceito para o contrato de API que o frontend e o backend consomem (`backend/http-api.md`, "Contrato de API compartilhado"). `shared/utils/` do `app-web` guarda só função pura que conhece algo deste app — e por isso tende a ser pequena ou nem existir. O detalhe da escolha de casa está em `frontend/helpers.md`, "Nível 3".
+A colocação entre app e pacote segue `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app". No frontend, o pacote dono é o `@metri/utils` para função pura agnóstica, o `@metri/ui` para UI compartilhável (helper, hook, componente, provider) o `@metri/core/errors` para vocabulário de erro e o pacote dono do conceito para o contrato de API que o frontend e o backend consomem (`backend/http-api.md`, "Contrato de API compartilhado"). `shared/utils/` do `app-web` guarda só função pura que conhece algo deste app — e por isso tende a ser pequena ou nem existir. O detalhe da escolha de casa está em `frontend/helpers.md`, "Nível 3".
 
 ## Verificação rápida
 
-- O arquivo entrou na casa cujo propósito bate com a função dele (função pura do app em `shared/utils/`, agnóstica de app no pacote dono quando a colocação de `overview.md` o admite, chamada ao app-api em `api/`, facade de SDK externo em `lib/<integração>/`, validação em `shared/schemas/`)?
+- O arquivo entrou na casa cujo propósito bate com a função dele (função pura do app em `shared/utils/`, agnóstica de app no pacote dono quando a colocação de `general/code-placement.md` o admite, chamada ao app-api em `api/`, facade de SDK externo em `lib/<integração>/`, validação em `shared/schemas/`)?
 - Página e layout nasceram como pasta, com a pasta nomeada pela coisa e o sufixo de papel só no arquivo de entrada?
 - A peça foi pra pasta do dono ou pra casa de papel pela pergunta certa (se o dono some, ela some junto?), sem decidir por contagem de consumidor?
 - Arquivo técnico de `shared/` está na pasta plana e com o sufixo correspondente?
 - Hook e facade de integração estão na subpasta do módulo ou integração?
 - O nome está em kebab-case?
 - Código que não encaixa em nenhuma casa abriu casa nova, com decisão registrada, em vez de inchar uma existente?
-- A escolha entre app e pacote seguiu a colocação de `overview.md`, sem pacote catch-all?
+- A escolha entre app e pacote seguiu a colocação de `general/code-placement.md`, sem pacote catch-all?
 
 **Pontos em aberto:** a taxonomia de `shared/components/` ainda não está decidida; até fechar, vale a decisão de projeto do app. A primeira pasta de papel já existe: `shared/components/inputs/`, com o critério de pertença escrito em `frontend/forms.md`, "Campo montado no app". A fronteira dela contra o modelo de dono já está fechada ("A pasta do dono"): o que segue aberto é a divisão interna, não quem entra. A direção é uma mistura do modelo (pastas por papel: `forms/`, `cards/`, `modals/`, ...) e demanda, crescendo a partir da raiz e de `icons/`. A taxonomia final não é decidida agora; cada pasta de papel nasce com o critério de pertença escrito quando o primeiro componente dela aparecer.

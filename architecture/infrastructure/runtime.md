@@ -17,10 +17,10 @@ not_covered:
   - "o que cada provider global faz — log → infrastructure/logging"
   - "a regra dos níveis de service e o `ServicesModule` → infrastructure/services"
   - "fila, worker e o ciclo de vida do `PgBossService` → backend/async-jobs"
-  - "a superfície HTTP sob `/api` → overview"
+  - "a superfície HTTP sob `/api` → general/http-surface"
   - "o contrato de escopo do dono → backend/access-scope"
   - "o formato do e2e → backend/testing"
-  - "a topologia de deploy de cada projeto → activation"
+  - "a topologia de deploy de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
 status: active
 ---
 # Runtime da aplicação
@@ -85,12 +85,12 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 
 ## Aplicação
 
-- O bootstrap de processo que a Source descreve cria o app sobre o `FastifyAdapter` e troca o logger do Nest (`infrastructure/logging.md`, "Bootstrap"), aplica o prefixo `/api` (`overview.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
+- O bootstrap de processo que a Source descreve cria o app sobre o `FastifyAdapter` e troca o logger do Nest (`infrastructure/logging.md`, "Bootstrap"), aplica o prefixo `/api` (`general/http-surface.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
 - No `AppModule`, `APP_PIPE` registra o `ZodValidationPipe` composto com `toInvalidRequestException` (`backend/errors.md`), `APP_FILTER` registra o `UnexpectedErrorFilter` (`backend/errors.md`), `APP_INTERCEPTOR` registra os interceptors de log na ordem que `infrastructure/logging.md` fixa, e `APP_GUARD` registra o throttler, de que os endpoints de infra externa saem com `@SkipThrottle()`.
 - O `PgBossService` (ferramenta ilustrativa, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; é o caso da Source em que o runtime depende do shutdown gracioso: sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
 - A fronteira que resolve o escopo do dono é uma destas peças; o contrato do escopo está em `backend/access-scope.md`.
 - Os e2e montam o app pela forma de `backend/testing.md`, sem `main.ts`, repetindo o que o teste precisa do bootstrap (o prefixo `/api`; o limite de corpo, no e2e de asset de `infrastructure/storage.md`).
-- O schema de env mora em `src/infra/common/env/env.validation.ts` (`overview.md`, "Onde cada arquivo mora"), um dos dois lugares de Zod de `backend/boundaries.md`.
+- O schema de env mora em `src/infra/common/env/env.validation.ts` (`backend/layers.md`, "Onde cada arquivo mora"), um dos dois lugares de Zod de `backend/boundaries.md`.
 
 ## Verificação
 
@@ -108,7 +108,8 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 - `infrastructure/logging.md`: o bootstrap do logger e os interceptors de log.
 - `infrastructure/services.md`: a regra dos níveis e o `ServicesModule`.
 - `backend/async-jobs.md`: o `PgBossService` e o ciclo de vida dos workers.
-- `overview.md`: a superfície HTTP e o caminho de uma request.
+- `general/http-surface.md`: a superfície HTTP.
+- `docs/architecture/INDEX.md`, "Caminho linear": o caminho de uma request.
 - `backend/boundaries.md`: Zod na fronteira de env.
 - `backend/testing.md`: a montagem do app nos e2e.
 - `backend/access-scope.md`: o escopo que a fronteira de request resolve.

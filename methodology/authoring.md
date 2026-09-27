@@ -1,10 +1,10 @@
 # Autoria da Architecture Source
 
-Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, pontos em aberto, regra de transição, regra de escape, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
+Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, pontos em aberto, regra de transição, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
 
 Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `docs/architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
-Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `README.md`); autoridade da Source, precedência e navegação (`README.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`activation.md`).
+Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/README.md`); autoridade da Source, precedência e navegação (`architecture/README.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`methodology/templates/architecture-INDEX.md`); a regra de escape (`AGENTS.md`, "How to work here").
 
 Este documento é o contrato de escrita da Source: onde cada decisão mora, que forma um documento tem e como uma regra se distingue de explicação, exemplo e verificação. Não decide nada sobre o sistema; decide como o que foi decidido fica escrito.
 
@@ -32,7 +32,7 @@ Um documento se relaciona com uma decisão arquitetural de uma destas formas:
 
 **Obrigatório.** Toda decisão arquitetural tem exatamente um owner, o documento que a define (DEFINED).
 
-**Obrigatório.** A decisão fica sob `## Regras` do owner e entra no `Dono de:` dele.
+Onde a decisão entra no arquivo do owner: METHODOLOGY 4.3 (frontmatter) e 7 (corpo).
 
 **Obrigatório.** Documento que não é owner de uma decisão se relaciona com ela só como APPLIED, REFERENCED, VERIFIED ou EXAMPLE.
 
@@ -42,43 +42,7 @@ Um documento se relaciona com uma decisão arquitetural de uma destas formas:
 
 ### Anatomia do documento
 
-Forma canônica:
-
-```text
-# <Assunto>
-
-Dono de:
-Consultar antes de:
-Não cobre:
-
-<introdução curta e não normativa>
-
-## Ferramentas        quando necessário
-## Árvore de decisão  quando necessário
-## Regras
-## Aplicação          quando necessário
-## Verificação
-## Pontos em aberto   quando houver
-## Referências
-```
-
-| Seção | Conteúdo |
-| --- | --- |
-| `## Ferramentas` | O status das ferramentas relevantes para as decisões do documento (seção "Ferramentas") |
-| `## Árvore de decisão` | O roteamento do caso para a regra certa, quando o tema tem escolha ramificada; em geral um fluxograma Mermaid |
-| `## Regras` | Toda norma que o documento define |
-| `## Aplicação` | Como as regras, do próprio documento ou de outro owner, se aplicam a casos concretos |
-| `## Verificação` | Como comprovar as regras (seção "Verificação de regra") |
-| `## Pontos em aberto` | O que ainda não está decidido (seção "Ponto em aberto") |
-| `## Referências` | Os owners que o documento aplica ou referencia |
-
-**Obrigatório.** Documento segue a anatomia acima, com as seções na ordem dela.
-
-**Obrigatório.** A introdução é curta e não normativa.
-
-**Permitido.** Omitir `## Ferramentas`, `## Árvore de decisão` e `## Aplicação` quando o documento não precisa delas, e `## Pontos em aberto` quando não há pendência.
-
-**Proibido.** Seção vazia só para cumprir a anatomia.
+O formato do arquivo de regra está na METHODOLOGY: frontmatter em 4.3, corpo em 7.
 
 **Permitido.** Heading de subseção afirmar o princípio ("Retornando erro: sempre `Either`, nunca `throw`") em vez de rótulo neutro.
 
@@ -186,21 +150,7 @@ Quando a regra não é checável mecanicamente: **Padrão.** Verificação por c
 
 ### Ponto em aberto
 
-Forma recomendada:
-
-```text
-| Pergunta | Gatilho que fecha | Vale até fechar |
-```
-
-**Obrigatório.** O que ainda não está decidido é nomeado em `## Pontos em aberto`, não silenciado.
-
-**Recomendado.** Ponto em aberto na tabela acima.
-
-**Permitido.** Deixar gatilho ou regime vazios quando a Source não os conhece.
-
-**Proibido.** Inventar gatilho ou regime para preencher a tabela.
-
-**Obrigatório.** Fechar um ponto em aberto é editar no lugar: a decisão entra em `## Regras` do owner, os exemplos passam a mostrar a escolha real, e a linha sai de `## Pontos em aberto`.
+Ponto em aberto vira ADR `proposed`, e a regra aponta para ele: METHODOLOGY 6.5 e 7.2.
 
 ### Regra de transição
 
@@ -213,18 +163,6 @@ Quando existe forma arquitetural escrita para uma capacidade ainda sem instânci
 Enquanto um ponto está aberto: **Proibido.** Código introduzir mecanismo próprio para contorná-lo.
 
 > **Por quê.** O documento já é a decisão da forma, mesmo quando a ferramenta ainda é ilustração; o que falta decidir fica nomeado como ponto em aberto.
-
-### Regra de escape
-
-Quando um caso real não encaixa nas regras existentes: **Obrigatório.** Seguir a sequência abaixo.
-
-```text
-parar → sinalizar → decidir → atualizar a Source → implementar
-```
-
-**Proibido.** Contornar a arquitetura em silêncio ou inferir uma variação por conta própria.
-
-> **Por quê.** Documentação errada é pior que documentação ausente: a decisão nova entra na Source antes de virar código.
 
 ### Emendar ou criar
 
@@ -252,17 +190,7 @@ Quando a emenda contradiz o texto em volta: **Obrigatório.** Corrigir o texto e
 
 ### Organização física
 
-```text
-docs/architecture/
-├── README.md
-├── authoring.md
-├── overview.md
-├── activation.md
-├── domain/
-├── backend/
-├── infrastructure/
-└── frontend/
-```
+A árvore do source está na METHODOLOGY 5.3.
 
 **Obrigatório.** A localização do documento reflete o ownership: o documento mora na pasta da área dona do assunto.
 
@@ -272,7 +200,7 @@ docs/architecture/
 
 Quando um assunto acumula partes independentes: **Obrigatório.** Cada parte vira documento próprio.
 
-**Obrigatório.** Todo documento tem linha própria no índice do `README.md`.
+O índice de cada área é gerado do frontmatter (METHODOLOGY 6.11).
 
 ### Decisões específicas de projeto
 
@@ -310,26 +238,24 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 
 ## Verificação
 
-- Cada decisão nova tem exatamente um owner que a define, sob `## Regras`, e aparece no `Dono de:` dele?
+- Cada decisão nova tem exatamente um owner que a define?
 - Os demais documentos só aplicam, referenciam, verificam ou exemplificam a decisão, sem redefinir modalidade nem regra, citando o owner quando aplicam?
-- Documento novo ou refatorado segue a anatomia, na ordem dela, sem seção vazia e com introdução não normativa?
 - Toda norma nova tem um marcador de modalidade, uma modalidade e um assunto, com a condição antes da modalidade?
 - Toda exceção está logo abaixo da regra que excepciona, na forma `**Exceção.**`?
 - Todo rationale está em `> **Por quê.**`, curto, sem prescrever nem excepcionar?
 - Forma canônica e implementação de referência estão declaradas como tais, e nenhum exemplo é fonte única de norma?
 - Ferramenta relevante para uma decisão do documento tem status, sustentado por decisão da Source, sem ferramenta de exemplo parecendo obrigatória?
 - A verificação só comprova regra existente, e todo comando declara o resultado esperado?
-- Toda pendência está em `## Pontos em aberto`, sem gatilho nem regime inventado?
 - Caso novo editou o owner existente, e a seção nova sobreviveria sem o parágrafo acima dela? Se não sobreviveria, era emenda.
 - Nenhum changelog nem documento paralelo de decisão dentro da Source?
-- O documento está na pasta da área dona, cobre um assunto só e tem linha no índice do `README.md`?
+- O documento está na pasta da área dona e cobre um assunto só?
 - Decisão específica de projeto registrada fora da Source, na casa certa, e toda exceção a uma regra da Source em ADR que nomeia a regra, o escopo e o rationale?
 - Nenhuma instrução local cria exceção, redefine regra da Source ou faz o papel de ADR, Project Architecture ou Project Brain?
 
 ## Referências
 
-- `README.md`: autoridade e precedência da Source, navegação, decisões transversais e índice.
+- `architecture/README.md`: autoridade e precedência da Source, navegação, decisões transversais e índice.
 - `backend/boundaries.md`: verificação por comando executável.
 - `infrastructure/storage.md`: implementação de referência declarada.
 - `docs/adr/`: casa dos ADRs do projeto.
-- `activation.md`: ativação num projeto e decisões delegadas a ele.
+- `methodology/templates/architecture-INDEX.md`: ativação num projeto e decisões delegadas a ele.

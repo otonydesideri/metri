@@ -16,13 +16,13 @@ not_covered:
   - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
   - "o adaptador fino em geral → backend/application"
   - "o registro global do pipe de validação → infrastructure/runtime"
-  - "a superfície `/api` e same-origin → overview"
+  - "a superfície `/api` e same-origin → general/http-surface"
   - "query de exibição e paginação → backend/reading"
   - "o escopo do dono → backend/access-scope"
   - "o consumo do contrato no frontend — cliente HTTP, funções de `api/` → frontend/data-fetching"
   - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
   - "o schema de form → frontend/forms"
-  - "a colocação de código entre app e pacote → overview"
+  - "a colocação de código entre app e pacote → general/code-placement"
 status: active
 ---
 # API HTTP
@@ -77,7 +77,7 @@ A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de cas
 
 Quando frontend e backend consomem o mesmo contrato de API (schema de request ou response, união fechada que a API aceita ou devolve, limite que ela impõe): **Obrigatório.** Ele tem uma representação canônica única, no pacote dono do conceito, e o controller e o frontend importam de lá.
 
-> **Por quê.** O contrato é a fronteira entre os dois lados, e é isso que dá a ele ownership compartilhado inequívoco: a casa no pacote é o caso permitido de `overview.md`, "Código pode nascer no pacote dono quando nada nele é do app", não promoção pela contagem de consumidores.
+> **Por quê.** O contrato é a fronteira entre os dois lados, e é isso que dá a ele ownership compartilhado inequívoco: a casa no pacote é o caso permitido de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", não promoção pela contagem de consumidores.
 
 **Proibido.** Duas cópias do mesmo contrato, uma em cada lado, mantidas em sincronia à mão.
 
@@ -102,8 +102,8 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
 - O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`, como parte do contrato de API; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
-- O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes (`@metri/contracts`): é o catch-all que `overview.md` proíbe.
-- Qual pacote é dono de cada contrato é decisão de projeto (`activation.md`, "Matriz de delegações").
+- O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes (`@metri/contracts`): é o catch-all que `general/code-placement.md` proíbe.
+- Qual pacote é dono de cada contrato é decisão de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações").
 - O limite que a API impõe sai do contrato canônico, e o schema de request o usa; o schema de form do frontend importa o mesmo valor, e pode ser mais estrito que ele (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 
 ```ts
@@ -135,7 +135,7 @@ export const createOrderBodySchema = z.object({
 - `infrastructure/runtime.md`: registro global do pipe.
 - `backend/reading.md`: query de exibição e paginação.
 - `backend/modules.md`: registro no `http.module.ts`.
-- `overview.md`: colocação entre app e pacote.
+- `general/code-placement.md`: colocação entre app e pacote.
 - `frontend/data-fetching.md`: o consumo do contrato no frontend.
 - `frontend/helpers.md`: casa de constantes e tipos no frontend.
 - `frontend/forms.md`: o schema de form, separado do contrato.

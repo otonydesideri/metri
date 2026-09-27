@@ -20,7 +20,7 @@ not_covered:
   - "Strategy → domain/strategy"
   - "Specification → domain/specification"
   - "Builder → domain/builder"
-  - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto → activation"
+  - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
   - "Domain Service / Policy → domain/domain-services"
   - "bounded context → domain/bounded-contexts"
 examples: [domain/model.examples.md]
@@ -116,7 +116,7 @@ Quando a tabela é escrita por um sistema externo (um adapter de biblioteca que 
 | Externo, com escrita do domínio | Só `reconstitute()`; leitura + escrita que recebe o agregado, sem insert |
 | Externo, leitura pura | Só `reconstitute()`; só leitura |
 
-**Obrigatório.** A forma que cada agregado real assume é registrada como decisão de projeto do app antes do primeiro contrato (`authoring.md`, "Decisões específicas de projeto").
+**Obrigatório.** A forma que cada agregado real assume é registrada como decisão de projeto do app antes do primeiro contrato (`methodology/authoring.md`, "Decisões específicas de projeto").
 
 ### Atualização parcial: setter por campo, e o que não cabe nele
 
@@ -186,7 +186,7 @@ Exemplo completo: model.examples.md#money
 
 - `add()` devolve instância nova, `zero()` dá nome ao caso conhecido, e uma invariante de operação (somar moedas diferentes, por exemplo) falharia aqui dentro. Um VO que só valida e normaliza (um slug, por exemplo) é o mínimo do padrão, não o teto dele.
 
-Os arquivos seguem a tabela "Onde cada arquivo mora" do `overview.md`: `<entidade>.entity.ts` na raiz de `enterprise/`, value object em `enterprise/value-objects/<nome>.vo.ts`, enum de domínio no mesmo formato em `enterprise/enums/<nome>.enum.ts`, classes de erro do módulo em `enterprise/errors/<módulo>.errors.ts` (`backend/errors.md`), lista rastreada ao lado da entidade dona (`domain/watched-list.md`) e evento em `enterprise/events/` (`backend/events.md`).
+Os arquivos seguem a tabela "Onde cada arquivo mora" do `backend/layers.md`: `<entidade>.entity.ts` na raiz de `enterprise/`, value object em `enterprise/value-objects/<nome>.vo.ts`, enum de domínio no mesmo formato em `enterprise/enums/<nome>.enum.ts`, classes de erro do módulo em `enterprise/errors/<módulo>.errors.ts` (`backend/errors.md`), lista rastreada ao lado da entidade dona (`domain/watched-list.md`) e evento em `enterprise/events/` (`backend/events.md`).
 
 ## Verificação
 
@@ -210,5 +210,5 @@ Os arquivos seguem a tabela "Onde cada arquivo mora" do `overview.md`: `<entidad
 - `backend/persistence.md`: repositório, mapper e a escrita que recebe o agregado.
 - `backend/application.md`: o caso de uso que orquestra a entidade.
 - `backend/http-api.md`: `.max()` na porta para restrição de entrada.
-- `overview.md`: onde cada arquivo mora.
-- `authoring.md`: casa da decisão de projeto sobre a forma de cada agregado.
+- `backend/layers.md`: onde cada arquivo mora.
+- `methodology/authoring.md`: casa da decisão de projeto sobre a forma de cada agregado.
