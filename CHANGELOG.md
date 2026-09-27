@@ -1,5 +1,77 @@
 # Changelog
 
+## v1.2.0 (2026-09-27)
+
+Refinamento pós-piloto: o source vira o pacote `metri`, com CLI; o backend é a fonte do contrato de API; decisões e
+portões em três blocos; a camada de UI/UX com evidência; agentes por função; e os achados do piloto 1.
+
+### O que muda
+
+- **Pacote e CLI.** O source é o pacote privado `metri` (bin `metri`, TypeScript pelo `tsx`, sem build), instalado por
+  `pnpm add -D link:<caminho>` ou `github:otonydesideri/metri#<tag>`. `template/scripts/` vira `cli/`, com `init`,
+  `verify`, `rules-for`, `rules-index [--check]`, `docs-lint` e `design-tokens`; as regras globais vêm da pasta do
+  pacote. O `/setup` sai: o `metri init`, mecânico e idempotente, cria `AGENTS.md`, `CLAUDE.md`,
+  `.metri/ARCHITECTURE.md`, os links de skills e agents, o `.gitignore` e os scripts, e marca "mapeamento: pendente"
+  num projeto com código; ativação e delegações passam ao `/look-across`.
+- **Árvore do projeto.** `docs/` guarda o conhecimento do produto (PRODUCT, CONTEXT, DESIGN, adr/); `.metri/` guarda o
+  estado da metodologia (ARCHITECTURE.md, rules/, MATRIX.md, tickets/<id>.md e tickets/<id>/*.png). Saem o
+  `matrix-view`, o `.evidence/`, o `docs/plan/tech/` e os campos `evidence` e `tech_design`. Ticket e MATRIX citam só
+  ids. O destino `project:architecture/INDEX` passa a `project:ARCHITECTURE`.
+- **Contrato de API** (ADR-0002). Os DTOs Zod do app-api são a fonte; o OpenAPI é gerado deles, e o app-web gera o
+  client e os schemas pelo Orval. O `verify` roda o `api:generate` do projeto e falha com diff (`api:drift`). Saem o
+  pacote de contrato compartilhado e a delegação "Pacote do contrato de API".
+- **Decisões e portões.** O `grilling` classifica cada decisão em definida, inferida ou perguntar, e todo portão mostra
+  os três blocos. O `/shape` infere o horizonte de cada feature e reescreve a triagem de design em cinco passos
+  (`DESIGN-FORMAT.md` novo). `domain/bounded-contexts` e `domain/domain-services` ganham `activation`. O `/accept`
+  mostra a evidência por critério e os achados em três grupos, decididos pelo usuário. Ticket bloqueado por slice
+  espera o aceite e o merge dela; `done` é verde na branch da slice.
+- **UI/UX.** Os tokens do `DESIGN.md` são a fonte do tema (`metri design-tokens`). Regra global nova,
+  `frontend/experience`. Ticket `pattern` "Padrão de tela" com variantes (`?variant=`) e telas canônicas no
+  `DESIGN.md`; evidência Playwright desktop e mobile por critério de UI, conferida pelo `docs-lint`; teste do
+  consumidor no navegador.
+- **Agentes.** `agents/`: `builder`, `reviewer-contract`, `reviewer-patterns`, `reviewer-ux` e `consumer-tester`,
+  ligados em `.claude/agents/`.
+- **Piloto 1.** Regras citadas no `rules-for`; layout e nomes de apps e pacotes como padrão global; pg-boss como fila
+  padrão; exemplos no Prisma 7; filtro de teste pelo caminho; caminho manual do shadcn; Biome e Vitest de
+  referência; slice de fundação sem contrato; correção sensível urgente com aceite e release próprios; id do dono
+  redigido; exceção esperada de orçamento no primeiro ticket depois de um pattern.
+
+### Migrar de v1.1.0
+
+Ticket `pattern`, na raiz do projeto:
+
+1. Tirar o submódulo e instalar o pacote:
+
+   ```bash
+   git submodule deinit -f .metri && git rm -f .metri && rm -rf .git/modules/.metri
+   printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # se ainda não tiver
+   pnpm add -D github:otonydesideri/metri#v1.2.0
+   ```
+
+2. Mover para a árvore nova:
+
+   ```bash
+   mkdir -p .metri
+   git mv docs/architecture/INDEX.md .metri/ARCHITECTURE.md
+   git mv docs/architecture .metri/rules          # só com regra de projeto em docs/architecture/<área>/
+   git mv docs/plan/MATRIX.md .metri/MATRIX.md
+   git mv docs/plan/tickets .metri/tickets
+   ```
+
+3. Em `.metri/ARCHITECTURE.md`: tirar a linha `source:` e as linhas `<...>` do template antigo; em "Delegações", tirar
+   "Apps e pacotes" e "Pacote do contrato de API", e passar "Bounded contexts" e "Domain Service / Policy", quando
+   houver, para "Capacidades ativas" (`- domain/bounded-contexts: ...`, `- domain/domain-services: ...`).
+4. Na MATRIX e nos tickets: tirar o bloco entre `<!-- matrix-view -->` e `<!-- /matrix-view -->`, a chave
+   `tech_design` e a `evidence`, e trocar caminho de `.md` por id; nas regras do projeto, `project:architecture/INDEX`
+   vira `project:ARCHITECTURE`.
+5. `rm -f .claude/skills/setup`; no `AGENTS.md`, apagar as seções "How to work here" e "Where things live"; no
+   `package.json`, tirar `tsx`, `yaml` e `picomatch` quando só os scripts antigos os usavam; no `.gitignore`, a linha
+   `.evidence/`.
+6. `pnpm exec metri init` (troca os scripts, refaz os links e escreve as seções novas do `AGENTS.md`),
+   `pnpm rules-index` e `pnpm verify` até ficar verde; o `docs-lint` aponta o que faltar.
+7. Projeto com pacote de contrato: um ticket `pattern` leva o contrato para os DTOs do app-api e liga o
+   `api:generate` (`node_modules/metri/architecture/backend/http-api.md`).
+
 ## v1.1.0 (2026-09-27)
 
 Correções do piloto: idioma da conversa, um arquivo por ticket, a primeira visão do board próprio e limpeza de

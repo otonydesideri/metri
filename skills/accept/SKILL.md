@@ -24,7 +24,7 @@ Check out `slice/<id>` with a clean working tree. When main moved since the slic
 
 The fixed point is where `slice/<id>` left main: `git merge-base main slice/<id>`. Capture the diff command once: `git diff <fixed-point>...slice/<id>` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..slice/<id> --oneline`.
 
-Before going further, confirm the fixed point resolves and the diff is non-empty. A bad ref or an empty diff should fail here, not inside the sub-agents.
+Before going further, confirm the fixed point resolves and the diff is non-empty.
 
 ### 2. Gather the inputs
 

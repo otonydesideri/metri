@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.1.0.** Este repositório é o Architecture Source da metodologia. O agente trabalha pelas skills (`skills/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.2.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -35,8 +35,8 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `.metri/ARCHITECTURE.md` | Estado da ativação: desvios, capacidades ativas, delegações, exceções  |
 | `.metri/rules/`          | Regras só deste projeto, por área                                      |
 | `.metri/MATRIX.md`       | Plano: features, slices e contratos, Fog, Gaps, Pattern proposals      |
-| `.metri/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas        |
-| `node_modules/metri/`    | O pacote do método: regras globais, skills e a CLI; somente leitura, só em desenvolvimento |
+| `.metri/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas; a evidência de UI ao lado, em `<id>/` |
+| `node_modules/metri/`    | O pacote do método: regras globais, skills, agents e a CLI; somente leitura, só em desenvolvimento |
 | Código                   | Padrões, cabeçalhos inline (e o contrato da slice construída), SOT keywords, tokens e checks |
 
 **O humano decide em poucos pontos:** direção, plano, padrões novos e diffs sensíveis, aceite, e passos de release que só ele pode fazer. O resto é trabalho do agente.
@@ -53,7 +53,7 @@ pnpm exec metri init
 
 O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source") e termina com `metri verify` verde. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
 
-As skills entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
+As skills e os agents entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
 
 ## Princípios
 
@@ -111,6 +111,7 @@ As chaves canônicas e o frontmatter de regra: `VOCABULARY.md`.
 ```
 AGENTS.md                     procedimentos + ponteiros (CLAUDE.md = uma linha apontando para ele)
 .claude/skills/<nome>         link → node_modules/metri/skills/<nome>
+.claude/agents/<nome>.md      link → node_modules/metri/agents/<nome>.md
 docs/
   PRODUCT.md                  intenção, escopo, fora de escopo
   CONTEXT.md                  linguagem compartilhada do domínio
@@ -139,6 +140,7 @@ architecture/
   general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
   defaults/                     escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
 adr/                            decisões globais (inclusive as que sustentam os defaults)
+agents/                         os subagentes por função, no formato do Claude Code ("Agentes")
 skills/                         as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e o arquivo copiado igual para o projeto (<ARQUIVO>-TEMPLATE.md)
 cli/                            a CLI metri (TypeScript com tsx, sem build) e, em cli/templates/, o que o metri init copia
 VOCABULARY.md                   vocabulário da metodologia (chaves canônicas)
@@ -201,7 +203,7 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 - A **fonte da verdade do escopo** de uma regra é o `applies_to` no frontmatter.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
 - `rules-for`, `rules-index` e os `INDEX.md` gerados: `metri rules-for --help` e `metri rules-index --help`.
-- **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido.
+- **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido; a exceção esperada é o primeiro ticket depois de um pattern novo, e o `rules-for` diz isso.
 
 ### Fonte única por conceito
 
@@ -217,6 +219,8 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 | Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | `DESIGN.md`; o tema segue ele (`metri design-tokens`) | valor solto no código |
+| Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend (ADR-0002) |
+| Evidência de um critério de UI                 | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, até a poda da slice; depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
 | Features, slices e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles | chat, handoff                                  |
 | Cada UC ou T: BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
@@ -228,9 +232,12 @@ Escada de regras: `skills/guardrail/SKILL.md`, "The rules ladder".
 
 ### Interface e Design System
 
-Não é uma etapa própria do fluxo. É uma **triagem** dentro do `/shape`, um **artefato** (`DESIGN.md`) e uma **capacidade condicional** (`defaults/ui`).
+Não é uma etapa própria do fluxo; é uma camada que atravessa as etapas:
 
-Default global (shadcn/ui, sem recriar componente): `architecture/defaults/ui.md` e `adr/0001-default-ui-library.md`; triagem, formato do `DESIGN.md` e onde cada decisão mora: `skills/shape/DESIGN-TRIAGE.md`.
+- **Moldar:** a triagem de design procura o DS já dado, pergunta só o que falta e propõe os princípios de experiência (`skills/shape/DESIGN-TRIAGE.md`); os tokens do `DESIGN.md` são a fonte do tema.
+- **Look across:** critérios de UI por UC; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 monta tema e shell com aprovação visual.
+- **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério, com autocrítica de até 2 rodadas.
+- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md` (ADR-0001).
 
 ### O fluxo
 
@@ -273,6 +280,8 @@ A cadeia de contexto de um ticket: `skills/build/SKILL.md`, passo 1.
 
 **Não usar:** personas (PM, arquiteto, QA), passagem de trabalho entre agentes, revisor por ticket, agente planejador separado do humano.
 
+**Agentes** (`agents/`, ligados em `.claude/agents/` pelo `metri init`): funções, não personas. `builder` constrói um ticket pela skill `/build`; `reviewer-contract`, `reviewer-patterns` e `reviewer-ux` são os eixos do aceite; `consumer-tester` usa a slice como consumidor de fora. Cada arquivo é o dono do seu brief e diz quais entradas o agente recebe.
+
 Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/build/SKILL.md`, "Git"; revisores isolados e teste do consumidor: `skills/accept/SKILL.md`; crítico sem contexto e mapeamento: `skills/look-across/SKILL.md`; pesquisa externa: `skills/research/SKILL.md`.
 
 ### Portões humanos
@@ -283,7 +292,7 @@ Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/
 4. **Aceite:** `skills/accept/SKILL.md`, "5. Human gate" e "6. Knowledge gate".
 5. **Release:** `skills/build/TICKET-TYPES.md`, "release".
 
-Todo o resto é trabalho do agente.
+Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o motivo; e as perguntas em aberto (`skills/grilling/SKILL.md`, "Defined, inferred, ask"). Todo o resto é trabalho do agente.
 
 ### Integração entre planejamento, arquitetura e execução
 
@@ -305,7 +314,7 @@ Todo o resto é trabalho do agente.
 
 Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents`. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
-**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init`, `verify`, `rules-for`, `rules-index` (gera os INDEX; `--check` confere) e `docs-lint` (lint estrutural + formato da matriz). Cada comando explica o que faz em `--help`.
+**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init`, `verify`, `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz) e `design-tokens` (o tema contra o `DESIGN.md`). Cada comando explica o que faz em `--help`.
 
 ## Referências e origem de cada peça
 
@@ -325,6 +334,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | TDD no seam, módulos profundos                                                                                                                                                        | Matt Pocock                              |
 | Revisão em dois eixos por subagentes isolados                                                                                                                                         | Matt Pocock                              |
 | HITL/AFK, tipo de ticket `task`, contexto limpo por tarefa, filas em vez de loops, protótipo descartável                                                                              | Matt Pocock                              |
+| Variantes radicalmente diferentes de uma tela nova na mesma rota (`?variant=`); a escolhida vira tela canônica | Matt Pocock (`prototype`) |
 | Forma das skills: pequenas, divididas entre invocadas pelo usuário e pelo modelo, ponteiros, critérios de conclusão, palavras-guia                                                    | Matt Pocock (`writing-for-agents`)       |
 | Architecture Source global + Project Architecture por áreas + ADRs                                                                                                                    | Seu modelo                               |
 | Caso de uso como unidade de definição, ligando planejamento e código                                                                                                                  | DDD                                      |
@@ -346,7 +356,7 @@ Referências:
 | Lista longa de user stories         | Fora               | O UC com critérios diz o mesmo de forma verificável, com menos tokens                                                                                                 |
 | Plano por fases                     | Fora               | É planejamento horizontal: gera mini-apps isolados. A matriz substitui                                                                                                |
 | Design técnico por feature, sempre  | Fora na v1         | O agente planeja no próprio contexto; padrão novo vira ticket `pattern`; decisão difícil vira ADR. Technical design para features complexas fica para "Evolução futura" |
-| Etapa própria de UI/UX              | Fora               | Triagem de design no `/shape` + `DESIGN.md` + slice de design system bastam                                                                                           |
+| Etapa própria de UI/UX              | Fora               | A camada de UI/UX atravessa as etapas ("Interface e Design System"): triagem, telas canônicas, `frontend/experience`, evidência por critério e `reviewer-ux` |
 | Pasta de documentação livre         | Fora               | Desatualiza. Regras com escopo e enforcement + cabeçalhos inline                                                                                                      |
 | Review por ticket                   | Fora               | O portão do ticket são os checks. Julgamento por slice; exceção: tickets sensíveis e de padrão                                                                        |
 | Review humano linha a linha         | Trocado            | Pela leitura do caminho linear + QA + diff das partes sensíveis                                                                                                       |
@@ -367,7 +377,6 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | **Plano incremental do produto (V1 → Vn)**      | Campo `milestone` nas features; horizontes `now / planned / fog / out`; releases por milestone                                                                                                             | Visão de roadmap gerada a partir da matriz; skill de planejamento de versões                       |
 | **Technical Design para features complexas**    | Ciclo de vida definido: **documento temporário**, cujas decisões migram para ADRs, regras e contratos no aceite, e então ele é removido | Casa, template, critério de quando é obrigatório, skill própria |
-| **Evidências anexadas ao ticket (screenshots)** | Pasta `.metri/tickets/<id>/` na árvore do projeto | Captura automática (ex.: Playwright), evidência exigida por tipo de ticket |
 | **Board próprio**                               | Formato estrito, legível por máquina, com ids estáveis e chaves em inglês, validado por lint; a MATRIX e os tickets são a fonte única | Um board próprio, sem ferramenta externa: uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles |
 | **Comunicação entre agentes**                   | Comunicação por artefatos (status, `PP`, `GAP`, `notes`), mediada pelo coordenador                                                                                                                         | Canais ou "rooms"; troca de informação entre workers (nunca repasse de trabalho)                   |
 | **Acompanhamento de consumo de tokens**         | Campo `metrics` no ticket (tokens, regras carregadas), preenchido pelo `/build` quando a ferramenta expõe o dado. Já usado no piloto                                                                       | Painel de consumo, orçamentos por agente e por slice                                               |
@@ -375,11 +384,11 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
 
 ### Validação e melhoria (piloto)
 
-Uma iniciativa real de 2–3 slices, num repositório novo:
+O Piloto 2 é interativo: o usuário responde às perguntas dos portões, numa iniciativa real de 2–3 slices, num repositório novo:
 
 1. "Começar um projeto" e `metri init`.
 2. `/shape`, com a triagem de design, e `/look-across`.
-3. Slice 0, a fundação: se o source ainda não tem template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter, e os `.examples.md` viram ponteiro.
+3. Slice 0, a fundação e, com interface, tema e shell: se o source ainda não tem template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter, e os `.examples.md` viram ponteiro.
 4. 2–3 slices até o `/accept` e um release.
 
 Anotar:
@@ -388,12 +397,8 @@ Anotar:
 - tokens por ticket, quando a ferramenta mostrar (`metrics` do ticket);
 - retrabalho no `/accept`: achados que reabrem UC ou viram T, e os de padrão que um lint teria pego;
 - propostas de padrão na construção, contexto buscado fora da cadeia de ponteiros e lições aprovadas por slice;
-- os três gatilhos do board próprio: conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, e linhas ativas da MATRIX depois da poda (o board começa acima de ~300).
+- os três gatilhos do board próprio: conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, e linhas ativas da MATRIX depois da poda (o board começa acima de ~300);
+- nas perguntas: pergunta sobre algo já definido, inferência errada e pergunta que faltou;
+- na interface: a distância entre a tela e o DS.
 
-Decisões que ficam para o piloto:
-
-- caminho para bug urgente: release logo após o `/accept` de uma correção `sensitive`;
-- redação de dados de outro tenant no `/diagnose`;
-- orçamento de ~5 regras para UC de backend que atravessa camadas.
-
-Os resultados alimentam a v1.2 desta metodologia; o que passar no portão de conhecimento vai ao source (template de código, capacidades condicionais, regras e checks, estes a partir dos itens de "Verificação" sem `(check: <id>)`).
+Os resultados alimentam a próxima versão desta metodologia; o que passar no portão de conhecimento vai ao source (template de código, capacidades condicionais, agents, regras e checks, estes a partir dos itens de "Verificação" sem `(check: <id>)`).

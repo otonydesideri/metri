@@ -15,16 +15,12 @@ The Source decides how the system is built; the project decides what only it kno
 - An activated GLOBAL_CONDITIONAL capability follows its global owner, by the transition rule (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Regra de transição"); activation resolves only its PROJECT_SPECIFIC values.
 - A PROJECT_SPECIFIC value is resolved before the first point of the project that depends on it, and never with a choice the Source did not declare as its default.
 
-## Not a questionnaire
-
-Each question hangs on the trigger of its delegation: with no trigger in the project, the question doesn't exist. Never walk the whole matrix as a fixed questionnaire: a question without a trigger forces a choice the project can't make well, and a choice made without need becomes a dependency nobody asked for.
-
 ## Order
 
 1. Identify the capabilities the `now` UCs and their BRs need.
 2. Apply the GLOBAL.
 3. Infer each GLOBAL_CONDITIONAL by its `activation` question.
-4. Ask the PROJECT_SPECIFIC values a UC needs.
+4. Ask the PROJECT_SPECIFIC values a UC needs, each delegation only when its trigger shows up in a UC.
 5. Record them in the Project Architecture and, when it applies, in an ADR.
 6. Validate the activated architecture by the verification of each activated owner.
 
@@ -51,8 +47,6 @@ When a project need has no global rule, isn't declared PROJECT_SPECIFIC, contrad
 ```text
 stop → ARCHITECTURE DECISION REQUIRED → decide → update the Source (global rule) or record an ADR (exception or structural project decision) → update the Project Architecture → continue
 ```
-
-Activation never improvises a value, a mechanism or an exception.
 
 ## Delegation matrix
 

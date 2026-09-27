@@ -8,7 +8,7 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
-Understand the problem, the outcome and the limits, and align the language. Don't plan yet: slices, contracts and tickets belong to /look-across.
+Understand the problem, the outcome and the limits, and align the language; slices, contracts and tickets belong to /look-across.
 
 ## Process
 
@@ -20,7 +20,7 @@ Understand the problem, the outcome and the limits, and align the language. Don'
 
 Call the Skill tool twice, for "grilling" and "domain-language".
 
-- Explore approaches with the user: help them understand the path, without generating the plan.
+- Explore approaches with the user: help them understand the path.
 - When a decision depends on a fact outside the repository, call the Skill tool with "research".
 - When the doubt is about behaviour, answer it with a throwaway prototype; what it settles goes to a `frontend/` rule, and the prototype is discarded. The form of a new type of screen is settled by its "Padrão de tela" ticket, in /look-across.
 
@@ -30,7 +30,7 @@ When the project has an interface and `docs/DESIGN.md` doesn't exist or has no r
 
 ### 4. Write
 
-Do NOT interview the user again; synthesize what the interview settled:
+Write what the interview settled:
 
 - `docs/PRODUCT.md`, in the format of [PRODUCT-FORMAT.md](PRODUCT-FORMAT.md);
 - an ADR for each hard decision already taken (domain-language, which also kept `docs/CONTEXT.md` current during the interview);

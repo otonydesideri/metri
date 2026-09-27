@@ -67,9 +67,9 @@ describe('init', { timeout: 60_000 }, () => {
   it('link para skill que o pacote não tem mais sai', () => {
     const dir = emptyProject();
     init(dir);
-    symlinkSync('../../node_modules/metri/skills/setup', join(dir, '.claude/skills/setup'));
-    expect(init(dir).lines).toContain('removido: .claude/skills/setup');
-    expect(existsSync(join(dir, '.claude/skills/setup'))).toBe(false);
+    symlinkSync('../../node_modules/metri/skills/retired', join(dir, '.claude/skills/retired'));
+    expect(init(dir).lines).toContain('removido: .claude/skills/retired');
+    expect(existsSync(join(dir, '.claude/skills/retired'))).toBe(false);
   });
 
   it('sem o pacote em node_modules/metri é erro', () => {

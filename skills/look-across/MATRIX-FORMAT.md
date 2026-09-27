@@ -2,9 +2,8 @@
 
 `.metri/MATRIX.md` is the project's single plan: features, slices and their contracts, Fog, Gaps and Pattern
 proposals. Each ticket, a UC or a T, lives in its own file, `.metri/tickets/<id>.md` ("Ticket files", below); the
-MATRIX is not the source of the ticket's content, only of the plan around it. A board of our own, in the future, is
-a view that reads and writes the MATRIX and the ticket files through their strict format. Keys, values and section
-titles are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; the prose is in Portuguese. `pnpm docs-lint`
+MATRIX is not the source of the ticket's content, only of the plan around it. Keys, values and section titles are
+fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; the prose is in Portuguese. `pnpm docs-lint`
 checks the format.
 
 ## Skeleton
@@ -66,9 +65,8 @@ the ticket files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` p
 ## Ticket files
 
 Every ticket, a UC (the tracer) or a T, is its own file at `.metri/tickets/<id>.md` (`UC1.1`, `T2.0`): the
-filename, without the extension, is the ticket's id, and must match the `id` key of its frontmatter. A ticket's
-`checks` and `metrics` are the only reserved field this file carries; `notes` is a body section, not a frontmatter
-key. The frontmatter is YAML, in the format of a rule's frontmatter (`VOCABULARY.md`): required keys always error
+filename, without the extension, is the ticket's id, and must match the `id` key of its frontmatter. `metrics` is
+the only reserved field of a ticket; `notes` is a body section, not a frontmatter key. The frontmatter is YAML, in the format of a rule's frontmatter (`VOCABULARY.md`): required keys always error
 when missing or empty, the rest are written only with a value.
 
 - `id` and `title`: the ticket's id and its name, in Portuguese.
@@ -250,7 +248,7 @@ subtasks: [registro no mounter, renderização no site]
 ## Notas
 ```
 
-`.metri/tickets/UC1.2.md`, done and pruned only in the sense that it stays in its own file:
+`.metri/tickets/UC1.2.md`, done:
 
 ```markdown
 ---
