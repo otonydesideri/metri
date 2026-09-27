@@ -369,6 +369,7 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
 | **Comunicação entre agentes**                   | Comunicação por artefatos (status, `PP`, `GAP`, `notes`), mediada pelo coordenador                                                                                                                         | Canais ou "rooms"; troca de informação entre workers (nunca repasse de trabalho)                   |
 | **Acompanhamento de consumo de tokens**         | Campo `metrics` no ticket (tokens, regras carregadas), preenchido pelo `/build` quando a ferramenta expõe o dado. Já usado no piloto                                                                       | Painel de consumo, orçamentos por agente e por slice                                               |
 | **Times de agentes coordenados**                | Papéis de coordenador e worker; matriz como grafo de dependências (`blocked_by`, `touches`); convenção de branches `slice/<id>` e `ticket/<id>`; worktrees                                                 | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações                 |
+| **Distribuição enxuta**                         | O projeto monta `.metri/` inteiro, como submódulo somente leitura                                                                                                                                           | Distribuição enxuta: o projeto recebe só skills, regras e scripts (pacote, plugin ou CLI), sem o resto do source |
 
 ### Validação e melhoria (piloto)
 

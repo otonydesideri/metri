@@ -1,3 +1,5 @@
+When this repository is mounted as .metri/ inside a project, it is read-only reference: follow the project's AGENTS.md, not this file.
+
 # AGENTS.md
 
 This repository is the global Architecture Source of the "Slices com Guardrails" methodology.
