@@ -202,7 +202,7 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
     const order = await orderFactory.makePrismaOrder({ customerId });
 
     // a credencial do dono tem a forma do projeto: o helper que a monta é o do
-    // projeto (docs/architecture/INDEX.md, "Matriz de delegações")
+    // projeto (docs/architecture/INDEX.md, "Delegações")
     const response = await request(app.getHttpServer())
       .post(`/api/orders/${order.id.toValue()}/confirm`)
       .set(ownerCredential(customerId.toValue()));

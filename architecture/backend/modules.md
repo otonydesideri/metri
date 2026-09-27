@@ -13,7 +13,7 @@ not_covered:
   - "a porta HTTP → backend/http-api"
   - "o mecanismo de reação ou de atomicidade entre módulos → backend/operation-routing"
   - "o bounded context e a interação entre contextos → domain/bounded-contexts"
-  - "a divisão real de módulos de cada app, que é decisão de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "a divisão real de módulos de cada app, que é decisão de projeto (\"Delegações\") → project:architecture/INDEX"
 status: active
 ---
 # Módulos

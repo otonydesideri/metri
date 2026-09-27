@@ -10,7 +10,7 @@ status: active
 
 ## Monorepo: apps e pacotes
 
-`apps/` contém aplicações executáveis; `packages/` contém código compartilhado. A lista de apps e pacotes, com o papel de cada um, é decisão de projeto (`docs/architecture/INDEX.md`, "Matriz de delegações").
+`apps/` contém aplicações executáveis; `packages/` contém código compartilhado. A lista de apps e pacotes, com o papel de cada um, é decisão de projeto (`docs/architecture/INDEX.md`, "Delegações").
 
 ### Código pode nascer no pacote dono quando nada nele é do app
 

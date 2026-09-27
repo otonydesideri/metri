@@ -7,8 +7,8 @@ use_when:
   - "montar o e2e de um dado com dono"
 keywords: [escopo do dono, dono, identificador de dono, isolamento, prova A/B, where, SQL cru, recurso filho, fronteira de request, asset, registro de upload, não-encontrado, businessId, organizationId, tenantId, customerId]
 not_covered:
-  - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto (\"Matriz de delegações\") → project:architecture/INDEX"
-  - "autenticação e login (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto (\"Delegações\") → project:architecture/INDEX"
+  - "autenticação e login (\"Delegações\") → project:architecture/INDEX"
   - "mascaramento de recurso de outro dono, anti-enumeração e status HTTP (\"Erros sensíveis\") → backend/errors"
   - "query de exibição, paginação, projeção e não-encontrado da leitura → backend/reading"
   - "storage → infrastructure/storage"

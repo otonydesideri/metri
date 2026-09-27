@@ -20,7 +20,7 @@ not_covered:
   - "a superfície HTTP sob `/api` → general/http-surface"
   - "o contrato de escopo do dono → backend/access-scope"
   - "o formato do e2e → backend/testing"
-  - "a topologia de deploy de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "a topologia de deploy de cada projeto (\"Delegações\") → project:architecture/INDEX"
 status: active
 ---
 # Runtime da aplicação

@@ -13,7 +13,7 @@ not_covered:
   - "join e composição de leitura entre contextos → backend/reading"
   - "colocação entre app e pacote → general/code-placement"
   - "o mecanismo de uma reação → backend/operation-routing"
-  - "a divisão concreta de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "a divisão concreta de cada projeto (\"Delegações\") → project:architecture/INDEX"
 status: active
 ---
 # Bounded context
@@ -72,7 +72,7 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 - Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, ponto em aberto de `backend/modules.md`: pela regra de transição de `methodology/authoring.md`, nenhum mecanismo próprio nasce antes da decisão.
 - Leitura entre contextos segue a regra de join de `backend/reading.md`, "Regras absolutas da query".
 - A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Contrato de transação entre agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos": ele recebe as entidades dos dois lados (`backend/transactions.md`).
-- A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é delegação de projeto, com gatilho, registro e condição de ADR em `docs/architecture/INDEX.md`, "Matriz de delegações".
+- A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é delegação de projeto, com gatilho, registro e condição de ADR em `docs/architecture/INDEX.md`, "Delegações".
 
 ## Verificação
 

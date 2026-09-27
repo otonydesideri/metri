@@ -15,7 +15,7 @@ not_covered:
   - "regra booleana de domínio com mais de um consumidor → domain/specification"
   - "service de integração com vendor → infrastructure/services"
   - "interação entre contextos → domain/bounded-contexts"
-  - "a regra concreta de cada projeto (\"Matriz de delegações\") → project:architecture/INDEX"
+  - "a regra concreta de cada projeto (\"Delegações\") → project:architecture/INDEX"
 examples: [domain/domain-services.examples.md]
 status: active
 ---
