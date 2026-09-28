@@ -135,10 +135,10 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
 O Prisma 7: o gerador `prisma-client` escreve o client em `output`, a URL mora no `prisma.config.ts`, e o client recebe o driver adapter.
 
 ```prisma
-// packages/db/prisma/schema.prisma
+// packages/db/src/postgres/<banco>/schema.prisma
 generator client {
   provider     = "prisma-client"
-  output       = "../src/generated/prisma"
+  output       = "./generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -153,13 +153,13 @@ import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
-  schema: 'prisma',
-  migrations: { path: 'prisma/migrations' },
+  schema: 'src/postgres/<banco>',
+  migrations: { path: 'src/postgres/<banco>/migrations' },
   datasource: { url: process.env.DATABASE_URL },
 });
 ```
 
-O `package.json` do `@metri/db` exporta o client gerado como `@metri/db/client` (`"./client": "./src/generated/prisma/client.ts"`), e o `prisma generate` roda no build do pacote: o `migrate dev` do Prisma 7 não gera mais o client.
+O schema, as migrations e o client gerado ficam em `packages/db/src/postgres/<banco>/` (`backend/layers.md`, "Onde cada arquivo mora"), não em `packages/db/prisma/`: `packages/db` é um pacote como outro qualquer, e seu código mora em `src/`. O `package.json` do `@metri/db` exporta o client gerado como `@metri/db/client` (`"./client": "./src/postgres/<banco>/generated/prisma/client.ts"`), e o `prisma generate` roda no build do pacote: o `migrate dev` do Prisma 7 não gera mais o client.
 
 ```ts
 // infra/persistence/prisma/prisma.service.ts
