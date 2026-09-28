@@ -1,16 +1,13 @@
 # Changelog
 
-## Unreleased
+## v1.2.1 (2026-09-27)
 
-### O que muda
-
-- **Id de ADR global.** O ADR global do pacote se cita `metri:ADR-NNNN`; `ADR-NNNN` é do projeto, em `docs/adr/`, com
+- **Revisão pós-release.** Correções no CLI (`init`, `design-tokens`, `docs-lint`, `rules-for`, `api:drift`), no
+  contrato de API (DTOs de resposta com `{ codec: true }`, `<Operation>Params`), no `/accept` e em textos defasados.
+- **Id de ADR global.** O ADR do pacote se cita `metri:ADR-NNNN`; `ADR-NNNN` é do projeto, em `docs/adr/`, com
   numeração própria desde 0001. O `docs-lint` procura cada id só na casa dele.
-
-### Migrar de v1.2.0
-
-Nos arquivos do projeto, citação a ADR global passa a `metri:ADR-0001` (biblioteca de UI) e `metri:ADR-0002` (contrato
-de API); os ADRs do projeto não mudam.
+- **Migrar de v1.2.0.** No projeto, um ADR global passa a ser citado como `metri:ADR-NNNN`: `metri:ADR-0001`
+  (biblioteca de UI) e `metri:ADR-0002` (contrato de API); os ADRs do projeto não mudam.
 
 ## v1.2.0 (2026-09-27)
 
