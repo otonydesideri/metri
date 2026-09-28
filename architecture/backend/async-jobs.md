@@ -6,7 +6,7 @@ use_when:
   - "tirar uma operação do fluxo de quem pediu para executar depois, com garantia"
   - "enfileirar um job a partir de caso de uso ou subscriber"
   - "tornar um job idempotente ou decidir o retry e a dead letter dele"
-  - "escolher a ferramenta de fila"
+  - "trocar a ferramenta de fila do default (por ADR)"
 activation: "`backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada?"
 applies_to:
   - "apps/app-api/src/domain/application/queues/**"
@@ -15,7 +15,7 @@ applies_to:
 keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
 not_covered:
   - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
-  - "a ferramenta de fila e o processo em que os workers rodam, que são decisão de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
+  - "o processo em que os workers rodam, que é decisão de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
 examples: [backend/async-jobs.examples.md]
 status: active
 ---
@@ -25,7 +25,7 @@ Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o con
 
 Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
-**A ferramenta de fila não está decidida.** Os exemplos usam pg-boss (fila no Postgres) como referência concreta, porque padrão de construção sem implementação real não fica específico; pg-boss aqui é ilustração, não decisão nem favorito. A escolha é delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"), feita com o primeiro job ou cron, contra o cenário concreto: volume medido, tolerância a perda do efeito, infra disponível no momento, candidatos da seção "A referência dos exemplos: fila no Postgres (pg-boss)". O que já vale independente de ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência. Quando a ferramenta escolhida pede forma que este documento não tem, a forma entra aqui antes do código.
+**A fila é o pg-boss**, o default de `defaults/stack.md`, pelas razões de "Por que pg-boss: fila no Postgres"; outra ferramenta é troca de default, por ADR. O que vale com qualquer ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência.
 
 ## Worker é adaptador de entrada
 
@@ -35,9 +35,9 @@ Worker é adaptador de entrada fino, da mesma natureza do controller e do subscr
 
 Job é um comando: descreve uma intenção no imperativo (`generate-order-report`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`; este documento define o job depois que a árvore de lá chega nele.
 
-## A referência dos exemplos: fila no Postgres (pg-boss)
+## Por que pg-boss: fila no Postgres
 
-A referência é o [pg-boss](https://github.com/timgit/pg-boss): jobs são linhas em tabelas do próprio Postgres do produto, reivindicadas com `SELECT ... FOR UPDATE SKIP LOCKED`, e os workers rodam dentro do processo do app. Três razões fazem dela a referência:
+O [pg-boss](https://github.com/timgit/pg-boss): jobs são linhas em tabelas do próprio Postgres do produto, reivindicadas com `SELECT ... FOR UPDATE SKIP LOCKED`, e os workers rodam dentro do processo do app. Três razões fazem dela o default:
 
 - Zero infra nova: nenhum broker para operar, configurar persistência ou monitorar separado.
 - Enfileirar pode participar da `$transaction` do Prisma. Isso dissolve o problema clássico das duas escritas (job enfileirado antes do commit roda sem os dados; crash depois do commit perde o trabalho em silêncio) sem precisar de tabela de outbox com drenador próprio.
@@ -47,7 +47,7 @@ O custo dessa família é o teto de throughput: a fila compete com o banco por W
 
 **A entrega é at-least-once.** O pg-boss garante que dois workers nunca pegam o mesmo job ao mesmo tempo, mas o ciclo completo continua at-least-once: retry, expiração de job ativo e restart reexecutam o handler. Isso não é particularidade da referência; vale para qualquer fila. Todo handler é idempotente por contrato (seção "Idempotência").
 
-**O que a decisão final não muda.** O contrato de fila e o worker fino permanecem com qualquer ferramenta; muda o transporte por trás do `PgBossService`, ou do serviço equivalente que o substituir. Os demais candidatos e o cenário de cada um: BullMQ com milhares de jobs por minuto sustentados ou Redis já na infra por outro motivo (fila fora do banco exige outbox próprio para o enfileiramento com garantia); durable execution (Inngest, Trigger.dev, Temporal) quando o problema for workflow longo multi-etapas, com espera de dias e compensação entre passos; broker (Kafka, RabbitMQ) é transporte de eventos entre processos e pertence à decisão de bus distribuído de `backend/events.md`, não a esta.
+**O que uma troca de ferramenta não muda.** O contrato de fila e o worker fino permanecem com qualquer ferramenta; muda o transporte por trás do `PgBossService`, ou do serviço equivalente que o substituir. Os demais candidatos e o cenário de cada um: BullMQ com milhares de jobs por minuto sustentados ou Redis já na infra por outro motivo (fila fora do banco exige outbox próprio para o enfileiramento com garantia); durable execution (Inngest, Trigger.dev, Temporal) quando o problema for workflow longo multi-etapas, com espera de dias e compensação entre passos; broker (Kafka, RabbitMQ) é transporte de eventos entre processos e pertence à decisão de bus distribuído de `backend/events.md`, não a esta.
 
 ## O contrato de fila
 
@@ -144,7 +144,7 @@ O ciclo de vida da falha, com os papéis de cada peça:
 
 - **Erro permanente** (`failure` esperado do caso de uso): sem retry. O worker loga e conclui (seção "O worker"). Queimar cinco tentativas num "pedido não encontrado" só atrasa a fila.
 - **Erro transitório** (exceção técnica): o throw marca o job como failed e o pg-boss retenta com backoff exponencial (`retryDelay: 5` com `retryBackoff: true` espera 5s, 10s, 20s, 40s, 80s). O backoff espalha a nova carga no tempo; falha transitória costuma chegar em rajada, e retry em onda sincronizada amplifica o problema que o causou.
-- **Tentativas esgotadas**: o job vai para a dead letter da fila (`<fila>-dlq`), carregando a origem e o erro. Dead letter é instrumento de diagnóstico com dono, não lixeira: profundidade maior que zero é incidente a investigar, e o `redrive` do pg-boss devolve o job à fila de origem depois da causa corrigida. O alerta de profundidade segue `infrastructure/observability.md`, com janela, severidade e destino decididos pelo projeto (`docs/architecture/INDEX.md`).
+- **Tentativas esgotadas**: o job vai para a dead letter da fila (`<fila>-dlq`), carregando a origem e o erro. Dead letter é instrumento de diagnóstico com dono, não lixeira: profundidade maior que zero é incidente a investigar, e o `redrive` do pg-boss devolve o job à fila de origem depois da causa corrigida. O alerta de profundidade segue `infrastructure/observability.md`, com janela, severidade e destino decididos pelo projeto (`.metri/ARCHITECTURE.md`).
 - **Job ativo que trava**: `expireInSeconds` (default de 15 minutos) devolve à fila o job cujo worker morreu sem concluir. Handler que legitimamente demora mais que isso declara o próprio limite na definição da fila.
 
 Parâmetros de retry são por fila, na constante do worker, decididos pelo custo de reexecutar aquele comando; os valores do exemplo são ponto de partida, não regra.
@@ -201,7 +201,7 @@ Para caso de uso que enfileira, a asserção nos `items` entra no spec unitário
 
 ## Em aberto
 
-- **Ferramenta de fila e formato do e2e com fila real.** A ferramenta de fila segue aberta como delegação de projeto (nota da abertura), e o formato do e2e com fila real fecha com a primeira ferramenta escolhida.
+- **Formato do e2e com fila real.** Fecha na primeira implementação com o pg-boss.
 - **`failure` esperado que exige intervenção humana.** `failure` esperado que exija intervenção humana (log e conclui) ganha desenho se um caso real precisar ir para a dead letter em vez do log.
 - **Forma do enfileiramento transacional.** O enfileiramento transacional depende da família da ferramenta: no Postgres é o adapter `executeSql`, cujo detalhe fecha na primeira implementação; fora dele, vira desenho de outbox.
   - Adapter `executeSql`, no Postgres

@@ -144,6 +144,8 @@ Exemplo completo: persistence.examples.md#orderprismamapper
 
 Exemplo completo: persistence.examples.md#orderprismarepositoryimpl
 
+O client do Prisma 7, no `@metri/db` e no `PrismaService`: persistence.examples.md#metridb-e-prismaservice
+
 - `toDomain()` chama `reconstitute()`, nunca `create()`, pela regra de `domain/model.md`: linha do banco não passa de novo pela validação de nascimento.
 - O delta vem de `getNewItems()`/`getRemovedItems()` da `WatchedList` (`domain/watched-list.md`), que rastreia pertencimento, não conteúdo.
 - O despacho depois da transação e fora dela aplica `backend/events.md`, "A entidade registra, o repositório despacha".

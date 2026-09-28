@@ -1,22 +1,44 @@
 {
-  "name": "architecture-source",
+  "name": "metri",
+  "version": "1.2.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.20.0",
-  "scripts": {
-    "rules-index": "tsx template/scripts/rules-index.ts",
-    "rules-index:check": "tsx template/scripts/rules-index.ts --check",
-    "docs-lint": "tsx template/scripts/docs-lint.ts",
-    "rules-for": "tsx template/scripts/rules-for.ts",
-    "test": "vitest run template/scripts",
-    "verify": "tsx template/scripts/verify.ts"
+  "bin": {
+    "metri": "cli/metri.mjs"
   },
-  "devDependencies": {
-    "@types/node": "^26.6.3",
-    "@types/picomatch": "^4.0.3",
+  "files": [
+    "architecture/",
+    "adr/",
+    "skills/",
+    "agents/",
+    "cli/",
+    "!cli/**/*.test.ts",
+    "!cli/__fixtures__/",
+    "!cli/lib/testing.ts",
+    "!cli/docs-lint.planned.json",
+    "VOCABULARY.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "verify": "node cli/metri.mjs verify",
+    "docs-lint": "node cli/metri.mjs docs-lint",
+    "rules-for": "node cli/metri.mjs rules-for",
+    "rules-index": "node cli/metri.mjs rules-index",
+    "rules-index:check": "node cli/metri.mjs rules-index --check",
+    "design-tokens": "node cli/metri.mjs design-tokens",
+    "test": "vitest run cli"
+  },
+  "dependencies": {
+    "culori": "^4.0.2",
     "picomatch": "^4.0.7",
     "tsx": "^4.23.15",
-    "vitest": "^5.0.2",
     "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/node": "^26.6.3",
+    "@types/picomatch": "^4.0.3",
+    "vitest": "^5.0.2"
   }
 }

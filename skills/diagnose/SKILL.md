@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default).
+
 # Diagnose
 
 A discipline for hard bugs. Skip phases only when explicitly justified.
@@ -14,7 +16,7 @@ When exploring the codebase, read `docs/CONTEXT.md` (if it exists) to get a clea
 
 ## Redact
 
-This skill has you show commands, outputs and captured artifacts. **Redact every secret first**: write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
+This skill has you show commands, outputs and captured artifacts. **Redact every secret and every owner or tenant identifier first** (the owner identity of `.metri/ARCHITECTURE.md`, "Delegações"): write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
 
 If the redacted output is not enough to diagnose the bug, say so and ask the user.
 
@@ -36,8 +38,6 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 8. **Bisection harness.** If the bug appeared between two known states (commit, dataset, version), automate "boot at state X, check, repeat" so you can `git bisect run` it.
 9. **Differential loop.** Run the same input through old-version vs new-version (or two configs) and diff outputs.
 10. **HITL bash script.** Last resort. If a human must click, drive _them_ with this skill's `scripts/hitl-loop.template.sh` so the loop is still structured. Captured output feeds back to you.
-
-Build the right feedback loop, and the bug is 90% fixed.
 
 ### Tighten the loop
 
@@ -82,8 +82,6 @@ Confirm:
 
 Once it's red, shrink the repro to the **smallest scenario that still goes red**. Cut inputs, callers, config, data, and steps **one at a time**, re-running the loop after each cut, and keep only what's load-bearing for the failure.
 
-Why bother: a minimal repro shrinks the hypothesis space in Phase 3 (fewer moving parts left to suspect) and becomes the clean regression test in Phase 5.
-
 Done when **every remaining element is load-bearing**: removing any one of them makes the loop go green.
 
 Do not proceed until you have reproduced **and** minimised.
@@ -116,13 +114,13 @@ Tool preference:
 
 ## Phase 5: Fix + regression test
 
-Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `.metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
+Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
 
-- A bug that breaks a criterion of a UC reopens that UC: `status: in_progress`, what broke in `notes`, and its ticket keys written again when it was pruned (`slice`: the slice whose code the fix changes; `mode: afk`; the `areas` and `touches` of that code; `sensitive` by the criterion of MATRIX-FORMAT.md).
-- Any other bug becomes a T in the slice whose code the fix changes, with the next free id of that slice: `type: task`, `mode: afk`, `status: in_progress`, a `what` and `criteria` for the fix, the `areas` and `touches` of that code, and `sensitive` by the criterion of MATRIX-FORMAT.md.
+- A bug that breaks a criterion of a UC reopens that UC in its own ticket file: `status: in_progress`, what broke in "Notas"; its `slice`, `mode`, `areas`, `touches` and `sensitive` stay from before, since the file was never pruned or collapsed.
+- Any other bug becomes a T, its own new file in the slice whose code the fix changes, with the next free id of that slice: `type: task`, `mode: afk`, `status: in_progress`, "O que entrega" and "Critérios" for the fix, the `areas` and `touches` of that code, and `sensitive` by the criterion of MATRIX-FORMAT.md.
 - Their `checks` get the regression check: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
 
-Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `.metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
+Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `node_modules/metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
 
 Write the regression test **before the fix**, but only if there is a **correct seam** for it (call the Skill tool with "tdd"). A Phase 1 test that already sits at a correct seam, minimised, is that regression test.
 
@@ -151,6 +149,6 @@ Required before declaring done:
 
 ## Phase 7: Why didn't the guardrail catch it?
 
-Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`.metri/` is read-only). Then set the ticket's `status: done` and commit, with its id.
+Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`node_modules/metri/` is read-only). Then set the ticket's `status: done` and commit, with its id.
 
-Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main.
+Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main. A fix with `sensitive: true` is urgent: its ticket works on `slice/<id>` taken again from main, even when the slice isn't merged; /accept runs on that branch for it alone, and a `release` T of its own takes it to production right after.

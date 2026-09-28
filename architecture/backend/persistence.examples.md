@@ -8,7 +8,7 @@ import type {
   Order as PrismaOrder,
   OrderItem as PrismaOrderItem,
   Prisma,
-} from '@metri/db/postgres/example';
+} from '@metri/db/client';
 import { OrderItem } from '../../../../domain/enterprise/order-item.entity';
 import { OrderItemList } from '../../../../domain/enterprise/order-item-list';
 import { Order } from '../../../../domain/enterprise/order.entity';
@@ -126,6 +126,60 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
     });
 
     DomainEvents.dispatchEventsForAggregate(order.id);
+  }
+}
+```
+
+## @metri/db e PrismaService
+
+O Prisma 7: o gerador `prisma-client` escreve o client em `output`, a URL mora no `prisma.config.ts`, e o client recebe o driver adapter.
+
+```prisma
+// packages/db/src/postgres/<banco>/schema.prisma
+generator client {
+  provider     = "prisma-client"
+  output       = "./generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+```
+
+```ts
+// packages/db/prisma.config.ts
+import 'dotenv/config';
+import { defineConfig } from 'prisma/config';
+
+export default defineConfig({
+  schema: 'src/postgres/<banco>',
+  migrations: { path: 'src/postgres/<banco>/migrations' },
+  datasource: { url: process.env.DATABASE_URL },
+});
+```
+
+O schema, as migrations e o client gerado ficam em `packages/db/src/postgres/<banco>/` (`backend/layers.md`, "Onde cada arquivo mora"), não em `packages/db/prisma/`: `packages/db` é um pacote como outro qualquer, e seu código mora em `src/`. O `package.json` do `@metri/db` exporta o client gerado como `@metri/db/client` (`"./client": "./src/postgres/<banco>/generated/prisma/client.ts"`), e o `prisma generate` roda no build do pacote: o `migrate dev` do Prisma 7 não gera mais o client.
+
+```ts
+// infra/persistence/prisma/prisma.service.ts
+import { Injectable, type OnModuleDestroy } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@metri/db/client';
+import { EnvService } from '../../common/env/env.service';
+
+@Injectable()
+export class PrismaService implements OnModuleDestroy {
+  readonly client: PrismaClient;
+
+  constructor(env: EnvService) {
+    this.client = new PrismaClient({
+      adapter: new PrismaPg({ connectionString: env.getOrThrow('DATABASE_URL') }),
+    });
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.client.$disconnect();
   }
 }
 ```

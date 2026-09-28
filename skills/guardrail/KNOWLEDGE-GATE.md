@@ -16,7 +16,7 @@ Any "no" discards the lesson.
 
 - What was done → git.
 - How a bug was fixed → test + commit.
-- Status → `docs/plan/MATRIX.md`.
+- Status → `.metri/MATRIX.md`.
 - A temporary workaround → `GAP-n`.
 - A one-off preference.
 - A fact the code already shows.

@@ -1,10 +1,10 @@
 # Formato de regra
 
-O formato de uma regra, global (`.metri/architecture/`) ou do projeto (`docs/architecture/`), e o contrato de autoria da Architecture Source. Regra é escrita em português; chaves e ids, em inglês.
+O formato de uma regra, global (`node_modules/metri/architecture/`) ou do projeto (`.metri/rules/`), e o contrato de autoria da Architecture Source. Regra é escrita em português; chaves e ids, em inglês.
 
 ## Formato
 
-- Toda regra começa com frontmatter, com as chaves de `.metri/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
+- Toda regra começa com frontmatter, com as chaves de `node_modules/metri/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
 - O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades ("Modalidades", abaixo), blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
@@ -49,7 +49,7 @@ flowchart TD
 - <Pergunta de sim ou não que confere a norma>? (check: <id>)
 ````
 
-Chave marcada `# opcional` só é escrita quando tem valor (`.metri/VOCABULARY.md`). Exemplo do formato: `.metri/architecture/frontend/components.md`.
+Chave marcada `# opcional` só é escrita quando tem valor (`node_modules/metri/VOCABULARY.md`). Exemplo do formato: `node_modules/metri/architecture/frontend/components.md`.
 
 `(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`. Item sem ele é candidato a check.
 
@@ -76,7 +76,7 @@ Dono de: como a Architecture Source é escrita e mantida — ownership de decis�
 
 Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
-Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`.metri/skills/setup/ACTIVATION.md`); a regra de escape (`AGENTS.md`, "How to work here").
+Não cobre: decisão técnica de arquitetura, que tem dono no documento da área (índice do `architecture/INDEX.md`); autoridade da Source, precedência e navegação (`architecture/INDEX.md`); a ativação num projeto e a matriz das decisões delegadas a ele (`node_modules/metri/skills/look-across/ACTIVATION.md`); a regra de escape (`AGENTS.md`, "How to work here").
 
 Este documento é o contrato de escrita da Source: onde cada decisão mora, que forma um documento tem e como uma regra se distingue de explicação, exemplo e verificação. Não decide nada sobre o sistema; decide como o que foi decidido fica escrito.
 
@@ -104,7 +104,7 @@ Um documento se relaciona com uma decisão arquitetural de uma destas formas:
 
 **Obrigatório.** Toda decisão arquitetural tem exatamente um owner, o documento que a define (DEFINED).
 
-Onde a decisão entra no arquivo do owner: `.metri/VOCABULARY.md` (frontmatter) e "Formato", acima (corpo).
+Onde a decisão entra no arquivo do owner: `node_modules/metri/VOCABULARY.md` (frontmatter) e "Formato", acima (corpo).
 
 **Obrigatório.** Documento que não é owner de uma decisão se relaciona com ela só como APPLIED, REFERENCED, VERIFIED ou EXAMPLE.
 
@@ -114,7 +114,7 @@ Onde a decisão entra no arquivo do owner: `.metri/VOCABULARY.md` (frontmatter) 
 
 #### Anatomia do documento
 
-O formato do arquivo de regra está em "Formato", acima: frontmatter em `.metri/VOCABULARY.md`, corpo na mesma seção.
+O formato do arquivo de regra está em "Formato", acima: frontmatter em `node_modules/metri/VOCABULARY.md`, corpo na mesma seção.
 
 **Permitido.** Heading de subseção afirmar o princípio ("Retornando erro: sempre `Either`, nunca `throw`") em vez de rótulo neutro.
 
@@ -283,7 +283,7 @@ Quando a emenda contradiz o texto em volta: **Obrigatório.** Corrigir o texto e
 
 #### Organização física
 
-As pastas de área do source estão em `.metri/architecture/INDEX.md`, "Índice".
+As pastas de área do source estão em `node_modules/metri/architecture/INDEX.md`, "Índice".
 
 **Obrigatório.** A localização do documento reflete o ownership: o documento mora na pasta da área dona do assunto.
 
@@ -299,10 +299,10 @@ O índice de cada área é gerado do frontmatter (`pnpm rules-index`).
 
 | Casa | Guarda |
 | --- | --- |
-| Architecture Source (`architecture/`, em `.metri/` no projeto) | Decisão global e reutilizável |
+| Architecture Source (`architecture/`, em `node_modules/metri/` no projeto) | Decisão global e reutilizável |
 | ADR (`docs/adr/`) | Decisão específica do projeto que é estrutural, significativa, com trade-off, difícil de reverter e cujo rationale precisa ser preservado, incluindo a exceção deliberada a uma regra da Source |
-| Project Architecture (`docs/architecture/INDEX.md` e, quando houver caso real, regra em `docs/architecture/<área>/`) | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages existentes, ativações, decisões operacionais vigentes; o INDEX aponta para o ADR de cada uma |
-| `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o `docs/architecture/INDEX.md`, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
+| Project Architecture (`.metri/ARCHITECTURE.md` e, quando houver caso real, regra em `.metri/rules/<área>/`) | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages além do padrão de `general/code-placement.md`, ativações, decisões operacionais vigentes; o `.metri/ARCHITECTURE.md` aponta para o ADR de cada uma |
+| `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o `.metri/ARCHITECTURE.md`, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
 
 **Obrigatório.** Decisão global e reutilizável fica na Architecture Source.
 
@@ -314,15 +314,15 @@ Quando uma decisão de projeto, exceção incluída, muda o estado vigente do pr
 
 **Obrigatório.** Estado e configuração vigentes do projeto ficam na Project Architecture.
 
-**Proibido.** O `docs/architecture/INDEX.md` copiar o porquê de um ADR: ele registra o estado e aponta para o ADR.
+**Proibido.** O `.metri/ARCHITECTURE.md` copiar o porquê de um ADR: ele registra o estado e aponta para o ADR.
 
-A localização e o formato físico da Project Architecture estão em `pnpm docs-lint --help` (árvore fechada de `docs/`) e em `.metri/skills/setup/ACTIVATION.md`.
+A localização e o formato físico da Project Architecture estão em `pnpm docs-lint --help` (árvores fechadas de `docs/` e `.metri/`) e em `node_modules/metri/skills/look-across/ACTIVATION.md`.
 
 **Proibido.** Documento da Source registrar o resultado de decisão por app, como a divisão de módulos e a forma de cada agregado: ele ensina o procedimento de decidir, e o resultado fica nas casas de projeto.
 
-**Proibido.** `AGENTS.md`, `CLAUDE.md` ou instrução local criar exceção arquitetural, redefinir regra da Source ou substituir o ADR, a Project Architecture ou o `docs/architecture/INDEX.md`.
+**Proibido.** `AGENTS.md`, `CLAUDE.md` ou instrução local criar exceção arquitetural, redefinir regra da Source ou substituir o ADR, a Project Architecture ou o `.metri/ARCHITECTURE.md`.
 
-**Permitido.** `AGENTS.md`, `CLAUDE.md` e instruções locais apontarem para a Architecture Source, o ADR e o `docs/architecture/INDEX.md` e darem orientação operacional local.
+**Permitido.** `AGENTS.md`, `CLAUDE.md` e instruções locais apontarem para a Architecture Source, o ADR e o `.metri/ARCHITECTURE.md` e darem orientação operacional local.
 
 Quando um assunto ganha documento na Source: **Obrigatório.** Ele sai das instruções de projeto na mesma sessão em que o documento é escrito ou revisado.
 
@@ -342,7 +342,7 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 - Nenhum changelog nem documento paralelo de decisão dentro da Source?
 - O documento está na pasta da área dona e cobre um assunto só?
 - Decisão específica de projeto registrada fora da Source, na casa certa, e toda exceção a uma regra da Source em ADR que nomeia a regra, o escopo e o rationale?
-- Nenhuma instrução local cria exceção, redefine regra da Source ou faz o papel de ADR, Project Architecture ou `docs/architecture/INDEX.md`?
+- Nenhuma instrução local cria exceção, redefine regra da Source ou faz o papel de ADR, Project Architecture ou `.metri/ARCHITECTURE.md`?
 
 ### Referências
 
@@ -350,4 +350,4 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 - `backend/boundaries.md`: verificação por comando executável.
 - `infrastructure/storage.md`: implementação de referência declarada.
 - `docs/adr/`: casa dos ADRs do projeto.
-- `.metri/skills/setup/ACTIVATION.md`: ativação num projeto e decisões delegadas a ele.
+- `node_modules/metri/skills/look-across/ACTIVATION.md`: ativação num projeto e decisões delegadas a ele.

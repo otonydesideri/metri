@@ -39,14 +39,14 @@ export function OrderDetailsTabs() {
 
 ```ts
 // pages/order/list/use-list-params.ts
-import { orderStatusSchema } from '@metri/<pacote-dono>';
+import { OrderStatus } from '@/api/model.zod';
 import { useSearchParams } from 'react-router';
 
 export function useListParams() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // query string é entrada do usuário: valida antes de virar filtro
-  const statusParam = orderStatusSchema.safeParse(searchParams.get('status'));
+  const statusParam = OrderStatus.safeParse(searchParams.get('status'));
   const status = statusParam.success ? statusParam.data : undefined;
   const search = searchParams.get('q') ?? undefined;
   const pageParam = Number(searchParams.get('page'));

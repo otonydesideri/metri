@@ -20,7 +20,7 @@ not_covered:
   - "Strategy → domain/strategy"
   - "Specification → domain/specification"
   - "Builder → domain/builder"
-  - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (\"Delegações\") → project:architecture/INDEX"
+  - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
   - "Domain Service / Policy → domain/domain-services"
   - "bounded context → domain/bounded-contexts"
 examples: [domain/model.examples.md]

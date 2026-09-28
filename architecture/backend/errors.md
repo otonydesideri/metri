@@ -305,4 +305,4 @@ Pontos-chave:
 - `HttpException` nativa do framework (rota inexistente, throttler) sai com o status dela e o corpo no envelope, `type: 'REQUEST_REJECTED'`, sem o corpo nativo?
 - Frontend tipa o `type` do envelope com o `ApiErrorType` de `@metri/core/errors`, sem redeclarar os valores à mão nem usar o `DomainErrorType` como tipo do campo?
 
-O envelope e o `ApiErrorType` cruzam a fronteira como parte do contrato de API e moram no core por serem vocabulário de erro. O resto do contrato (schema de request/response, união fechada que a API aceita ou devolve) segue o contrato compartilhado de `backend/http-api.md`, "Contrato de API compartilhado", e o caso de tipos em `frontend/helpers.md` ("Tipos compartilhados").
+O envelope e o `ApiErrorType` cruzam a fronteira como parte do contrato de API e moram no core por serem vocabulário de erro. O resto do contrato (schema de request/response, união fechada que a API aceita ou devolve) segue `backend/http-api.md`, "Contrato de API: o backend é a fonte", e o caso de tipos em `frontend/helpers.md` ("Tipos compartilhados").

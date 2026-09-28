@@ -13,6 +13,8 @@ applies_to:
   - "apps/app-web/test/**"
   - "apps/app-web/dev-server-proxy.spec.ts"
   - "apps/app-web/vite.config.ts"
+  - "apps/app-web/playwright.config.ts"
+  - "apps/app-web/e2e/**"
 keywords: [pirâmide, spec, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
@@ -59,11 +61,28 @@ O caminho feliz de cada tela isolada é o que o fluxo já atravessa; repeti-lo v
 | Spec de transição entre fluxos | `src/app/router/<módulo>-transitions.spec.tsx` |
 | Spec de estrutura | `src/structure.spec.ts` |
 | Spec de config do dev server | `dev-server-proxy.spec.ts`, na raiz do app |
+| E2e de critério de UI | `e2e/<módulo>/<ação>.e2e.ts`, com `e2e/evidence.ts` |
 | Setup da suíte | `test/setup.ts` |
 | Servidor MSW | `test/msw/server.ts` |
 | Builder de payload | `test/factories/make-<recurso>.factory.ts` |
 
-Paths de `src/` e `test/` são relativos ao app frontend (`apps/app-web/`).
+Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/`).
+
+### E2e de critério de UI
+
+Fora da pirâmide, cada critério de um ticket com área `frontend/*` tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento (`frontend/experience.md`). O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina salvando a evidência do critério:
+
+```ts
+// e2e/order/confirm-order.e2e.ts
+test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo) => {
+  await page.goto('/orders/1042');
+  await page.getByRole('button', { name: 'Confirmar pedido' }).click();
+  await expect(page.getByText('Pedido confirmado')).toBeVisible();
+  await page.screenshot({ path: evidencePath('UC1.2', 1, testInfo), fullPage: true });
+});
+```
+
+O `evidencePath` de `e2e/evidence.ts` devolve `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório.
 
 O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção, e a raiz do app para o que prova o config dele. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`, e aqui essa fronteira não tem rede de segurança automática, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos. A verificação é o grep da última seção.
 
@@ -75,15 +94,15 @@ O config do Vitest mora no bloco `test` do `vite.config.ts` do app, não num arq
 
 O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação com máscara e reposicionamento de cursor do campo de telefone e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
 
-A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. O `httpClient` resolve as rotas REST sob `/api` nessa mesma origem. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
+A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. As rotas REST saem sob `/api`, na mesma origem: o path vem do OpenAPI. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
-Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Turbo na raiz. Não há suíte de e2e no frontend (ver "Pontos em aberto").
+Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Turbo na raiz; o e2e de critério de UI, por `pnpm --filter app-web test:e2e`.
 
 ## O dublê de rede é um só: MSW no nível do fetch
 
 Toda rede do app desemboca no mesmo `globalThis.fetch`: o `httpClient` (`frontend/data-fetching.md`, "O cliente HTTP") e o client de qualquer biblioteca externa que fale com o backend usam a mesma primitiva por baixo. Dublar nesse nível é o que cobre todos os caminhos com um mecanismo só.
 
-Mock do módulo `api/` cobre só o caminho REST, e deixa de fora o client de qualquer biblioteca que faça rede por conta própria — que é justamente a parte cujo ciclo de estado decide os ramos de tela. Um fake do `httpClient` tem a mesma lacuna e ainda pula o `output:` do better-fetch, tirando os schemas Zod da fronteira onde eles existem para atuar. O MSW, além de cobrir tudo, entrega o erro real do wire, com o `code` do envelope do backend, que é de onde dependem a tradução de erro e todo ramo de tela que liga num código específico.
+Mock do módulo `api/` cobre só o caminho REST, e deixa de fora o client de qualquer biblioteca que faça rede por conta própria — que é justamente a parte cujo ciclo de estado decide os ramos de tela. Um fake do `httpClient` tem a mesma lacuna e ainda pula o `ApiError` que ele monta do corpo de erro. O MSW, além de cobrir tudo, entrega o erro real do wire, com o `code` do envelope do backend, que é de onde dependem a tradução de erro e todo ramo de tela que liga num código específico.
 
 Regras de uso:
 
@@ -91,7 +110,7 @@ Regras de uso:
 - `server.listen({ onUnhandledRequest: 'error' })` no setup. É o que torna auto-verificável a afirmação de que um mecanismo cobre os dois caminhos: requisição sem dublê quebra o teste em vez de vazar para a rede.
 - O `listen()` fica no **topo do arquivo de setup, nunca dentro de `beforeAll`**. Client que resolve o `fetch` uma vez, na criação, faz isso na avaliação do módulo, que roda antes de qualquer hook. Com o `listen()` em `beforeAll`, esse client fica com o `fetch` original: as chamadas dele escapam do dublê e vão para a rede de verdade, sem erro nenhum, e o teste passa ou falha pelo que houver no ambiente. É a falha mais silenciosa da suíte, porque só parte da superfície escapa e o resto continua dublado normalmente.
 - Handler com URL absoluta, construída a partir de `window.location.origin`. Rota REST fica sob `/api`.
-- O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda contra composição silenciosa de `baseURL`, não uma segunda prova da operação de domínio.
+- O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda de que o path gerado sai na origem da página, não uma segunda prova da operação de domínio.
 - `vi.mock` fica reservado a fronteira que não é rede: o `toast` do Sonner (`@metri/ui/components/ui/sonner`), quando o teste afirma título e descrição sem montar o `Toaster`, e uma função de `lib/<integração>/` cujo efeito é sobre a biblioteca, não sobre a tela. Nunca para substituir uma chamada de rede.
 
 ```ts
@@ -201,7 +220,7 @@ Regra de entrada: só ganha caso aqui a opção de config cuja remoção não qu
 
 ## Builders de payload (`test/factories/make-<recurso>.factory.ts`)
 
-Uma função pura `make<Recurso>(override = {})`, com `...override` sempre por último, mesma forma do backend. O frontend não tem entidade, então o que o builder devolve é **o objeto de wire cru**, o JSON que o handler serve, nunca um objeto já parseado por schema: o schema continua sob prova na fronteira em que ele existe para atuar.
+Uma função pura `make<Recurso>(override = {})`, com `...override` sempre por último, mesma forma do backend. O frontend não tem entidade, então o que o builder devolve é **o objeto de wire cru**, o JSON que o handler serve, na forma do wire (datas como string).
 
 `@faker-js/faker` só para o campo que nenhuma asserção lê. Campo que a asserção lê, ou de que um ramo de tela depende, é literal passado como override. Um id aleatório num campo que a asserção compara produz teste que passa por acidente; um valor formatado (data, telefone, slug) vindo do faker produz falha intermitente quando a formatação da tela muda de resultado.
 
@@ -211,7 +230,7 @@ Exemplo completo: testing.examples.md#makeorder
 
 ## Nada de helper de render compartilhado
 
-Não existe `renderWithProviders` em `test/`. `QueryClientProvider` e `MemoryRouter` são o runtime sem o qual o componente não existe, não um passo sob prova, e a resposta consistente para esse caso já está escrita no backend: todo e2e monta o app inteiro no próprio arquivo, "nunca vira um `createTestApp()` compartilhado" (`backend/testing.md`).
+Um helper de render compartilhado em `test/` não entra: `QueryClientProvider` e `MemoryRouter` são o runtime sem o qual o componente não existe, não um passo sob prova, e a resposta consistente para esse caso já está escrita no backend: todo e2e monta o app inteiro no próprio arquivo, "nunca vira um `createTestApp()` compartilhado" (`backend/testing.md`).
 
 O que continua permitido é helper local ao arquivo. Uma `function renderPage()` no topo de um spec que renderiza a mesma página em muitas variações monta providers e não esconde passo nenhum; é a mesma carve-out que o backend abre para utilitário puro sem semântica de fluxo. O que ele não pode fazer é executar interação, montar estado de domínio ou escolher a rota de entrada.
 
@@ -222,11 +241,11 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 - **Componente sem ramo de render**, cuja única variação é repassar prop para a biblioteca de baixo: a regra que ele carrega é provada na página onde ela é observável. Componente com estado ou condicional próprio ganha spec.
 - **Constante e tipo**: não tem comportamento. Mapa exaustivo anotado com `Record<Uniao, T>` também não, porque a exaustividade é do compilador, não de um teste (mesmo critério de `backend/testing.md`).
 - **Página que só compõe componentes já provados**, sem estado, sem escrita e sem ramo.
-- **O contrato com o backend**: nenhum teste daqui garante que o servidor devolve o que o contrato canônico declara. Campo novo ou estado novo do servidor chega como falha de parse, e o que se prova é o raio de alcance dessa falha, com um caso de payload desconhecido no ponto que consome o schema.
+- **O contrato com o backend**: quem garante que o servidor devolve o que o contrato declara é o próprio servidor (`@ZodResponse`) e o client gerado, atualizado pelo `api:drift` do `verify` (`backend/http-api.md`).
 
-## Limite do contrato compartilhado
+## Limite do contrato
 
-Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no contrato canônico, e o frontend a importa. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
+Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no DTO do backend, e o frontend importa a constante gerada. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
 
 Schema de form mais estrito que o do backend não é divergência, é decisão de produto (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes"). Nesse caso o spec do frontend leva um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
 
@@ -250,4 +269,4 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 
 ## Em aberto
 
-- **E2e de browser.** Não existe runner de browser no monorepo. O nível 5 já prova as sequências multi-tela pela árvore real de rotas, e o backend já prova o servidor com banco real, então o que falta é só o que exige um browser de verdade: cookie entre origens, redirect real de serviço externo, propagação de estado entre abas. Adotar isso é decisão maior que qualquer feature, porque traz seed de banco, provisionamento de usuário de teste e execução em CI. Enquanto não fechar, comportamento que só um browser prova fica sem teste automatizado e é verificado à mão.
+- **E2e além do critério de UI.** O Playwright roda os critérios de UI ("E2e de critério de UI"); cookie entre origens, redirect real de serviço externo e propagação de estado entre abas seguem verificados à mão, até um caso real pedir seed de banco e usuário de teste no e2e.

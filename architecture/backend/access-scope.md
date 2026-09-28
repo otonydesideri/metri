@@ -7,8 +7,8 @@ use_when:
   - "montar o e2e de um dado com dono"
 keywords: [escopo do dono, dono, identificador de dono, isolamento, prova A/B, where, SQL cru, recurso filho, fronteira de request, asset, registro de upload, não-encontrado, businessId, organizationId, tenantId, customerId]
 not_covered:
-  - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto (\"Delegações\") → project:architecture/INDEX"
-  - "autenticação e login (\"Delegações\") → project:architecture/INDEX"
+  - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
+  - "autenticação e login (\"Delegações\") → project:ARCHITECTURE"
   - "mascaramento de recurso de outro dono, anti-enumeração e status HTTP (\"Erros sensíveis\") → backend/errors"
   - "query de exibição, paginação, projeção e não-encontrado da leitura → backend/reading"
   - "storage → infrastructure/storage"
@@ -23,7 +23,7 @@ Este documento fixa a forma do contrato de escopo do dono, igual para qualquer p
 
 ### Contrato genérico, identidade de projeto
 
-**Obrigatório.** A Source define só o contrato genérico de escopo; a identidade concreta do dono e a entidade que o representa são decisão de projeto, delegada na matriz de `docs/architecture/INDEX.md` e registrada nas casas de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
+**Obrigatório.** A Source define só o contrato genérico de escopo; a identidade concreta do dono e a entidade que o representa são decisão de projeto, delegada na matriz de `skills/look-across/ACTIVATION.md`, "Delegation matrix", e registrada nas casas de `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto".
 
 ### De onde o dono chega
 

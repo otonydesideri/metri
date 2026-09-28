@@ -75,7 +75,7 @@ Pontos-chave:
 
 ## Nível e formato por ambiente
 
-`LoggerModule` é configurado com `forRootAsync`, lendo o ambiente do `EnvService`. Nível por ambiente numa tabela declarativa: `info` em produção, `warn` em teste (erro continua visível, o `LoggerErrorInterceptor` loga em `error`, sem inundar a saída dos e2e com a linha automática de request), `debug` em `local`/`development`. Transport `pino-pretty` (devDependency) só onde um humano lê o terminal (`local`/`development`); em produção e teste a saída é o JSON do pino direto no stdout, e o destino das linhas (coletor, agregador) é decisão de projeto (`docs/architecture/INDEX.md`, "Delegações"), fora deste documento.
+`LoggerModule` é configurado com `forRootAsync`, lendo o ambiente do `EnvService`. Nível por ambiente numa tabela declarativa: `info` em produção, `warn` em teste (erro continua visível, o `LoggerErrorInterceptor` loga em `error`, sem inundar a saída dos e2e com a linha automática de request), `debug` em `local`/`development`. Transport `pino-pretty` (devDependency) só onde um humano lê o terminal (`local`/`development`); em produção e teste a saída é o JSON do pino direto no stdout, e o destino das linhas (coletor, agregador) é decisão de projeto (`.metri/ARCHITECTURE.md`, "Delegações"), fora deste documento.
 
 ```ts
 // app.module.ts
@@ -127,7 +127,7 @@ O id default do Fastify é "req-N", incremental por processo, ambíguo com mais 
 Pontos-chave:
 
 - O header `X-Request-Id` na resposta localiza no log a request exata que um cliente reportou, sem depender de timestamp.
-- `x-request-id` vindo na request é ignorado: aceitar id de cliente arbitrário permite forjar o id de correlação no log. Aceitar só passa a fazer sentido com um proxy confiável na frente assinando o header, decisão que acompanha a topologia de deploy do projeto (`docs/architecture/INDEX.md`).
+- `x-request-id` vindo na request é ignorado: aceitar id de cliente arbitrário permite forjar o id de correlação no log. Aceitar só passa a fazer sentido com um proxy confiável na frente assinando o header, decisão que acompanha a topologia de deploy do projeto (`.metri/ARCHITECTURE.md`).
 
 Os campos entram progressivamente, conforme cada fronteira produz o fato que ela resolve: um interceptor global (`APP_INTERCEPTOR` no `AppModule`, depois do `LoggerErrorInterceptor`, ver "Bootstrap") chama `logger.assign(...)` com o que já se sabe naquele ponto, e cada fronteira posterior acrescenta o que ela resolveu. `assignResponse: true` na config do `LoggerModule` (ao lado de `pinoHttp`, ver "Nível e formato por ambiente") estende os campos à linha automática de response.
 
@@ -158,6 +158,9 @@ LoggerModule.forRoot({
         'req.headers.cookie',
         'res.headers["set-cookie"]',
         'res.headers.location',
+        // o identificador do dono (backend/access-scope.md): customerId no domínio didático
+        'customerId',
+        '*.customerId',
       ],
       censor: '[REDACTED]',
     },
@@ -167,11 +170,12 @@ LoggerModule.forRoot({
 
 Pontos-chave:
 
+- O identificador do dono ou tenant (a "Identidade do dono" de `.metri/ARCHITECTURE.md`) entra no `redact` por padrão, no primeiro nível e um abaixo, com o nome que o projeto usa; o campo de contexto que leva o mesmo id (o `callerId`, quando o dono é o próprio usuário) também.
 - `censor: '[REDACTED]'` deixa visível no log que a redação atuou. Remover o campo silenciosamente esconderia também a evidência de que a proteção está ativa.
 - Path de `redact` é case-sensitive. Header de request chega minúsculo no Node, então os paths acima cobrem o caso real; um path novo em maiúsculo não protege o header minúsculo equivalente.
 - Body de request não está na lista porque `pino-http` não loga body. Dado sensível passado como dado estruturado num log manual é responsabilidade de quem loga; não existe redação global que cubra objeto arbitrário.
 - Senha, cookie, token de qualquer natureza, URL assinada e payload com dado pessoal não entram em log manual. O `redact` acima protege os headers conhecidos, não argumentos arbitrários.
-- A linha automática inclui a URL. Segredo não pode ser transportado em path ou query que apareça em `req.url`; rota que fizer isso precisa mudar o transporte ou instalar serializer que remova o valor antes da primeira exposição externa. `res.headers.location` está no `redact` pelo mesmo motivo: um redirect pode carregar no `Location` um valor que não deveria aparecer no log.
+- A linha automática inclui a URL. Rota com o identificador do dono no path leva um serializer de `req` que o troca por `[REDACTED]` no `req.url`. Segredo não pode ser transportado em path ou query que apareça em `req.url`; rota que fizer isso precisa mudar o transporte ou instalar serializer que remova o valor antes da primeira exposição externa. `res.headers.location` está no `redact` pelo mesmo motivo: um redirect pode carregar no `Location` um valor que não deveria aparecer no log.
 
 ## Como logar num provider
 

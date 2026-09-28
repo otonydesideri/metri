@@ -1,0 +1,34 @@
+# Arquitetura do projeto
+
+## Stack
+
+- Sem desvio.
+
+## Caminho linear
+
+Padrão: `node_modules/metri/architecture/backend/layers.md`, "O caminho de uma request".
+
+- Sem desvio.
+
+## Capacidades ativas
+
+- defaults/ui: shadcn/ui, sem troca
+- infrastructure/storage: Cloudflare R2, bucket `orders-attachments`
+
+## Delegações
+
+- Identidade do dono: `Organization`, pelo `organizationId` da sessão
+
+## Caminhos do projeto
+
+- `apps/app-api/src/legacy/**` → backend/http-api
+
+## Exceções e defaults trocados
+
+- `frontend/components`, "Estados de leitura": a lista de pedidos pagina no servidor → ADR-0001
+
+## Áreas ativas
+
+<!-- rules-index -->
+
+- `frontend` → `rules/frontend/INDEX.md` (1 regra)

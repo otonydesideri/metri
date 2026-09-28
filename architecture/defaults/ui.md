@@ -7,7 +7,7 @@ use_when:
   - "ajustar o visual de um componente do `@metri/ui`"
   - "mexer nas CSS variables de tema, na tipografia ou no espaçamento do `@metri/ui`"
   - "mexer no `components.json`, nos `exports`, nos `imports` ou no `cn` do `@metri/ui`"
-activation: "O projeto tem interface?"
+activation: "O projeto tem interface? O estilo visual (docs/DESIGN.md) é decidido no /shape."
 applies_to:
   - "packages/ui/components.json"
   - "packages/ui/package.json"
@@ -21,18 +21,22 @@ not_covered:
   - "o formato de import e a composição no app → frontend/components"
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
-adr: [ADR-0001]
+adr: [metri:ADR-0001]
 status: active
 ---
 # Biblioteca de UI padrão
 
 ## Kit
 
-- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn (ADR-0001).
+- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn (metri:ADR-0001): `shadcn init --monorepo` no monorepo que nasce dele.
+- Monorepo que não nasceu do shadcn segue o caminho manual da documentação (https://ui.shadcn.com/docs/monorepo):
+  - `packages/ui/components.json` com o `style`, o `baseColor` e os aliases de "Componente novo", e `"tailwind": { "config": "", "css": "src/styles/globals.css" }` (Tailwind v4);
+  - o `globals.css` abre com `@import "tailwindcss"` e um `@source` para os arquivos de `apps/`, relativo a ele, para o Tailwind achar as classes dos apps;
+  - o `app-web` depende do `@metri/ui` (`workspace:*`) e importa `@metri/ui/styles/globals.css` na entrada.
 - O `components.json` do `@metri/ui` fixa `"style": "new-york"` e `"tailwind": { "baseColor": "neutral" }`.
 - Os componentes do shadcn são a base; nenhum componente é recriado do zero.
 - O visual vem dos tokens do `DESIGN.md` do projeto.
-- Kit diferente num projeto: ADR do projeto + regra em `docs/architecture/frontend/`.
+- Kit diferente num projeto: ADR do projeto + regra em `.metri/rules/frontend/`.
 
 ## Componente novo
 
@@ -130,7 +134,7 @@ export {
 - Os tokens são as CSS variables de tema do shadcn (`--background`, `--foreground`, `--primary`, `--radius`...), em `packages/ui/src/styles/globals.css`.
 - Valor claro em `:root`, valor escuro em `.dark`; o `@theme inline` expõe cada variável ao Tailwind (`bg-background`, `text-foreground`).
 - Cor nova entra como variável em `:root` e em `.dark` e é exposta no `@theme inline`.
-- Os valores de partida são os do `DESIGN.md`; a base neutra é `skills/shape/DESIGN-TEMPLATE.md`.
+- Os valores são os do `DESIGN.md`, a fonte deles, e o `metri design-tokens` confere o tema contra ele; a base neutra é `skills/shape/DESIGN-TEMPLATE.md`.
 - O escuro liga pela classe no `documentElement`. O provider de tema do `@metri/ui` é o next-themes: o `ThemeProvider` do pacote o configura com `attribute="class"`, `themes={['light', 'dark']}` e `enableSystem={false}`, pelo contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 - O script inline do `index.html` do `app-web` aplica a classe antes do primeiro paint e lê a mesma chave de armazenamento que o `ThemeProvider` usa (a `theme` do next-themes): `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 - O `sonner.tsx` gerado lê o tema pelo `useTheme()` do next-themes e funciona sem wrapper, montado dentro do `ThemeProvider`.
@@ -193,7 +197,7 @@ export function cn(...inputs: ClassValue[]) {
 
 ## O que é do projeto
 
-- `docs/DESIGN.md`; os valores dos tokens migram para o `globals.css` do `@metri/ui` com a slice de design system.
+- `docs/DESIGN.md`, com os valores dos tokens que o `globals.css` do `@metri/ui` segue.
 
 ## Verificação
 

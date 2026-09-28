@@ -13,7 +13,7 @@ keywords: [e-mail, vendor de e-mail, Resend, ResendMailService, RESEND_API_KEY, 
 not_covered:
   - "a regra transversal de organização — classe de infra sem contrato, contrato por fluxo, registro no `ServicesModule`, dublê por contrato → infrastructure/services"
   - "o mecanismo que dispara o envio, chamada direta, evento ou job → backend/operation-routing"
-  - "o vendor, a configuração, o domínio e o remetente, que são decisão de projeto (\"Capacidades ativas\") → project:architecture/INDEX"
+  - "o vendor, a configuração, o domínio e o remetente, que são decisão de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
 examples: [infrastructure/mail.examples.md]
 status: active
 ---
@@ -21,7 +21,7 @@ status: active
 
 O envio de e-mail: uma classe de infra que expõe o client do vendor e um contrato por fluxo real do produto (confirmação de pedido, aviso de fatura vencida), consumido por quem dispara aquele fluxo, nunca pela classe de infra direto.
 
-O vendor de e-mail é delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
+O vendor de e-mail é delegação de projeto (`.metri/ARCHITECTURE.md`, "Capacidades ativas"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## A classe de infra
 
@@ -102,4 +102,4 @@ Pontos-chave:
 
 ## Em aberto
 
-- **Vendor de e-mail.** O vendor de e-mail segue aberto como delegação de projeto (`docs/architecture/INDEX.md`, "Capacidades ativas"), resolvida com o primeiro fluxo real; até lá, `ResendMailService` e a checagem do campo `error` valem como ilustração da forma. Quando o vendor escolhido pede forma que este documento não tem, a forma entra aqui antes do código.
+- **Vendor de e-mail.** O vendor de e-mail segue aberto como delegação de projeto (`.metri/ARCHITECTURE.md`, "Capacidades ativas"), resolvida com o primeiro fluxo real; até lá, `ResendMailService` e a checagem do campo `error` valem como ilustração da forma. Quando o vendor escolhido pede forma que este documento não tem, a forma entra aqui antes do código.

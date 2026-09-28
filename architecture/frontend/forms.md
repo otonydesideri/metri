@@ -83,7 +83,7 @@ Quando o dado chega depois da montagem: **Obrigatório.** A tela aguarda o dado 
 
 ### Schema de form e schema de API são coisas diferentes
 
-**Obrigatório.** Schema de form e schema de API são declarações separadas, mesmo quando coincidem campo a campo: o de form mora em `shared/schemas/<módulo>.schema.ts`, e o de API é o contrato canônico do pacote dono (`backend/http-api.md`, "Contrato de API compartilhado").
+**Obrigatório.** Schema de form e schema de API são declarações separadas, mesmo quando coincidem campo a campo: o de form mora em `shared/schemas/<módulo>.schema.ts`, e o de API é o gerado em `api/model.zod.ts` (`backend/http-api.md`, "Contrato de API: o backend é a fonte").
 
 **Obrigatório.** O schema de form carrega o que é da UI: mensagem de erro em português, campo que o form aceita vazio mas a API exige, transformação aplicada antes de enviar (normalizar e-mail, parsear data) e restrição mais estreita que o contrato do backend.
 
@@ -95,7 +95,7 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 
 > **Por quê.** A entrada de telefone é fixa num país enquanto o value object do backend aceita qualquer E.164: mudar a regra de entrada depois mexe num arquivo só.
 
-**Obrigatório.** Depois do parse e da transformação do schema de form, a chamada recebe o input tipado pelo contrato canônico da API, importado do pacote dono, nunca uma cópia local nem o tipo do form (`frontend/data-fetching.md`, "Funções de API").
+**Obrigatório.** Depois do parse e da transformação do schema de form, a chamada recebe o input tipado pelo contrato gerado em `api/model.zod.ts`, nunca uma cópia local nem o tipo do form (`frontend/data-fetching.md`, "Funções de API").
 
 > **Por quê.** O schema de form muda por requisito de tela, o de API muda por contrato do backend, e um não arrasta o outro.
 
@@ -156,7 +156,7 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 - Formulário fica inline na página (ou dentro do componente-modal), sem camada "form genérico + wrapper", e a escrita vem de hook de mutation ou de comando de client externo no handler, não embutida no form?
 - O submit usa `handleFormSubmit`, commit por campo usa `handleFieldCommit` com `trigger`/`getValues`, e o campo é string com a conversão no submit?
 - O `defaultValues` referencia const nomeada, fora do componente quando estática e dentro quando deriva de dado disponível na montagem?
-- Schema de form em `shared/schemas/<módulo>.schema.ts`, separado do schema de API, que vem do contrato canônico do pacote dono sem cópia local, cada tipo via `z.infer`?
+- Schema de form em `shared/schemas/<módulo>.schema.ts`, separado do schema de API, que vem de `api/model.zod.ts` sem cópia local?
 - Campo que o pacote não entrega mora em `shared/components/inputs/`, montado sobre o compound?
 - Campo mascarado monta o `use-mask-input` por `withMask`, com o array da máscara mais curta para a mais longa e `showMaskOn*` desligado?
 - Descrição fica fora do `<label>`, ligada por `aria-describedby`, e botão se nomeia sozinho?
@@ -165,7 +165,7 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 
 - `frontend/routing.md`: o modal de tarefa que contém o formulário.
 - `frontend/data-fetching.md`: hook de mutation, estado em voo e notificação.
-- `backend/http-api.md`: o contrato canônico de API que a chamada usa.
+- `backend/http-api.md`: o contrato de API que a chamada usa.
 - `docs/DESIGN.md`: o layout visual do formulário.
 - `frontend/structure.md`: a casa de `shared/schemas/` e `shared/components/`.
 - `frontend/helpers.md`: tipo derivado do schema.

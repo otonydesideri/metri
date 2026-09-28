@@ -1,6 +1,6 @@
 # Third-party licenses
 
-Skills whose SKILL.md opens with "Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)" adapt https://github.com/mattpocock/skills at commit `c55ee46073ed923f86ce59a5eb3b6d895095d1b7`, under this license:
+Skills whose SKILL.md opens with "Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)" adapt https://github.com/mattpocock/skills at commit `c55ee46073ed923f86ce59a5eb3b6d895095d1b7`, under this license. The screen pattern ticket, "Padrão de tela: <tipo>" in `build/TICKET-TYPES.md`, "pattern", adapts that repository's `skills/engineering/prototype` (UI.md), at the same commit:
 
 ```text
 MIT License

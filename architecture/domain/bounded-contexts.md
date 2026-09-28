@@ -13,7 +13,8 @@ not_covered:
   - "join e composição de leitura entre contextos → backend/reading"
   - "colocação entre app e pacote → general/code-placement"
   - "o mecanismo de uma reação → backend/operation-routing"
-  - "a divisão concreta de cada projeto (\"Delegações\") → project:architecture/INDEX"
+  - "a divisão concreta de cada projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
+activation: "O domínio dos UCs mostra um dos sinais de `domain/bounded-contexts.md` para mais de um modelo, como o mesmo termo com dois significados?"
 status: active
 ---
 # Bounded context
@@ -72,7 +73,7 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 - Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, ponto em aberto de `backend/modules.md`: pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`, nenhum mecanismo próprio nasce antes da decisão.
 - Leitura entre contextos segue a regra de join de `backend/reading.md`, "Regras absolutas da query".
 - A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Contrato de transação entre agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos": ele recebe as entidades dos dois lados (`backend/transactions.md`).
-- A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é delegação de projeto, com gatilho, registro e condição de ADR em `docs/architecture/INDEX.md`, "Delegações".
+- A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é decisão de projeto: o gatilho é a `activation` desta regra, e o registro, a linha dela em `.metri/ARCHITECTURE.md`, "Capacidades ativas".
 
 ## Verificação
 
@@ -91,4 +92,4 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 - `backend/operation-routing.md`: o mecanismo de uma reação.
 - `backend/layers.md`, `general/code-placement.md`: estrutura layer-first e colocação entre app e pacote.
 - `skills/writing-for-agents/RULE-FORMAT.md`: regra de transição.
-- `docs/architecture/INDEX.md`: a divisão concreta como decisão de projeto.
+- `.metri/ARCHITECTURE.md`: a divisão concreta como decisão de projeto.

@@ -1,33 +1,34 @@
 ---
 id: backend/http-api
-description: "a porta HTTP de um módulo — controller por ação, DTO Zod de request, validação de params, query e body na fronteira, presenter e corpo de resposta — e o contrato de API compartilhado com o frontend: a representação canônica única do schema de request e response, da união fechada e do limite que os dois lados consomem."
+description: "a porta HTTP de um módulo — controller por ação, DTO Zod de request e de response, validação de params, query e body na fronteira, presenter e corpo de resposta — e o contrato de API: os DTOs são a fonte, o OpenAPI é gerado deles e o app-web gera dele o client, com a união fechada e o limite que os dois lados usam."
 use_when:
   - "criar endpoint ou controller"
   - "escrever DTO ou schema de API"
   - "mudar a forma de uma resposta"
   - "expor um contrato ao frontend"
   - "levar ao frontend uma união fechada ou um limite que a API impõe"
+  - "gerar o OpenAPI ou o client do app-web"
 applies_to:
   - "apps/app-api/src/infra/http/controllers/**"
   - "apps/app-api/src/infra/http/dtos/**"
   - "apps/app-api/src/infra/http/presenters/**"
-keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, contrato canônico, união fechada, sortBy, sortDirection, ApiErrorType, "@metri/contracts"]
+  - "apps/app-api/src/openapi.ts"
+keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, ZodResponse, ApiTags, OpenAPI, cleanupOpenApiDoc, api:generate, api:drift, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, união fechada, sortBy, sortDirection, ApiErrorType]
 not_covered:
   - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
   - "o adaptador fino em geral → backend/application"
-  - "o registro global do pipe de validação → infrastructure/runtime"
+  - "o registro global do pipe de validação e do serializer → infrastructure/runtime"
   - "a superfície `/api` e same-origin → general/http-surface"
   - "query de exibição e paginação → backend/reading"
   - "o escopo do dono → backend/access-scope"
-  - "o consumo do contrato no frontend — cliente HTTP, funções de `api/` → frontend/data-fetching"
+  - "o client gerado no frontend — `api/`, o Orval e o cliente HTTP → frontend/data-fetching"
   - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
   - "o schema de form → frontend/forms"
-  - "a colocação de código entre app e pacote → general/code-placement"
 status: active
 ---
 # API HTTP
 
-A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de caso de uso e resultado em resposta, sem decidir nada. Quando o frontend consome o mesmo contrato, a porta passa a ter dois lados, e o que precisa coincidir entre eles é decidido aqui. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
+A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de caso de uso e resultado em resposta, sem decidir nada. Ela é também a fonte do contrato de API que o frontend consome. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
 ## Regras
 
@@ -71,21 +72,23 @@ A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de cas
 
 - **Exceção.** Listagem paginada: usa o `PaginatedResult<T>` de `backend/reading.md`.
 
-### Contrato de API compartilhado
+### Contrato de API: o backend é a fonte
 
-**Obrigatório.** Schema consumido só pelo backend vive em `infra/http/dtos/<módulo>/`.
+**Obrigatório.** O contrato de API são os DTOs Zod do app-api, de request e de response, em `infra/http/dtos/<módulo>/`. O resto deriva deles: o app-api gera o OpenAPI (`apps/app-api/openapi.json`), e o app-web gera dele as funções de `api/<módulo>.ts` e os schemas e tipos de `api/model.zod.ts` (`frontend/data-fetching.md`, "Funções de API").
 
-Quando frontend e backend consomem o mesmo contrato de API (schema de request ou response, união fechada que a API aceita ou devolve, limite que ela impõe): **Obrigatório.** Ele tem uma representação canônica única, no pacote dono do conceito, e o controller e o frontend importam de lá.
+> **Por quê.** O contrato é o que o servidor valida e serializa de fato, e o client que ficou para trás aparece no `verify`.
 
-> **Por quê.** O contrato é a fronteira entre os dois lados, e é isso que dá a ele ownership compartilhado inequívoco: a casa no pacote é o caso permitido de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", não promoção pela contagem de consumidores.
+**Obrigatório.** Todo endpoint declara a resposta com `@ZodResponse({ status, type })`, com o `status` explícito, e o controller leva `@ApiTags('<módulo>')`, que dá o arquivo `api/<módulo>.ts` do app-web.
 
-**Proibido.** Duas cópias do mesmo contrato, uma em cada lado, mantidas em sincronia à mão.
+**Obrigatório.** O DTO de resposta é `createZodDto(<schema>, { codec: true })`, e data nele é um codec de string ISO para `Date` (`z.codec(z.iso.datetime(), z.date(), ...)`): a resposta sai pelo `encode`, e o JSON Schema do OpenAPI aceita a data.
 
-**Proibido.** Tratar como contrato de API o que não é: o schema de form é do frontend (`frontend/forms.md`), e tipo local de tela não sobe para o pacote por se parecer com um do contrato.
+**Obrigatório.** Código gerado leva o cabeçalho de gerado e muda só pelo gerador: mudar o contrato é mudar o DTO e rodar `pnpm api:generate`.
+
+**Proibido.** Tratar como contrato de API o que não é: o schema de form é do frontend (`frontend/forms.md`), e a regra que o OpenAPI não carrega (`.refine`, `.transform`, mensagem de erro) mora nele.
 
 ### União fechada e limite do contrato
 
-Quando um parâmetro varia num conjunto fechado (coluna de ordenação, direção, status): **Obrigatório.** Ele nasce como união fechada no contrato canônico, e o frontend usa essa mesma união, sem redeclarar os valores.
+Quando um parâmetro varia num conjunto fechado (coluna de ordenação, direção, status): **Obrigatório.** Ele nasce como `z.enum` no DTO, nomeado com `.meta({ id: '<Nome>' })`, e o frontend usa o schema gerado com esse nome (`OrderStatus`), sem redeclarar os valores.
 
 **Proibido.** `z.string()` livre no frontend para parâmetro de conjunto fechado.
 
@@ -93,7 +96,7 @@ Quando um parâmetro varia num conjunto fechado (coluna de ordenação, direçã
 
 **Obrigatório.** O search param que guarda o valor na URL do app usa o mesmo nome do query param da API (`sortBy`, `sortDirection`): o caminho do valor — URL, hook, função de `api/` — não renomeia nada no meio.
 
-Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade): **Obrigatório.** O limite é exportado pelo contrato canônico e importado pelo frontend, nunca redeclarado numa constante do app.
+Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade): **Obrigatório.** O limite é declarado no DTO, e o frontend importa a constante que o gerador exporta em `api/model.zod.ts`, nunca uma constante do app.
 
 ## Aplicação
 
@@ -101,22 +104,37 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - Controller e caso de uso entram nas listas de `http.module.ts`, agrupados por comentário de área (`backend/modules.md`).
 - O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
-- O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`, como parte do contrato de API; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
-- O contrato compartilhado nunca vai para um pacote de contratos que junte domínios diferentes (`@metri/contracts`): é o catch-all que `general/code-placement.md` proíbe.
-- Qual pacote é dono de cada contrato é decisão de projeto (`docs/architecture/INDEX.md`, "Delegações").
-- O limite que a API impõe sai do contrato canônico, e o schema de request o usa; o schema de form do frontend importa o mesmo valor, e pode ser mais estrito que ele (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
+- O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
+- O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`).
+- A geração: `src/openapi.ts` cria o app com `{ preview: true }` e o mesmo prefixo `/api` do `main.ts`, e escreve `openapi.json` com `SwaggerModule.createDocument` e o `cleanupOpenApiDoc` do nestjs-zod. Roda a partir do build (`nest build`): o tsx descarta o metadata dos decorators. O `operationIdFactory` devolve o nome do controller sem o sufixo (`CreateOrderController` → `createOrder` no app-web).
+- O script `api:generate` da raiz roda os dois lados, o `openapi.json` e o Orval do app-web; o `verify` o roda e falha quando ele muda algum arquivo (`api:drift`).
+- O limite nasce no DTO, e o schema de form do frontend importa a constante gerada, podendo ser mais estrito que ela (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 
 ```ts
-// no contrato canônico, no pacote dono do conceito
-export const ORDER_NOTE_MIN_LENGTH = 8;
-export const ORDER_NOTE_MAX_LENGTH = 128;
-
-export const createOrderBodySchema = z.object({
-  note: z.string().min(ORDER_NOTE_MIN_LENGTH).max(ORDER_NOTE_MAX_LENGTH),
+// apps/app-api/src/infra/http/dtos/order/create-order.dto.ts
+export const createOrderSchema = z.object({
+  note: z.string().min(8).max(128),
 });
+
+export class CreateOrderDto extends createZodDto(createOrderSchema) {}
+
+const isoDate = z.codec(z.iso.datetime(), z.date(), {
+  decode: (value) => new Date(value),
+  encode: (date) => date.toISOString(),
+});
+
+export class OrderResponseDto extends createZodDto(
+  z.object({ order: z.object({ id: z.uuid(), createdAt: isoDate }).meta({ id: 'Order' }) }),
+  { codec: true },
+) {}
 ```
 
-- Com uma representação só, não há espelho a manter; cada lado continua provando o limite onde o consome (`frontend/testing.md`, "Limite do contrato compartilhado").
+```ts
+// apps/app-web: a constante que o gerador exporta de api/model.zod.ts
+import { createOrderDtoNoteMax } from '@/api/model.zod';
+```
+
+- Com uma fonte só, não há espelho a manter; cada lado continua provando o limite onde o consome (`frontend/testing.md`, "Limite do contrato").
 
 ## Verificação
 
@@ -124,19 +142,18 @@ export const createOrderBodySchema = z.object({
 - Toda resposta de erro, inclusive a recusa nativa do framework, sai no envelope único com `type` no `ApiErrorType`?
 - Path param entra como objeto, texto tem `.max()`, e id é `z.uuid()`?
 - A resposta nomeia o que carrega, com o agregado passado por presenter, e sem chave genérica fora do envelope de paginação?
-- Contrato que frontend e backend consomem tem uma representação canônica só, no pacote dono do conceito, sem `@metri/contracts` e sem cópia mantida à mão em nenhum lado?
-- Parâmetro de conjunto fechado usa a união do contrato canônico, com o mesmo nome do query param na URL do app?
-- Limite que a API impõe vem do contrato canônico, sem constante redeclarada no frontend?
+- O contrato mora nos DTOs, com `@ZodResponse` em todo endpoint e `@ApiTags` em todo controller, e o código gerado está atualizado e sem edição à mão (`api:drift`)?
+- Parâmetro de conjunto fechado é `z.enum` no DTO e o frontend usa o schema gerado, com o mesmo nome do query param na URL do app?
+- Limite que a API impõe vem da constante gerada, sem constante redeclarada no frontend?
 
 ## Referências
 
 - `backend/errors.md`: taxonomia, tradução e envelope de erro.
 - `backend/application.md`: o adaptador fino.
-- `infrastructure/runtime.md`: registro global do pipe.
+- `infrastructure/runtime.md`: registro global do pipe e do serializer.
 - `backend/reading.md`: query de exibição e paginação.
 - `backend/modules.md`: registro no `http.module.ts`.
-- `general/code-placement.md`: colocação entre app e pacote.
-- `frontend/data-fetching.md`: o consumo do contrato no frontend.
+- `frontend/data-fetching.md`: o client gerado no frontend.
 - `frontend/helpers.md`: casa de constantes e tipos no frontend.
 - `frontend/forms.md`: o schema de form, separado do contrato.
 - `frontend/testing.md`: prova do limite do contrato em cada lado.

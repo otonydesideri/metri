@@ -28,7 +28,7 @@ status: active
 
 > **Por quê.** Valor arbitrário foge do design system e não acompanha token nem tema.
 
-Quando falta um token: **Obrigatório.** Checar primeiro se ele já existe no `@metri/ui`; se for genuinamente novo, a adição é no `@metri/ui`, nunca um valor solto no app.
+Quando falta um token: **Obrigatório.** Checar primeiro se ele já existe no `@metri/ui`; se for genuinamente novo, ele entra primeiro no `docs/DESIGN.md` e, dele, no `@metri/ui` (`defaults/ui.md`, "Tema e dark mode do `app-web`"), nunca um valor solto no app.
 
 ### Tema: contrato de classe e provider no `@metri/ui`
 

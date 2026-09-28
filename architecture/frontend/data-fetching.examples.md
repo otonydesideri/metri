@@ -1,54 +1,5 @@
 # Busca de dados no frontend: exemplos
 
-## api/order.ts
-
-```ts
-// api/order.ts
-import {
-  type CreateOrderInput,
-  type FetchOrdersFilters,
-  type Order,
-  type OrderDetails,
-  type OrderList,
-  orderDetailsResponseSchema,
-  orderListSchema,
-  orderResponseSchema,
-} from '@metri/<pacote-dono>';
-import { httpClient } from '@/lib/http/client';
-
-// o corpo nomeia o recurso ({ order }): a função desembrulha e devolve o recurso
-export async function fetchOrder(id: string): Promise<OrderDetails> {
-  const { order } = await httpClient(`/orders/${id}`, {
-    output: orderDetailsResponseSchema,
-  });
-  return order;
-}
-
-export function fetchOrders(filters?: FetchOrdersFilters): Promise<OrderList> {
-  return httpClient('/orders', {
-    query: filters,
-    output: orderListSchema,
-  });
-}
-
-export async function createOrder(input: CreateOrderInput): Promise<Order> {
-  const { order } = await httpClient('/orders', {
-    method: 'POST',
-    body: input,
-    output: orderResponseSchema,
-  });
-  return order;
-}
-
-export async function cancelOrder(id: string): Promise<Order> {
-  const { order } = await httpClient(`/orders/${id}/cancel`, {
-    method: 'POST',
-    output: orderResponseSchema,
-  });
-  return order;
-}
-```
-
 ## useConfirmOrder
 
 ```ts
@@ -56,13 +7,13 @@ export async function cancelOrder(id: string): Promise<Order> {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { confirmOrder } from '@/api/order';
 import { orderKeys } from './keys';
-import type { OrderDetails } from '@metri/<pacote-dono>';
+import type { OrderDetails } from '@/api/model.zod';
 
 export function useConfirmOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: confirmOrder,
+    mutationFn: (id: string) => confirmOrder(id),
     onSuccess: ({ order, invoice }) => {
       // a resposta carrega o estado novo — inclusive a fatura emitida no
       // mesmo commit: entra no cache do detalhe sem outra ida ao servidor
@@ -91,11 +42,11 @@ export function useConfirmOrder() {
 // hooks/order/use-orders.ts
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import type { FetchOrdersFilters } from '@metri/<pacote-dono>';
+import type { FetchOrdersParams } from '@/api/model.zod';
 import { fetchOrders } from '@/api/order';
 import { orderKeys } from './keys';
 
-export function useOrders(filters: FetchOrdersFilters) {
+export function useOrders(filters: FetchOrdersParams) {
   const queryClient = useQueryClient();
   const { status, page, pageSize } = filters;
 
@@ -157,7 +108,7 @@ export function useCancelOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: cancelOrder,
+    mutationFn: (id: string) => cancelOrder(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: orderKeys.detail(id) });
       const previous = queryClient.getQueryData<OrderDetails>(orderKeys.detail(id));
