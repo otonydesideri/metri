@@ -13,7 +13,7 @@ applies_to:
   - "apps/app-api/src/infra/http/dtos/**"
   - "apps/app-api/src/infra/http/presenters/**"
   - "apps/app-api/src/openapi.ts"
-keywords: [controller, endpoint, DTO, createZodDto, ZodValidationPipe, ZodResponse, ApiTags, OpenAPI, cleanupOpenApiDoc, api:generate, api:drift, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, união fechada, sortBy, sortDirection, ApiErrorType]
+keywords: [controller, endpoint, DTO, setOpenAPIVersion, ApiExcludeController, redirect, OAuth, createZodDto, ZodValidationPipe, ZodResponse, ApiTags, OpenAPI, cleanupOpenApiDoc, api:generate, api:drift, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, união fechada, sortBy, sortDirection, ApiErrorType]
 not_covered:
   - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
   - "o adaptador fino em geral → backend/application"
@@ -80,6 +80,8 @@ A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de cas
 
 **Obrigatório.** Todo endpoint declara a resposta com `@ZodResponse({ status, type })`, com o `status` explícito, e o controller leva `@ApiTags('<módulo>')`, que dá o arquivo `api/<módulo>.ts` do app-web.
 
+- **Exceção.** Redirect de protocolo que roda antes da sessão (o início e o retorno do OAuth): responde 302 pelo `reply.redirect`, sem `@ZodResponse` e fora do OpenAPI (`@ApiExcludeController()`), com `@Public()` e o throttle global (`infrastructure/runtime.md`, "Composição no `AppModule`").
+
 **Obrigatório.** O DTO de resposta é `createZodDto(<schema>, { codec: true })`, e data nele é um codec de string ISO para `Date` (`z.codec(z.iso.datetime(), z.date(), ...)`): a resposta sai pelo `encode`, e o JSON Schema do OpenAPI aceita a data.
 
 **Obrigatório.** Código gerado leva o cabeçalho de gerado e muda só pelo gerador: mudar o contrato é mudar o DTO e rodar `pnpm api:generate`.
@@ -106,7 +108,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
 - O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
 - O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`).
-- A geração: `src/openapi.ts` cria o app com `{ preview: true }` e o mesmo prefixo `/api` do `main.ts`, e escreve `openapi.json` com `SwaggerModule.createDocument` e o `cleanupOpenApiDoc` do nestjs-zod. Roda a partir do build (`nest build`): o tsx descarta o metadata dos decorators. O `operationIdFactory` devolve o nome do controller sem o sufixo (`CreateOrderController` → `createOrder` no app-web).
+- A geração: `src/openapi.ts` cria o app com `{ preview: true }` e o mesmo prefixo `/api` do `main.ts`, e escreve `openapi.json` com `SwaggerModule.createDocument` e o `cleanupOpenApiDoc` do nestjs-zod. O `DocumentBuilder` fixa `.setOpenAPIVersion('3.1.0')`: o `.nullable()` do Zod 4 sai como `anyOf` com `null`, que o Orval lê. Roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"): o tsx descarta o metadata dos decorators. O `operationIdFactory` devolve o nome do controller sem o sufixo (`CreateOrderController` → `createOrder` no app-web).
 - O script `api:generate` da raiz roda os dois lados, o `openapi.json` e o Orval do app-web; o `verify` o roda e falha quando ele muda algum arquivo (`api:drift`).
 - O limite nasce no DTO, e o schema de form do frontend importa a constante gerada, podendo ser mais estrito que ela (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 

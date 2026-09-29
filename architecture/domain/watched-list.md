@@ -8,7 +8,7 @@ use_when:
 applies_to:
   - "apps/app-api/src/domain/enterprise/*-list.ts"
   - "apps/app-api/src/domain/enterprise/*-ids.ts"
-keywords: [WatchedList, compareItems, "getItems()", "getNewItems()", "getRemovedItems()", "update()", "add()", "remove()", "exists()", delta, coleção filha, coleção de vínculo, substituição completa, ProductPhotoList, ProductTagIds, OrderItemList, replacePhotos, "-list.ts", "-ids.ts", "@metri/core/entities"]
+keywords: [WatchedList, compareItems, sameValueAs, identidade estrutural, "getItems()", "getNewItems()", "getRemovedItems()", "update()", "add()", "remove()", "exists()", delta, coleção filha, coleção de vínculo, substituição completa, ProductPhotoList, ProductTagIds, OrderItemList, replacePhotos, "-list.ts", "-ids.ts", "@metri/core/entities"]
 not_covered:
   - "a escrita do delta no repositório → backend/persistence"
   - "a ordem do arquivo físico em volta da escrita → infrastructure/storage"
@@ -88,9 +88,13 @@ Exemplo completo: watched-list.examples.md#product
 
 O mapper monta a lista na reconstituição (`new ProductPhotoList(photos)` dentro do `toDomain()`), exatamente como o `OrderPrismaMapper` de `backend/persistence.md` faz com `OrderItemList`.
 
+Quando o filho não tem identidade para o cliente, que envia só o conjunto final (os intervalos de um horário, as faixas de uma tabela de frete): **Obrigatório.** O `compareItems` compara pela identidade estrutural, um `sameValueAs()` da entidade filha sobre os campos de negócio, e o input não traz id de filho.
+
+> **Por quê.** A substituição recria cada item do input; comparado pelo id, o `update()` marcaria o conjunto inteiro como removido e reinserido a cada gravação, mesmo sem mudança.
+
 ## O caso de uso de substituição completa
 
-O ponto que decide se o padrão funciona: a substituição precisa preservar a identidade que `compareItems` usa. Numa coleção de itens com conteúdo próprio, essa identidade é o id da linha, então item mantido entra na substituição como a instância corrente, localizada por id na própria coleção, nunca recriado. Recriar todos os itens do input com ids novos faria `compareItems` não reconhecer nada, e o delta degeneraria em deletar e reinserir a coleção inteira a cada edição; com arquivo físico, em novo upload de tudo.
+O ponto que decide se o padrão funciona: a substituição precisa preservar a identidade que `compareItems` usa. Numa coleção de itens com conteúdo próprio, essa identidade é o id da linha, então item mantido entra na substituição como a instância corrente, localizada por id na própria coleção, nunca recriado. No filho de identidade estrutural ("Especialização e entidade"), o caso de uso recria os itens do input, e o `sameValueAs()` reconhece os mantidos. Recriar todos os itens do input com ids novos faria `compareItems` não reconhecer nada, e o delta degeneraria em deletar e reinserir a coleção inteira a cada edição; com arquivo físico, em novo upload de tudo.
 
 O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. Item novo traz o id do registro de upload, nunca a chave, que não é aceita de cliente (`infrastructure/storage.md`, "Regras absolutas do storage"); o caso de uso resolve a chave pelo registro, no fluxo de `infrastructure/storage.md`, "O upload direto e o registro pendente".
 

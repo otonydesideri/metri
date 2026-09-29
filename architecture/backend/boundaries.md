@@ -10,7 +10,7 @@ applies_to:
   - "apps/app-api/**"
   - "packages/core/src/**"
   - "packages/utils/src/**"
-keywords: [import, grafo de dependência, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
+keywords: [import, grafo de dependência, allowlist, biblioteca de cálculo puro, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
 not_covered:
   - "as regras próprias do frontend → frontend/structure"
 status: active
@@ -41,12 +41,18 @@ main.ts / app.module.ts
 | --- | --- | --- |
 | `packages/core/src` | builtins do Node (`node:*`) | Qualquer pacote externo: NestJS, Prisma, Zod |
 | `packages/utils/src` | builtins do Node (`node:*`) | Qualquer pacote externo, mais `@metri/core` |
-| `src/domain/enterprise` | `@metri/core`, `@metri/utils`, `node:*` | NestJS, `@metri/db`, Zod, `src/infra`, `test/` |
+| `src/domain/enterprise` | `@metri/core`, `@metri/utils`, `node:*` e as bibliotecas de cálculo puro permitidas, abaixo | NestJS, `@metri/db`, Zod, `src/infra`, `test/` |
 | `src/domain/application` | O de cima, mais `Injectable` de `@nestjs/common` | O resto de `@nestjs/common` e qualquer outro `@nestjs/*`, `nestjs-pino`, `@metri/db`, Zod, `src/infra`, `test/` |
 | `src/infra` | `src/domain`, `@metri/core`, `@metri/utils`, bibliotecas de infraestrutura | `test/` |
 | `test/` | Tudo | |
 
 Paths de `src/` e `test/` são relativos a `apps/app-api/`.
+
+Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client de vendor (data e fuso, decimal): **Permitido.** `src/domain` a importa, quando uma regra da Source a nomeia (`date-fns` e `@date-fns/tz`, `general/date-time.md`) ou um ADR do projeto nomeia cada pacote; o check de fronteiras do projeto usa essa lista.
+
+> **Por quê.** Refazer à mão o cálculo que a biblioteca resolve (horário de verão, arredondamento) é a classe de bug que ela existe para evitar, e um contrato de infra em volta dela seria abstração sem troca real.
+
+- **Exceção.** `packages/core` e `packages/utils` ficam sem dependência externa mesmo assim: a permissão vale só para o domínio do app.
 
 ## `packages/core` não depende de nada externo
 

@@ -186,6 +186,10 @@ Exemplo completo: model.examples.md#money
 
 - `add()` devolve instância nova, `zero()` dá nome ao caso conhecido, e uma invariante de operação (somar moedas diferentes, por exemplo) falharia aqui dentro. Um VO que só valida e normaliza (um slug, por exemplo) é o mínimo do padrão, não o teto dele.
 
+O VO de um endereço público, que vira o primeiro segmento de URL na raiz da SPA, recusa as palavras reservadas (`general/http-surface.md`, "Superfície HTTP") e devolve na falha uma sugestão livre:
+
+Exemplo completo: model.examples.md#productslug
+
 Os arquivos seguem a tabela "Onde cada arquivo mora" do `backend/layers.md`: `<entidade>.entity.ts` na raiz de `enterprise/`, value object em `enterprise/value-objects/<nome>.vo.ts`, enum de domínio no mesmo formato em `enterprise/enums/<nome>.enum.ts`, classes de erro do módulo em `enterprise/errors/<módulo>.errors.ts` (`backend/errors.md`), lista rastreada ao lado da entidade dona (`domain/watched-list.md`) e evento em `enterprise/events/` (`backend/events.md`).
 
 ## Verificação

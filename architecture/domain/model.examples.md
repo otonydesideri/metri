@@ -164,3 +164,53 @@ export class Money extends ValueObject<MoneyProps> {
   }
 }
 ```
+
+## ProductSlug
+
+```ts
+import { ValueObject } from '@metri/core/entities';
+import { type Either, failure, success } from '@metri/core/types';
+import { InvalidProductSlugError, ReservedProductSlugError } from '../errors/product.errors';
+
+const SLUG_FORMAT = /^[a-z0-9-]{3,40}$/;
+
+/** O primeiro segmento de toda rota da SPA e o prefixo da API (general/http-surface). */
+const RESERVED_SLUGS = new Set(['api', 'admin', 'assets', 'login', 'logout', 'orders', 'products', 'settings']);
+
+interface ProductSlugProps {
+  value: string;
+}
+
+/** Endereço público do produto, `/<slug>` na raiz da SPA; a falha leva uma sugestão livre. */
+export class ProductSlug extends ValueObject<ProductSlugProps> {
+  private constructor(props: ProductSlugProps) {
+    super(props);
+  }
+
+  public static create(raw: string): Either<InvalidProductSlugError | ReservedProductSlugError, ProductSlug> {
+    const value = raw.trim().toLowerCase();
+
+    if (!SLUG_FORMAT.test(value)) {
+      return failure(new InvalidProductSlugError(suggestProductSlug(value)));
+    }
+
+    if (RESERVED_SLUGS.has(value)) {
+      return failure(new ReservedProductSlugError(suggestProductSlug(value)));
+    }
+
+    return success(new ProductSlug({ value }));
+  }
+
+  public get value(): string {
+    return this.props.value;
+  }
+}
+
+export function suggestProductSlug(base: string): string {
+  const cleaned = base.replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const stem = cleaned.length >= 3 ? cleaned.slice(0, 34) : 'produto';
+  const suffix = Math.floor(1000 + Math.random() * 9000);
+
+  return `${stem}-${suffix}`;
+}
+```

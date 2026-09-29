@@ -18,7 +18,7 @@ When exploring the codebase, read `docs/CONTEXT.md` (if it exists) to get a clea
 
 ## Redact
 
-This skill has you show commands, outputs and captured artifacts. **Redact every secret and every owner or tenant identifier first** (the owner identity of `.metri/ARCHITECTURE.md`, "Delegações"): write `<REDACTED>` in its place. Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
+This skill has you show commands, outputs and captured artifacts. **Redact every secret and every piece of personal data first**: write `<REDACTED>` in its place. In an artifact shared outside the project (an issue, a vendor ticket, a PR to the Source), redact the owner or tenant identifiers too (the owner identity of `.metri/ARCHITECTURE.md`, "Delegações"). Build loops against env vars, so the credential stays in the environment rather than in what you show. Captured artifacts carry auth headers: quote only the lines that carry the signal.
 
 If the redacted output is not enough to diagnose the bug, say so and ask the user.
 

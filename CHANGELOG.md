@@ -31,6 +31,14 @@
 - **Skill `humanizer`** (adaptada de blader/humanizer v3.1.0, MIT), em português: tira do texto que um humano lê os
   sinais de texto gerado. As skills que escrevem esse texto (`shape`, `domain-language`, `grilling`, `accept`,
   `diagnose`, `research`) e a `frontend/experience`, em "Conteúdo", a chamam.
+- **Backend e domínio do piloto 2.** Guard global fail-closed e declaração `@Public()`/`@<Dono>Owned()` por controller,
+  com `@Current<Dono>Id()` (`backend/access-scope`); 401 como `UnauthorizedException` nativa (`backend/errors`);
+  sessão no servidor como autenticação padrão, com o hash do token no banco (`defaults/stack`, fecha o PP-4); redirect
+  de OAuth sem `@ZodResponse`, com throttle; build do Nest pelo `tsdown` e OpenAPI 3.1; e2e de provider global com
+  controller de prova e e2e de rota protegida com a credencial da factory (`backend/testing`); o id opaco do dono
+  fica no contexto de log, e a redação vale para credencial e dado pessoal (`infrastructure/logging`, `/diagnose`);
+  WatchedList com identidade estrutural; biblioteca de cálculo puro no domínio por lista nomeada
+  (`backend/boundaries`); regra nova `general/date-time`; VO de endereço com palavras reservadas.
 
 ## v1.2.1 (2026-09-27)
 

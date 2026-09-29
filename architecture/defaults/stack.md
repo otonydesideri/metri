@@ -1,9 +1,10 @@
 ---
 id: defaults/stack
-description: "a stack e o idioma do código, lista única das ferramentas que as regras exigem, com a versão de referência de cada uma: monorepo pnpm workspaces + Turborepo e Biome; no backend, NestJS sobre Fastify com Prisma/Postgres, Zod, log, rate limit, fila e e-mail; no frontend, React + Vite, roteamento, dado do servidor, cliente HTTP, formulário, UI, tema e estado global; nos testes, Vitest, supertest, dados de teste, o ambiente de interface e o e2e com Playwright."
+description: "a stack e o idioma do código, lista única das ferramentas que as regras exigem, com a versão de referência de cada uma: monorepo pnpm workspaces + Turborepo e Biome; no backend, NestJS sobre Fastify com Prisma/Postgres, build pelo tsdown, Zod, log, rate limit, fila e e-mail, e a autenticação padrão (sessão no servidor, same-origin); no frontend, React + Vite, roteamento, dado do servidor, cliente HTTP, formulário, UI, tema e estado global; nos testes, Vitest, supertest, dados de teste, o ambiente de interface e o e2e com Playwright."
 use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
+  - "implementar login, sessão ou logout"
 status: active
 ---
 # Stack padrão
@@ -17,9 +18,11 @@ status: active
 Backend:
 
 - NestJS sobre Fastify, Prisma/Postgres via `@metri/db` (backend/layers, backend/persistence, infrastructure/runtime).
+- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node dist/main.mjs"` no dev), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
 - Validação de formato HTTP e contrato de API: Zod via `nestjs-zod` (`createZodDto`, `@ZodResponse`), pipe e serializer globais; OpenAPI pelo `@nestjs/swagger`, com o `cleanupOpenApiDoc` do nestjs-zod (backend/http-api, backend/boundaries).
 - Log: `nestjs-pino` (infrastructure/logging).
 - Rate limit: `@nestjs/throttler`, guard global (infrastructure/runtime, backend/errors).
+- Data e fuso: `date-fns` + `@date-fns/tz`, no domínio (general/date-time).
 - Fila: pg-boss (backend/async-jobs).
 - E-mail: Resend, com o template em React Email (`@react-email/render`) (infrastructure/mail, em aberto).
 - Storage: Cloudflare R2 pelo `@aws-sdk/client-s3`, implementação de referência (infrastructure/storage).
@@ -43,6 +46,16 @@ Testes:
 - Dados de teste: `@faker-js/faker` (backend/testing, frontend/testing).
 - Interface: jsdom, `@testing-library/react`, `@testing-library/jest-dom`, `user-event` e MSW (frontend/testing).
 - E2e de interface e evidência dos critérios de UI: Playwright, com os projetos desktop e mobile (frontend/testing, frontend/experience).
+
+## Autenticação
+
+Quando o produto tem identidade autenticada, a delegação "Autenticação" (`node_modules/metri/skills/look-across/ACTIVATION.md`) escolhe o provedor, e o mecanismo padrão é a sessão no servidor, same-origin (`general/http-surface.md`):
+
+- a sessão é uma linha no banco, com validade deslizante: cada uso válido renova o `expiresAt` da linha e o `Max-Age` do cookie juntos;
+- o cookie é `HttpOnly`, `Secure`, `SameSite=Lax` e `Path=/`, e leva um token aleatório de 256 bits;
+- o banco guarda o hash SHA-256 do token, nunca o token, e a sessão é achada pelo hash: quem lê o banco não assume uma sessão;
+- sair apaga a linha e devolve o cookie com `Max-Age=0`;
+- a fronteira de request valida a sessão e anexa o dono (`backend/access-scope.md`, "Declaração por controller"); sem sessão válida, 401 (`backend/errors.md`, "Erro inesperado: filtro global").
 
 ## Configuração de referência
 
@@ -88,7 +101,7 @@ A versão com que a regra foi escrita, conferida na documentação oficial em 27
 | --- | --- | --- | --- |
 | NestJS | 11.2.6 | https://docs.nestjs.com | o nestjs-zod 5.5 declara o NestJS até o 11 |
 | `nestjs-zod` | 5.5.0 | https://github.com/BenLorantfy/nestjs-zod | `cleanupOpenApiDoc`, `@ZodResponse` |
-| `@nestjs/swagger` | 11.4.7 | https://docs.nestjs.com/openapi/introduction | |
+| `@nestjs/swagger` | 11.4.7 | https://docs.nestjs.com/openapi/introduction | `setOpenAPIVersion('3.1.0')` no `DocumentBuilder`, conferido em 29/09/2026 |
 | Zod | 4.6.5 | https://zod.dev | uma versão no monorepo inteiro |
 | Orval | 8.38.0 | https://orval.dev/docs/reference/configuration/output | `zod: { version: 4 }` |
 | Playwright | 1.63.0 | https://playwright.dev/docs/test-projects | `devices['Desktop Chrome']` e `devices['Pixel 7']` (chromium) |
@@ -96,5 +109,7 @@ A versão com que a regra foi escrita, conferida na documentação oficial em 27
 | pg-boss | 12.35.0 | https://pgboss.io | Node 22.12+ e Postgres 13+ |
 | Biome | 2.5.14 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`; conferido em 29/09/2026 |
 | Vitest | 5.0.2 | https://vitest.dev/config/passwithnotests | |
+| `date-fns` / `@date-fns/tz` | 4.4.0 / 1.5.0 | https://date-fns.org | `TZDate`; conferido em 29/09/2026 |
+| tsdown | 0.23.0 | https://tsdown.dev/reference/cli | `--watch`, `--on-success`; o metadata de decorator vem do Rolldown/Oxc pelo `tsconfig.json`; conferido em 29/09/2026 |
 | shadcn (CLI) | 4.21.0 | https://ui.shadcn.com/docs/monorepo | aliases no nome do pacote; conferido em 29/09/2026 |
 | Tailwind CSS | 4.3.3 | https://tailwindcss.com/docs/detecting-classes-in-source-files | `@source` relativo ao CSS; conferido em 29/09/2026 |

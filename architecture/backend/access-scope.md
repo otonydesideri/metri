@@ -1,11 +1,12 @@
 ---
 id: backend/access-scope
-description: "o contrato genérico de escopo do dono — de onde o dono validado chega, como ele se propaga até a aplicação, o filtro de leitura, o uso na escrita e no storage quando pertinentes, o isolamento entre donos e a prova A/B."
+description: "o contrato genérico de escopo do dono — de onde o dono validado chega, a declaração de cada controller (`@Public()` ou `@<Dono>Owned()`) sob o guard global, como ele se propaga até a aplicação, o filtro de leitura, o uso na escrita e no storage quando pertinentes, o isolamento entre donos e a prova A/B."
 use_when:
   - "expor, alterar ou assinar acesso a dado que pertence a um dono"
   - "escrever query, caso de uso ou contrato de asset que recebe identificador de dono"
   - "montar o e2e de um dado com dono"
-keywords: [escopo do dono, dono, identificador de dono, isolamento, prova A/B, where, SQL cru, recurso filho, fronteira de request, asset, registro de upload, não-encontrado, businessId, organizationId, tenantId, customerId]
+  - "criar controller"
+keywords: [escopo do dono, dono, APP_GUARD, fail-closed, "@Public()", "@CustomerOwned()", "@CurrentCustomerId()", createParamDecorator, customer-context, identificador de dono, isolamento, prova A/B, where, SQL cru, recurso filho, fronteira de request, asset, registro de upload, não-encontrado, businessId, organizationId, tenantId, customerId]
 not_covered:
   - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
   - "autenticação e login (\"Delegações\") → project:ARCHITECTURE"
@@ -32,6 +33,16 @@ Este documento fixa a forma do contrato de escopo do dono, igual para qualquer p
 **Proibido.** Path, query, body ou header livre escolherem o escopo do dono.
 
 **Obrigatório.** Quem resolve o escopo do dono é a fronteira de request (`infrastructure/runtime.md`, "Fronteiras de request"); a forma de extraí-lo pertence à fronteira HTTP e não muda o contrato de quem o consome.
+
+### Declaração por controller
+
+**Obrigatório.** Um guard global (`APP_GUARD`) exige a identidade validada em toda rota, fail-closed: rota sem declaração continua protegida.
+
+**Obrigatório.** Todo controller declara, na classe, `@Public()` (sem dono) ou `@<Dono>Owned()` (dado do dono; `@CustomerOwned()` no domínio didático).
+
+> **Por quê.** O guard protege o esquecimento em runtime, e a declaração deixa a intenção no arquivo, onde a revisão e o check a veem.
+
+**Obrigatório.** O controller `@<Dono>Owned()` recebe o dono pelo param decorator `@Current<Dono>Id()`, que lê o contexto anexado pelo guard à request (`infra/common/<fronteira>/<dono>-context.ts`).
 
 ### Propagação
 
@@ -84,9 +95,22 @@ Quando o primeiro asset pertence a uma entidade: **Obrigatório.** O e2e prova a
 - Na escrita, o caso de uso compara o dono do agregado com o identificador validado e devolve a classe de não-encontrado quando não coincide (`backend/application.md`, "Aplicação").
 - No storage, o bucket privado não usa o prefixo da chave como mecanismo de segurança: a segurança é este escopo, aplicado na assinatura e na recarga do registro de upload (`infrastructure/storage.md`).
 - O escopo de acesso não entra numa specification: continua no `where` da query, fora do `toWhere()` da regra (`domain/specification.md`).
+- O param decorator lê só o contexto da request; sem ele, falha fechado:
+
+```ts
+// infra/common/session/current-customer-id.decorator.ts
+export const CurrentCustomerId = createParamDecorator((_data: unknown, context: ExecutionContext): string => {
+  const customerId = getCustomerId(context.switchToHttp().getRequest<FastifyRequest>());
+  if (!customerId) {
+    throw new UnauthorizedException();
+  }
+  return customerId;
+});
+```
 
 ## Verificação
 
+- Todo controller declara `@Public()` ou `@<Dono>Owned()`? Com o marcador do projeto no lugar de `CustomerOwned`, `grep -rLE --include='*.controller.ts' '@(Public|CustomerOwned)\(\)' apps/app-api/src` devolve vazio.
 - Dado protegido carrega o escopo do dono no input, vindo da fronteira de request, e o `where` filtra por ele, também em SQL cru?
 - ID vindo de path, query ou body coincide com o escopo ou é recusado, sem substituí-lo?
 - Recurso filho é localizado junto do dono na mesma consulta?

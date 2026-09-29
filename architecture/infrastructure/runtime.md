@@ -50,6 +50,10 @@ Quando o endpoint é consumido por infra externa (probe, monitor), não por usu�
 
 > **Por quê.** Ele não pertence a nenhum módulo de negócio e não deve herdar import nem provider deles.
 
+Quando o endpoint é redirect de protocolo que roda antes da sessão (o início e o retorno do OAuth): **Obrigatório.** Ele mora num `@Module` próprio, em `infra/auth/`, importado direto no `AppModule`, com o throttle global ligado (`backend/http-api.md`, "Contrato de API: o backend é a fonte").
+
+> **Por quê.** É a porta que cria a sessão: não é negócio nem infra externa, e é nela que alguém tentaria força bruta.
+
 ### Env e montagem de client
 
 **Obrigatório.** Variável de ambiente é lida por `EnvService.getOrThrow(...)`.
