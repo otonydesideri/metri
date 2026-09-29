@@ -69,6 +69,11 @@ Só no projeto:
   - Links: .claude/skills/<nome> para cada skill do pacote, e .claude/agents/<nome>.md para cada agent, apontando
     para node_modules/metri/skills/<nome> e node_modules/metri/agents/<nome>.md (metri init cria).
   - AGENTS.md com mais de 30 linhas: aviso.
+  - Regra do projeto (.metri/rules/) que cita id de ticket (UC<f>.<n>, T<s>.<n>): aviso; a regra vale além do
+    ticket que a criou.
+  - Código em apps/ e packages/ (.ts, .tsx, .js, .jsx, .mjs, .cjs): PP-<n> citado é aviso (a proposta vive só em
+    Pattern proposals); GAP-<n> que não está aberto em Gaps da MATRIX é aviso (tire o comentário ou corrija o id);
+    GAP-<n> ou PP-<n> dentro de um cabeçalho SOURCE OF TRUTH é aviso (o cabeçalho descreve, sem id transitório).
   - applies_to sem casamento: glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum
     arquivo gera aviso, não erro; a regra é candidata a poda.
   - Tickets e MATRIX citam só ids (UC, T, S, F, ADR-NNNN, id de regra): caminho de arquivo .md neles é erro.
@@ -95,6 +100,7 @@ Só no projeto:
     - blocked_by aponta para um ticket ou uma slice que existe;
     - todo UC fora de draft aparece em ucs da feature dele, em MATRIX.md;
     - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]");
+    - metrics, quando existe: { rules: <n>, tokens: <n> }, com rules sempre e números inteiros;
     - "Notas" com no máximo 10 linhas;
     - ticket done tem, para cada critério "Tela:" n (n na ordem dos itens "- [ ]" do primeiro nível),
       tickets/<id>/<n>-desktop.png e <n>-mobile.png (frontend/experience); numa slice reaberta, a evidência que
@@ -156,6 +162,12 @@ const EVIDENCE_DEVICES = ['desktop', 'mobile'];
 // Caminho de arquivo .md: ticket e MATRIX citam só ids.
 const MD_PATH = /(?<![\w/.-])[\w./-]*[\w-]\.md(?![\w-])/g;
 const AGENTS_MAX_LINES = 30;
+const TICKET_ID_IN_TEXT = /\b(?:UC|T)\d+\.\d+\b/g;
+// Código do projeto onde GAP-n e PP-n são conferidos, e as pastas que ficam de fora.
+const CODE_DIRS = ['apps', 'packages'];
+const CODE_FILE = /\.[cm]?[jt]sx?$/;
+const CODE_SKIPPED = ['node_modules', 'dist', 'build', 'coverage', '.turbo', 'generated'];
+const SOT_HEADER = /\/\*\*\s*(?:\*\s*)?SOURCE OF TRUTH:[\s\S]*?\*\//g;
 const ADR_STATUS = /^(accepted|superseded by (ADR-\d{4}))$/;
 const ADR_KINDS = ['decision', 'exception', 'default-change'];
 const ADR_SECTIONS = ['Contexto', 'Decisão', 'Alternativas consideradas', 'Consequências', 'Imposto por'];
@@ -841,6 +853,49 @@ function lintAppliesTo(): void {
   }
 }
 
+// Regra do projeto vale além do ticket que a criou: citar o id dele é aviso.
+function lintRuleTicketIds(): void {
+  for (const path of existsSync(PROJECT_RULES) ? projectFiles(PROJECT_RULES) : []) {
+    if (!path.endsWith('.md') || path.endsWith('/INDEX.md')) {
+      continue;
+    }
+    readFileSync(path, 'utf8')
+      .split('\n')
+      .forEach((text, index) => {
+        for (const [id] of text.matchAll(TICKET_ID_IN_TEXT)) {
+          warn(path, index + 1, `regra do projeto cita o ticket ${id}; a regra vale além dele, e o histórico fica no git`);
+        }
+      });
+  }
+}
+
+// GAP-n e PP-n no código: o PP nunca, o GAP só aberto e fora do cabeçalho SOURCE OF TRUTH.
+function lintTransientIds(): void {
+  const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
+  const openGaps = new Set(
+    parseMatrix(matrixSource)
+      .items.filter(({ section }) => section === 'Gaps')
+      .map(({ text }) => /^(GAP-\d+) /.exec(text)?.[1])
+      .filter((id): id is string => id !== undefined),
+  );
+  const files = CODE_DIRS.filter((dir) => existsSync(dir)).flatMap((dir) => projectFiles(dir));
+  for (const path of files.filter((file) => CODE_FILE.test(file) && !file.split('/').some((part) => CODE_SKIPPED.includes(part)))) {
+    const text = readFileSync(path, 'utf8');
+    const headers = [...text.matchAll(SOT_HEADER)].map((match) => [match.index, match.index + match[0].length]);
+    for (const match of text.matchAll(/\b(GAP|PP)-\d+\b/g)) {
+      const [id, kind] = match;
+      const line = text.slice(0, match.index).split('\n').length;
+      if (headers.some(([start, end]) => match.index >= start && match.index < end)) {
+        warn(path, line, `cabeçalho SOURCE OF TRUTH cita ${id}; o cabeçalho descreve, e o id transitório fica na MATRIX`);
+      } else if (kind === 'PP') {
+        warn(path, line, `${id} no código; a proposta de padrão vive só em Pattern proposals da MATRIX`);
+      } else if (!openGaps.has(id)) {
+        warn(path, line, `${id} não está aberto em Gaps da MATRIX; tire o comentário ou corrija o id`);
+      }
+    }
+  }
+}
+
 function lintProject(): void {
   lintDocsTree();
   lintMetriTree();
@@ -849,6 +904,8 @@ function lintProject(): void {
   lintMatrix();
   lintTickets();
   lintAppliesTo();
+  lintRuleTicketIds();
+  lintTransientIds();
   lintGenerated();
 }
 

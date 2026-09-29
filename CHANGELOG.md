@@ -48,6 +48,11 @@
   ao alcance do polegar em produto de celular. Os greps de `backend/boundaries` passam a devolver vazio, e o
   `KNOWLEDGE-GATE` diz como ligar um check de projeto; `test: turbo run test --`; o `.gitignore` do `metri init`
   ganha `!.env.test`, o `generated/` do Prisma e os relatórios do Playwright.
+- **Processo e lint.** O `docs-lint` avisa quando uma regra do projeto cita id de ticket e quando o código cita
+  `PP-n`, um `GAP-n` fechado ou um id transitório no cabeçalho SOURCE OF TRUTH; o `metrics` do ticket passa a
+  `{ rules: <n>, tokens: <n> }`. A regra de projeto guarda o como e aponta o ADR, sem repetir a decisão
+  (`RULE-FORMAT`). O `.metri/ARCHITECTURE.md` descreve o que existe e o que está decidido; "Caminhos do projeto" sai
+  do template e entra com a primeira linha.
 
 ## v1.2.1 (2026-09-27)
 

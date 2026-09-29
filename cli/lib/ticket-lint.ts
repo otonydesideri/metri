@@ -25,6 +25,7 @@ const TYPES = ['pattern', 'task', 'release'];
 const LIST_KEYS = ['blocked_by', 'areas', 'touches', 'checks', 'subtasks'];
 const WHAT_MAX_LINES = 3;
 const NOTES_MAX_LINES = 10;
+const METRICS_KEYS = ['rules', 'tokens'];
 
 function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) {
@@ -173,6 +174,18 @@ export function ticketProblems(path: string, source: string, expectedId: string,
     const criteria = sectionItems(source, 'Critérios');
     if (criteria.length === 0) {
       report(1, `${expectedId}: "Critérios" sem item`);
+    }
+  }
+
+  if ('metrics' in frontmatter && !isEmpty(frontmatter.metrics)) {
+    const metrics = frontmatter.metrics;
+    const entries = typeof metrics === 'object' && !Array.isArray(metrics) ? Object.entries(metrics as Record<string, unknown>) : [];
+    const isValid =
+      entries.length > 0 &&
+      entries.every(([key, value]) => METRICS_KEYS.includes(key) && Number.isInteger(value) && (value as number) >= 0) &&
+      entries.some(([key]) => key === 'rules');
+    if (!isValid) {
+      report(keyLine(lines, 'metrics'), `metrics: { rules: <n>, tokens: <n> }, com rules sempre e números inteiros (tokens só quando a ferramenta informa)`);
     }
   }
 

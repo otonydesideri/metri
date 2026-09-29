@@ -316,6 +316,8 @@ Quando uma decisão de projeto, exceção incluída, muda o estado vigente do pr
 
 **Proibido.** O `.metri/ARCHITECTURE.md` copiar o porquê de um ADR: ele registra o estado e aponta para o ADR.
 
+**Obrigatório.** A regra de projeto que aplica um ADR guarda o como e aponta o ADR (`adr`); a decisão e o motivo ficam só no ADR.
+
 A localização e o formato físico da Project Architecture estão em `pnpm docs-lint --help` (árvores fechadas de `docs/` e `.metri/`) e em `node_modules/metri/skills/look-across/ACTIVATION.md`.
 
 **Proibido.** Documento da Source registrar o resultado de decisão por app, como a divisão de módulos e a forma de cada agregado: ele ensina o procedimento de decidir, e o resultado fica nas casas de projeto.

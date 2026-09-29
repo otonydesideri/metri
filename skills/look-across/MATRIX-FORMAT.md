@@ -86,7 +86,8 @@ when missing or empty, the rest are written only with a value.
   by its folder (`` `pnpm --filter app-web test:e2e e2e/order/` ``), since a bare word also matches the worktree's
   name in the path. A command with a backtick, space or `·` is written as a quoted YAML string
   (`` "`pnpm test order-confirmation`" ``).
-- `metrics`: only the numbers the tool reports, as `metrics: <tokens> tokens, <n> regras`.
+- `metrics`: `{ rules: <n>, tokens: <n> }`, whole numbers, written at `done`: `rules` always, the count of rules
+  `pnpm rules-for --ticket <id>` lists; `tokens` only when the tool reports them. `pnpm docs-lint` checks the form.
 - "Critérios": a criterion judged on the screen starts with `Tela:`
   (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
   `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
@@ -118,7 +119,7 @@ touches: [<ponto central>]
 sensitive: true | false
 checks: ["`<comando>`"]
 subtasks: [<subtarefa>]
-metrics: <tokens> tokens, <n> regras
+metrics: { rules: <n>, tokens: <n> }
 ---
 
 # UC<f>.<n> · <caso de uso>
@@ -160,7 +161,7 @@ touches: [<ponto central>]
 sensitive: true | false
 checks: ["`<comando>`"]
 subtasks: [<subtarefa>]
-metrics: <tokens> tokens, <n> regras
+metrics: { rules: <n>, tokens: <n> }
 ---
 
 # T<s>.<n> · <ticket sem UC>

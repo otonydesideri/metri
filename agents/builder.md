@@ -27,4 +27,4 @@ Under 200 words:
 - the commits on `ticket/<id>`;
 - each check you ran, with its result;
 - the `GAP-n` and the "Notas" you wrote;
-- the `metrics`, when the tool reports them.
+- the `metrics`: the count of rules `pnpm rules-for --ticket <id>` lists, and the tokens when the tool reports them.

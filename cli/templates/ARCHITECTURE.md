@@ -10,8 +10,6 @@ Padrão: `node_modules/metri/architecture/defaults/stack.md`.
 
 ## Delegações
 
-## Caminhos do projeto
-
 ## Exceções e defaults trocados
 
 ## Áreas ativas

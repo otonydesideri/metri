@@ -378,4 +378,39 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     expect(lintChanged(notes(10)).status).toBe(0);
     expect(lintChanged(notes(11)).output).toContain('"Notas" de UC1.1: 11 linhas, mais de 10');
   });
+
+  it('Tickets: metrics no formato único { rules, tokens }', () => {
+    const metrics = (value: string) => inTicket('UC1.1', 'touches: [router:orders]', `touches: [router:orders]\nmetrics: ${value}`);
+    expect(lintChanged(metrics('{ rules: 5, tokens: 81234 }')).status).toBe(0);
+    expect(lintChanged(metrics('{ rules: 5 }')).status).toBe(0);
+    for (const value of ['81234 tokens, 5 regras', '{ tokens: 81234 }', '{ rules: 5, regras: 5 }', '{ rules: "5" }']) {
+      expect(lintChanged(metrics(value)).output).toContain('metrics: { rules: <n>, tokens: <n> }');
+    }
+  });
+
+  it('regra do projeto que cita id de ticket: aviso', () => {
+    const { status, output } = lintChanged((dir) =>
+      edit(dir, '.metri/rules/frontend/order-list.md', (source) => `${source}\nCriada no UC1.1, ajustada no T2.1.\n`),
+    );
+    expect(status).toBe(0);
+    expect(output).toContain('.metri/rules/frontend/order-list.md:16: aviso: regra do projeto cita o ticket UC1.1');
+    expect(output).toContain('aviso: regra do projeto cita o ticket T2.1');
+  });
+
+  it('código: PP-n, GAP-n fechado e id no cabeçalho SOURCE OF TRUTH são aviso; GAP-n aberto passa', () => {
+    const page = 'apps/app-web/src/pages/orders/orders-page.tsx';
+    const open = lintChanged((dir) => edit(dir, page, (source) => source.replace('  return null;', '  // GAP-1: sem filtro por status\n  return null;')));
+    expect(open).toEqual({ status: 0, output: '' });
+    const { status, output } = lintChanged((dir) =>
+      edit(dir, page, (source) =>
+        source
+          .replace(' * Só pedidos da organização da sessão.', ' * Só pedidos da organização da sessão (GAP-1).')
+          .replace('  return null;', '  // GAP-7: paginação; PP-2: ordenação\n  return null;'),
+      ),
+    );
+    expect(status).toBe(0);
+    expect(output).toContain(`${page}:5: aviso: cabeçalho SOURCE OF TRUTH cita GAP-1`);
+    expect(output).toContain(`${page}:8: aviso: GAP-7 não está aberto em Gaps da MATRIX`);
+    expect(output).toContain(`${page}:8: aviso: PP-2 no código`);
+  });
 });
