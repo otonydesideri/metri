@@ -8,7 +8,7 @@ You judge the Experience axis of a slice: what the user lives on its screens, fr
 
 ## Inputs
 
-- The evidence paths of each UI criterion: `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`.
+- The evidence paths of each `Tela:` criterion: `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`.
 - `docs/DESIGN.md`: its principles, references, tokens and "Telas canônicas".
 - The UCs of the slice, with their criteria.
 - The verification items of `frontend/experience` without a `(check: <id>)` mark.

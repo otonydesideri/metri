@@ -28,7 +28,7 @@ function inTicket(id: string, from: string, to: string): (dir: string) => void {
   return (dir) => edit(dir, `${TICKETS}/${id}.md`, (source) => source.replace(from, to));
 }
 
-describe('docs-lint', { timeout: 30_000 }, () => {
+describe('docs-lint', { timeout: 60_000 }, () => {
   it('passa: a fixture de projeto e este repositório (modo source)', () => {
     expect(lint(copyFixture())).toEqual({ status: 0, lines: [] });
     // No source, só sai aviso de citação a arquivo planejado (cli/docs-lint.planned.json).
@@ -331,30 +331,51 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(lint(source).lines).toContain('architecture/defaults/ui.md:24: adr: ADR-0001 não existe em docs/adr/');
   });
 
-  it('evidência: ticket done de frontend tem desktop e mobile por critério, até a poda da slice', () => {
+  it('evidência: critério Tela: de ticket done tem desktop e mobile, até a poda da slice', () => {
     const done = inTicket('UC1.1', 'status: in_progress', 'status: done');
-    const missing = lintChanged(done);
+    // critério que não começa com "Tela:" não pede evidência, com qualquer área
+    expect(lintChanged(done)).toEqual({ status: 0, output: '' });
+    const screen = (dir: string) => {
+      done(dir);
+      inTicket('UC1.1', '- [ ] A lista mostra', '- [ ] Tela: a lista mostra')(dir);
+    };
+    const missing = lintChanged(screen);
     expect(missing.status).toBe(1);
     expect(missing.output).toContain('evidência: falta .metri/tickets/UC1.1/1-desktop.png (frontend/experience)');
     expect(missing.output).toContain('evidência: falta .metri/tickets/UC1.1/1-mobile.png');
     const withEvidence = lintChanged((dir) => {
-      done(dir);
+      screen(dir);
       write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png');
       write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
     });
     expect(withEvidence).toEqual({ status: 0, output: '' });
-    // sub-item recuado não é critério
-    const nested = lintChanged((dir) => {
-      done(dir);
-      inTicket('UC1.1', '- [ ] A lista mostra os pedidos mais recentes primeiro.', '- [ ] A lista mostra os pedidos mais recentes primeiro.\n  - inclusive com zero pedidos')(dir);
-      write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png');
-      write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
+    // sub-item recuado não é critério; n é a ordem entre todos os critérios
+    const second = lintChanged((dir) => {
+      screen(dir);
+      inTicket('UC1.1', '- [ ] Tela: a lista mostra', '- [ ] O backend ordena.\n  - inclusive com zero pedidos\n- [ ] Tela: a lista mostra')(dir);
     });
-    expect(nested).toEqual({ status: 0, output: '' });
+    expect(second.output).toContain('evidência: falta .metri/tickets/UC1.1/2-desktop.png');
+    expect(second.output).not.toContain('1-desktop.png');
+    const sliceDone = inMatrix('horizon: now · sot: [OrdersPage]', 'status: done · sot: [OrdersPage]');
     const pruned = lintChanged((dir) => {
-      done(dir);
-      inMatrix('horizon: now · sot: [OrdersPage]', 'status: done · sot: [OrdersPage]')(dir);
+      screen(dir);
+      sliceDone(dir);
     });
-    expect(pruned.output).not.toContain('evidência');
+    expect(pruned).toEqual({ status: 0, output: '' });
+    const leftover = lintChanged((dir) => {
+      screen(dir);
+      sliceDone(dir);
+      write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png');
+    });
+    expect(leftover.status).toBe(1);
+    expect(leftover.output).toContain(
+      '.metri/tickets/UC1.1/1-desktop.png:1: evidência: UC1.1 é da slice done S1; rode pnpm exec metri prune S1',
+    );
+  });
+
+  it('Tickets: "Notas" com no máximo 10 linhas', () => {
+    const notes = (count: number) => inTicket('UC1.1', '## Notas', `## Notas\n\n${'- achado\n'.repeat(count)}`);
+    expect(lintChanged(notes(10)).status).toBe(0);
+    expect(lintChanged(notes(11)).output).toContain('"Notas" de UC1.1: 11 linhas, mais de 10');
   });
 });

@@ -53,7 +53,8 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | definido / inferido / perguntar           | `defined \| inferred \| ask`                     | A classe de uma decisão aberta antes de perguntar; todo portão mostra os três blocos (skill `grilling`) |
 | tela canônica                             | `canonical screen`                               | A tela de referência de um tipo, em "Telas canônicas" do `DESIGN.md` (`- <rota> → <para que serve>`) |
 | variante                                  | `variant` (`?variant=`)                          | Uma das 2–3 versões radicalmente diferentes de uma tela nova, na mesma rota, até o portão de padrão |
-| evidência                                 | `.metri/tickets/<id>/<n>-desktop.png`, `<n>-mobile.png` | O screenshot de cada critério de UI, `<n>` na ordem do critério, até a poda da slice |
+| critério de tela                          | `Tela:`                                          | O critério julgado na tela: o único que leva evidência (`- [ ] Tela: <o que a tela mostra>`) |
+| evidência                                 | `.metri/tickets/<id>/<n>-desktop.png`, `<n>-mobile.png` | O screenshot de cada critério `Tela:`, `<n>` na ordem do critério, gravado com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`) |
 
 **Frontmatter de regra.** Obrigatórias: `id`, `description`, `use_when` e `status`. As demais só aparecem quando têm valor: chave vazia não é escrita, como nos campos reservados da matriz (`skills/look-across/MATRIX-FORMAT.md`). Regra sem `applies_to` é válida: o `rules-for` não a devolve por caminho, e ela é encontrada pela `use_when` no `INDEX.md`. `read_first` e `not_covered` aceitam, além de ids de regra, destinos do projeto com o prefixo `project:`, só desta lista fechada: `project:AGENTS`, `project:CONTEXT`, `project:PRODUCT`, `project:DESIGN` e `project:ARCHITECTURE`.
 

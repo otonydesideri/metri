@@ -26,7 +26,7 @@ Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill 
 
 ### 2. Features → use cases
 
-Keep the `horizon` and the `milestone` the direction gate confirmed for each feature. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action.
+Keep the `horizon` and the `milestone` the direction gate confirmed for each feature. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files").
 
 ### 3. Look across
 

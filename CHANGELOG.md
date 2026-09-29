@@ -10,6 +10,11 @@
   `.metri/ARCHITECTURE.md` (`arquivo:símbolo` por passo).
 - **`metri sot`**, no `verify`: cabeçalho bem formado, arquivo-fonte sem cabeçalho, símbolos de `sot:`, caminho linear
   e slice done sem `contract`.
+- **Evidência por critério `Tela:`.** Só o critério julgado na tela (`- [ ] Tela: ...`) pede screenshot; o `docs-lint`
+  deixa de olhar `areas`. O helper grava só com `METRI_EVIDENCE=<id do ticket>`, e a suíte cheia não grava nada.
+  `metri prune <slice>` tira a evidência na poda do /accept, e PNG de slice done é erro.
+- **Notas e `areas`.** Notas com no máximo 10 linhas, só o que não é derivável; decisão sai delas no portão de
+  conhecimento. O /build reconcilia `areas` com o diff antes do `done`.
 
 ## v1.2.1 (2026-09-27)
 

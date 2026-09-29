@@ -15,7 +15,7 @@ applies_to:
   - "apps/app-web/vite.config.ts"
   - "apps/app-web/playwright.config.ts"
   - "apps/app-web/e2e/**"
-keywords: [pirâmide, spec, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
+keywords: [pirâmide, spec, saveEvidence, METRI_EVIDENCE, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 examples: [frontend/testing.examples.md]
@@ -70,7 +70,7 @@ Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/
 
 ### E2e de critério de UI
 
-Fora da pirâmide, cada critério de um ticket com área `frontend/*` tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento (`frontend/experience.md`). O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina salvando a evidência do critério:
+Fora da pirâmide, cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência") tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina gravando a evidência do critério:
 
 ```ts
 // e2e/order/confirm-order.e2e.ts
@@ -78,11 +78,11 @@ test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo
   await page.goto('/orders/1042');
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
   await expect(page.getByText('Pedido confirmado')).toBeVisible();
-  await page.screenshot({ path: evidencePath('UC1.2', 1, testInfo), fullPage: true });
+  await saveEvidence(page, 'UC1.2', 1, testInfo);
 });
 ```
 
-O `evidencePath` de `e2e/evidence.ts` devolve `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório.
+O `saveEvidence` de `e2e/evidence.ts` grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
 
 O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção, e a raiz do app para o que prova o config dele. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`, e aqui essa fronteira não tem rede de segurança automática, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos. A verificação é o grep da última seção.
 

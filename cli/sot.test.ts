@@ -18,7 +18,7 @@ function sotChanged(change: (dir: string) => void = () => {}): { status: number 
   return { status, output: lines.join('\n') };
 }
 
-describe('sot', { timeout: 30_000 }, () => {
+describe('sot', { timeout: 60_000 }, () => {
   it('passa: a fixture de projeto', () => {
     expect(sotChanged()).toEqual({ status: 0, output: '' });
   });

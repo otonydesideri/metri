@@ -12,9 +12,10 @@ Comandos:
   docs-lint     lint estrutural do source e do projeto
   design-tokens confere se o tema do código segue os tokens do docs/DESIGN.md
   sot           confere os cabeçalhos SOURCE OF TRUTH e o registro das slices construídas
+  prune         tira da árvore a evidência dos tickets de uma slice, na poda do /accept
 `;
 
-const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot'];
+const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot', 'prune'];
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === undefined || command === '--help' || command === '-h') {

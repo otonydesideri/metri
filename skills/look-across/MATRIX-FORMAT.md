@@ -85,10 +85,16 @@ when missing or empty, the rest are written only with a value.
   (`` `pnpm test order-confirmation` ``), a pattern the runner matches against the file path; a command with a
   backtick, space or `·` is written as a quoted YAML string (`` "`pnpm test order-confirmation`" ``).
 - `metrics`: only the numbers the tool reports, as `metrics: <tokens> tokens, <n> regras`.
+- "Critérios": a criterion judged on the screen starts with `Tela:`
+  (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
+  `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
+- "Notas": written only when there's something to say, and only what the code, the tests and git don't show, in
+  at most 10 lines. A decision leaves the Notas for an ADR, a rule or a code header, at the knowledge gate of
+  /accept.
 
-A ticket file is never pruned or collapsed: done, it keeps its title, its frontmatter and its body, with
-`status: done`, in its own file (the "Pruning" rule of "Matrix rules" below collapses the MATRIX and removes the
-evidence folders, never a ticket file).
+A ticket file is never pruned or collapsed, because the board reads it: done, it keeps its title, its frontmatter
+and its body, with `status: done`, in its own file (the "Pruning" rule of "Matrix rules" below collapses the MATRIX
+and removes the evidence folders, never a ticket file).
 
 ### UC block
 
@@ -132,7 +138,7 @@ metrics: <tokens> tokens, <n> regras
   the excess is expected, is split into smaller UCs, each visible to the user and verifiable. A UC never has a
   partial ticket.
 - Its BRs (`- BR<n>: ...`, with `(sensitive)` after the id when it is) go under "Regras de negócio", and its
-  criteria (`- [ ] ...`) under "Critérios". "Notas" is written only when there's something to say.
+  criteria (`- [ ] ...`) under "Critérios".
 
 ### T block
 
@@ -170,8 +176,7 @@ metrics: <tokens> tokens, <n> regras
 <achados do /build ou do /accept, quando houver>
 ```
 
-- "O que entrega": 1 to 3 lines. "Critérios": at least one `- [ ] ...` item. "Notas" is written only when there's
-  something to say.
+- "O que entrega": 1 to 3 lines. "Critérios": at least one `- [ ] ...` item.
 
 ## Example
 

@@ -24,6 +24,7 @@ const MODES = ['afk', 'hitl'];
 const TYPES = ['pattern', 'task', 'release'];
 const LIST_KEYS = ['blocked_by', 'areas', 'touches', 'checks', 'subtasks'];
 const WHAT_MAX_LINES = 3;
+const NOTES_MAX_LINES = 10;
 
 function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) {
@@ -173,6 +174,11 @@ export function ticketProblems(path: string, source: string, expectedId: string,
     if (criteria.length === 0) {
       report(1, `${expectedId}: "Critérios" sem item`);
     }
+  }
+
+  const notes = sectionLines(source, 'Notas');
+  if (notes.length > NOTES_MAX_LINES) {
+    report(notes[0].line, `"Notas" de ${expectedId}: ${notes.length} linhas, mais de ${NOTES_MAX_LINES}; só o que o código, os testes e o git não mostram`);
   }
 
   return problems;

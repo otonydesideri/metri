@@ -95,9 +95,11 @@ Só no projeto:
     - blocked_by aponta para um ticket ou uma slice que existe;
     - todo UC fora de draft aparece em ucs da feature dele, em MATRIX.md;
     - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]");
-    - ticket done com área frontend/* tem, para cada critério n (os itens "- [ ]" do primeiro nível),
-      tickets/<id>/<n>-desktop.png e <n>-mobile.png (frontend/experience); a evidência que a poda da slice tirou
-      da árvore conta pelo histórico do git.
+    - "Notas" com no máximo 10 linhas;
+    - ticket done tem, para cada critério "Tela:" n (n na ordem dos itens "- [ ]" do primeiro nível),
+      tickets/<id>/<n>-desktop.png e <n>-mobile.png (frontend/experience); numa slice reaberta, a evidência que
+      uma poda anterior tirou da árvore conta pelo histórico do git;
+    - PNG em tickets/<id>/ de ticket de slice done é erro: a poda do /accept a tira (metri prune <slice>).
   - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
     superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
     Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.
@@ -691,6 +693,7 @@ function lintTickets(): void {
       lintEvidence(path, expectedId, frontmatter, source);
     }
   }
+  lintPrunedEvidence(files, collapsed);
   const matrix = parseMatrix(matrixSource);
   for (const block of matrix.blocks) {
     if (block.kind === 'slice' && fieldOf(block, 'horizon')?.value === 'now' && !servedSlices.has(block.id)) {
@@ -699,14 +702,13 @@ function lintTickets(): void {
   }
 }
 
-// Ticket done de frontend tem, por critério, a evidência em desktop e em mobile (frontend/experience).
+// Ticket done tem, por critério "Tela:", a evidência em desktop e em mobile (frontend/experience).
 function lintEvidence(path: string, id: string, frontmatter: Record<string, unknown> | undefined, source: string): void {
-  const isFrontend = asList(frontmatter?.areas).some((area) => area.startsWith('frontend/'));
-  if (frontmatter?.status !== 'done' || !isFrontend) {
+  if (frontmatter?.status !== 'done') {
     return;
   }
-  topLevelCriteria(source).forEach((line, index) => {
-    for (const device of EVIDENCE_DEVICES) {
+  topLevelCriteria(source).forEach(({ line, isScreen }, index) => {
+    for (const device of isScreen ? EVIDENCE_DEVICES : []) {
       const evidence = `${TICKETS_DIR}/${id}/${index + 1}-${device}.png`;
       if (!existsSync(evidence) && !isInGitHistory(evidence)) {
         report(path, line, `evidência: falta ${evidence} (frontend/experience)`);
@@ -715,14 +717,35 @@ function lintEvidence(path: string, id: string, frontmatter: Record<string, unkn
   });
 }
 
-// Linha de cada critério do primeiro nível ("- [ ]" ou "- [x]" sem recuo) da seção "Critérios".
-function topLevelCriteria(source: string): number[] {
+// PNG de ticket de slice done: a poda do /accept tira a evidência da árvore (metri prune).
+function lintPrunedEvidence(files: string[], collapsed: Set<string>): void {
+  for (const name of files) {
+    const id = name.replace(/\.md$/, '');
+    let slice: unknown;
+    try {
+      slice = frontmatterOf(readFileSync(join(TICKETS_DIR, name), 'utf8'))?.slice;
+    } catch {
+      continue; // YAML inválido já sai como erro na checagem do ticket.
+    }
+    const dir = join(TICKETS_DIR, id);
+    if (!collapsed.has(String(slice)) || !existsSync(dir)) {
+      continue;
+    }
+    for (const png of readdirSync(dir).filter((file) => file.endsWith('.png')).sort()) {
+      report(join(dir, png), 1, `evidência: ${id} é da slice done ${String(slice)}; rode pnpm exec metri prune ${String(slice)}`);
+    }
+  }
+}
+
+// Cada critério do primeiro nível ("- [ ]" ou "- [x]" sem recuo) da seção "Critérios": a linha e se é "Tela:".
+function topLevelCriteria(source: string): { line: number; isScreen: boolean }[] {
   const lines = source.split('\n');
   const start = lines.indexOf('## Critérios');
-  const result: number[] = [];
+  const result: { line: number; isScreen: boolean }[] = [];
   for (let index = start + 1; start !== -1 && index < lines.length && !lines[index].startsWith('## '); index++) {
-    if (/^- \[[ xX]\] /.test(lines[index])) {
-      result.push(index + 1);
+    const criterion = /^- \[[ xX]\] (.*)$/.exec(lines[index]);
+    if (criterion) {
+      result.push({ line: index + 1, isScreen: criterion[1].startsWith('Tela:') });
     }
   }
   return result;
