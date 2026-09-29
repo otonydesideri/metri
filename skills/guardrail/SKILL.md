@@ -1,18 +1,33 @@
 ---
 name: guardrail
-description: "Keep code findable and guarded while writing it: find before you create, third-party before own code, the inline header with SOT keywords, GAP-n, checks over text, the rules ladder and the knowledge gate. Use when writing or changing code, when a rule is violated again, or when a lesson is proposed."
+description: "Keep code findable and guarded while writing it: find before you create, third-party before own code, the SOURCE OF TRUTH header, GAP-n, checks over text, the rules ladder and the knowledge gate. Use when writing or changing code, when a rule is violated again, or when a lesson is proposed."
 ---
 
 ## While writing code
 
-1. **Find before you create.** Assume it already exists: grep the SOT keywords and the identifiers of `docs/CONTEXT.md`, list the files, open only the relevant ones, and reuse what you find.
+1. **Find before you create.** Assume it already exists: grep `SOURCE OF TRUTH:` with the identifiers of `docs/CONTEXT.md`, read the linear path of `.metri/ARCHITECTURE.md`, open only the relevant files, and reuse what you find.
 2. **Third-party before own code.** What the project and its stack (`node_modules/metri/architecture/defaults/stack.md`) lack comes from a well-known library before code of your own. A library that swaps a stack item or carries lock-in (database, auth, queue, UI kit) is a decision: stop, flag it and ask (AGENTS.md, "How to work here").
 3. **Copy the canonical example.** Each rule names its example in `examples`: follow it, and go through the pattern's central points (the block, the registry), never around them.
 4. **Name with the glossary.** Identifiers are the English identifiers of `docs/CONTEXT.md`.
-5. **Context in code.** Every new code file opens with an inline header: what it is, why it exists, where it connects and how to use it, then its SOT keywords (the words a grep for this concept would use) and the ids of the ADRs and BRs it follows. In a slice `entry`, the header is the slice contract (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`, "Contrato de slice"). A module's barrel (`index`) is its map.
+5. **Source of truth in code.** Every canonical owner (the export a concept lives in) carries this header right above that export, after the imports:
+
+   ```ts
+   /** SOURCE OF TRUTH: <exported symbols or concept>.
+    * WHAT: <one line>.
+    * WHY: <one line>.
+    * WHERE: <who calls it; which owners it relies on>.
+    * <optional: one line per limit or invariant>
+    */
+   ```
+
+   - One header per canonical owner: a file with two owners has two headers.
+   - The first line is the SOT keyword: a grep for `SOURCE OF TRUTH:` and the symbol finds the owner.
+   - The labels are fixed, in English; the text after them follows the comment language of `node_modules/metri/architecture/defaults/stack.md`, "Stack". WHY cites by id the ADR or BR it follows: stable ids only.
+   - Without a header: generated files (a generator's output, the kit's CLI files), barrels (`index`, the module's map), specs and e2e, with their support in `test/` and `e2e/`.
+   - `pnpm sot` checks the headers, the `sot:` of the done slices and the linear path (`metri sot --help`).
 6. **Flag the gaps.** What you leave for later is a `GAP-n` comment at the spot plus its line in the Gaps section of `.metri/MATRIX.md`: nothing stays incomplete in silence.
 
-Done when every new code file has its header with SOT keywords, every new identifier of a domain term is its English identifier in `docs/CONTEXT.md` (never a synonym under `_Evitar:_`), and every deferral has its `GAP-n` in the code and in the matrix.
+Done when every canonical owner you created or changed has its header, every new identifier of a domain term is its English identifier in `docs/CONTEXT.md` (never a synonym under `_Evitar:_`), and every deferral has its `GAP-n` in the code and in the matrix.
 
 ## Trust errors and checks, not text
 

@@ -17,7 +17,7 @@ ucs: [UC2.1]
 
 ### S1 · Lista de pedidos
 
-horizon: now · entry: apps/app-web/src/pages/orders/orders-page.tsx
+horizon: now · sot: [OrdersPage]
 
 ### S2 · Avisos de pedido
 

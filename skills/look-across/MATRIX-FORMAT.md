@@ -33,7 +33,7 @@ contract:
 
 ### S<n> · <slice concluída>
 
-status: done · entry: <arquivo de entrada, com o contrato no cabeçalho>
+status: done · sot: [<símbolo dono>]
 
 ## Fog
 
@@ -58,7 +58,7 @@ the ticket files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` p
 - `ucs`: the ids of the feature's UCs, draft included; every UC outside `draft` appears here.
 - `sensitive: true` when the ticket touches money, access (authentication, authorization, data scope), personal
   data, deletion (a destructive migration included) or a sensitive BR; its diff gets the human's review in /accept.
-- The foundation slice, `S0`, has no contract and no `entry`: only `horizon`, or `status: done` once accepted.
+- The foundation slice, `S0`, has no contract and no `sot`: only `horizon`, or `status: done` once accepted.
 - Gaps: the arrow points to the ticket (UC or T) that closes the gap; while none is planned, to the ticket that
   left it. Pattern proposals: `de <id>` is the ticket that raised it, and the arrow its destination.
 
@@ -338,16 +338,17 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 7. **Same `touches`, no parallelism.** Schema changes follow expand–contract or stay in a foundation ticket.
 8. **Criteria written once, in the ticket file.** A UC's `checks` prove its "Critérios"; a T's "Critérios" are its
    own, since it has no UC.
-9. **Pruning:** the contract leaves the MATRIX for the header of the `entry` when the slice's
-   first ticket is built ("Contrato de slice", below); a done slice collapses, all its tickets included, into one
-   line with its `entry` (`status: done · entry: <path>`). A done slice that takes a new or reopened UC, or a new
-   T, goes back to `horizon: now` with its `entry`, until it collapses again. A ticket file is never collapsed: it
-   stays `status: done` in its own file, and its id stays in its feature's `ucs`; its evidence folder
-   (`.metri/tickets/<id>/`) leaves the tree. Git keeps the history. The MATRIX stays small.
+9. **Pruning:** in /accept, a done slice collapses, all its tickets included, into one line with the symbols
+   that own it (`status: done · sot: [<símbolo>]`), and its contract leaves the MATRIX ("Contrato de slice",
+   below). A done slice that takes a new or reopened UC, or a new T, goes back to `horizon: now` with its `sot`,
+   and with a `contract` block when the ticket changes what the slice guarantees, until it collapses again. A
+   ticket file is never collapsed: it stays `status: done` in its own file, and its id stays in its feature's
+   `ucs`; its evidence folder (`.metri/tickets/<id>/`) leaves the tree. Git keeps the history. The MATRIX stays
+   small.
 
 ## Contrato de slice
 
-While the slice is a plan, its contract is the slice's `contract` block:
+While the slice is a plan, and until /accept prunes it, its contract is the slice's `contract` block:
 
 ```markdown
 horizon: now · blocked_by: [S<n>]
@@ -359,22 +360,15 @@ contract:
   planned: <o que o contrato já acomoda, mas não está construído>
 ```
 
-After the slice's first ticket is built, the contract moves to the header of the entry file, and the slice swaps
-the block for `entry: <path>` on its `horizon` line:
+`planned` describes what is still missing, in words: a GAP or PP id lives only in Gaps and Pattern proposals.
 
-```ts
-/**
- * O quê: <responsibility>
- * Por quê: <por que a capacidade é compartilhada>
- * Onde: <onde se conecta: pacote, pontos centrais, consumidores>
- * Como usar: <interface, com o uso mínimo>
- * Invariantes: <invariants>
- * Consumidores: <consumers>
- * Previsto: <planned>
- * Checks: <comandos que provam o contrato>
- * SOT keywords: <keyword>, <keyword>
- */
-```
+Once built, the slice is registered in two places, and its line keeps only the symbols (`status: done · sot:
+[<símbolo>]`):
 
-The labels follow the language of the code comments (`node_modules/metri/architecture/defaults/stack.md`, "Stack"); the ones
-above are the default's. `pnpm docs-lint` checks that the `entry` exists and has every label.
+- the header of each canonical owner, in the code:
+  `node_modules/metri/skills/guardrail/SKILL.md`, "While writing code", step 5;
+- its steps in the linear path of `.metri/ARCHITECTURE.md`, one `arquivo:símbolo` per step:
+  `node_modules/metri/skills/look-across/ACTIVATION.md`, "Record".
+
+`pnpm sot` checks that every symbol of `sot:` and every step of the linear path has its header, and that a done
+slice keeps no `contract` block.

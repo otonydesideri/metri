@@ -16,7 +16,7 @@ Look across every feature, `now` and `planned`, to find the **slices** they shar
 
 ### 0. Mapping
 
-When `.metri/ARCHITECTURE.md` has the line `mapeamento: pendente` (an existing project, marked by `metri init`), start here. A survey of the code, run in a sub-agent, proposes the Slices section with the `entry` of each slice, the project rules and the lines of `.metri/ARCHITECTURE.md`; the human reviews them, and the line `mapeamento: pendente` leaves.
+When `.metri/ARCHITECTURE.md` has the line `mapeamento: pendente` (an existing project, marked by `metri init`), start here. A survey of the code, run in a sub-agent, proposes the Slices section (each built slice as `status: done · sot: [...]`), the linear path, the project rules and the other lines of `.metri/ARCHITECTURE.md`; the human reviews them. The first ticket of the plan is a `pattern` T that writes the headers of the owners (call the Skill tool with "guardrail") and takes the line `mapeamento: pendente` out, which turns `pnpm sot` on.
 
 ### 1. Gather context
 
@@ -38,7 +38,7 @@ For each UC, name the capabilities it needs and ask, in this order:
 
 ### 4. Contracts
 
-Give each new or changed slice its `contract` block, designed to accommodate what is `planned`; the foundation slice, `S0`, has none. A slice already built changes its contract only through a ticket: its `notes` say what the contract gains, and /build writes it in the header of the slice `entry`.
+Give each new or changed slice its `contract` block, designed to accommodate what is `planned`; the foundation slice, `S0`, has none. A built slice that changes what it guarantees gets back a `contract` block, and /build writes the change in the headers of the owners it touches ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Contrato de slice").
 
 ### 5. Architectural coverage
 

@@ -13,10 +13,11 @@ Ordem (todos rodam, mesmo depois de uma falha):
   1. docs-lint;
   2. rules-index:check (rules-index --check);
   3. design-tokens, só no projeto: o tema do código segue os tokens do docs/DESIGN.md; sem os dois, fica pendente;
-  4. api:drift, com o script api:generate no package.json da raiz: roda o gerador do contrato de API
+  4. sot, só no projeto: os cabeçalhos SOURCE OF TRUTH e o registro das slices construídas (metri sot --help);
+  5. api:drift, com o script api:generate no package.json da raiz: roda o gerador do contrato de API
      (backend/http-api) e falha se ele mudar algum arquivo; precisa de git. Sem o script, com apps/app-api e
      apps/app-web, fica pendente;
-  5. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
+  6. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
      (pnpm run <nome>).
 
 Saída: uma linha por check, "ok <nome>", "pendente <nome>: <motivo>" ou "falha <nome>"; a saída do check que
@@ -98,7 +99,7 @@ const checks: Check[] = [
   { name: 'rules-index:check', run: metri('rules-index', '--check') },
 ];
 if (layoutOf().isProject) {
-  checks.push({ name: 'design-tokens', run: metri('design-tokens') });
+  checks.push({ name: 'design-tokens', run: metri('design-tokens') }, { name: 'sot', run: metri('sot') });
 }
 if (GENERATE_SCRIPT in scripts) {
   checks.push({ name: 'api:drift', run: apiDrift });

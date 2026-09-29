@@ -6,9 +6,8 @@
 
 ## Caminho linear
 
-Padrão: `node_modules/metri/architecture/backend/layers.md`, "O caminho de uma request".
-
-- Sem desvio.
+1. `apps/app-web/src/pages/orders/orders-page.tsx:OrdersPage` lista os pedidos da organização na rota /orders.
+2. `apps/app-api/src/legacy/order-export.ts:orderExportRoute` recebe a exportação legada de pedidos.
 
 ## Capacidades ativas
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.3.0 (em preparação)
+
+- **Cabeçalho SOURCE OF TRUTH.** O cabeçalho do código passa ao formato do Flute: `/** SOURCE OF TRUTH: <símbolos>.`
+  com `WHAT:`, `WHY:` e `WHERE:`, logo acima do export que o arquivo possui, um por dono canônico (skill
+  `guardrail`, passo 5). Sai a lista "SOT keywords".
+- **Slice construída.** Sai o campo `entry` e o passo 4 do /build. O contrato fica no bloco `contract` da MATRIX até a
+  poda do /accept; construída, a slice é `status: done · sot: [<símbolo>]`, e os donos entram no caminho linear do
+  `.metri/ARCHITECTURE.md` (`arquivo:símbolo` por passo).
+- **`metri sot`**, no `verify`: cabeçalho bem formado, arquivo-fonte sem cabeçalho, símbolos de `sot:`, caminho linear
+  e slice done sem `contract`.
+
 ## v1.2.1 (2026-09-27)
 
 - **Revisão pós-release.** Correções no CLI (`init`, `design-tokens`, `docs-lint`, `rules-for`, `api:drift`), no

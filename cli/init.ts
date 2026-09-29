@@ -20,8 +20,8 @@ Cria o que falta:
   - .claude/skills/<nome> e .claude/agents/<nome>.md, links para cada skill e agent do pacote; o link para o
     que o pacote não tem mais sai;
   - .gitignore, quando o projeto não tem;
-  - no package.json, os scripts verify, docs-lint, rules-for, rules-index, rules-index:check e design-tokens
-    (metri <comando>).
+  - no package.json, os scripts verify, docs-lint, rules-for, rules-index, rules-index:check, design-tokens e
+    sot (metri <comando>).
 
 Termina rodando metri verify e sai com o código dele. PRODUCT.md, CONTEXT.md, DESIGN.md e MATRIX.md nascem no
 /shape.
@@ -35,6 +35,7 @@ const SCRIPTS: Record<string, string> = {
   'rules-index': 'metri rules-index',
   'rules-index:check': 'metri rules-index --check',
   'design-tokens': 'metri design-tokens',
+  sot: 'metri sot',
 };
 const GITIGNORE = ['node_modules/', '.env*', '!.env.example', 'dist/', '.turbo/', 'coverage/', ''].join('\n');
 const CODE_DIRS = ['apps', 'packages', 'src'];

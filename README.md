@@ -260,7 +260,7 @@ Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra no
 | 1 Moldar | `skills/shape/SKILL.md` |
 | 2 Look across | `skills/look-across/SKILL.md` |
 | 3 Construir | `skills/build/SKILL.md` |
-| 4 Verificar | `skills/build/SKILL.md`, passo 5, e o `verify` |
+| 4 Verificar | `skills/build/SKILL.md`, passo 4, e o `verify` |
 | 5 Aceitar | `skills/accept/SKILL.md` |
 | 6 Release | `skills/build/TICKET-TYPES.md`, "release" |
 | 7 Aprender e evoluir | `skills/guardrail/KNOWLEDGE-GATE.md`, no fim do `/accept` e do `/diagnose` |

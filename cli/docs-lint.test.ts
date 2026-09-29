@@ -189,19 +189,16 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(unserved.output).toContain('S2: slice now que nenhuma feature now serve');
   });
 
-  it('MATRIX: slice com contract ou entry, e done com entry', () => {
-    expect(
-      lintChanged(inMatrix('horizon: now · blocked_by: [S1]', 'horizon: now · blocked_by: [S1] · entry: apps/x.ts')).output,
-    ).toContain('S2: contract e entry juntos');
-    expect(
-      lintChanged(inMatrix('horizon: now · entry: apps/app-web/src/pages/orders/orders-page.tsx', 'status: done')).output,
-    ).toContain('S1: slice done sem entry');
+  it('MATRIX: slice de plano com contract ou sot; o contrato com as chaves obrigatórias', () => {
+    expect(lintChanged(inMatrix('horizon: now · sot: [OrdersPage]', 'horizon: now')).output).toContain('S1: sem contract nem sot');
+    expect(lintChanged(inMatrix('horizon: now · blocked_by: [S1]', 'horizon: now · blocked_by: [S1] · sot: [OrdersPage]')).status).toBe(0);
+    expect(lintChanged(inMatrix('sot: [OrdersPage]', 'sot: OrdersPage')).output).toContain('sot: OrdersPage não é lista [a, b]');
     expect(lintChanged(inMatrix('  invariants: Um aviso por mudança de estado.\n', '')).output).toContain(
       'contract de S2: falta invariants',
     );
   });
 
-  it('MATRIX: a slice de fundação, S0, não tem contract nem entry', () => {
+  it('MATRIX: a slice de fundação, S0, não tem contract nem sot', () => {
     const foundation = '### S0 · Fundação\n\nhorizon: now\n\n### S1 · Lista de pedidos';
     const ticket = '---\nid: T0.1\ntitle: Fundação\nslice: S0\ntype: task\nstatus: open\nmode: afk\nchecks: ["`pnpm verify`"]\n---\n\n# T0.1 · Fundação\n\n## O que entrega\n\nO monorepo com o verify verde.\n\n## Critérios\n\n- [ ] O `pnpm verify` passa.\n';
     expect(
@@ -212,19 +209,6 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     ).toEqual({ status: 0, output: '' });
     const done = '### S0 · Fundação\n\nstatus: done\n\n### S1 · Lista de pedidos';
     expect(lintChanged(inMatrix('### S1 · Lista de pedidos', done)).status).toBe(0);
-  });
-
-  it('MATRIX: o entry existe e tem o cabeçalho de contrato', () => {
-    expect(
-      lintChanged((dir) =>
-        edit(dir, 'apps/app-web/src/pages/orders/orders-page.tsx', (source) =>
-          source.replace(' * Previsto: filtros por período (F2).\n', ''),
-        ),
-      ).output,
-    ).toContain('entry: cabeçalho de apps/app-web/src/pages/orders/orders-page.tsx sem Previsto');
-    expect(lintChanged(inMatrix('orders/orders-page.tsx', 'orders/page.tsx')).output).toContain(
-      'entry: apps/app-web/src/pages/orders/page.tsx não existe',
-    );
   });
 
   it('Tickets: a árvore aceita .metri/tickets/<id>.md, e o nome do arquivo tem que ser um id de UC ou T', () => {
@@ -369,7 +353,7 @@ describe('docs-lint', { timeout: 30_000 }, () => {
     expect(nested).toEqual({ status: 0, output: '' });
     const pruned = lintChanged((dir) => {
       done(dir);
-      inMatrix('horizon: now · entry: apps/app-web/src/pages/orders/orders-page.tsx', 'status: done · entry: apps/app-web/src/pages/orders/orders-page.tsx')(dir);
+      inMatrix('horizon: now · sot: [OrdersPage]', 'status: done · sot: [OrdersPage]')(dir);
     });
     expect(pruned.output).not.toContain('evidência');
   });

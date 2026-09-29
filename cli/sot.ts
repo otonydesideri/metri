@@ -1,0 +1,255 @@
+// sot: confere os cabeçalhos SOURCE OF TRUTH do código e o registro das slices construídas. A explicação está
+// no --help.
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
+import { MATRIX, PROJECT_INDEX, projectFiles, sectionLines, takeOption } from './lib/layout.ts';
+import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
+
+const HELP = `sot: confere os cabeçalhos SOURCE OF TRUTH do código e o registro das slices construídas.
+
+Uso: metri sot [--root <dir>]
+
+Formato do cabeçalho: skills/guardrail/SKILL.md, "While writing code", passo 5.
+
+Arquivo-fonte: .ts, .tsx, .js, .jsx, .mjs, .cjs, .mts e .cts em apps/, packages/ e src/, fora de node_modules,
+dist, build, coverage, .turbo e das pastas generated/.
+
+Confere:
+  - cabeçalho bem formado: o comentário /** que abre com "SOURCE OF TRUTH: <símbolos ou conceito>" segue com
+    WHAT:, WHY: e WHERE:, nessa ordem, cada um com texto; fica depois dos imports e logo acima de um export (ou
+    do decorator dele);
+  - todo arquivo-fonte escrito à mão tem ao menos um cabeçalho. Ficam de fora: arquivo gerado ("generated",
+    "gerado por", "do not edit" ou "não edite" num comentário das 5 primeiras linhas, ou pasta generated/),
+    barrel (index.* só com re-exports), spec (*.spec.*, *.test.*, *.e2e-spec.*), e2e (*.e2e.*), o apoio deles
+    (pastas test/, tests/, e2e/, __tests__/ e __mocks__/) e declaração de tipo (*.d.ts);
+  - cada símbolo de sot: numa slice do .metri/MATRIX.md está declarado num arquivo-fonte e tem um cabeçalho que o
+    nomeia na linha SOURCE OF TRUTH;
+  - cada passo numerado de "Caminho linear" do .metri/ARCHITECTURE.md tem ao menos um \`arquivo:símbolo\`, e cada
+    um: o arquivo existe, declara o símbolo e tem o cabeçalho que o nomeia;
+  - slice done tem sot: (menos a de fundação, S0) e não guarda o bloco contract.
+
+Pendente (sai 0 com "pendente: <motivo>"): com a linha "mapeamento: pendente" no .metri/ARCHITECTURE.md (o
+/look-across liga o check no ticket que escreve os cabeçalhos) e sem nenhum arquivo-fonte nem nada a conferir.
+
+Saída: arquivo:linha: mensagem. Sai com código 1 quando há erro.
+`;
+
+const SOURCE_DIRS = ['apps', 'packages', 'src'];
+const SOURCE_FILE = /\.[cm]?[jt]sx?$/;
+const DECLARATION_FILE = /\.d\.[cm]?ts$/;
+const SPEC_FILE = /\.(?:spec|test|e2e-spec|e2e)\.[cm]?[jt]sx?$/;
+const SKIPPED_DIRS = ['node_modules', '.git', 'dist', 'build', 'coverage', '.turbo', 'generated', 'playwright-report', 'test-results'];
+const TEST_DIRS = ['test', 'tests', 'e2e', '__tests__', '__mocks__'];
+const GENERATED_MARK = /(?:\/\/|\/\*|^\s*\*).*\b(?:generated|gerado por|do not edit|não edite)\b/i;
+const GENERATED_LINES = 5;
+const FOUNDATION = 'S0';
+const PENDING_MAPPING = 'mapeamento: pendente';
+const LABELS = ['WHAT', 'WHY', 'WHERE'];
+const PLACEHOLDER = /^(?:todo|tbd|n\/a|-)?\.?$/i;
+const SYMBOL = /^[A-Za-z_$][\w$]*$/;
+const PATH_SYMBOL = /`([^`\s]+\.[A-Za-z]+):([A-Za-z_$][\w$]*)`/g;
+
+type Problem = { file: string; line: number; message: string };
+type Header = { owner: string; line: number };
+type Source = { path: string; text: string; headers: Header[] };
+
+const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(HELP);
+  process.exit(0);
+}
+process.chdir(resolve(takeOption(args, '--root') ?? '.'));
+
+const problems: Problem[] = [];
+const report = (file: string, line: number, message: string) => problems.push({ file, line, message });
+
+function pending(reason: string): never {
+  console.log(`pendente: ${reason}`);
+  process.exit(0);
+}
+
+function escape(text: string): string {
+  return text.replace(/[$.*+?^()[\]{}|\\]/g, '\\$&');
+}
+
+const lineAt = (text: string, index: number) => text.slice(0, index).split('\n').length;
+
+function isTestSupport(path: string): boolean {
+  return path.split('/').slice(0, -1).some((dir) => TEST_DIRS.includes(dir));
+}
+
+function isGenerated(text: string): boolean {
+  return text
+    .split('\n')
+    .filter((line) => line.trim() !== '')
+    .slice(0, GENERATED_LINES)
+    .some((line) => GENERATED_MARK.test(line));
+}
+
+// Barrel: index.* que, sem comentários, só tem re-exports ("export ... from", "export {}") e imports de efeito.
+function isBarrel(path: string, text: string): boolean {
+  if (!/^index\.[cm]?[jt]sx?$/.test(basename(path))) {
+    return false;
+  }
+  const rest = text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '')
+    .replace(/export\s+(?:type\s+)?(?:\*(?:\s+as\s+[\w$]+)?|\{[^}]*\})\s+from\s+['"][^'"]+['"]\s*;?/g, '')
+    .replace(/export\s*\{\s*\}\s*;?/g, '')
+    .replace(/import\s+['"][^'"]+['"]\s*;?/g, '');
+  return rest.trim() === '';
+}
+
+// Linhas de conteúdo de um comentário /** ... */, sem o "/**", o "*/" e o "*" do começo de cada linha.
+function commentLines(comment: string): string[] {
+  return comment
+    .replace(/^\/\*\*/, '')
+    .replace(/\*\/$/, '')
+    .split('\n')
+    .map((line) => line.replace(/^\s*\*?\s?/, '').trim())
+    .filter((line) => line !== '');
+}
+
+function readHeaders(path: string, text: string): Header[] {
+  const headers: Header[] = [];
+  for (const match of text.matchAll(/\/\*\*[\s\S]*?\*\//g)) {
+    const lines = commentLines(match[0]);
+    const owner = /^SOURCE OF TRUTH:\s*(.*)$/.exec(lines[0] ?? '')?.[1];
+    if (owner === undefined) {
+      continue;
+    }
+    const line = lineAt(text, match.index);
+    headers.push({ owner, line });
+    if (owner.trim() === '' || PLACEHOLDER.test(owner.trim())) {
+      report(path, line, 'cabeçalho: SOURCE OF TRUTH sem os símbolos ou o conceito');
+    }
+    LABELS.forEach((label, index) => {
+      const value = new RegExp(`^${label}:\\s*(.*)$`).exec(lines[index + 1] ?? '')?.[1];
+      if (value === undefined) {
+        report(path, line, `cabeçalho: falta ${label}: na linha ${index + 2} (SOURCE OF TRUTH, WHAT, WHY, WHERE, nessa ordem)`);
+      } else if (PLACEHOLDER.test(value.trim())) {
+        report(path, line, `cabeçalho: ${label}: sem texto`);
+      }
+    });
+    const after = text.slice(match.index + match[0].length);
+    const next = after.replace(/^[ \t]*\n/, '').split('\n')[0] ?? '';
+    if (!/^\s*(?:export\b|@)/.test(next)) {
+      report(path, line, 'cabeçalho: fica logo acima do export que o arquivo possui (ou do decorator dele)');
+    }
+    if (/^\s*import\s+(?:type\s+)?[\w${*'"]/m.test(after)) {
+      report(path, line, 'cabeçalho: fica depois dos imports');
+    }
+  }
+  for (const match of text.matchAll(/^\s*(?:\/\/|\/\*(?!\*))\s*SOURCE OF TRUTH:/gm)) {
+    report(path, lineAt(text, match.index), 'cabeçalho: SOURCE OF TRUTH vai num comentário /** ... */');
+  }
+  return headers;
+}
+
+function sourceFiles(): Source[] {
+  const files: Source[] = [];
+  const walk = (dir: string): string[] =>
+    projectFiles(dir).filter((path) => !path.split('/').some((part) => SKIPPED_DIRS.includes(part)));
+  for (const dir of SOURCE_DIRS.filter((dir) => existsSync(dir) && statSync(dir).isDirectory())) {
+    for (const path of walk(dir)) {
+      if (!SOURCE_FILE.test(path) || DECLARATION_FILE.test(path)) {
+        continue;
+      }
+      const text = readFileSync(path, 'utf8');
+      const headers = readHeaders(path, text);
+      const isExempt = SPEC_FILE.test(path) || isTestSupport(path) || isGenerated(text) || isBarrel(path, text);
+      if (headers.length === 0 && !isExempt) {
+        report(path, 1, 'cabeçalho: arquivo-fonte sem SOURCE OF TRUTH (skills/guardrail/SKILL.md, passo 5)');
+      }
+      files.push({ path, text, headers });
+    }
+  }
+  return files;
+}
+
+function declares(text: string, symbol: string): boolean {
+  const name = escape(symbol);
+  const declaration = new RegExp(
+    `(?:^|[\\s;(])(?:function\\*?|class|const|let|var|interface|type|enum|namespace)\\s+${name}(?![\\w$])`,
+    'm',
+  );
+  const exportList = new RegExp(`export\\s*\\{[^}]*(?<![\\w$])${name}(?![\\w$])[^}]*\\}`);
+  return declaration.test(text) || exportList.test(text);
+}
+
+function names(header: Header, symbol: string): boolean {
+  return new RegExp(`(?<![\\w$])${escape(symbol)}(?![\\w$])`).test(header.owner);
+}
+
+function lintSlices(files: Source[]): void {
+  if (!existsSync(MATRIX)) {
+    return;
+  }
+  for (const block of parseMatrix(readFileSync(MATRIX, 'utf8')).blocks.filter(({ kind }) => kind === 'slice')) {
+    const isDone = fieldOf(block, 'status')?.value === 'done';
+    const sot = fieldOf(block, 'sot');
+    if (isDone && fieldOf(block, 'contract')) {
+      report(MATRIX, fieldOf(block, 'contract')?.line ?? block.line, `${block.id}: slice done guarda o bloco contract; construída, ela fica nos cabeçalhos e no caminho linear`);
+    }
+    if (isDone && !sot && block.id !== FOUNDATION) {
+      report(MATRIX, block.line, `${block.id}: slice done sem sot: [<símbolo>]`);
+    }
+    for (const symbol of sot ? (listOf(sot.value) ?? []) : []) {
+      lintSymbol(files, symbol.replaceAll('`', ''), sot?.line ?? block.line, `sot de ${block.id}`);
+    }
+  }
+}
+
+function lintSymbol(files: Source[], symbol: string, line: number, where: string): void {
+  if (!SYMBOL.test(symbol)) {
+    report(MATRIX, line, `${where}: ${symbol} não é um símbolo`);
+    return;
+  }
+  const owners = files.filter(({ headers }) => headers.some((header) => names(header, symbol)));
+  if (owners.length === 0) {
+    report(MATRIX, line, `${where}: nenhum cabeçalho SOURCE OF TRUTH nomeia ${symbol}`);
+  } else if (!owners.some(({ text }) => declares(text, symbol))) {
+    report(MATRIX, line, `${where}: ${symbol} está no cabeçalho de ${owners[0].path}, mas nenhum arquivo o declara`);
+  }
+}
+
+function lintLinearPath(files: Source[]): void {
+  if (!existsSync(PROJECT_INDEX)) {
+    return;
+  }
+  const byPath = new Map(files.map((file) => [file.path, file]));
+  for (const { text, line } of sectionLines(readFileSync(PROJECT_INDEX, 'utf8'), 'Caminho linear')) {
+    if (!/^\d+\.\s/.test(text)) {
+      continue;
+    }
+    const steps = [...text.matchAll(PATH_SYMBOL)];
+    if (steps.length === 0) {
+      report(PROJECT_INDEX, line, 'Caminho linear: passo sem `arquivo:símbolo`');
+    }
+    for (const [, path, symbol] of steps) {
+      const file = byPath.get(path);
+      if (!file) {
+        report(PROJECT_INDEX, line, `Caminho linear: ${path} não existe ou não é arquivo-fonte`);
+      } else if (!declares(file.text, symbol)) {
+        report(PROJECT_INDEX, line, `Caminho linear: ${path} não declara ${symbol}`);
+      } else if (!file.headers.some((header) => names(header, symbol))) {
+        report(PROJECT_INDEX, line, `Caminho linear: nenhum cabeçalho SOURCE OF TRUTH de ${path} nomeia ${symbol}`);
+      }
+    }
+  }
+}
+
+if (existsSync(PROJECT_INDEX) && readFileSync(PROJECT_INDEX, 'utf8').split('\n').includes(PENDING_MAPPING)) {
+  pending(`${PENDING_MAPPING} em ${PROJECT_INDEX} (/look-across, passo 0)`);
+}
+const files = sourceFiles();
+lintSlices(files);
+lintLinearPath(files);
+
+if (files.length === 0 && problems.length === 0) {
+  pending('sem arquivo-fonte em apps/, packages/ ou src/');
+}
+for (const { file, line, message } of problems.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line)) {
+  console.log(`${file}:${line}: ${message}`);
+}
+process.exit(problems.length > 0 ? 1 : 0);

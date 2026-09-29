@@ -20,7 +20,7 @@ import {
   TICKETS_DIR,
 } from './lib/layout.ts';
 import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
-import { CONTRACT_LABELS, matrixProblems } from './lib/matrix-lint.ts';
+import { matrixProblems } from './lib/matrix-lint.ts';
 import { ticketProblems } from './lib/ticket-lint.ts';
 
 const HELP = `docs-lint: lint estrutural. Roda na raiz (ou em --root <dir>) e detecta o modo:
@@ -76,14 +76,13 @@ Só no projeto:
     - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
     - ids: ### F<n> em Features, ### S<n> em Slices, GAP-<n> e PP-<n> nas listas; sem id repetido;
     - chaves de VOCABULARY.md por bloco (feature: horizon, slices, outcome, ucs, milestone;
-      slice: horizon, blocked_by, contract, entry, status), sem chave repetida; valores de horizon dentro do
+      slice: horizon, blocked_by, contract, sot, status), sem chave repetida; valores de horizon dentro do
       permitido; listas em [a, b]; nenhuma chave vazia;
     - obrigatória: horizon na feature;
     - slice now serve a uma feature now (a feature a lista em slices) ou um ticket com ela em slice;
     - slices e blocked_by (da slice) apontam para uma slice que existe na matriz;
-    - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou entry, nunca os
-      dois; slice done tem entry; a de fundação, S0, não precisa de nenhum dos dois;
-    - o entry existe e tem o cabeçalho de contrato (/** ... */) com os rótulos ${CONTRACT_LABELS.join(', ')};
+    - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou sot; a de
+      fundação, S0, não precisa de nenhum dos dois. O que sot aponta e a slice done: metri sot --help;
     - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
   - Tickets (.metri/tickets/<id>.md, um UC ou um T; formato: skills/look-across/MATRIX-FORMAT.md,
     "Ticket files"):

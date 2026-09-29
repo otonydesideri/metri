@@ -11,9 +11,10 @@ Comandos:
   rules-index   gera os INDEX.md das regras (--check confere)
   docs-lint     lint estrutural do source e do projeto
   design-tokens confere se o tema do código segue os tokens do docs/DESIGN.md
+  sot           confere os cabeçalhos SOURCE OF TRUTH e o registro das slices construídas
 `;
 
-const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens'];
+const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot'];
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === undefined || command === '--help' || command === '-h') {

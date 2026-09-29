@@ -28,7 +28,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 2. Gather the inputs
 
-- **Contract**: the contract header at the top of the file named by the slice's `entry` (`S0` has none); in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
+- **Contract**: the slice's `contract` block in `.metri/MATRIX.md`, which /accept prunes only in step 7 (`S0` has none); in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
 - **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, leaving out the `citada:` lines and `frontend/experience` (whose items go to the Experience reviewer), the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns reviewer and say so.
 - **Experience**, when a UC of the slice has UI: the evidence paths of each UI criterion, `docs/DESIGN.md`, the UCs, and the verification items of `frontend/experience` without a `(check: <id>)` mark.
 
@@ -49,7 +49,7 @@ Present the reports in the chat under `## Contract` and `## Patterns` (and `## E
 
 Call the Skill tool with "grilling" and walk the human through the gate in its three blocks:
 
-- the slice's linear path, "show me the flow and the sources of truth": from the `entry` to each source of truth, as file:line;
+- the slice's linear path, "show me the flow and the sources of truth": the "Caminho linear" of `.metri/ARCHITECTURE.md` with the slice's new owners in their places, each step as `arquivo:símbolo` with its `SOURCE OF TRUTH:` header;
 - for each criterion, the paths of its evidence (the test that proves it and, in a ticket with a `frontend/*` area, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when this is the feature's last slice (every other slice in the feature's `slices` is done), whether the feature delivers its `outcome` across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
 - the diff of every ticket with `sensitive: true` or `type: pattern`;
 - each finding, with its group and the reviewer's recommendation; the user decides each one.
@@ -66,7 +66,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n` and repeated fixes, each
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (the done slice becomes one line with its `entry`; its ticket files stay, `status: done`, each in its own file, and their evidence folders leave the tree), keeping every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`: the done slice becomes `status: done · sot: [<símbolo>]` and its `contract` leaves; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`; its ticket files stay, `status: done`, each in its own file, and their evidence folders leave the tree. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

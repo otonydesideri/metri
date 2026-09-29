@@ -1,7 +1,6 @@
 // Checagens do .metri/MATRIX.md no modo projeto do docs-lint: só o plano (features, slices, Fog, Gaps,
 // Pattern proposals). O que valida cada ticket (UC ou T), em .metri/tickets/<id>.md, está em ticket-lint.ts.
 // A lista está no --help do docs-lint.
-import { existsSync, readFileSync } from 'node:fs';
 import { type Block, fieldOf, type Kind, listOf, parseMatrix } from './matrix.ts';
 
 export type MatrixProblem = { line: number; message: string };
@@ -9,7 +8,7 @@ export type MatrixProblem = { line: number; message: string };
 const SECTIONS = ['Features', 'Slices', 'Fog', 'Gaps', 'Pattern proposals'];
 const KEYS: Record<Kind, string[]> = {
   feature: ['horizon', 'slices', 'outcome', 'ucs', 'milestone'],
-  slice: ['horizon', 'blocked_by', 'contract', 'entry', 'status'],
+  slice: ['horizon', 'blocked_by', 'contract', 'sot', 'status'],
 };
 const REQUIRED: Record<Kind, string[]> = {
   feature: ['horizon'],
@@ -22,19 +21,7 @@ const VALUES: Record<string, string[]> = {
   horizon: ['now', 'planned', 'fog', 'out'],
   status: ['done'],
 };
-const LISTS = ['slices', 'blocked_by', 'ucs', 'consumers'];
-// Rótulos do cabeçalho de contrato no entry (A.7), no idioma de comentário do default.
-export const CONTRACT_LABELS = [
-  'O quê',
-  'Por quê',
-  'Onde',
-  'Como usar',
-  'Invariantes',
-  'Consumidores',
-  'Previsto',
-  'Checks',
-  'SOT keywords',
-];
+const LISTS = ['slices', 'blocked_by', 'ucs', 'consumers', 'sot'];
 const TICKET_ID = '(?:UC|T)\\d+\\.\\d+';
 const ITEMS: Record<string, RegExp | undefined> = {
   Fog: undefined,
@@ -170,17 +157,11 @@ function lintSlice(
   if (!seen.has('horizon') && !seen.has('status')) {
     report(block.line, `${block.id}: falta horizon (ou status: done)`);
   }
-  const isDone = fieldOf(block, 'status')?.value === 'done';
   const hasContract = seen.has('contract');
-  const entry = fieldOf(block, 'entry');
-  if (hasContract && entry) {
-    report(block.line, `${block.id}: contract e entry juntos; construída, a slice guarda só o entry (o contrato vai para o cabeçalho)`);
-  } else if (block.id === FOUNDATION) {
-    // a slice de fundação não tem contrato nem entry (skills/look-across/MATRIX-FORMAT.md)
-  } else if (isDone && !entry) {
-    report(block.line, `${block.id}: slice done sem entry`);
-  } else if (!hasContract && !entry) {
-    report(block.line, `${block.id}: sem contract nem entry`);
+  const isDone = fieldOf(block, 'status')?.value === 'done';
+  // A slice done é conferida pelo metri sot; a de plano tem o contrato ou, reaberta, os donos em sot.
+  if (block.id !== FOUNDATION && !isDone && !hasContract && !seen.has('sot')) {
+    report(block.line, `${block.id}: sem contract nem sot`);
   }
   if (hasContract) {
     const contract = block.contract ?? [];
@@ -197,22 +178,4 @@ function lintSlice(
       }
     }
   }
-  if (entry && entry.value !== '') {
-    const problem = entryProblem(entry.value.replaceAll('`', ''));
-    if (problem) {
-      report(entry.line, problem);
-    }
-  }
-}
-
-function entryProblem(path: string): string | undefined {
-  if (!existsSync(path)) {
-    return `entry: ${path} não existe`;
-  }
-  const header = /\/\*\*([\s\S]*?)\*\//.exec(readFileSync(path, 'utf8'))?.[1];
-  if (header === undefined) {
-    return `entry: ${path} sem o cabeçalho de contrato (/** ... */)`;
-  }
-  const missing = CONTRACT_LABELS.filter((label) => !new RegExp(`^\\s*\\*\\s*${label}:`, 'm').test(header));
-  return missing.length === 0 ? undefined : `entry: cabeçalho de ${path} sem ${missing.join(', ')}`;
 }

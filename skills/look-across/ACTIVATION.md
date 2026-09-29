@@ -31,7 +31,7 @@ A trigger that shows up later, like the first job or the first asset, is resolve
 `.metri/ARCHITECTURE.md` (created by `metri init`) keeps the current state, one line per item under its section:
 
 - "Stack": only what differs from `node_modules/metri/architecture/defaults/stack.md`, with its ADR.
-- "Caminho linear": only the deviations from `node_modules/metri/architecture/backend/layers.md`, "O caminho de uma request", with their ADRs.
+- "Caminho linear": the project's flow as numbered steps, each naming its owner as `` `arquivo:símbolo` `` and what it does in one line (`` 1. `apps/app-api/src/main.ts:bootstrap` sobe o Fastify com o prefixo `/api`. ``); /accept adds the owners of each slice it prunes. A step that deviates from `node_modules/metri/architecture/backend/layers.md`, "O caminho de uma request", ends with its ADR.
 - "Capacidades ativas": one line per id of the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` the project activated, with the values its rule's `not_covered` leaves to the project: `- <id>: <valores>`.
 - "Delegações": one line per resolved delegation of the matrix below, named by its Subject: `- <Assunto>: <valor escolhido>`.
 - "Caminhos do projeto": one line per path that depends on a project decision, such as a package the project owns: `- <glob> → <rule id>` (`pnpm rules-for --help`).
