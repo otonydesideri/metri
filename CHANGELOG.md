@@ -28,6 +28,9 @@
   aliases `#`, a pasta `src/shadcn/` e o re-export compound; o primitivo entra por import nomeado, e o `toast` vem
   do `sonner`. O arquivo da CLI importa o `cn` do kit (PP-3). O `globals.css` ganha o 2º `@source`; o Biome deixa
   `components/ui/` de fora; o `metri design-tokens` confere o `theme.text` do `cn` e o `<style>` do `index.html`.
+- **Skill `humanizer`** (adaptada de blader/humanizer v3.1.0, MIT), em português: tira do texto que um humano lê os
+  sinais de texto gerado. As skills que escrevem esse texto (`shape`, `domain-language`, `grilling`, `accept`,
+  `diagnose`, `research`) e a `frontend/experience`, em "Conteúdo", a chamam.
 
 ## v1.2.1 (2026-09-27)
 

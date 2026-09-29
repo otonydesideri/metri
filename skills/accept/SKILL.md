@@ -8,6 +8,8 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
+Before showing the reports, the gate or a lesson's text, call the Skill tool with "humanizer" on their prose.
+
 Judge what no check judges, on the diff of a slice, along separate axes:
 
 - **Contract**: does the code deliver the slice contract, its UCs and its T tickets?

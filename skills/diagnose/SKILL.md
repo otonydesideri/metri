@@ -8,6 +8,8 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
+Before reporting to the user, call the Skill tool with "humanizer" on the report's prose.
+
 # Diagnose
 
 A discipline for hard bugs. Skip phases only when explicitly justified.

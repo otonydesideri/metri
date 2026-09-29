@@ -52,6 +52,8 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 
 **Obrigatório.** O texto usa os termos do `docs/CONTEXT.md`, e o rótulo de uma ação diz o resultado dela ("Confirmar pedido").
 
+**Obrigatório.** O texto da interface passa pela skill `humanizer`.
+
 **Obrigatório.** O dado de desenvolvimento é realista, na língua do produto: zero, um e muitos itens, e textos longos.
 
 ## Desktop, mobile e evidência

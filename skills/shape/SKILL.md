@@ -8,6 +8,8 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
+Before writing the prose of a `docs/` file or an ADR, or showing the direction gate, call the Skill tool with "humanizer" on it.
+
 Understand the problem, the outcome and the limits, and align the language; slices, contracts and tickets belong to /look-across.
 
 ## Process

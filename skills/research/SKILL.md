@@ -5,6 +5,10 @@ description: Investigate a question against high-trust primary sources in a back
 
 Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
+Ask and report in the user's language set in AGENTS.md (pt-BR by default).
+
+Before reporting the conclusion to the user, call the Skill tool with "humanizer" on its prose.
+
 Spin up a **background agent** to do the research, so you keep working while it reads.
 
 Its job:
