@@ -330,7 +330,7 @@ Os primitivos são os do shadcn/ui, no estilo new-york, expostos pelo `@metri/ui
 
 - **Button:** `variant` `default`, `secondary`, `outline`, `ghost`, `destructive` e `link`; `size` `default` (36px), `xs` (24px), `sm` (32px), `lg` (40px), `icon`, `icon-xs`, `icon-sm` e `icon-lg`.
 - **Badge:** `variant` `default`, `secondary`, `destructive`, `outline`, `ghost` e `link`; 12px, peso 500, raio `full`.
-- **Card:** partes `Header`, `Title`, `Description`, `Action`, `Content` e `Footer`.
+- **Card:** partes `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent` e `CardFooter`.
 - **Campos:** Input, Textarea, Input Group, Select, Checkbox, Switch e Label; Field agrupa rótulo, controle, descrição e erro.
 - **Camadas:** Dialog, Alert Dialog, Popover, Dropdown Menu e Tooltip.
 - **Estrutura:** Tabs, Table, Pagination e Separator.

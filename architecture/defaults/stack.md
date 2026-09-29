@@ -33,6 +33,7 @@ Frontend (`app-web`):
 - Formulários: React Hook Form + Zod; `react-phone-number-input` e `use-mask-input` (sobre o Inputmask) (frontend/forms).
 - UI: consome `@metri/ui` (kit de componentes shadcn/ui, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
 - Tema: `next-themes`, o provider de tema do `@metri/ui` (frontend/theming, defaults/ui).
+- Notificação: `sonner`, com o `Toaster` do `@metri/ui` e o `toast` da lib (defaults/ui, frontend/data-fetching).
 - Estado global cliente: Zustand (frontend/state, em aberto).
 
 Testes:
@@ -45,13 +46,17 @@ Testes:
 
 ## Configuração de referência
 
-O Biome da raiz, com o código gerado do contrato de API fora dele (o `api:drift` o confere) e o override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
+O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS (`tailwindDirectives`: `@theme`, `@source`, `@custom-variant`). Ficam fora dele, com `!` (o scanner ainda lê os tipos): o código gerado do contrato de API, que o `api:drift` confere, e os arquivos da CLI do shadcn em `packages/ui/src/components/ui/`, para a CLI e o código continuarem iguais. O override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
 
 ```json
 {
   "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "javascript": { "formatter": { "quoteStyle": "single" } },
-  "files": { "includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json"] },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "files": {
+    "includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json", "!packages/ui/src/components/ui"]
+  },
   "linter": { "rules": { "recommended": true } },
   "overrides": [
     {
@@ -89,6 +94,7 @@ A versão com que a regra foi escrita, conferida na documentação oficial em 27
 | Playwright | 1.63.0 | https://playwright.dev/docs/test-projects | `devices['Desktop Chrome']` e `devices['Pixel 7']` (chromium) |
 | Prisma | 7.10.0 | https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7 | fixar o 7: a tag `latest` do CLI aponta para o 8 em release candidate |
 | pg-boss | 12.35.0 | https://pgboss.io | Node 22.12+ e Postgres 13+ |
-| Biome | 2.5.14 | https://biomejs.dev/reference/configuration | |
+| Biome | 2.5.14 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`; conferido em 29/09/2026 |
 | Vitest | 5.0.2 | https://vitest.dev/config/passwithnotests | |
-| shadcn (CLI) | 4.21.0 | https://ui.shadcn.com/docs/monorepo | |
+| shadcn (CLI) | 4.21.0 | https://ui.shadcn.com/docs/monorepo | aliases no nome do pacote; conferido em 29/09/2026 |
+| Tailwind CSS | 4.3.3 | https://tailwindcss.com/docs/detecting-classes-in-source-files | `@source` relativo ao CSS; conferido em 29/09/2026 |

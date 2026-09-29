@@ -22,6 +22,12 @@
 - **Banco de desenvolvimento.** Delegação nova ("Banco de desenvolvimento"), decidida no planejamento da fundação:
   Postgres que já roda ou container Docker do projeto. `db:up` falha rápido e cria o `.env`; `db:down` remove o
   container; o e2e cria e apaga os próprios bancos (`infrastructure/runtime`, `backend/testing`).
+- **shadcn no layout padrão** (metri:ADR-0003, que supera o metri:ADR-0001). O `@metri/ui` passa a
+  `src/components/{ui,blocks,providers}`, `src/hooks`, `src/lib/utils.ts` e `src/styles/globals.css`; os aliases usam
+  o nome do pacote (`@metri/ui/components/ui`, `@metri/ui/lib/utils`), com `paths` e `exports`. Saem o `imports`, os
+  aliases `#`, a pasta `src/shadcn/` e o re-export compound; o primitivo entra por import nomeado, e o `toast` vem
+  do `sonner`. O arquivo da CLI importa o `cn` do kit (PP-3). O `globals.css` ganha o 2º `@source`; o Biome deixa
+  `components/ui/` de fora; o `metri design-tokens` confere o `theme.text` do `cn` e o `<style>` do `index.html`.
 
 ## v1.2.1 (2026-09-27)
 

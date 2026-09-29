@@ -93,4 +93,38 @@ describe('design-tokens', { timeout: 30_000 }, () => {
       `${THEME}: typography.body-sm.lineHeight: falta --text-body-sm--line-height no @theme`,
     ]);
   });
+
+  it('cn: a lista theme.text bate com os --text-<nível> do @theme, nos dois sentidos', () => {
+    const utils = (levels: string) => `const twMerge = extendTailwindMerge({ extend: { theme: { text: [${levels}] } } });\n`;
+    const dir = project();
+    write(dir, 'packages/ui/src/lib/utils.ts', utils("'body-sm'"));
+    expect(run('design-tokens', ['--root', dir])).toEqual({ status: 0, lines: [] });
+    write(dir, 'packages/ui/src/lib/utils.ts', utils("'caption'"));
+    const { status, lines } = run('design-tokens', ['--root', dir]);
+    expect(status).toBe(1);
+    expect(lines).toEqual([
+      'packages/ui/src/lib/utils.ts: --text-body-sm do @theme fora de theme.text do cn',
+      'packages/ui/src/lib/utils.ts: theme.text do cn tem caption, sem --text-caption no @theme',
+    ]);
+    write(dir, 'packages/ui/src/lib/utils.ts', 'export { twMerge as cn } from "tailwind-merge";\n');
+    expect(run('design-tokens', ['--root', dir]).lines).toEqual([
+      'packages/ui/src/lib/utils.ts: o cn sem extendTailwindMerge com theme.text; os níveis do @theme: body-sm',
+    ]);
+  });
+
+  it('index.html: o <style> pinta html e html.dark com o --background de :root e de .dark', () => {
+    const html = (light: string, dark: string) =>
+      `<html><head><style>\n  /* html { background: red; } */\n  html { background: ${light}; }\n  html.dark { background: ${dark}; }\n</style></head></html>\n`;
+    const dir = project();
+    write(dir, 'apps/app-web/index.html', html('#ffffff', 'oklch(0.145 0 0)'));
+    expect(run('design-tokens', ['--root', dir])).toEqual({ status: 0, lines: [] });
+    write(dir, 'apps/app-web/index.html', html('#ffffff', 'oklch(0.3 0 0)'));
+    expect(run('design-tokens', ['--root', dir]).lines).toEqual([
+      'apps/app-web/index.html: html.dark { background: oklch(0.3 0 0) }, e o --background de .dark é oklch(0.145 0 0)',
+    ]);
+    write(dir, 'apps/app-web/index.html', '<html><head></head></html>\n');
+    expect(run('design-tokens', ['--root', dir]).lines).toContain(
+      'apps/app-web/index.html: o <style> sem html { background }; o valor é o --background de :root',
+    );
+  });
 });

@@ -327,8 +327,8 @@ describe('docs-lint', { timeout: 60_000 }, () => {
       `${rule}:9: adr: ADR-0002 não existe em docs/adr/`,
     ]);
     const source = copySource();
-    edit(source, 'architecture/defaults/ui.md', (text) => text.replace('adr: [metri:ADR-0001]', 'adr: [ADR-0001]'));
-    expect(lint(source).lines).toContain('architecture/defaults/ui.md:24: adr: ADR-0001 não existe em docs/adr/');
+    edit(source, 'architecture/defaults/ui.md', (text) => text.replace('adr: [metri:ADR-0003]', 'adr: [ADR-0003]'));
+    expect(lint(source).lines).toContain('architecture/defaults/ui.md:22: adr: ADR-0003 não existe em docs/adr/');
   });
 
   it('evidência: critério Tela: de ticket done tem desktop e mobile, até a poda da slice', () => {

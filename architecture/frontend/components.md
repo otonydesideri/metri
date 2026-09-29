@@ -1,6 +1,6 @@
 ---
 id: frontend/components
-description: "a construção de página e componente no `app-web` — a ordem do corpo da página e do modal, o nome que separa estado da fonte e estado da página, a forma da condicional, um arquivo por componente, a composição (compound do pacote e do app) e os estados de leitura (loading, vazio e erro)."
+description: "a construção de página e componente no `app-web` — a ordem do corpo da página e do modal, o nome que separa estado da fonte e estado da página, a forma da condicional, um arquivo por componente, a composição (primitivo do pacote por import nomeado, compound do app) e os estados de leitura (loading, vazio e erro)."
 use_when:
   - "criar página, componente ou estado de tela"
   - "extrair um componente"
@@ -14,7 +14,7 @@ not_covered:
   - "grupo de rota, guard, rota × modal e carregamento lazy da página → frontend/routing"
   - "formulário, schema de form e campo → frontend/forms"
   - "uso de token e tema no código → frontend/theming"
-  - "a entrada do primitivo no pacote e o re-export em compound → defaults/ui"
+  - "a entrada do primitivo no pacote → defaults/ui"
   - "valores e vocabulário visual → project:DESIGN"
   - "a casa e o nome de arquivo → frontend/structure"
   - "o dado da tela e o feedback de escrita → frontend/data-fetching"
@@ -75,19 +75,15 @@ A peça extraída recebe o que renderizar e o handler pronto, não o dado cru pr
 
 A extração tem um limite no outro sentido: componente nasce quando há markup ou decisão de verdade pra encapsular. Peça que só traduz um dado numa prop do primitivo do `@metri/ui` é indireção com nome de domínio — a tela usa o primitivo direto, e a variação fica num mapa de apresentação (ver `docs/DESIGN.md`).
 
-O compound é a exceção, e não contraria o parágrafo acima: as partes de um componente composto (`Root`, `Item`, `Trigger`) moram no mesmo arquivo e saem dele renomeadas num bloco de export, como no `@metri/ui`. Elas não disputam um arquivo entre si, são as fatias de um componente só, sempre consumidas juntas — separá-las não desfaz acúmulo nenhum, porque não há nada acumulado ali. O spec de estrutura reconhece o compound por esse bloco de export.
+O compound é a exceção, e não contraria o parágrafo acima: as partes de um componente composto (`Root`, `Item`, `Trigger`) moram no mesmo arquivo e saem dele renomeadas num bloco de export. Elas não disputam um arquivo entre si, são as fatias de um componente só, sempre consumidas juntas — separá-las não desfaz acúmulo nenhum, porque não há nada acumulado ali. O spec de estrutura reconhece o compound por esse bloco de export.
 
 ## Composição e o que sobe pro pacote
 
-Compound component (`Tabs.List`, `Field.Label`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
+O primitivo (`Tabs`, `TabsList`, `FieldLabel`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
 
-**Obrigatório.** Primitivo do `@metri/ui` entra por `import * as`, com o nome do componente, e é usado pelas partes: `import * as Tabs from '@metri/ui/components/ui/tabs'`, depois `Tabs.Root` e `Tabs.List`. É o único formato de import de componente no projeto, para o primitivo do pacote e para o compound de `shared/components/`. A forma compound do primitivo vem do re-export do pacote (`defaults/ui.md`).
+**Obrigatório.** Primitivo do `@metri/ui` entra por import nomeado, como na documentação do shadcn: `import { Tabs, TabsList, TabsTrigger } from '@metri/ui/components/ui/tabs'` (`defaults/ui.md`, "Componente novo").
 
-**Proibido.** Import nomeado de primitivo do `@metri/ui` (`import { Tabs, TabsList } from '@metri/ui/components/ui/tabs'`).
-
-**Proibido.** O app importar o arquivo gerado pela CLI do shadcn (`packages/ui/src/shadcn/`), por qualquer caminho: o primitivo entra só pelo re-export de `@metri/ui/components/ui/*` (`defaults/ui.md`, "Componente novo").
-
-O padrão de composição também vale pra peça do app: componente de `shared/components/` cujas partes as telas montam em ordens e combinações próprias — um cabeçalho de página com ícone, título, descrição e ações opcionais — é compound como os do pacote, um arquivo com as fatias exportadas num bloco `export { X as Root, ... }` e consumido via `import * as`. Cada página monta as partes inline, na ordem que a tela pede, sem variável de render e sem uma prop nova no componente pra cada variação de anatomia.
+Componente de `shared/components/` cujas partes as telas montam em ordens e combinações próprias — um cabeçalho de página com ícone, título, descrição e ações opcionais — é compound: um arquivo com as fatias exportadas num bloco `export { X as Root, ... }` e consumido via `import * as`. Cada página monta as partes inline, na ordem que a tela pede, sem variável de render e sem uma prop nova no componente pra cada variação de anatomia.
 
 ## Estados de leitura: loading, vazio e erro
 
@@ -107,8 +103,8 @@ O erro de leitura não apaga a tela inteira: o chrome que não depende do dado q
 - Loading de lista usa skeleton com a forma do conteúdo, e todo estado vazio ou de erro oferece uma saída (inclusive "limpar filtro" quando o vazio é do filtro)?
 - O arquivo declara um componente só, com as peças da tela em arquivos próprios na pasta da página?
 - Nenhum componente existe só pra repassar prop pro primitivo do pacote, e peça compartilhada de anatomia variável é compound consumido via `import * as`?
-- Peça mais global subiu pro pacote pela regra de colocação, sem redefinir o compound do `@metri/ui`?
-- Todo primitivo do `@metri/ui` entra por `import * as` e é usado pelas partes, sem import nomeado nem import do arquivo gerado?
+- Peça mais global subiu pro pacote pela regra de colocação, sem redefinir o primitivo do `@metri/ui`?
+- Todo primitivo do `@metri/ui` entra por import nomeado, de `@metri/ui/components/ui/<componente>`?
 
 ## Em aberto
 

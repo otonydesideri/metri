@@ -1,6 +1,6 @@
 ---
 id: frontend/forms
-description: "onde o formulário mora e como se compõe; o uso do React Hook Form (desestruturação, submit, commit por campo, campo como string); `defaultValues`; o schema de form e a diferença dele para o schema de API; o campo montado no app sobre o compound do `@metri/ui` (dependência externa, comportamento próprio, máscara); rótulo, descrição e nome acessível do controle."
+description: "onde o formulário mora e como se compõe; o uso do React Hook Form (desestruturação, submit, commit por campo, campo como string); `defaultValues`; o schema de form e a diferença dele para o schema de API; o campo montado no app sobre o `InputGroup` do `@metri/ui` (dependência externa, comportamento próprio, máscara); rótulo, descrição e nome acessível do controle."
 use_when:
   - "criar formulário"
   - "escrever schema de form"
@@ -9,7 +9,7 @@ use_when:
 applies_to:
   - "apps/app-web/src/shared/schemas/**"
   - "apps/app-web/src/shared/components/inputs/**"
-keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", InputGroup.Root, InputGroup.Input, InputGroup.Addon, input-group-control, Textarea, react-phone-number-input, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label.Root, Field.Error, aria-label, "@metri/ui"]
+keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", InputGroup, InputGroupInput, InputGroupAddon, input-group-control, Textarea, react-phone-number-input, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label, FieldError, aria-label, "@metri/ui"]
 not_covered:
   - "o modal de tarefa que contém o form e a regra de Esc e clique fora → frontend/routing"
   - "a mutation que o form dispara, o estado em voo e a notificação → frontend/data-fetching"
@@ -101,15 +101,15 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 
 ### Campo montado no app
 
-**Obrigatório.** Campo que o `@metri/ui` não entrega pronto mora em `shared/components/inputs/`, não no pacote, e continua montado com o compound dele.
+**Obrigatório.** Campo que o `@metri/ui` não entrega pronto mora em `shared/components/inputs/`, não no pacote, e continua montado com as peças dele.
 
 **Obrigatório.** O campo de partida é o primitivo do pacote com a semântica certa, `Input` ou `Textarea`, não sempre o `Input`.
 
-Quando o campo precisa de uma dependência externa que o pacote não tem: **Obrigatório.** A peça externa entra como filho comum de `InputGroup.Root`, no lugar do `InputGroup.Input`, com `data-slot="input-group-control"`.
+Quando o campo precisa de uma dependência externa que o pacote não tem: **Obrigatório.** A peça externa entra como filho comum de `InputGroup`, no lugar do `InputGroupInput`, com `data-slot="input-group-control"`.
 
-> **Por quê.** É esse atributo que dá à peça externa o estado de foco do grupo, como o `InputGroup.Input` tem.
+> **Por quê.** É esse atributo que dá à peça externa o estado de foco do grupo, como o `InputGroupInput` tem.
 
-Quando o campo precisa de um comportamento próprio sobre o campo do pacote: **Obrigatório.** O compound entrega o campo e os afixos, e o app acrescenta o controle que falta num `InputGroup.Addon`, ao lado do `InputGroup.Input` (a senha, com o `InputGroup.Button` que alterna o `type`).
+Quando o campo precisa de um comportamento próprio sobre o campo do pacote: **Obrigatório.** O `InputGroup` entrega o campo e os afixos, e o app acrescenta o controle que falta num `InputGroupAddon`, ao lado do `InputGroupInput` (a senha, com o `InputGroupButton` que alterna o `type`).
 
 Quando o campo tem semântica de domínio com lib dedicada: **Obrigatório.** Ele usa a lib dedicada, que entrega máscara, parsing e formato canônico numa peça só: o telefone sai do `react-phone-number-input/input` já em E.164, sem conversão no submit nem na hidratação do form.
 
@@ -133,20 +133,20 @@ Quando a máscara varia com o comprimento: **Obrigatório.** Array de máscaras,
 
 Enquanto o `@metri/ui` não tem uma raiz de campo que feche a ligação sozinha: **Obrigatório.** Cada linha amarra o `aria-describedby` à mão.
 
-**Obrigatório.** O `<label>` só entra quando o controle não tem texto próprio: `input`, `Select.Trigger`, `Switch` e `Checkbox`.
+**Obrigatório.** O `<label>` só entra quando o controle não tem texto próprio: `input`, `SelectTrigger`, `Switch` e `Checkbox`.
 
-Quando o controle da linha é botão: **Obrigatório.** O título é `div` com a mesma tipografia do `Label.Root`, e o botão se nomeia sozinho ("Alterar foto", "Gerar códigos").
+Quando o controle da linha é botão: **Obrigatório.** O título é `div` com a mesma tipografia do `Label`, e o botão se nomeia sozinho ("Alterar foto", "Gerar códigos").
 
 > **Por quê.** Botão já carrega o nome no conteúdo, e o `<label>` nativo vence esse conteúdo: um rótulo "Foto de perfil" apontando para o botão o faz anunciar "Foto de perfil", sem verbo nenhum.
 
 Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** Ele leva `aria-label` com o alvo junto, começando pelo rótulo visível.
 
-**Obrigatório.** O qualificador de rótulo é texto `text-muted-foreground` dentro do `Field.Label`, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
+**Obrigatório.** O qualificador de rótulo é texto `text-muted-foreground` dentro do `FieldLabel`, o "(Opcional)" ao lado do nome do campo; parágrafo de apoio é a descrição.
 
 ## Aplicação
 
 - Base UI e MUI resolvem a ligação de descrição com uma raiz de campo; o `Field` do shadcn não faz essa ligação, e é essa peça que ainda falta no `@metri/ui`.
-- O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `Field.Error` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
+- O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `FieldError` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
 - O layout do formulário (seções, campo, par Cancelar/submissão) é o do vocabulário visual (`docs/DESIGN.md`).
 - O tipo de cada schema vem do `z.infer`, nunca redeclarado à mão (`frontend/helpers.md`, "Zod schema vs. type plain"), e o tipo de valores do form (`<Nome>Values`) fica no próprio arquivo de schema (`frontend/helpers.md`, "Tipos compartilhados").
 - Campo reusado por mais de um app tem a casa reavaliada pela colocação de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app".
@@ -157,7 +157,7 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 - O submit usa `handleFormSubmit`, commit por campo usa `handleFieldCommit` com `trigger`/`getValues`, e o campo é string com a conversão no submit?
 - O `defaultValues` referencia const nomeada, fora do componente quando estática e dentro quando deriva de dado disponível na montagem?
 - Schema de form em `shared/schemas/<módulo>.schema.ts`, separado do schema de API, que vem de `api/model.zod.ts` sem cópia local?
-- Campo que o pacote não entrega mora em `shared/components/inputs/`, montado sobre o compound?
+- Campo que o pacote não entrega mora em `shared/components/inputs/`, montado sobre as peças do `InputGroup`?
 - Campo mascarado monta o `use-mask-input` por `withMask`, com o array da máscara mais curta para a mais longa e `showMaskOn*` desligado?
 - Descrição fica fora do `<label>`, ligada por `aria-describedby`, e botão se nomeia sozinho?
 

@@ -6,7 +6,8 @@ import { frontmatterOf, takeOption } from './lib/layout.ts';
 
 const HELP = `design-tokens: confere se o tema do código segue os tokens do docs/DESIGN.md, a fonte deles.
 
-Uso: metri design-tokens [--root <dir>] [--theme <arquivo css>]   (tema padrão: packages/ui/src/styles/globals.css)
+Uso: metri design-tokens [--root <dir>] [--theme <arquivo css>] [--utils <arquivo>] [--index <arquivo html>]
+Padrões: tema packages/ui/src/styles/globals.css, cn packages/ui/src/lib/utils.ts, apps/app-web/index.html.
 
 Compara:
   - colors.<nome> com --<nome> em :root, e colors.<nome>-dark com --<nome> em .dark, nos dois sentidos: token
@@ -16,12 +17,20 @@ Compara:
   - typography.<nível> com --text-<nível> (fontSize), --text-<nível>--line-height, --text-<nível>--letter-spacing
     e --text-<nível>--font-weight no @theme.
 
+E, no código, quando o arquivo existe:
+  - a lista theme.text do cn (extendTailwindMerge) com os níveis --text-<nível> do @theme, nos dois sentidos
+    (defaults/ui, "Tipografia e espaçamento");
+  - o <style> inline do index.html: html { background } com o --background de :root, e html.dark { background }
+    com o de .dark (frontend/theming).
+
 Sem docs/DESIGN.md ou sem o arquivo de tema, responde "pendente: <motivo>" e sai 0. Com diferença, uma linha por
 token e sai 1.
 `;
 
 const DESIGN = 'docs/DESIGN.md';
 const DEFAULT_THEME = 'packages/ui/src/styles/globals.css';
+const DEFAULT_UTILS = 'packages/ui/src/lib/utils.ts';
+const DEFAULT_INDEX = 'apps/app-web/index.html';
 const DARK_SUFFIX = '-dark';
 // Distância no OKLab abaixo da qual duas cores são a mesma, depois do arredondamento de cada formato.
 const COLOR_TOLERANCE = 0.002;
@@ -40,6 +49,8 @@ if (args.includes('--help') || args.includes('-h')) {
   process.exit(0);
 }
 const themeOption = takeOption(args, '--theme');
+const utilsPath = takeOption(args, '--utils') ?? DEFAULT_UTILS;
+const indexPath = takeOption(args, '--index') ?? DEFAULT_INDEX;
 process.chdir(resolve(takeOption(args, '--root') ?? '.'));
 const themePath = themeOption ?? DEFAULT_THEME;
 
@@ -139,7 +150,46 @@ for (const [level, properties] of Object.entries(typography)) {
   }
 }
 
+const codeProblems: string[] = [];
+
+// theme.text do cn × --text-<nível> do @theme (as chaves --text-<nível>--<propriedade> ficam de fora).
+if (existsSync(utilsPath)) {
+  const levels = [...blocks.theme.keys()].filter((key) => key.startsWith('text-') && !key.includes('--')).map((key) => key.slice(5));
+  const list = /\btext\s*:\s*\[([\s\S]*?)\]/.exec(readFileSync(utilsPath, 'utf8'))?.[1];
+  const listed = [...(list ?? '').matchAll(/['"]([^'"]+)['"]/g)].map(([, level]) => level);
+  if (list === undefined && levels.length > 0) {
+    codeProblems.push(`${utilsPath}: o cn sem extendTailwindMerge com theme.text; os níveis do @theme: ${levels.join(', ')}`);
+  }
+  for (const level of list === undefined ? [] : levels.filter((level) => !listed.includes(level))) {
+    codeProblems.push(`${utilsPath}: --text-${level} do @theme fora de theme.text do cn`);
+  }
+  for (const level of listed.filter((level) => !levels.includes(level))) {
+    codeProblems.push(`${utilsPath}: theme.text do cn tem ${level}, sem --text-${level} no @theme`);
+  }
+}
+
+// O <style> inline do index.html pinta html e html.dark com o --background claro e o escuro.
+if (existsSync(indexPath)) {
+  const style = [...readFileSync(indexPath, 'utf8').matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(([, css]) => css).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const [selector, block, variableBlock] of [['html', blocks.light, ':root'], ['html.dark', blocks.dark, '.dark']] as const) {
+    const expected = block.get('background');
+    const rule = new RegExp(`(?:^|[}\\s])${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`).exec(style)?.[1];
+    const actual = rule && /background(?:-color)?\s*:\s*([^;]+);?/.exec(rule)?.[1]?.trim();
+    if (expected === undefined) {
+      continue;
+    }
+    if (!actual) {
+      codeProblems.push(`${indexPath}: o <style> sem ${selector} { background }; o valor é o --background de ${variableBlock}`);
+    } else if (!sameColor(expected, actual)) {
+      codeProblems.push(`${indexPath}: ${selector} { background: ${actual} }, e o --background de ${variableBlock} é ${expected}`);
+    }
+  }
+}
+
 for (const problem of problems) {
   console.log(`${themePath}: ${problem}`);
 }
-process.exit(problems.length > 0 ? 1 : 0);
+for (const problem of codeProblems) {
+  console.log(problem);
+}
+process.exit(problems.length + codeProblems.length > 0 ? 1 : 0);

@@ -14,6 +14,7 @@ not_covered:
   - "o kit, a entrada de componente no pacote e as CSS variables de tema → defaults/ui"
   - "valores e vocabulário visual → project:DESIGN"
   - "preferência de tema fora da árvore de estado cliente → frontend/state"
+enforced_by: [design-tokens]
 status: active
 ---
 # Token e tema no frontend
@@ -60,7 +61,7 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 
 > **Por quê.** Fora do `ThemeProvider`, o `useTheme()` do next-themes devolve `theme` indefinido, sem erro: o componente ramificaria para o lado errado, calado, em teste e em consumidor que não monta o provider. Com `dark?`, quem monta passa o valor.
 
-- **Exceção.** Arquivo gerado pela CLI do shadcn, como o `sonner.tsx`: ele chama o `useTheme()` do next-themes e não é editado (`defaults/ui.md`, "Componente novo").
+- **Exceção.** Arquivo da CLI do shadcn que chama o `useTheme()` do next-themes, como o `sonner.tsx`: fica como a CLI o escreveu (`defaults/ui.md`, "Tema e dark mode do `app-web`").
 
 ## Aplicação
 
@@ -108,7 +109,7 @@ export { useTheme } from 'next-themes';
 
 - As classes de UI usam token do `@metri/ui`, sem valor arbitrário (`bg-[#...]`, `p-[16px]`)?
 - Tema: app Vite monta o `ThemeProvider` do `@metri/ui` (next-themes com `attribute="class"` e `enableSystem={false}`), com a classe aplicada pelo script inline antes do primeiro paint, dois valores e default `light`?
-- O `<style>` inline do `index.html` pinta `html` e `html.dark` com o valor claro e o escuro do `--background` do `globals.css`?
+- O `<style>` inline do `index.html` pinta `html` e `html.dark` com o valor claro e o escuro do `--background` do `globals.css`? (check: design-tokens)
 - Componente do pacote ramifica por `dark?`, não pelo `useTheme()` do pacote?
 
 ## Referências

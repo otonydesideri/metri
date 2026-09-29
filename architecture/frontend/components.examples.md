@@ -36,11 +36,11 @@ export function OrderPage() {
     startSaveTransition(async () => {
       try {
         await updateOrder.mutateAsync();
-        Sonner.toast.success('Pedido salvo', {
+        toast.success('Pedido salvo', {
           description: `O pedido ${order.number} já aparece com as alterações.`,
         });
       } catch (error) {
-        Sonner.toast.error('Não foi possível salvar o pedido', {
+        toast.error('Não foi possível salvar o pedido', {
           description: toUserFacingMessage(error),
         });
       }

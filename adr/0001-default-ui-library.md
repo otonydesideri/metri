@@ -1,6 +1,6 @@
 # ADR-0001 Biblioteca de UI padrão
 
-status: accepted
+status: superseded by ADR-0003
 area: defaults
 kind: decision
 

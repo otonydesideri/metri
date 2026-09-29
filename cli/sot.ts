@@ -19,7 +19,8 @@ Confere:
     WHAT:, WHY: e WHERE:, nessa ordem, cada um com texto; fica depois dos imports e logo acima de um export (ou
     do decorator dele);
   - todo arquivo-fonte escrito à mão tem ao menos um cabeçalho. Ficam de fora: arquivo gerado ("generated",
-    "gerado por", "do not edit" ou "não edite" num comentário das 5 primeiras linhas, ou pasta generated/),
+    "gerado por", "do not edit" ou "não edite" num comentário das 5 primeiras linhas, pasta generated/ ou os
+    arquivos da CLI do shadcn em packages/ui/src/components/ui/),
     barrel (index.* só com re-exports), spec (*.spec.*, *.test.*, *.e2e-spec.*), e2e (*.e2e.*), o apoio deles
     (pastas test/, tests/, e2e/, __tests__/ e __mocks__/) e declaração de tipo (*.d.ts);
   - cada símbolo de sot: numa slice do .metri/MATRIX.md está declarado num arquivo-fonte e tem um cabeçalho que o
@@ -42,6 +43,8 @@ const SKIPPED_DIRS = ['node_modules', '.git', 'dist', 'build', 'coverage', '.tur
 const TEST_DIRS = ['test', 'tests', 'e2e', '__tests__', '__mocks__'];
 const GENERATED_MARK = /(?:\/\/|\/\*|^\s*\*).*\b(?:generated|gerado por|do not edit|não edite)\b/i;
 const GENERATED_LINES = 5;
+// Os arquivos da CLI do kit de UI (defaults/ui, "O pacote").
+const KIT_CLI_DIR = 'packages/ui/src/components/ui/';
 const FOUNDATION = 'S0';
 const PENDING_MAPPING = 'mapeamento: pendente';
 const LABELS = ['WHAT', 'WHY', 'WHERE'];
@@ -157,7 +160,8 @@ function sourceFiles(): Source[] {
       }
       const text = readFileSync(path, 'utf8');
       const headers = readHeaders(path, text);
-      const isExempt = SPEC_FILE.test(path) || isTestSupport(path) || isGenerated(text) || isBarrel(path, text);
+      const isExempt =
+        SPEC_FILE.test(path) || isTestSupport(path) || path.startsWith(KIT_CLI_DIR) || isGenerated(text) || isBarrel(path, text);
       if (headers.length === 0 && !isExempt) {
         report(path, 1, 'cabeçalho: arquivo-fonte sem SOURCE OF TRUTH (skills/guardrail/SKILL.md, passo 5)');
       }

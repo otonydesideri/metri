@@ -14,7 +14,7 @@ applies_to:
   - "apps/app-web/src/app/providers/query-client.ts"
   - "apps/app-web/src/app/index.tsx"
   - "apps/app-web/vite.config.ts"
-keywords: [httpClient, ApiError, orval, orval.config.ts, "api/model.zod.ts", toUserFacingMessage, "/api", proxy, React Query, useQuery, useMutation, key factory, keys.ts, staleTime, gcTime, refetchInterval, queryOptions, setQueryData, invalidateQueries, resetQueries, placeholderData, prefetchQuery, mutateAsync, useTransition, isSubmitting, variables, Sonner.toast, toast, LoadErrorState, QueryClient, QueryClientProvider, queryClient.clear, persistQueryClient, optimistic update, polling]
+keywords: [httpClient, ApiError, orval, orval.config.ts, "api/model.zod.ts", toUserFacingMessage, "/api", proxy, React Query, useQuery, useMutation, key factory, keys.ts, staleTime, gcTime, refetchInterval, queryOptions, setQueryData, invalidateQueries, resetQueries, placeholderData, prefetchQuery, mutateAsync, useTransition, isSubmitting, variables, toast, sonner, LoadErrorState, QueryClient, QueryClientProvider, queryClient.clear, persistQueryClient, optimistic update, polling]
 not_covered:
   - "o estado que vive só no navegador → frontend/state"
   - "o contrato da API do lado do backend → backend/http-api"
@@ -310,7 +310,7 @@ O erro percorre um caminho fixo. O `httpClient` lança `ApiError` em falha de HT
 
 **Leitura vira estado de tela, não toast.** Falha de leitura que impede a tela de existir mostra o `LoadErrorState` com a saída de tentar de novo (`frontend/components.md`, "Estados de leitura"); leitura acessória, cuja falha não trava nada, não mostra nada. Nos dois casos o toast seria uma segunda cópia do mesmo fato, ou uma interrupção por algo que não interrompe.
 
-**Escrita vira notificação no handler.** O `catch` do handler chama o `Sonner.toast.error` (`@metri/ui/components/ui/sonner`), com o título nomeando a ação que falhou e a descrição vindo do `toUserFacingMessage`, que lê o envelope do backend. Escrita por comando de client externo segue a mesma forma, com a mensagem do próprio pacote. A exceção é a tela que ramifica por código e mostra estado próprio: ali o erro de escrita vai pra esse estado, não pra notificação.
+**Escrita vira notificação no handler.** O `catch` do handler chama o `toast.error` da lib `sonner` (`defaults/ui.md`, "Componente novo"), com o título nomeando a ação que falhou e a descrição vindo do `toUserFacingMessage`, que lê o envelope do backend. Escrita por comando de client externo segue a mesma forma, com a mensagem do próprio pacote. A exceção é a tela que ramifica por código e mostra estado próprio: ali o erro de escrita vai pra esse estado, não pra notificação.
 
 **Escrita confirmada também notifica.** Toda escrita, confirmada ou recusada, notifica no handler que a disparou, e é essa simetria que mantém a regra copiável. No sucesso o título nomeia o que aconteceu ("Pedido confirmado") e a descrição diz em que estado a pessoa encontra o resultado, nomeando o item quando a tela o tem ("O pedido 1042 já aparece nos confirmados."). Quando a escrita produziu um efeito além do que o título diz, é ele que a descrição conta ("A fatura foi emitida."). Navegar em seguida não substitui a notificação: a tela de destino mostra o estado novo, não diz que a ação acabou de acontecer. A exceção é a edição campo a campo, em que a linha volta ao estado de leitura já com o valor novo e é ela própria a confirmação: ali só a falha notifica, e é ela quem desfaz, devolvendo o valor da fonte com `resetField`.
 
@@ -321,12 +321,12 @@ function handleConfirm() {
   startConfirmTransition(async () => {
     try {
       await confirmOrder.mutateAsync(order.id);
-      Sonner.toast.success('Pedido confirmado', {
+      toast.success('Pedido confirmado', {
         description: `O pedido ${order.number} já aparece nos confirmados.`,
       });
       navigate('/orders', { replace: true });
     } catch (error) {
-      Sonner.toast.error('Não foi possível confirmar o pedido', {
+      toast.error('Não foi possível confirmar o pedido', {
         description: toUserFacingMessage(error),
       });
     }
