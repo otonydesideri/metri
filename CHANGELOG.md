@@ -1,58 +1,95 @@
 # Changelog
 
-## v1.3.0 (em preparação)
+## v1.3.0 (2026-09-29)
 
-- **Cabeçalho SOURCE OF TRUTH.** O cabeçalho do código passa ao formato do Flute: `/** SOURCE OF TRUTH: <símbolos>.`
+Consolidação do piloto 2: a slice construída fica registrada pelos donos no código e pelo caminho linear, só o
+critério de tela pede evidência, a execução em paralelo não disputa porta nem banco, o `@metri/ui` segue o layout
+padrão do shadcn, entra a skill `humanizer`, e as regras ganham os achados de backend, domínio, frontend e testes.
+
+### O que muda
+
+- **Cabeçalho SOURCE OF TRUTH.** O cabeçalho do código segue o formato do Flute: `/** SOURCE OF TRUTH: <símbolos>.`,
   com `WHAT:`, `WHY:` e `WHERE:`, logo acima do export que o arquivo possui, um por dono canônico (skill
-  `guardrail`, passo 5). Sai a lista "SOT keywords".
-- **Slice construída.** Sai o campo `entry` e o passo 4 do /build. O contrato fica no bloco `contract` da MATRIX até a
-  poda do /accept; construída, a slice é `status: done · sot: [<símbolo>]`, e os donos entram no caminho linear do
-  `.metri/ARCHITECTURE.md` (`arquivo:símbolo` por passo).
-- **`metri sot`**, no `verify`: cabeçalho bem formado, arquivo-fonte sem cabeçalho, símbolos de `sot:`, caminho linear
-  e slice done sem `contract`.
-- **Evidência por critério `Tela:`.** Só o critério julgado na tela (`- [ ] Tela: ...`) pede screenshot; o `docs-lint`
-  deixa de olhar `areas`. O helper grava só com `METRI_EVIDENCE=<id do ticket>`, e a suíte cheia não grava nada.
-  `metri prune <slice>` tira a evidência na poda do /accept, e PNG de slice done é erro.
-- **Notas e `areas`.** Notas com no máximo 10 linhas, só o que não é derivável; decisão sai delas no portão de
-  conhecimento. O /build reconcilia `areas` com o diff antes do `done`.
+  `guardrail`, passo 5). A primeira linha é a SOT keyword do grep, e a lista "SOT keywords" sai.
+- **Slice construída.** Saem o campo `entry` e o passo 4 do /build. O contrato fica no bloco `contract` da MATRIX até
+  a poda do /accept; construída, a slice vira `status: done · sot: [<símbolo>]`, e os donos entram no caminho linear
+  do `.metri/ARCHITECTURE.md`, um `arquivo:símbolo` por passo.
+- **`metri sot`**, dentro do `verify`: cabeçalho bem formado, arquivo-fonte sem cabeçalho, símbolos de `sot:`,
+  caminho linear e slice done sem `contract`.
+- **Evidência por critério `Tela:`.** Só o critério julgado na tela (`- [ ] Tela: ...`) pede screenshot, e o
+  `docs-lint` deixa de olhar `areas`. O helper grava só com `METRI_EVIDENCE=<id do ticket>`, então a suíte cheia não
+  regrava nada. `metri prune <slice>` tira a evidência na poda do /accept, e PNG de slice done é erro.
+- **Notas, `areas` e `metrics`.** As Notas guardam só o que não é derivável, em até 10 linhas, e a decisão sai delas
+  no portão de conhecimento. O /build reconcilia `areas` com o diff antes do `done`. O `metrics` tem um formato só:
+  `{ rules: <n>, tokens: <n> }`.
 - **Execução isolada.** Cada app tem porta própria com `strictPort`; o e2e usa `E2E_PORT` e
-  `reuseExistingServer: false`, e o coordenador dá uma porta a cada worker. O /accept roda checks e e2e uma vez,
-  antes dos revisores, que só leem o resultado. O /build faz `git add` por caminho, commit WIP a cada passo verde,
-  e2e com `--workers=1` sob carga, e o check de e2e filtra pela pasta `e2e/<módulo>/`.
-- **Banco de desenvolvimento.** Delegação nova ("Banco de desenvolvimento"), decidida no planejamento da fundação:
-  Postgres que já roda ou container Docker do projeto. `db:up` falha rápido e cria o `.env`; `db:down` remove o
-  container; o e2e cria e apaga os próprios bancos (`infrastructure/runtime`, `backend/testing`).
+  `reuseExistingServer: false`, e o coordenador dá uma porta a cada worker. O /accept roda os checks e o e2e uma vez,
+  antes dos revisores, que só leem o resultado. O /build faz `git add` por caminho e commit WIP a cada passo verde,
+  roda o e2e com `--workers=1` sob carga, e o check de e2e filtra pela pasta `e2e/<módulo>/`.
+- **Banco de desenvolvimento.** Delegação nova, decidida no planejamento da fundação: o Postgres que já roda na
+  máquina ou um container Docker do projeto. O `db:up` falha rápido e cria o `.env`, o `db:down` remove o container,
+  e o e2e cria e apaga os próprios bancos (`infrastructure/runtime`, `backend/testing`).
 - **shadcn no layout padrão** (metri:ADR-0003, que supera o metri:ADR-0001). O `@metri/ui` passa a
-  `src/components/{ui,blocks,providers}`, `src/hooks`, `src/lib/utils.ts` e `src/styles/globals.css`; os aliases usam
-  o nome do pacote (`@metri/ui/components/ui`, `@metri/ui/lib/utils`), com `paths` e `exports`. Saem o `imports`, os
-  aliases `#`, a pasta `src/shadcn/` e o re-export compound; o primitivo entra por import nomeado, e o `toast` vem
-  do `sonner`. O arquivo da CLI importa o `cn` do kit (PP-3). O `globals.css` ganha o 2º `@source`; o Biome deixa
-  `components/ui/` de fora; o `metri design-tokens` confere o `theme.text` do `cn` e o `<style>` do `index.html`.
-- **Skill `humanizer`** (adaptada de blader/humanizer v3.1.0, MIT), em português: tira do texto que um humano lê os
-  sinais de texto gerado. As skills que escrevem esse texto (`shape`, `domain-language`, `grilling`, `accept`,
-  `diagnose`, `research`) e a `frontend/experience`, em "Conteúdo", a chamam.
-- **Backend e domínio do piloto 2.** Guard global fail-closed e declaração `@Public()`/`@<Dono>Owned()` por controller,
-  com `@Current<Dono>Id()` (`backend/access-scope`); 401 como `UnauthorizedException` nativa (`backend/errors`);
-  sessão no servidor como autenticação padrão, com o hash do token no banco (`defaults/stack`, fecha o PP-4); redirect
-  de OAuth sem `@ZodResponse`, com throttle; build do Nest pelo `tsdown` e OpenAPI 3.1; e2e de provider global com
-  controller de prova e e2e de rota protegida com a credencial da factory (`backend/testing`); o id opaco do dono
-  fica no contexto de log, e a redação vale para credencial e dado pessoal (`infrastructure/logging`, `/diagnose`);
-  WatchedList com identidade estrutural; biblioteca de cálculo puro no domínio por lista nomeada
-  (`backend/boundaries`); regra nova `general/date-time`; VO de endereço com palavras reservadas.
-- **Frontend, testes e infra do piloto 2.** Drill-down por estado como terceira forma de `frontend/routing`, e o
-  `Suspense` também no guard de grupo e na rota `*`; formulário reusado leva `key`, e componente de terceiro traz os
-  assets embutidos, sem CDN (`frontend/forms`); dia local sem `toISOString` (`frontend/helpers`); NBSP no spec de
-  `Intl`, Vite 8 com `resolve.tsconfigPaths`, sessão do e2e por `addCookies` e o limite de locale do
-  `chromium-headless-shell` (`frontend/testing`); mock ancorado no dia real; Overview do `DESIGN.md` com aparelhos,
-  densidade, tema e o que evitar; tela canônica numa linha com a variante descartada e o princípio; ação principal
-  ao alcance do polegar em produto de celular. Os greps de `backend/boundaries` passam a devolver vazio, e o
-  `KNOWLEDGE-GATE` diz como ligar um check de projeto; `test: turbo run test --`; o `.gitignore` do `metri init`
-  ganha `!.env.test`, o `generated/` do Prisma e os relatórios do Playwright.
+  `src/components/{ui,blocks,providers}`, `src/hooks`, `src/lib/utils.ts` e `src/styles/globals.css`, com os aliases
+  no nome do pacote (`@metri/ui/components/ui`, `@metri/ui/lib/utils`), o `paths` e os `exports`. Saem o `imports`,
+  os aliases `#`, a pasta `src/shadcn/` e o re-export em compound: o primitivo entra por import nomeado, e o `toast`
+  vem do `sonner`. O arquivo da CLI importa o `cn` do kit (PP-3). O `globals.css` ganha o segundo `@source`, o Biome
+  deixa `components/ui/` de fora, e o `metri design-tokens` confere o `theme.text` do `cn` e o `<style>` do
+  `index.html`.
+- **Skill `humanizer`**, adaptada de blader/humanizer v3.1.0 (MIT), em português: tira os sinais de texto gerado do
+  que um humano lê. `shape`, `domain-language`, `grilling`, `accept`, `diagnose`, `research` e a
+  `frontend/experience` a chamam.
+- **Backend e domínio.** Guard global fail-closed, com cada controller declarando `@Public()` ou `@<Dono>Owned()` e o
+  dono lido por `@Current<Dono>Id()` (`backend/access-scope`). Sem sessão, 401 pela `UnauthorizedException` nativa
+  (`backend/errors`). A autenticação padrão é a sessão no servidor, com o hash do token no banco (`defaults/stack`,
+  fecha o PP-4), e o redirect do OAuth sai sem `@ZodResponse` e com throttle. O Nest compila pelo `tsdown`, e o
+  OpenAPI sai em 3.1. O e2e de provider global usa um controller de prova, e o de rota protegida, a credencial da
+  factory (`backend/testing`). O id opaco do dono fica no contexto de log, e a redação vale para credencial e dado
+  pessoal (`infrastructure/logging`, `/diagnose`). A WatchedList aceita identidade estrutural, o domínio pode
+  importar biblioteca de cálculo puro por lista nomeada (`backend/boundaries`), entra a regra `general/date-time`,
+  e o VO de endereço recusa as palavras reservadas.
+- **Frontend, testes e infra.** O drill-down por estado é a terceira forma de `frontend/routing`, e o `Suspense`
+  também fica no guard de grupo e na rota `*`. Formulário reusado leva `key`, e componente de terceiro traz os assets
+  embutidos (`frontend/forms`). O dia local sai dos componentes da data, sem `toISOString` (`frontend/helpers`). O
+  spec de `Intl` compara com NBSP, o Vite 8 usa `resolve.tsconfigPaths`, a sessão do e2e entra por `addCookies`, e o
+  limite de locale do `chromium-headless-shell` fica registrado (`frontend/testing`). O mock se ancora no dia real.
+  O Overview do `DESIGN.md` ganha aparelhos, densidade, tema e o que evitar; a tela canônica é uma linha com a
+  variante descartada e o princípio que decidiu; e, em produto de celular, a ação principal fica ao alcance do
+  polegar. Os greps de `backend/boundaries` devolvem vazio, o `KNOWLEDGE-GATE` diz como ligar um check de projeto, o
+  `test` da raiz é `turbo run test --`, e o `.gitignore` do `metri init` ganha `!.env.test`, o `generated/` do Prisma
+  e os relatórios do Playwright.
 - **Processo e lint.** O `docs-lint` avisa quando uma regra do projeto cita id de ticket e quando o código cita
-  `PP-n`, um `GAP-n` fechado ou um id transitório no cabeçalho SOURCE OF TRUTH; o `metrics` do ticket passa a
-  `{ rules: <n>, tokens: <n> }`. A regra de projeto guarda o como e aponta o ADR, sem repetir a decisão
-  (`RULE-FORMAT`). O `.metri/ARCHITECTURE.md` descreve o que existe e o que está decidido; "Caminhos do projeto" sai
-  do template e entra com a primeira linha.
+  `PP-n`, um `GAP-n` fechado ou um id transitório no cabeçalho SOURCE OF TRUTH. A regra de projeto guarda o como e
+  aponta o ADR (`RULE-FORMAT`). O `.metri/ARCHITECTURE.md` descreve o que existe e o que está decidido, e "Caminhos
+  do projeto" sai do template até a primeira linha.
+
+### Migrar de v1.2.1
+
+Ticket `pattern`, na raiz do projeto:
+
+1. `pnpm add -D github:otonydesideri/metri#v1.3.0` e `pnpm exec metri init`, que liga a skill `humanizer` e o script
+   `sot`.
+2. Cabeçalhos: cada dono canônico troca o cabeçalho antigo ("O quê:", "Por quê:", "SOT keywords:") pelo
+   `SOURCE OF TRUTH`, logo acima do export, e todo arquivo-fonte escrito à mão ganha o seu; `pnpm sot` lista o que
+   falta.
+3. MATRIX: slice done com `entry` vira `status: done · sot: [<símbolos>]`; slice em andamento com `entry` devolve o
+   contrato do cabeçalho ao bloco `contract` e ganha o `sot:` dos donos que já existem. Em "Caminho linear" do
+   `.metri/ARCHITECTURE.md`, os passos numerados com `arquivo:símbolo` das slices construídas, com o ADR no passo que
+   desvia; "Caminhos do projeto" vazio sai.
+4. Tickets: o critério julgado na tela ganha `Tela:`; o e2e grava a evidência pelo `METRI_EVIDENCE` e filtra pela
+   pasta; o `metrics` passa a `{ rules: <n>, tokens: <n> }`; Notas com mais de 10 linhas levam a decisão para ADR,
+   regra ou cabeçalho. Para cada slice done, `pnpm exec metri prune <slice>`.
+5. `@metri/ui`: os arquivos de `src/shadcn/` vão para `src/components/ui/` no lugar dos re-exports; `components.json`,
+   `tsconfig.json` (`paths`) e `exports` como em `node_modules/metri/architecture/defaults/ui.md`, sem o `imports`; o
+   segundo `@source` no `globals.css`; o `cn` do kit nos arquivos da CLI. No app-web, `import * as X` de primitivo
+   vira import nomeado, e o `toast` vem do `sonner`, dependência do app na mesma versão do `@metri/ui`. No Biome,
+   `!packages/ui/src/components/ui` em `files.includes`, com `vcs` e `css.parser.tailwindDirectives`.
+6. Citação a `metri:ADR-0001` passa a `metri:ADR-0003`.
+7. Com banco: a linha "Banco de desenvolvimento" em "Delegações" do `.metri/ARCHITECTURE.md`, o `db:down` quando o
+   banco é container do projeto, e no `.gitignore` `!.env.test`, o `generated/` do Prisma, `test-results/` e
+   `playwright-report/`. O id opaco do dono sai do `redact` do log; com sessão, o token passa a ser guardado com hash
+   (as sessões abertas caem).
+8. `pnpm verify` até ficar verde; o `docs-lint` e o `sot` apontam o que faltar.
 
 ## v1.2.1 (2026-09-27)
 

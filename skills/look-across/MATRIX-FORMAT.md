@@ -92,8 +92,8 @@ when missing or empty, the rest are written only with a value.
   (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
   `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
 - "Notas": written only when there's something to say, and only what the code, the tests and git don't show, in
-  at most 10 lines. A decision leaves the Notas for an ADR, a rule or a code header, at the knowledge gate of
-  /accept.
+  at most 10 lines (`pnpm docs-lint` checks the cap). A decision leaves the Notas for an ADR, a rule or a code
+  header, at the knowledge gate of /accept.
 
 A ticket file is never pruned or collapsed, because the board reads it: done, it keeps its title, its frontmatter
 and its body, with `status: done`, in its own file (the "Pruning" rule of "Matrix rules" below collapses the MATRIX

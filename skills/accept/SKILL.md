@@ -36,7 +36,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 3. Call the reviewers in parallel
 
-Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what it may read) as a sub-agent, passing only its inputs and nothing else of this session. The reviewers read the diff, the evidence and the check results of step 1; the checks ran once, in this session.
+Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what it may read) as a sub-agent, passing only its inputs and nothing else of this session.
 
 - `reviewer-contract`: the diff command, the commit list, the check results, and the Contract inputs, pasted in full.
 - `reviewer-patterns`: the diff command, the commit list, the check results, and the Patterns items, pasted with their rule id.

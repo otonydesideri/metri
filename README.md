@@ -2,11 +2,11 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.2.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.3.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
-**O que é.** Uma forma de construir software com agentes de IA. O **método** vem do WebProdigios (Perrin): architectural guardrail, look across e Slice Matrix. A **forma das skills** vem do Matt Pocock: skills pequenas, combináveis e escritas para agentes. O modelo de conhecimento é o seu: **Architecture Source global + Project Architecture + ADRs**.
+**O que é.** Uma forma de construir software com agentes de IA. O método vem do WebProdigios (Perrin): architectural guardrail, look across e Slice Matrix. A forma das skills vem do Matt Pocock: skills pequenas, combináveis e escritas para agentes. O modelo de conhecimento é o seu: Architecture Source global, Project Architecture e ADRs.
 
 **A ideia central.** A qualidade não depende de o agente lembrar instruções. Ela vem de três coisas:
 
@@ -14,7 +14,7 @@
 - **padrões visíveis no código:** o agente copia o que vê;
 - **contexto entregue sob demanda:** só o necessário, no momento em que é necessário.
 
-O planejamento olha **transversalmente** (look across) para descobrir capacidades compartilhadas. A entrega acontece em **fatias finas e verificáveis**.
+O planejamento olha transversalmente (look across) para descobrir capacidades compartilhadas, e a entrega acontece em fatias finas e verificáveis.
 
 **Fluxo:**
 
@@ -32,12 +32,12 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `docs/PRODUCT.md`        | Intenção e escopo                                                      |
 | `docs/DESIGN.md`         | Identidade visual e design system (se houver interface)                |
 | `docs/adr/`              | Decisões, trade-offs e exceções                                        |
-| `.metri/ARCHITECTURE.md` | Estado da ativação: desvios, capacidades ativas, delegações, exceções  |
+| `.metri/ARCHITECTURE.md` | Estado do projeto: o caminho linear, desvios, capacidades ativas, delegações, exceções |
 | `.metri/rules/`          | Regras só deste projeto, por área                                      |
 | `.metri/MATRIX.md`       | Plano: features, slices e contratos, Fog, Gaps, Pattern proposals      |
-| `.metri/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas; a evidência de UI ao lado, em `<id>/` |
+| `.metri/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas; a evidência dos critérios `Tela:` ao lado, em `<id>/` |
 | `node_modules/metri/`    | O pacote do método: regras globais, skills, agents e a CLI; somente leitura, só em desenvolvimento |
-| Código                   | Padrões, cabeçalhos inline (e o contrato da slice construída), SOT keywords, tokens e checks |
+| Código                   | Padrões, o cabeçalho `SOURCE OF TRUTH` de cada dono (onde fica a slice construída), tokens e checks |
 
 **O humano decide em poucos pontos:** direção, plano, padrões novos e diffs sensíveis, aceite, e passos de release que só ele pode fazer. O resto é trabalho do agente.
 
@@ -47,11 +47,13 @@ Na raiz do repositório do projeto, instale o pacote `metri` numa tag e rode o `
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.2.0                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.3.0                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
 O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source") e termina com `metri verify` verde. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
+
+Com banco de dados, o planejamento da fundação decide o Postgres de desenvolvimento: o agente mostra o que já roda na máquina (`pg_isready`, `docker ps`) e pergunta se o projeto usa esse Postgres ou sobe um container próprio. A partir daí, `pnpm db:up` prepara o banco e o `.env`, e `pnpm db:down` remove o container (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento").
 
 As skills e os agents entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
 
@@ -61,7 +63,7 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 2. **Uma fonte da verdade por conceito.** Cada informação mora em um único lugar; os outros só apontam para ela. **A fonte migra** quando o conhecimento vira código: um critério planejado mora no ticket até virar teste.
 3. **Planejar por capacidade, entregar por fatia fina.** O look across descobre as slices (capacidades compartilhadas). Os tickets dentro delas são tracer bullets: finos, de ponta a ponta, verificáveis.
 4. **Construir para o agora, desenhar para o futuro.** O contrato de uma slice acomoda as features previstas; a implementação atende só às features "agora". Todo ticket serve a um caso de uso atual.
-5. **Contexto sob demanda.** Pouquíssimo fica sempre carregado. O resto chega por ponteiro, por resolução de regras por caminho ou por grep de SOT keyword. Cada ticket roda num contexto limpo, e a passagem entre etapas é feita por artefato + id, nunca pela conversa.
+5. **Contexto sob demanda.** Pouquíssimo fica sempre carregado. O resto chega por ponteiro, por resolução de regras por caminho ou por grep do cabeçalho `SOURCE OF TRUTH`. Cada ticket roda num contexto limpo, e a passagem entre etapas é feita por artefato + id, nunca pela conversa.
 6. **Conhecimento persistente é exceção.** Só vira conhecimento o que não é derivável nem verificável e afeta o futuro (`skills/guardrail/KNOWLEDGE-GATE.md`). A maioria dos tickets termina sem gerar nenhum.
 7. **O humano dirige; o agente executa.** O humano decide direção, plano, padrões e aceite. O agente não inventa arquitetura.
 8. **O futuro entra por extensão.** Campos opcionais; nada que já existe muda de forma quando uma evolução chega ("Evolução futura", abaixo).
@@ -81,7 +83,7 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 | --------------------------------------------------------------------------------------------------- | --------------------------------- |
 | Código, identificadores, nomes de arquivos de código                                                | `architecture/defaults/stack.md`, "Stack" |
 | Chaves de frontmatter, campos da matriz, ids, status, tipos                                         | Inglês, fixos, validados por lint |
-| Skills e `AGENTS.md`                                                                                | Inglês                            |
+| Skills e `AGENTS.md`                                                                                | Inglês (a `humanizer`, que trata texto em português, é em português) |
 | `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz | Português                         |
 | Conversa com o agente                                                                               | Português                         |
 
@@ -122,7 +124,7 @@ docs/
   rules/<área>/*.md           regras só do projeto          (+ INDEX.md gerado)
   MATRIX.md                   plano vivo: features, slices e contratos, Fog, Gaps, Pattern proposals
   tickets/<id>.md             um arquivo por ticket (UC ou T): frontmatter, critérios e notas
-  tickets/<id>/*.png          evidências do ticket
+  tickets/<id>/*.png          evidência dos critérios `Tela:` do ticket, até a poda da slice
 apps/  packages/              código
 ```
 
@@ -165,21 +167,21 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 | Plano                | `.metri/MATRIX.md`   | Features, slices e contratos, Fog, Gaps, Pattern proposals       | Moldar, Look across                     | Ao planejar                            |
 | Ticket                | `.metri/tickets/<id>.md` | Um UC ou um T: frontmatter, BRs ou "O que entrega", critérios e notas | Moldar (draft), Look across, Construir (status) | Só o arquivo do ticket em trabalho |
 | Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | `metri init`, Aprender                  | Sempre (~20 linhas)                    |
-| Código               | `apps/`, `packages/`    | Padrões, cabeçalhos inline, tokens, checks                       | Construir                               | Grep por SOT keyword, exemplo canônico |
+| Código               | `apps/`, `packages/`    | Padrões, cabeçalhos `SOURCE OF TRUTH`, tokens, checks            | Construir                               | Grep do `SOURCE OF TRUTH`, caminho linear, exemplo canônico |
 
 ### Architecture Source (global)
 
-**O que é:** regras de **padronização** de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é sustentada por ADR global (metri:ADR-0001), e a stack tem o `architecture/defaults/stack.md` como registro.
+**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é sustentada por ADR global (metri:ADR-0003), e a stack tem o `architecture/defaults/stack.md` como registro.
 
 **Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (`architecture/defaults/ui.md`): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
 
-**Entrada no projeto:** o pacote `metri`, dependência de desenvolvimento numa tag, **somente leitura** ("Começar um projeto"). **Não vai para o código entregue** (fica fora de build, exportação e pacote final).
+**Entrada no projeto:** o pacote `metri`, dependência de desenvolvimento numa tag, somente leitura ("Começar um projeto"). Ele fica fora do código entregue: fora de build, exportação e pacote final.
 
 ### Project Architecture (projeto)
 
-**O que é:** regras **só deste projeto**, na mesma organização por áreas e no mesmo formato das globais. Exemplos: método de autenticação, stack e bibliotecas escolhidas, integrações, particularidades de infra e deploy.
+**O que é:** regras só deste projeto, na mesma organização por áreas e no mesmo formato das globais. Exemplos: método de autenticação, stack e bibliotecas escolhidas, integrações, particularidades de infra e deploy.
 
-**Relação com o global:** **complementa, não repete.** Não existem duas fontes da verdade: o global padroniza, o projeto acrescenta o que é dele.
+**Relação com o global:** complementa sem repetir. O global padroniza, e o projeto acrescenta o que é dele.
 
 - Uma regra do projeto nunca reescreve uma regra global.
 - **Contrariar uma regra global é uma exceção:** vira ADR, e a regra do projeto aponta para ele.
@@ -188,20 +190,20 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 
 ### A área `domain`
 
-A área `domain/` (global e do projeto) define **como modelamos domínio no código**: entidade, value object, caso de uso, agregado, invariantes, eventos, comunicação com outras camadas.
+A área `domain/` (global e do projeto) define como modelamos domínio no código: entidade, value object, caso de uso, agregado, invariantes, eventos, comunicação com outras camadas.
 
 **Ela não lista entidades nem regras do projeto.** A fonte de cada coisa:
 
-- o **significado** dos termos → `CONTEXT.md`;
-- o **modelo em si** → schema e código;
-- as **regras de negócio planejadas** → casos de uso nos arquivos de ticket (`.metri/tickets/`), que migram para testes e invariantes no código.
+- o significado dos termos → `CONTEXT.md`;
+- o modelo em si → schema e código;
+- as regras de negócio planejadas → casos de uso nos arquivos de ticket (`.metri/tickets/`), que migram para testes e invariantes no código.
 
 ### Carregamento sob demanda (regras por caminho)
 
 - A **fonte da verdade do escopo** de uma regra é o `applies_to` no frontmatter.
-- Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são **gerados** a partir do frontmatter, nunca escritos à mão.
+- Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são gerados a partir do frontmatter, nunca escritos à mão.
 - `rules-for`, `rules-index` e os `INDEX.md` gerados: `metri rules-for --help` e `metri rules-index --help`.
-- **Orçamento:** um ticket deve precisar de **no máximo ~5 regras**. Se precisar de mais, atravessa áreas demais e deve ser dividido; a exceção esperada é o primeiro ticket depois de um pattern novo, e o `rules-for` diz isso.
+- **Orçamento:** um ticket deve precisar de no máximo ~5 regras. Se precisar de mais, atravessa áreas demais e deve ser dividido; a exceção esperada é o primeiro ticket depois de um pattern novo, e o `rules-for` diz isso.
 
 ### Fonte única por conceito
 
@@ -213,16 +215,16 @@ A área `domain/` (global e do projeto) define **como modelamos domínio no cód
 | Padronização (como construímos)                | Architecture Source                       | projeto                                        |
 | Escolha padrão de tecnologia                   | `architecture/defaults/` (global)         | projeto                                        |
 | Regras só do projeto                           | `.metri/rules/<área>/`               | global, README                                 |
-| Contrato de uma slice                          | Bloco `contract` na matriz; construída, cabeçalho do `entry` | arquivo próprio em `docs/`                     |
+| Contrato de uma slice                          | Bloco `contract` na matriz até o aceite; construída, os cabeçalhos `SOURCE OF TRUTH` dos donos e o caminho linear do `.metri/ARCHITECTURE.md` (`metri sot`) | arquivo próprio em `docs/`                     |
 | Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | `DESIGN.md`; o tema segue ele (`metri design-tokens`) | valor solto no código |
 | Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend (metri:ADR-0002) |
-| Evidência de um critério de UI                 | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, até a poda da slice; depois, o git | chat, pasta fora do git |
+| Evidência de um critério `Tela:`               | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, gravados com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`); depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
 | Features, slices e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles | chat, handoff                                  |
 | Cada UC ou T: BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
-| Comportamento já construído                    | testes + código                           | matriz (a slice colapsa num ponteiro para o `entry`; o arquivo do ticket fica, com `status: done`) |
+| Comportamento já construído                    | testes + código                           | matriz (a slice colapsa numa linha com os donos, `sot:`; o arquivo do ticket fica, com `status: done`) |
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
 | Procedimentos do agente                        | `AGENTS.md` + skills                      | regras de arquitetura                          |
 
@@ -233,9 +235,9 @@ Escada de regras: `skills/guardrail/SKILL.md`, "The rules ladder".
 Não é uma etapa própria do fluxo; é uma camada que atravessa as etapas:
 
 - **Moldar:** a triagem de design procura o DS já dado, pergunta só o que falta e propõe os princípios de experiência (`skills/shape/DESIGN-TRIAGE.md`); os tokens do `DESIGN.md` são a fonte do tema.
-- **Look across:** critérios de UI por UC; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 monta tema e shell com aprovação visual.
-- **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério, com autocrítica de até 2 rodadas.
-- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md` (metri:ADR-0001).
+- **Look across:** critérios de UI por UC, e o que se julga na tela começa com `Tela:`; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 monta tema e shell com aprovação visual.
+- **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério `Tela:`, com autocrítica de até 2 rodadas; os textos da interface passam pela skill `humanizer`.
+- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md`, o shadcn/ui no layout padrão dele dentro do `@metri/ui`, com o primitivo importado pelo nome (metri:ADR-0003).
 
 ### O fluxo
 
@@ -297,22 +299,22 @@ Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o mot
 | Passagem                   | Risco                                                 | Como é fechado                                                                        |
 | -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Planejamento → arquitetura | A slice precisa de um padrão que não existe           | Cobertura arquitetural no look across + ticket `pattern` primeiro, com revisão humana |
-| Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato na matriz enquanto é plano; construído, no cabeçalho do `entry`              |
+| Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato na matriz até o aceite; construído, nos cabeçalhos dos donos e no caminho linear, conferidos pelo `metri sot` |
 | Planejamento → execução    | Regra de negócio discutida some entre sessões         | UCs e BRs gravados no arquivo do ticket desde o Moldar (`draft`); depois migram para testes |
 | Planejamento → execução    | Agentes nomeiam o mesmo conceito de formas diferentes | `CONTEXT.md` com identificador EN; chaves da metodologia fixas e validadas            |
 | Arquitetura → execução     | O agente lê regras demais ou de menos                 | `applies_to` + `rules-for` + orçamento de ~5 regras por ticket                        |
 | Arquitetura → execução     | O builder altera padrões em silêncio                  | O builder não edita arquitetura; proposta de padrão                                   |
 | Design → execução          | Componentes recriados ou estilos fixos                | Biblioteca base + tokens no tema + lint sem valores fixos                             |
 | Execução → verificação     | Checks afrouxados por quem constrói                   | Checks imutáveis para o `/build`; revisor de contrato confere a cobertura             |
-| Execução → execução        | Conflitos em paralelo                                 | `touches` + serialização de pontos centrais + worktrees                               |
+| Execução → execução        | Conflitos em paralelo                                 | `touches` + serialização de pontos centrais + worktrees, com uma `E2E_PORT` por worker |
 | Execução → produção        | Tarefas humanas e deploy esquecidos                   | Tickets `task` e `release`                                                            |
 | Produção → evolução        | Bug volta                                             | Diagnosticar com check vermelho + "por que o guardrail não pegou?"                    |
 
 ### Skills e scripts
 
-Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents`. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
+Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents` e `humanizer`, que tira do texto lido por humano (a prosa de `docs/` e dos ADRs, a interface, os portões e os relatórios) os sinais de texto gerado. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
-**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init`, `verify`, `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz) e `design-tokens` (o tema contra o `DESIGN.md`). Cada comando explica o que faz em `--help`.
+**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init`, `verify`, `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas) e `prune` (tira a evidência da slice na poda do `/accept`). Cada comando explica o que faz em `--help`.
 
 ## Referências e origem de cada peça
 
@@ -321,7 +323,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | Peça                                                                                                                                                                                  | Origem                                   |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | Architectural guardrail: confiar em erros, não em contexto; o _block_ por onde toda requisição passa; registry como fonte da verdade; tipos derivados; `server-only` imposto por lint | WebProdigios                             |
-| SOT keywords, busca por grep antes de ler, cabeçalho inline (o quê / por quê / onde / como), barrels como mapa                                                                        | WebProdigios                             |
+| Cabeçalho `SOURCE OF TRUTH` (WHAT / WHY / WHERE) acima do export que o arquivo possui, caminho linear com `arquivo:símbolo`, busca por grep antes de ler, barrels como mapa           | WebProdigios (Flute)                     |
 | Documentação mínima para a IA; `AGENTS.md`/`CLAUDE.md` como ponteiro, não como descrição                                                                                              | WebProdigios                             |
 | Look across, Vertical Slice Matrix, slice como capacidade compartilhada, contrato da slice, checks por ticket, "nada órfão", planejar para o futuro                                   | WebProdigios                             |
 | Coordenador + workers em worktrees; worker fala só com o coordenador; subtarefas                                                                                                      | WebProdigios (Morphite)                  |
@@ -337,6 +339,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | Architecture Source global + Project Architecture por áreas + ADRs                                                                                                                    | Seu modelo                               |
 | Caso de uso como unidade de definição, ligando planejamento e código                                                                                                                  | DDD                                      |
 | `DESIGN.md` como referência de design para agentes                                                                                                                                    | Formato do getdesign.md (spec do Google) |
+| Skill `humanizer`: os sinais de texto gerado por IA e como reescrever sem inventar fato                                                                                               | blader/humanizer (a partir do "Signs of AI writing" da Wikipedia) |
 
 Referências:
 
@@ -369,7 +372,7 @@ Referências:
 
 ## Evolução futura
 
-Estes itens **não fazem parte da v1**, mas são direção declarada do sistema. O modelo atual já foi desenhado para não bloqueá-los: cada um tem um ponto de extensão preparado (campo opcional ou convenção) e **nada do que existe precisa mudar de forma** quando eles chegarem.
+Estes itens ainda estão fora do método e são a direção declarada dele. O modelo atual foi desenhado para não bloqueá-los: cada um tem um ponto de extensão preparado (campo opcional ou convenção), e nada do que existe muda de forma quando eles chegarem.
 
 | Item                                            | Já preparado na v1                                                                                                                                                                                         | Evolução                                                                                           |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -377,12 +380,13 @@ Estes itens **não fazem parte da v1**, mas são direção declarada do sistema.
 | **Technical Design para features complexas**    | Ciclo de vida definido: **documento temporário**, cujas decisões migram para ADRs, regras e contratos no aceite, e então ele é removido | Casa, template, critério de quando é obrigatório, skill própria |
 | **Board próprio**                               | Formato estrito, legível por máquina, com ids estáveis e chaves em inglês, validado por lint; a MATRIX e os tickets são a fonte única | Um board próprio, sem ferramenta externa: uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles |
 | **Comunicação entre agentes**                   | Comunicação por artefatos (status, `PP`, `GAP`, `notes`), mediada pelo coordenador                                                                                                                         | Canais ou "rooms"; troca de informação entre workers (nunca repasse de trabalho)                   |
-| **Acompanhamento de consumo de tokens**         | Campo `metrics` no ticket (tokens, regras carregadas), preenchido pelo `/build` quando a ferramenta expõe o dado. Já usado no piloto                                                                       | Painel de consumo, orçamentos por agente e por slice                                               |
+| **Acompanhamento de consumo de tokens**         | Campo `metrics` no ticket, `{ rules, tokens }`, preenchido pelo `/build` no `done`: as regras sempre, os tokens quando a ferramenta expõe o dado | Painel de consumo, orçamentos por agente e por slice                                               |
+| **Starter de código**                           | As regras de `architecture/` descrevem o esqueleto que a slice de fundação monta, e o `metri init` já cria a árvore de docs e os scripts | Um starter com o esqueleto da slice de fundação e do kit de UI: a raiz, o app-api, o app-web, `packages/core`, `db` e `ui`. A fonte é o `../metri-pilot2/COLHEITA.md`, seção "Fundação para starter", e os itens que esta versão adiou: o esqueleto de infra do app-api (#11), os primitivos de domínio de `packages/core` (#12), o check de um componente por arquivo (#26), o helper de evidência (#40) e o código do banco por arquivo de e2e (#36) e do `db:up` (#50) |
 | **Times de agentes coordenados**                | Papéis de coordenador e worker; matriz como grafo de dependências (`blocked_by`, `touches`); convenção de branches `slice/<id>` e `ticket/<id>`; worktrees                                                 | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações                 |
 
 ### Validação e melhoria (piloto)
 
-O Piloto 2 é interativo: o usuário responde às perguntas dos portões, numa iniciativa real de 2–3 slices, num repositório novo:
+O piloto é interativo: o usuário responde às perguntas dos portões, numa iniciativa real de 2–3 slices, num repositório novo:
 
 1. "Começar um projeto" e `metri init`.
 2. `/shape`, com a triagem de design, e `/look-across`.
