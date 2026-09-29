@@ -20,7 +20,7 @@ The work never judges itself: each axis is a reviewer agent that gets nothing fr
 
 ### 1. Pin the fixed point
 
-Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. The slice is ready when every UC with `slice: S<id>` and every T of the slice are `done`, and each command in their `checks` and `pnpm verify` exit 0. When the branch carries only the urgent fix of /diagnose, only its ticket must be `done`; the slice's other tickets wait for a later /accept.
+Check out `slice/<id>` with a clean working tree. When main moved since the slice last took it, merge main into `slice/<id>`. The slice is ready when every UC with `slice: S<id>` and every T of the slice are `done`, and each command in their `checks` and `pnpm verify` exit 0. Run them here, once, the e2e included, and keep each command with its result: they are the check results the reviewers read. When the branch carries only the urgent fix of /diagnose, only its ticket must be `done`; the slice's other tickets wait for a later /accept.
 
 The fixed point is where `slice/<id>` left main: `git merge-base main slice/<id>`. Capture the diff command once: `git diff <fixed-point>...slice/<id>` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..slice/<id> --oneline`.
 
@@ -34,12 +34,12 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 3. Call the reviewers in parallel
 
-Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what it may read) as a sub-agent, passing only its inputs and nothing else of this session.
+Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what it may read) as a sub-agent, passing only its inputs and nothing else of this session. The reviewers read the diff, the evidence and the check results of step 1; the checks ran once, in this session.
 
-- `reviewer-contract`: the diff command, the commit list, and the Contract inputs, pasted in full.
-- `reviewer-patterns`: the diff command, the commit list, and the Patterns items, pasted with their rule id.
+- `reviewer-contract`: the diff command, the commit list, the check results, and the Contract inputs, pasted in full.
+- `reviewer-patterns`: the diff command, the commit list, the check results, and the Patterns items, pasted with their rule id.
 - `reviewer-ux`, when the slice has a `Tela:` criterion: the Experience inputs.
-- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only the UC's goal and the URL of the app served with the development seed by the `webServer` of `playwright.config.ts` (`frontend/testing`, "E2e de critério de UI").
+- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only the UC's goal and the URL of the app this session serves once for it, with the development seed, on its own port (`frontend/testing`, "E2e de critério de UI"), stopped when the tester reports.
 
 ### 4. Aggregate
 

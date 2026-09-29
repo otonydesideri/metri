@@ -15,6 +15,13 @@
   `metri prune <slice>` tira a evidência na poda do /accept, e PNG de slice done é erro.
 - **Notas e `areas`.** Notas com no máximo 10 linhas, só o que não é derivável; decisão sai delas no portão de
   conhecimento. O /build reconcilia `areas` com o diff antes do `done`.
+- **Execução isolada.** Cada app tem porta própria com `strictPort`; o e2e usa `E2E_PORT` e
+  `reuseExistingServer: false`, e o coordenador dá uma porta a cada worker. O /accept roda checks e e2e uma vez,
+  antes dos revisores, que só leem o resultado. O /build faz `git add` por caminho, commit WIP a cada passo verde,
+  e2e com `--workers=1` sob carga, e o check de e2e filtra pela pasta `e2e/<módulo>/`.
+- **Banco de desenvolvimento.** Delegação nova ("Banco de desenvolvimento"), decidida no planejamento da fundação:
+  Postgres que já roda ou container Docker do projeto. `db:up` falha rápido e cria o `.env`; `db:down` remove o
+  container; o e2e cria e apaga os próprios bancos (`infrastructure/runtime`, `backend/testing`).
 
 ## v1.2.1 (2026-09-27)
 

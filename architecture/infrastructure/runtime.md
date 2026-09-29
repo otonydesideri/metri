@@ -1,17 +1,18 @@
 ---
 id: infrastructure/runtime
-description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, e o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers."
+description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (`db:up`, `db:down`)."
 use_when:
   - "editar `main.ts` ou `app.module.ts`"
   - "registrar pipe, interceptor, filtro ou guard global"
   - "ler variável de ambiente ou montar o client de uma capacidade"
   - "criar hook de request, guard, interceptor ou filter"
   - "depender de hook de shutdown no encerramento do processo"
+  - "subir, trocar ou derrubar o banco de desenvolvimento (`db:up`, `db:down`)"
 applies_to:
   - "apps/app-api/src/main.ts"
   - "apps/app-api/src/app.module.ts"
   - "apps/app-api/src/infra/common/**"
-keywords: [main.ts, app.module.ts, AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
+keywords: [main.ts, app.module.ts, db:up, db:down, pg_isready, Docker, ".env.example", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
 not_covered:
   - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"
   - "o que cada provider global faz — log → infrastructure/logging"
@@ -83,6 +84,22 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 
 > **Por quê.** Sob concorrência, o singleton serviria o valor de uma request para outra.
 
+### Banco de desenvolvimento
+
+O Postgres de desenvolvimento é delegação do projeto, decidida no planejamento da fundação: o que já roda na máquina ou um container Docker do projeto (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Delegation matrix").
+
+**Obrigatório.** `pnpm db:up` é idempotente e é o único passo antes do `pnpm dev`: confere o banco com `pg_isready` e falha em segundos quando ele não responde, cria o banco do projeto quando falta, cria cada `.env` que falta a partir do `.env.example` e aplica as migrations.
+
+> **Por quê.** Sem o `pg_isready` na frente, o banco fora do ar só aparece no timeout do Prisma, minutos depois.
+
+Com Docker: **Obrigatório.** Um container por projeto, com o nome do projeto, que todos os worktrees usam; `pnpm db:down` remove o container.
+
+**Obrigatório.** Worktree ou piloto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:down`.
+
+> **Por quê.** Container por worktree e processo esquecido disputam porta e memória com o próximo trabalho, e um servidor velho na porta responde no lugar do novo.
+
+O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
+
 ## Aplicação
 
 - O bootstrap de processo que a Source descreve cria o app sobre o `FastifyAdapter` e troca o logger do Nest (`infrastructure/logging.md`, "Bootstrap"), aplica o prefixo `/api` (`general/http-surface.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
@@ -101,6 +118,8 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 - O client nasce só no construtor ou num `useFactory`, nunca no top-level do arquivo?
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?
 - Hook, guard, interceptor e filter ficaram fora do `ServicesModule`, em `infra/common/<fronteira>/`, com o contexto viajando na request?
+- `pnpm db:up` roda de novo sem erro, falha em segundos com o banco fora do ar e cria o `.env` que falta?
+- Com Docker, há um container só, com o nome do projeto, e o `pnpm db:down` o remove?
 
 ## Em aberto
 

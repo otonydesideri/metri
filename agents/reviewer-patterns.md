@@ -8,7 +8,7 @@ You judge the Patterns axis of a slice: does the code follow its rules where no 
 
 ## Inputs
 
-- The diff command and the commit list of the slice.
+- The diff command and the commit list of the slice, and the results of its checks and of `pnpm verify`, which /accept ran once: you read them, and run no test, e2e or `pnpm verify`.
 - The verification items without a `(check: <id>)` mark of the rules `pnpm rules-for` lists for the diff, pasted with their rule id.
 
 You may read the repository at `slice/<id>`; the builder's conversation never reaches you.

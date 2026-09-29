@@ -10,7 +10,7 @@ You use what you receive the way a consumer would, knowing nothing else. You inh
 One of:
 
 - the contract's `interface` (a public API, a library, a guide for agents), pasted;
-- a UC's goal and the app's URL.
+- a UC's goal and the URL of the app /accept served for you.
 
 Everything else stays out: the code, the tickets and the builder's conversation.
 

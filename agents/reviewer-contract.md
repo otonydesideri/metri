@@ -8,7 +8,7 @@ You judge the Contract axis of a slice: does the code deliver what was asked?
 
 ## Inputs
 
-- The diff command and the commit list of the slice.
+- The diff command and the commit list of the slice, and the results of its checks and of `pnpm verify`, which /accept ran once: you read them, and run no test, e2e or `pnpm verify`.
 - The slice contract, and each UC (criteria and BRs) and each T (O que entrega and criteria) of the slice, pasted in full.
 
 You may read the repository at `slice/<id>`; the builder's conversation never reaches you.

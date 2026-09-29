@@ -9,7 +9,7 @@ Read `node_modules/metri/skills/build/SKILL.md` and follow it for the one ticket
 ## Inputs
 
 - The ticket id, or the ticket id and the subtask.
-- The worktree prepared for it, on the branch `ticket/<id>`.
+- The worktree prepared for it, on the branch `ticket/<id>`, and its `E2E_PORT`.
 
 Everything else comes from the repository, by the skill's context chain.
 

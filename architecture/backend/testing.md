@@ -53,6 +53,8 @@ Paths de `src/` e `test/` são relativos ao app backend (`apps/app-api/`).
 
 O nome do arquivo declara o nível: `*.spec.ts` para spec unitário (entidade, value object, caso de uso ou subscriber), `*.e2e-spec.ts` para e2e. Dois configs do Vitest fazem a separação: um roda `src/**/*.spec.ts` sem nenhum setup, o outro roda `src/**/*.e2e-spec.ts` com um setup que cria um banco Postgres novo por arquivo (nunca um schema novo dentro do mesmo banco: o client tipado do Prisma sempre assume o schema `public` na SQL gerada, então isolamento por schema daria falsa sensação de isolamento) e roda as migrations nele antes da suíte, dropando o banco no fim.
 
+O e2e cria e apaga os próprios bancos, no Postgres de desenvolvimento (`infrastructure/runtime.md`, "Banco de desenvolvimento"), com um prefixo do projeto no nome. O `DROP DATABASE ... WITH (FORCE)` (Postgres 13+) derruba a conexão que ficou aberta, para nenhum banco de teste sobrar. O `.env.test` do app-api é versionado, sem segredo, e o `hookTimeout` do config de e2e cabe o `CREATE` e as migrations.
+
 ## Como criar uma factory de teste (`test/factories/make-<agregado>.factory.ts`)
 
 Duas partes no mesmo arquivo:

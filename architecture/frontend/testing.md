@@ -15,7 +15,7 @@ applies_to:
   - "apps/app-web/vite.config.ts"
   - "apps/app-web/playwright.config.ts"
   - "apps/app-web/e2e/**"
-keywords: [pirâmide, spec, saveEvidence, METRI_EVIDENCE, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
+keywords: [pirâmide, spec, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 examples: [frontend/testing.examples.md]
@@ -81,6 +81,8 @@ test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo
   await saveEvidence(page, 'UC1.2', 1, testInfo);
 });
 ```
+
+Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da ferramenta, com `strictPort: true` no `vite.config.ts`: porta ocupada é erro, nunca a porta seguinte. O `playwright.config.ts` tira a porta do e2e de `E2E_PORT` (o app-web nela, o app-api na seguinte, com o proxy do dev server apontando para ela) e sobe cada `webServer` com `reuseExistingServer: false`, para o e2e nunca bater no servidor de outro projeto ou de outro worktree; o coordenador do /build dá uma `E2E_PORT` a cada worker.
 
 O `saveEvidence` de `e2e/evidence.ts` grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
 

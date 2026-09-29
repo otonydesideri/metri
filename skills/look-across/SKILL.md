@@ -65,7 +65,7 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 ### 7. Slice 0
 
-- **New project**: the foundation slice, `S0`: the monorepo of `general/code-placement`, with `pnpm verify` green; with an interface, the `design-system` slice installs the library, builds the theme from `docs/DESIGN.md` and the app shell, and closes on the human's visual approval.
+- **New project**: the foundation slice, `S0`: the monorepo of `general/code-placement`, with `pnpm verify` green; with a database, the delegation "Banco de desenvolvimento" of [ACTIVATION.md](ACTIVATION.md) is an open question of the plan gate; with an interface, the `design-system` slice installs the library, builds the theme from `docs/DESIGN.md` and the app shell, and closes on the human's visual approval.
 - **Existing project**: the mapping of step 0.
 
 ### 8. Quiz the user

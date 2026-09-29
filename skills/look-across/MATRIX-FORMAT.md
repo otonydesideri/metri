@@ -82,8 +82,10 @@ when missing or empty, the rest are written only with a value.
 - `mode` and `checks` (T always; UC required outside `draft`), and `blocked_by`, `areas`, `touches`, `sensitive`,
   `subtasks` and `metrics`.
 - `checks`: besides `pnpm verify`, at least one command that runs the test or test pattern proving the criteria
-  (`` `pnpm test order-confirmation` ``), a pattern the runner matches against the file path; a command with a
-  backtick, space or `·` is written as a quoted YAML string (`` "`pnpm test order-confirmation`" ``).
+  (`` `pnpm test order-confirmation` ``), a pattern the runner matches against the file path; an e2e check filters
+  by its folder (`` `pnpm --filter app-web test:e2e e2e/order/` ``), since a bare word also matches the worktree's
+  name in the path. A command with a backtick, space or `·` is written as a quoted YAML string
+  (`` "`pnpm test order-confirmation`" ``).
 - `metrics`: only the numbers the tool reports, as `metrics: <tokens> tokens, <n> regras`.
 - "Critérios": a criterion judged on the screen starts with `Tela:`
   (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
