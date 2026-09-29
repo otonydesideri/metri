@@ -86,9 +86,9 @@ export class ApiError extends Error {
   }
 }
 
-// O mutator do Orval: url relativa à origem da página, nunca de uma env
-// (general/http-surface.md, "Superfície HTTP"). Erro de HTTP vira exceção:
-// o React Query só popula o estado de erro se a queryFn/mutationFn lançar.
+// The Orval mutator: URL relative to the page's origin, never from an env
+// (general/http-surface.md, "Superfície HTTP"). An HTTP error becomes an exception:
+// React Query only populates the error state if the queryFn/mutationFn throws.
 export async function httpClient<T>(url: string, init: RequestInit): Promise<T> {
   const response = await fetch(url, init);
   const body = response.status === 204 ? undefined : await response.json();
@@ -123,9 +123,9 @@ A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-messa
 import { ApiError } from './client';
 
 /**
- * A mensagem que a notificação mostra, a partir da falha da requisição. Vem do
- * envelope do backend (`backend/errors.md`, "O formato de resposta de erro"); falha sem
- * resposta, como rede indisponível, não tem mensagem nenhuma para exibir.
+ * The message the notification shows, from the request failure. It comes from the
+ * backend envelope (`backend/errors.md`, "O formato de resposta de erro"); a failure with no
+ * response, such as the network being down, has no message to show.
  */
 export function toUserFacingMessage(error: unknown): string {
   if (error instanceof ApiError && error.body?.message) {
@@ -238,7 +238,7 @@ A escolha é pela volatilidade do dado, em quatro tiers:
 O tier padrão é a maioria e não escreve nada. Os demais declaram a config no próprio hook:
 
 ```ts
-// hooks/shipping/use-shipping-methods.ts (tier estável)
+// hooks/shipping/use-shipping-methods.ts (stable tier)
 import { useQuery } from '@tanstack/react-query';
 import { fetchShippingMethods } from '@/api/shipping';
 import { shippingKeys } from './keys';
@@ -247,7 +247,7 @@ export function useShippingMethods() {
   return useQuery({
     queryKey: shippingKeys.all,
     queryFn: () => fetchShippingMethods().then(({ shippingMethods }) => shippingMethods),
-    // muda em release, não na sessão: staleTime alto corta refetch inútil
+    // changes on release, not during the session: a high staleTime cuts useless refetches
     staleTime: Number.POSITIVE_INFINITY,
   });
 }

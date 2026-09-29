@@ -54,13 +54,13 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
       const status = exception.getStatus();
       const response = exception.getResponse();
 
-      // toHttpException e toInvalidRequestException já montaram o envelope
+      // toHttpException and toInvalidRequestException already built the envelope
       if (typeof response === 'object' && 'code' in response && 'type' in response) {
         reply.status(status).send(response);
         return;
       }
 
-      // HttpException nativa do framework: mesmo status, corpo no envelope
+      // framework-native HttpException: same status, body in the envelope
       reply.status(status).send({
         code: HttpStatus[status],
         message: 'Requisição não atendida',

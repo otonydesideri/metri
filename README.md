@@ -81,10 +81,10 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 
 | O quê                                                                                               | Idioma                            |
 | --------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Código, identificadores, nomes de arquivos de código                                                | `architecture/defaults/stack.md`, "Stack" |
+| Código, comentários (o cabeçalho `SOURCE OF TRUTH` inclusive), identificadores, nomes de arquivos de código | Inglês (`architecture/defaults/stack.md`, "Stack") |
 | Chaves de frontmatter, campos da matriz, ids, status, tipos                                         | Inglês, fixos, validados por lint |
 | Skills e `AGENTS.md`                                                                                | Inglês (a `humanizer`, que trata texto em português, é em português) |
-| `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz | Português                         |
+| `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz, mensagens de erro | Português                         |
 | Conversa com o agente                                                                               | Português                         |
 
 A regra que evita deriva: **a conversa pode ser em português, mas toda chave, campo, id e identificador tem uma forma canônica em inglês.** Dois agentes nunca traduzem o mesmo conceito de formas diferentes, porque a tradução já está fixada e o lint rejeita qualquer outra.

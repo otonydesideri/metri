@@ -79,7 +79,7 @@ interface OrderPayload {
   totalInCents: number;
 }
 
-// o detalhe chega como envelope ({ order }): o override vale para o miolo
+// the detail arrives as an envelope ({ order }): the override applies to the inner object
 export function makeOrder(override: Partial<OrderPayload> = {}): { order: OrderPayload } {
   return {
     order: {

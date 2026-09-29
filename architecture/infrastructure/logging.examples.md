@@ -3,7 +3,7 @@
 ## VendorLoggerConfig
 
 ```ts
-// parte da config injetável da biblioteca
+// part of the library's injectable config
 @Injectable()
 export class VendorLoggerConfig {
   constructor(private readonly logger: PinoLogger) {

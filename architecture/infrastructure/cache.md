@@ -143,13 +143,13 @@ export abstract class OrderListCache {
 A implementação concentra a semântica do fluxo, aqui só por validade:
 
 ```ts
-// infra/services/cache/order-list-cache.impl.ts (trecho)
+// infra/services/cache/order-list-cache.impl.ts (excerpt)
 const ORDER_LIST_CACHE_TTL_IN_SECONDS = 60;
 
 @Injectable()
 export class OrderListCacheImpl implements OrderListCache {
   constructor(
-    // classe de infra do provider escolhido; o nome real carrega o do provider
+    // infra class of the chosen provider; the real name carries the provider's
     private readonly cache: CacheProviderService,
     private readonly logger: PinoLogger,
   ) {
@@ -166,7 +166,7 @@ export class OrderListCacheImpl implements OrderListCache {
     }
   }
 
-  // set: grava com ORDER_LIST_CACHE_TTL_IN_SECONDS e, na falha, loga e segue
+  // set: writes with ORDER_LIST_CACHE_TTL_IN_SECONDS and, on failure, logs and moves on
 
   private keyOf(input: FetchOrdersQueryInput): CacheKey {
     const key = {
@@ -184,7 +184,7 @@ export class OrderListCacheImpl implements OrderListCache {
 A implementação da query consulta o cache antes do banco:
 
 ```ts
-// infra/persistence/prisma/queries/order/fetch-orders.prisma-query.impl.ts (trecho, com cache)
+// infra/persistence/prisma/queries/order/fetch-orders.prisma-query.impl.ts (excerpt, with cache)
 async execute(input: FetchOrdersQueryInput): Promise<PaginatedResult<OrderListItem>> {
   const cached = await this.orderListCache.get(input);
   if (cached) {

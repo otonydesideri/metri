@@ -9,7 +9,7 @@ import type { Order } from '../order.entity';
 
 const REFUND_WINDOW_IN_DAYS = 7;
 
-/** BR6 — pedido entregue há até 7 dias pode ser reembolsado. */
+/** BR6 — an order delivered up to 7 days ago can be refunded. */
 export class RefundableOrderSpecification {
   private readonly deliveredSince: Date;
 

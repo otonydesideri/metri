@@ -1,6 +1,6 @@
 /** SOURCE OF TRUTH: orderExportRoute.
- * WHAT: a rota da exportação legada de pedidos.
- * WHY: integrações antigas ainda chamam este caminho.
- * WHERE: registrada pelo módulo legado do app-api.
+ * WHAT: the route of the legacy order export.
+ * WHY: old integrations still call this path.
+ * WHERE: registered by the app-api legacy module.
  */
 export const orderExportRoute = '/orders/export';

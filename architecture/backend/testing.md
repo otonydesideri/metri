@@ -107,7 +107,7 @@ beforeEach(() => {
   DomainEvents.clearMarkedAggregates();
 
   inMemory = makeInMemoryRepositories();
-  sendOrderConfirmation = new SendOrderConfirmationUseCase(/* dublês */);
+  sendOrderConfirmation = new SendOrderConfirmationUseCase(/* test doubles */);
   executeSpy = vi.spyOn(sendOrderConfirmation, 'execute');
 
   const logger = { setContext: vi.fn(), error: vi.fn() } as unknown as PinoLogger;

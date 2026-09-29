@@ -144,13 +144,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { useCartStore } from '@/shared/stores/cart';
 
 export function CartBadge() {
-  // fatia primitiva: re-renderiza só quando o tamanho muda
+  // primitive slice: re-renders only when the size changes
   const count = useCartStore((state) => state.items.length);
   return <Badge count={count}>Carrinho</Badge>;
 }
 
 export function CartActions() {
-  // seleção de várias fatias: useShallow evita re-render por identidade de objeto
+  // selecting several slices: useShallow avoids re-renders caused by object identity
   const { addItem, clear } = useCartStore(
     useShallow((state) => ({ addItem: state.addItem, clear: state.clear })),
   );

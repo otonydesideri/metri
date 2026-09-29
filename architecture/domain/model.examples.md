@@ -48,7 +48,7 @@ export class Order extends AggregateRoot<OrderProps> {
     super(props, id);
   }
 
-  /** BR1 — pedido nasce em rascunho e nunca nasce vazio. */
+  /** BR1 — an order starts as a draft and never starts empty. */
   public static create(
     props: Optional<OrderProps, 'status' | 'createdAt'>,
   ): Either<EmptyOrderError, Order> {
@@ -93,7 +93,7 @@ export class Order extends AggregateRoot<OrderProps> {
     this.props.updatedAt = new Date();
   }
 
-  /** BR2 — item entra só enquanto o pedido é rascunho. */
+  /** BR2 — an item goes in only while the order is a draft. */
   public addItem(item: OrderItem): Either<OrderNotEditableError, void> {
     if (this.props.status !== OrderStatus.Draft) {
       return failure(new OrderNotEditableError(this.props.status));
@@ -105,7 +105,7 @@ export class Order extends AggregateRoot<OrderProps> {
     return success(undefined);
   }
 
-  /** BR3 — só rascunho pode ser confirmado. */
+  /** BR3 — only a draft can be confirmed. */
   public confirm(): Either<InvalidOrderStatusTransitionError, void> {
     if (this.props.status !== OrderStatus.Draft) {
       return failure(
@@ -133,7 +133,7 @@ interface MoneyProps {
   amountInCents: number;
 }
 
-/** Valor monetário em centavos inteiros; toda operação devolve instância nova. */
+/** Monetary value in integer cents; every operation returns a new instance. */
 export class Money extends ValueObject<MoneyProps> {
   private constructor(props: MoneyProps) {
     super(props);
@@ -174,14 +174,14 @@ import { InvalidProductSlugError, ReservedProductSlugError } from '../errors/pro
 
 const SLUG_FORMAT = /^[a-z0-9-]{3,40}$/;
 
-/** O primeiro segmento de toda rota da SPA e o prefixo da API (general/http-surface). */
+/** The first segment of every SPA route and the API prefix (general/http-surface). */
 const RESERVED_SLUGS = new Set(['api', 'admin', 'assets', 'login', 'logout', 'orders', 'products', 'settings']);
 
 interface ProductSlugProps {
   value: string;
 }
 
-/** Endereço público do produto, `/<slug>` na raiz da SPA; a falha leva uma sugestão livre. */
+/** The product's public address, `/<slug>` at the SPA root; the failure carries an available suggestion. */
 export class ProductSlug extends ValueObject<ProductSlugProps> {
   private constructor(props: ProductSlugProps) {
     super(props);

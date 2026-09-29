@@ -73,7 +73,7 @@ O `@metri/ui` segue o layout padrão do shadcn em monorepo:
 ```
 
 ```json
-// packages/ui/tsconfig.json, em compilerOptions
+// packages/ui/tsconfig.json, in compilerOptions
 "paths": { "@metri/ui/*": ["./src/*"] }
 ```
 
@@ -155,7 +155,7 @@ export function cn(...inputs: ClassValue[]) {
 ```
 
 ```css
-/* packages/ui/src/styles/globals.css (trecho) */
+/* packages/ui/src/styles/globals.css (excerpt) */
 @theme {
   --font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;

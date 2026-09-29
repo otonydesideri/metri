@@ -147,14 +147,14 @@ async execute(input: GetOrderDetailsQueryInput): Promise<OrderDetails | null> {
     return null;
   }
 
-  // ...DTO plano, como na listagem...
+  // ...flat DTO, as in the listing...
 }
 ```
 
 O controller traduz `null` com a classe de não-encontrado do módulo e o `toHttpException` de `backend/errors.md`, para o corpo de erro da API continuar único. O escopo do dono chega resolvido pela fronteira de request (`backend/access-scope.md`, "De onde o dono chega"):
 
 ```ts
-// trecho do controller, com o escopo já resolvido pela fronteira
+// controller excerpt, with the scope already resolved by the boundary
 const details = await this.getOrderDetailsQuery.execute({
   customerId: scope.customerId,
   orderId: params.orderId,

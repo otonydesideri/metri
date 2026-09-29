@@ -67,14 +67,14 @@ A emissão tem dois tempos, e a separação é o que garante que nenhum subscrib
 public static create(
   props: Optional<OrderProps, 'status' | 'createdAt'>,
 ): Either<EmptyOrderError, Order> {
-  // ...validação e construção de domain/model.md...
+  // ...validation and construction from domain/model.md...
   order.addDomainEvent(new OrderCreatedEvent(order.id, order.customerId));
 
   return success(order);
 }
 
 public confirm(): Either<InvalidOrderStatusTransitionError, void> {
-  // ...regra de transição de domain/model.md...
+  // ...transition rule from domain/model.md...
   this.addDomainEvent(new OrderConfirmedEvent(this.id, this.props.customerId));
 
   return success(undefined);
@@ -87,7 +87,7 @@ public confirm(): Either<InvalidOrderStatusTransitionError, void> {
 
 ```ts
 async save(order: Order): Promise<void> {
-  // ...upsert da raiz + delta da WatchedList, numa transação (backend/persistence.md)...
+  // ...upsert of the root + WatchedList delta, in one transaction (backend/persistence.md)...
 
   DomainEvents.dispatchEventsForAggregate(order.id);
 }

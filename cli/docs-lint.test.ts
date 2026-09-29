@@ -399,13 +399,13 @@ describe('docs-lint', { timeout: 60_000 }, () => {
 
   it('código: PP-n, GAP-n fechado e id no cabeçalho SOURCE OF TRUTH são aviso; GAP-n aberto passa', () => {
     const page = 'apps/app-web/src/pages/orders/orders-page.tsx';
-    const open = lintChanged((dir) => edit(dir, page, (source) => source.replace('  return null;', '  // GAP-1: sem filtro por status\n  return null;')));
+    const open = lintChanged((dir) => edit(dir, page, (source) => source.replace('  return null;', '  // GAP-1: no status filter\n  return null;')));
     expect(open).toEqual({ status: 0, output: '' });
     const { status, output } = lintChanged((dir) =>
       edit(dir, page, (source) =>
         source
-          .replace(' * Só pedidos da organização da sessão.', ' * Só pedidos da organização da sessão (GAP-1).')
-          .replace('  return null;', '  // GAP-7: paginação; PP-2: ordenação\n  return null;'),
+          .replace(" * Only orders of the session's organization.", " * Only orders of the session's organization (GAP-1).")
+          .replace('  return null;', '  // GAP-7: pagination; PP-2: sorting\n  return null;'),
       ),
     );
     expect(status).toBe(0);

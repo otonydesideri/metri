@@ -59,9 +59,9 @@ export class R2StorageService {
       const head = await this.client.send(
         new HeadObjectCommand({ Bucket: bucket, Key: key }),
       );
-      // `?? 0` faria objeto de tamanho desconhecido passar como válido na
-      // confirmação, que é o que o `stat` existe pra impedir. Resposta 200 sem
-      // esses headers é quebra de contrato do vendor, não ausência de objeto.
+      // `?? 0` would let an object of unknown size pass as valid on
+      // confirmation, which is what `stat` exists to prevent. A 200 response without
+      // these headers is a vendor contract breach, not a missing object.
       if (head.ContentLength === undefined || head.ContentType === undefined) {
         throw new Error(`HEAD de ${key} veio sem tamanho ou tipo`);
       }

@@ -22,7 +22,7 @@ description: "Keep code findable and guarded while writing it: find before you c
 
    - One header per canonical owner: a file with two owners has two headers.
    - The first line is the SOT keyword: a grep for `SOURCE OF TRUTH:` and the symbol finds the owner.
-   - The labels are fixed, in English; the text after them follows the comment language of `node_modules/metri/architecture/defaults/stack.md`, "Stack". WHY cites by id the ADR or BR it follows: stable ids only.
+   - The whole header is in English, labels and text. WHY cites by id the ADR or BR it follows: stable ids only.
    - Without a header: generated files (a generator's output, the kit's CLI files), barrels (`index`, the module's map), specs and e2e, with their support in `test/` and `e2e/`.
    - `pnpm sot` checks the headers, the `sot:` of the done slices and the linear path (`metri sot --help`).
 6. **Flag the gaps.** What you leave for later is a `GAP-n` comment at the spot plus its line in the Gaps section of `.metri/MATRIX.md`: nothing stays incomplete in silence.

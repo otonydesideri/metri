@@ -98,7 +98,7 @@ Exemplo completo: domain-services.examples.md#calculateloyaltydiscount
 O caso de uso carrega os fatos, chama a regra e grava:
 
 ```ts
-// domain/application/use-cases/order/apply-loyalty-discount.use-case.ts (trecho)
+// domain/application/use-cases/order/apply-loyalty-discount.use-case.ts (excerpt)
 const order = await this.orderRepository.findById(orderId);
 if (!order) {
   return failure(new OrderNotFoundError(orderId));

@@ -15,8 +15,8 @@ export function useConfirmOrder() {
   return useMutation({
     mutationFn: (id: string) => confirmOrder(id),
     onSuccess: ({ order, invoice }) => {
-      // a resposta carrega o estado novo — inclusive a fatura emitida no
-      // mesmo commit: entra no cache do detalhe sem outra ida ao servidor
+      // the response carries the new state — including the invoice issued in the
+      // same commit: it goes into the detail cache without another trip to the server
       queryClient.setQueryData<OrderDetails>(orderKeys.detail(order.id), (old) => {
         if (!old) {
           return old;
@@ -28,8 +28,8 @@ export function useConfirmOrder() {
           invoice,
         };
       });
-      // ordenação, filtro e contagem da lista são do backend, e o pedido
-      // pode mudar de página com o status novo: invalida
+      // the list's sorting, filtering and count belong to the backend, and the order
+      // may move to another page with the new status: invalidate
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
     },
   });
@@ -56,8 +56,8 @@ export function useOrders(filters: FetchOrdersParams) {
     placeholderData: (previous) => previous,
   });
 
-  // deps primitivas de propósito: o objeto `filters` muda de referência a
-  // cada render e dispararia o prefetch em todo commit
+  // primitive deps on purpose: the `filters` object changes reference on
+  // every render and would fire the prefetch on every commit
   const total = query.data?.total;
 
   useEffect(() => {

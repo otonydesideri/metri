@@ -132,7 +132,7 @@ Pontos-chave:
 Os campos entram progressivamente, conforme cada fronteira produz o fato que ela resolve: um interceptor global (`APP_INTERCEPTOR` no `AppModule`, depois do `LoggerErrorInterceptor`, ver "Bootstrap") chama `logger.assign(...)` com o que já se sabe naquele ponto, e cada fronteira posterior acrescenta o que ela resolveu. `assignResponse: true` na config do `LoggerModule` (ao lado de `pinoHttp`, ver "Nível e formato por ambiente") estende os campos à linha automática de response.
 
 ```ts
-// no interceptor global, com o que a fronteira já resolveu
+// in the global interceptor, with what the boundary already resolved
 this.logger.assign({
   callerId: requestScope?.callerId,
 });
@@ -179,7 +179,7 @@ Pontos-chave:
 `PinoLogger` injetado no construtor, com `setContext` fixando o nome da classe; o resto é chamada direta do nível certo:
 
 ```ts
-// recorte do subscriber de backend/events.md, um provider de infra/
+// excerpt of the subscriber from backend/events.md, a provider in infra/
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 

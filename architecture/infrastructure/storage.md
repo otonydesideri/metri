@@ -89,7 +89,7 @@ Os dois formatos, no domínio didático:
 
 ```ts
 // domain/application/services/storage/product-photo-storage.contract.ts
-// Foto de produto: binário do usuário, leitura pública.
+// Product photo: user binary, public read.
 export const PRODUCT_PHOTO_MIME_TYPES = [
   'image/jpeg',
   'image/png',
@@ -122,7 +122,7 @@ export abstract class ProductPhotoStorage {
 
 ```ts
 // domain/application/services/storage/order-report-storage.contract.ts
-// Relatório de pedidos: binário do backend, leitura privada.
+// Order report: backend binary, private read.
 export type SaveOrderReportInput = {
   orderId: string;
   content: Buffer;
@@ -170,7 +170,7 @@ flowchart TB
 O registro pendente é o agregado `Upload`, módulo próprio nos moldes de `backend/modules.md`: chave, tipo de asset (`product-photo`, por exemplo), content type declarado, status (pendente, consumido) e criação, com repositório, factory e dublê como qualquer agregado, e o repositório registrado em `persistence.module.ts`. O tipo de asset amarra o upload ao fluxo que o pediu: sem ele, um `uploadId` emitido pra foto de produto poderia ser submetido no consumo de outro asset e persistir uma chave cujo caminho mente sobre o que ela é. O fluxo de consumo, no caso de uso que recebe o `uploadId`:
 
 ```ts
-// domain/application/use-cases/product/edit-product-photos.use-case.ts (trecho)
+// domain/application/use-cases/product/edit-product-photos.use-case.ts (excerpt)
 const upload = await this.uploadRepository.findById(input.uploadId);
 if (!upload || upload.consumed || upload.assetType !== 'product-photo') {
   return failure(new UploadNotFoundError());

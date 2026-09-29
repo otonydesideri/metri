@@ -146,7 +146,7 @@ Quando duas ou mais variações duplicam a mesma preparação (validar o payload
 // domain/application/services/notification/order-notifier.contract.ts
 export abstract class OrderNotifier {
   async send(notification: OrderNotification): Promise<void> {
-    // passo comum: payload fora do contrato é bug de programação, não resultado de negócio
+    // common step: a payload outside the contract is a programming bug, not a business result
     if (notification.totalInCents < 0) {
       throw new Error(`Notificação do pedido ${notification.orderId} com total negativo`);
     }

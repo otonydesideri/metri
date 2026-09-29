@@ -21,7 +21,7 @@ type ConfirmOrderOutput = Either<
   { order: Order }
 >;
 
-/** BR3 — confirmação congela o pedido para faturamento. */
+/** BR3 — confirmation freezes the order for invoicing. */
 @Injectable()
 export class ConfirmOrderUseCase {
   constructor(private readonly orderRepository: OrderRepository) {}

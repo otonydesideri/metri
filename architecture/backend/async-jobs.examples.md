@@ -64,7 +64,7 @@ export class GenerateOrderReportWorker implements OnModuleInit {
     });
 
     if (result.isFailure()) {
-      // failure esperado é resultado de negócio: retry não muda a regra.
+      // an expected failure is a business result: retrying does not change the rule.
       this.logger.error(
         { err: result.value, orderId: input.orderId },
         'GenerateOrderReportWorker descartou o job',

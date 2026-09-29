@@ -88,25 +88,25 @@ Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dubl�
 Rodar da raiz do repositório. Cada comando devolve vazio; o check de fronteiras do projeto os roda no `lint` (`node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md`, "Destination"), e saída não vazia é violação.
 
 ```bash
-# domain importando db, Zod ou nestjs-pino
+# domain importing db, Zod or nestjs-pino
 grep -rlP "from '(@metri/db|zod|nestjs-zod|nestjs-pino)" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
 
-# domain importando NestJS além de @nestjs/common
+# domain importing NestJS beyond @nestjs/common
 grep -rlP "from '@nestjs/(?!common')" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
 
-# domain usando algo de @nestjs/common além de Injectable
+# domain using anything from @nestjs/common other than Injectable
 grep -rhoP "import \{[^}]*\} from '@nestjs/common'" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts" | grep -v "^import { Injectable }"
 
-# @metri/db fora de infra/persistence/prisma e do setup do e2e
+# @metri/db outside infra/persistence/prisma and the e2e setup
 grep -rlP "from '@metri/db" apps/app-api/src apps/app-api/test --include="*.ts" | grep -v "infra/persistence/prisma" | grep -vx "apps/app-api/test/setup-e2e.ts"
 
-# core com dependência externa
+# core with an external dependency
 grep -rhoP "from '[^'.][^']*'" packages/core/src --include="*.ts" --exclude="*.spec.ts" | grep -v "node:"
 
-# utils com dependência externa, incluindo o próprio core
+# utils with an external dependency, including core itself
 grep -rhoP "from '[^'.][^']*'" packages/utils/src --include="*.ts" --exclude="*.spec.ts" | grep -v "node:"
 
-# produção importando test/
+# production code importing test/
 grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spec.ts" --exclude="*.e2e-spec.ts"
 ```
 

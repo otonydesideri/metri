@@ -161,12 +161,12 @@ Exemplo completo: model.examples.md#order
 A atualização parcial, com o setter e o uso no caso de uso:
 
 ```ts
-// domain/enterprise/order.entity.ts (trecho)
+// domain/enterprise/order.entity.ts (excerpt)
 public get note(): string | null {
   return this.props.note;
 }
 
-/** Observação em branco cai no mesmo estado de ausente. */
+/** A blank note falls into the same state as an absent one. */
 public set note(note: string | null) {
   const trimmed = note?.trim();
   this.props.note = trimmed ? trimmed : null;

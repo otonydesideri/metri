@@ -124,8 +124,8 @@ Regras de uso:
 import { setupServer } from 'msw/node';
 
 /**
- * Sem handler default de propósito: cada spec declara o que a sua própria
- * asserção depende, com `server.use(...)`.
+ * No default handler on purpose: each spec declares what its own
+ * assertion depends on, with `server.use(...)`.
  */
 export const server = setupServer();
 ```

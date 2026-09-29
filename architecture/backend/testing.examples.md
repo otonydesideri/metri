@@ -29,7 +29,7 @@ export function makeOrder(
   );
 }
 
-/** Grava um `order` real via Prisma — usado em e2e, ao contrário de `makeOrder` (entidade em memória, só teste unitário). */
+/** Writes a real `order` through Prisma — used in e2e, unlike `makeOrder` (in-memory entity, unit tests only). */
 @Injectable()
 export class OrderFactory {
   constructor(private readonly prisma: PrismaService) {}
@@ -201,8 +201,8 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
     const customerId = new UniqueEntityID();
     const order = await orderFactory.makePrismaOrder({ customerId });
 
-    // a credencial do dono tem a forma do projeto: o helper que a monta é o do
-    // projeto (.metri/ARCHITECTURE.md, "Delegações")
+    // the owner's credential has the project's shape: the helper that builds it is the
+    // project's (.metri/ARCHITECTURE.md, "Delegações")
     const response = await request(app.getHttpServer())
       .post(`/api/orders/${order.id.toValue()}/confirm`)
       .set(ownerCredential(customerId.toValue()));

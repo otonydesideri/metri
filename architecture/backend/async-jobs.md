@@ -101,7 +101,7 @@ Três produtores, em ordem de frequência esperada:
 
 ```ts
 await this.prisma.client.$transaction(async (tx) => {
-  // ...upserts do fluxo, como em backend/persistence.examples.md#orderprismarepositoryimpl...
+  // ...the flow's upserts, as in backend/persistence.examples.md#orderprismarepositoryimpl...
   await this.pgBoss.sendInTransaction(tx, GENERATE_ORDER_REPORT_QUEUE.name, input);
 });
 ```
@@ -156,11 +156,11 @@ O `PgBossService`, em `src/infra/jobs/pg-boss.service.ts`, é o único arquivo q
 ```ts
 @Injectable()
 export class PgBossService implements OnModuleInit, OnModuleDestroy {
-  // onModuleInit: start() da instância única do PgBoss.
-  // onModuleDestroy: stop() aguardando os jobs ativos terminarem.
-  // send / sendInTransaction / schedule: repasses finos.
-  // work(definition, handler): createQueue da fila e da dead letter
-  //   (idempotente no boot), depois registra o handler com lote de 1.
+  // onModuleInit: start() on the single PgBoss instance.
+  // onModuleDestroy: stop(), waiting for the active jobs to finish.
+  // send / sendInTransaction / schedule: thin pass-throughs.
+  // work(definition, handler): createQueue for the queue and the dead letter
+  //   (idempotent at boot), then registers the handler with a batch of 1.
 }
 ```
 

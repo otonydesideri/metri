@@ -156,7 +156,7 @@ Quando o item da coleção referencia um arquivo em storage (a foto do produto),
 No caso de uso, o exemplo anterior já resolve a chave do item novo pelo registro de upload; só o pós-`save()` muda, e o contrato de storage entra como qualquer dependência de `application/`:
 
 ```ts
-// depois do save(): o delta continua na lista, e é ele que diz o que apagar
+// after save(): the delta stays in the list, and it is what says what to delete
 const removedPhotos = product.photos.getRemovedItems();
 
 await Promise.all(

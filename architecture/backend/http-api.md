@@ -132,7 +132,7 @@ export class OrderResponseDto extends createZodDto(
 ```
 
 ```ts
-// apps/app-web: a constante que o gerador exporta de api/model.zod.ts
+// apps/app-web: the constant the generator exports from api/model.zod.ts
 import { createOrderDtoNoteMax } from '@/api/model.zod';
 ```
 

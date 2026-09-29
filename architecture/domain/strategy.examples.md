@@ -12,7 +12,7 @@ export interface ShippingContext {
 }
 
 export abstract class ShippingCostCalculator {
-  /** BR4 — frete em centavos inteiros, por modalidade de entrega. */
+  /** BR4 — shipping cost in integer cents, per delivery method. */
   abstract calculate(context: ShippingContext): number;
 }
 
@@ -72,7 +72,7 @@ interface NotifyOrderConfirmationInput {
 
 type NotifyOrderConfirmationOutput = Either<OrderNotFoundError, { order: Order }>;
 
-/** BR5 — confirmação notifica o cliente pelo canal da preferência dele. */
+/** BR5 — confirmation notifies the customer through their preferred channel. */
 @Injectable()
 export class NotifyOrderConfirmationUseCase {
   private readonly notifiers: Record<NotificationChannel, OrderNotifier>;

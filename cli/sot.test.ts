@@ -8,7 +8,7 @@ const ARCHITECTURE = '.metri/ARCHITECTURE.md';
 const PAGE = 'apps/app-web/src/pages/orders/orders-page.tsx';
 
 const header = (owner: string) =>
-  `/** SOURCE OF TRUTH: ${owner}.\n * WHAT: faz uma coisa só.\n * WHY: porque o fluxo precisa.\n * WHERE: chamado pelo módulo.\n */\n`;
+  `/** SOURCE OF TRUTH: ${owner}.\n * WHAT: does one thing.\n * WHY: the flow needs it.\n * WHERE: called by the module.\n */\n`;
 
 // Roda o metri sot numa cópia da fixture depois da mudança e devolve a saída.
 function sotChanged(change: (dir: string) => void = () => {}): { status: number | null; output: string } {
@@ -35,7 +35,7 @@ describe('sot', { timeout: 60_000 }, () => {
 
   it('cabeçalho bem formado: WHAT, WHY e WHERE, nessa ordem e com texto', () => {
     const { status, output } = sotChanged((dir) =>
-      write(dir, 'packages/core/src/money.ts', '/** SOURCE OF TRUTH: Money.\n * WHAT: valor em centavos.\n * WHERE: TODO\n */\nexport class Money {}\n'),
+      write(dir, 'packages/core/src/money.ts', '/** SOURCE OF TRUTH: Money.\n * WHAT: amount in cents.\n * WHERE: TODO\n */\nexport class Money {}\n'),
     );
     expect(status).toBe(1);
     expect(output).toContain('packages/core/src/money.ts:1: cabeçalho: falta WHY: na linha 3');
@@ -114,7 +114,7 @@ describe('sot', { timeout: 60_000 }, () => {
     expect(output).toContain(`.metri/ARCHITECTURE.md:11: Caminho linear: ${PAGE} não declara OrderList`);
     expect(output).toContain('.metri/ARCHITECTURE.md:12: Caminho linear: apps/app-web/src/nope.ts não existe ou não é arquivo-fonte');
     const unnamed = sotChanged((dir) =>
-      edit(dir, PAGE, (source) => source.replace('SOURCE OF TRUTH: OrdersPage.', 'SOURCE OF TRUTH: a lista de pedidos.')),
+      edit(dir, PAGE, (source) => source.replace('SOURCE OF TRUTH: OrdersPage.', 'SOURCE OF TRUTH: the order list.')),
     );
     expect(unnamed.output).toContain(`Caminho linear: nenhum cabeçalho SOURCE OF TRUTH de ${PAGE} nomeia OrdersPage`);
   });

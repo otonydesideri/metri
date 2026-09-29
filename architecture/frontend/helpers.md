@@ -47,7 +47,7 @@ O tamanho decide só o degrau mais estreito, entre continuar inline e sair pro a
 Função trivial, usada num lugar só, fica inline. Não nomear função separada pra uso único.
 
 ```tsx
-// certo — inline é a escolha
+// right — inline is the choice
 function OrderCard({ order }: Props) {
   const itemCount = order.items.length;
   const itemsLabel = itemCount === 1 ? '1 item' : `${itemCount} itens`;
@@ -55,7 +55,7 @@ function OrderCard({ order }: Props) {
   return <Card>{itemsLabel}</Card>;
 }
 
-// evitar — função nomeada pra uso único
+// avoid — named function for a single use
 function getItemsLabel(count: number): string {
   return count === 1 ? '1 item' : `${count} itens`;
 }
@@ -163,10 +163,10 @@ O agrupamento é por módulo, um arquivo por módulo, nunca um arquivo por const
 Valor genuinamente genérico e repetido entre módulos usa nome genérico, não um por domínio:
 
 ```ts
-// certo — um valor genérico
+// right — one generic value
 export const PER_PAGE = 20;
 
-// evitar — mesmo valor sob nomes por domínio
+// avoid — same value under per-domain names
 export const ORDERS_PER_PAGE = 20;
 export const CUSTOMERS_PER_PAGE = 20;
 ```

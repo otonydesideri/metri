@@ -1,8 +1,8 @@
 /** SOURCE OF TRUTH: OrdersPage.
- * WHAT: lista os pedidos da organização no painel.
- * WHY: a lista é a porta de entrada de todo fluxo de pedido (ADR-0001).
- * WHERE: montada pelo router na rota /orders; lê a query de pedidos da API.
- * Só pedidos da organização da sessão.
+ * WHAT: lists the organization's orders in the dashboard.
+ * WHY: the list is the entry point of every order flow (ADR-0001).
+ * WHERE: mounted by the router at /orders; reads the orders query from the API.
+ * Only orders of the session's organization.
  */
 export function OrdersPage() {
   return null;

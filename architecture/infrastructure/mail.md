@@ -65,7 +65,7 @@ Exemplo completo: mail.examples.md#orderconfirmationsenderimpl
 Quem dispara a confirmação (o caso de uso do fluxo, chamado pelo subscriber de `backend/events.md`, "Subscriber") entrega só dado de domínio, nunca HTML pronto:
 
 ```ts
-// domain/application/use-cases/notification/send-order-confirmation.use-case.ts (trecho)
+// domain/application/use-cases/notification/send-order-confirmation.use-case.ts (excerpt)
 @Injectable()
 export class SendOrderConfirmationUseCase {
   constructor(
@@ -73,7 +73,7 @@ export class SendOrderConfirmationUseCase {
   ) {}
 
   async execute(input: SendOrderConfirmationInput) {
-    // ...busca o pedido...
+    // ...fetches the order...
     await this.orderConfirmationSender.send({
       orderId: order.id.toString(),
       customerEmail: order.customerEmail,

@@ -66,10 +66,10 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 ## Aplicação
 
 ```tsx
-// CORRETO
+// RIGHT
 <div className="bg-background text-foreground p-4 rounded-md">
 
-// EVITAR
+// AVOID
 <div className="bg-[#ffffff] text-[#0a0a0a] p-[16px] rounded-[6px]">
 ```
 
@@ -92,9 +92,9 @@ export { useTheme } from 'next-themes';
 ```
 
 ```html
-<!-- apps/app-web/index.html, no <head> -->
+<!-- apps/app-web/index.html, in <head> -->
 <style>
-  /* --background de :root e de .dark, em packages/ui/src/styles/globals.css */
+  /* --background from :root and from .dark, in packages/ui/src/styles/globals.css */
   html { background: oklch(1 0 0); }
   html.dark { background: oklch(0.145 0 0); }
 </style>

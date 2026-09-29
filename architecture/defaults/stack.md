@@ -13,7 +13,7 @@ status: active
 
 - Monorepo pnpm workspaces + Turborepo; pacotes com escopo `@metri/*` (general/code-placement).
 - Lint/format: Biome (aspas simples), nos exemplos de todas as regras.
-- Idioma: código em inglês; documentação, comentários e mensagens de erro em português, em todas as regras.
+- Idioma: código e comentários em inglês; documentação e mensagens de erro em português, em todas as regras.
 
 Backend:
 
@@ -89,14 +89,14 @@ O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS 
 O `test` da raiz repassa o filtro ao Vitest de cada pacote pelo `--`: sem ele, o Turborepo lê o filtro (`pnpm test order-confirmation`) como nome de task.
 
 ```json
-// package.json da raiz
+// root package.json
 "test": "turbo run test --"
 ```
 
 O Vitest de cada app e pacote passa sem arquivo de teste, para o pacote recém-criado não derrubar o `verify`:
 
 ```ts
-// no bloco test do vite.config.ts (app-web), nos dois configs do Vitest do app-api (unitário e e2e, backend/testing) e no dos pacotes
+// in the test block of vite.config.ts (app-web), of both app-api Vitest configs (unit and e2e, backend/testing) and of each package
 test: { passWithNoTests: true },
 ```
 

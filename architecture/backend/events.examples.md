@@ -6,7 +6,7 @@
 import type { UniqueEntityID } from '@metri/core/entities';
 import type { DomainEvent } from '@metri/core/events';
 
-/** BR3 — pedido saiu de rascunho; notificação e faturamento reagem. */
+/** BR3 — the order left draft; notification and invoicing react. */
 export class OrderConfirmedEvent implements DomainEvent {
   public readonly occurredAt: Date;
 
@@ -44,8 +44,8 @@ export class OnOrderConfirmedSubscriber implements EventHandler {
 
   setupSubscriptions(): void {
     DomainEvents.register(
-      // Cast seguro: o registro é chaveado pelo nome da classe, então só
-      // OrderConfirmedEvent chega neste callback.
+      // Safe cast: the registry is keyed by class name, so only
+      // OrderConfirmedEvent reaches this callback.
       (event) => {
         void this.handle(event as OrderConfirmedEvent);
       },

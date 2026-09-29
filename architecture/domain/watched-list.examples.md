@@ -38,7 +38,7 @@ export class Product extends AggregateRoot<ProductProps> {
     super(props, id);
   }
 
-  /** BR8 — produto nasce sem foto. */
+  /** BR8 — a product starts with no photo. */
   public static create(
     props: Optional<ProductProps, 'photos' | 'createdAt'>,
   ): Either<never, Product> {
@@ -75,7 +75,7 @@ export class Product extends AggregateRoot<ProductProps> {
     this.props.updatedAt = new Date();
   }
 
-  /** BR9 — a galeria é substituída inteira e nunca passa do limite. */
+  /** BR9 — the gallery is replaced as a whole and never goes over the limit. */
   public replacePhotos(
     photos: ProductPhoto[],
   ): Either<TooManyProductPhotosError, void> {
@@ -120,7 +120,7 @@ type ReplaceProductPhotosOutput = Either<
   { product: Product }
 >;
 
-/** BR9 — a galeria enviada substitui a atual por completo. */
+/** BR9 — the submitted gallery fully replaces the current one. */
 @Injectable()
 export class ReplaceProductPhotosUseCase {
   constructor(
@@ -156,8 +156,8 @@ export class ReplaceProductPhotosUseCase {
         continue;
       }
 
-      // item novo: a chave sai do registro de upload, nunca do cliente
-      // (stat e consumo: infrastructure/storage.md, "O upload direto e o registro pendente")
+      // new item: the key comes from the upload record, never from the client
+      // (stat and consumption: infrastructure/storage.md, "O upload direto e o registro pendente")
       const upload = await this.uploadRepository.findById(photo.uploadId);
 
       if (!upload || upload.consumed || upload.assetType !== 'product-photo') {
