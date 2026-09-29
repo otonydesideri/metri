@@ -266,9 +266,13 @@ Base neutra do Architecture Source: o tema neutral do shadcn/ui, sem marca, em c
 
 - Referência: o tema neutral do shadcn/ui, com tipografia e espaçamento da análise da Vercel no getdesign.md (seção "Fonte").
 - Biblioteca: shadcn/ui, default global (`node_modules/metri/architecture/defaults/ui.md`) | outra → ADR-NNNN.
-- Tema: `packages/ui/src/styles/globals.css`, que segue os tokens deste arquivo.
+- Código do tema: `packages/ui/src/styles/globals.css`, que segue os tokens deste arquivo.
+- Aparelhos: celular primeiro | computador primeiro | os dois, da triagem de design.
+- Densidade: confortável, de toque | compacta, de mouse e teclado, da triagem de design.
+- Tema: claro por padrão, escuro por escolha | só claro, da triagem de design.
 - Referências: as 2–3 do projeto, da triagem de design.
-- Princípios de experiência: os 3–5 do projeto, da triagem de design.
+- A evitar: o que o projeto recusa, da triagem de design.
+- Princípios de experiência: os 3–5 do projeto, da triagem de design; num produto de celular primeiro, um deles põe a ação principal ao alcance do polegar.
 
 O tom é neutro: cinzas sem matiz (croma 0), com cor só em `destructive`, nos gráficos e no `sidebar-primary` do escuro.
 

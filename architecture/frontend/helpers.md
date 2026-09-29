@@ -112,7 +112,9 @@ export function formatBRL(amountInCents: number): string {
 
 **O par de conversão mora junto.** O format e o parse do mesmo conceito (`formatBRL` e `parseBRLToCents`) ficam no mesmo arquivo: o dono da conversão é um só, e separá-los é o que deixa os dois lados divergirem sem nada acusar.
 
-**Formatação de data usa `Intl`, sem biblioteca externa**, em `@metri/utils` (`date.ts`): o runtime já entrega locale e timezone. Uma lib de datas entra quando aparecer aritmética de data de verdade — decisão nova nesse dia, não default herdado.
+**Formatação de data usa `Intl`, sem biblioteca externa**, em `@metri/utils` (`date.ts`): o runtime já entrega locale e timezone. A conta que cruza fuso é do backend (`general/date-time.md`).
+
+**O dia de calendário local sai dos componentes locais da data** (`getFullYear()`, `getMonth() + 1`, `getDate()`), no fuso de quem olha, nunca de `toISOString().slice(0, 10)`: esse devolve o dia em UTC e erra o "hoje" à noite, em fuso negativo.
 
 A pasta do app é plana, pela nomeação de `frontend/structure.md`: `shared/utils/<categoria>.util.ts`, não `shared/utils/format/<categoria>.util.ts`. O mesmo critério vale para `shared/schemas/<módulo>.schema.ts` e `shared/constants/<módulo>.constant.ts`: um arquivo por categoria ou módulo, sem subpasta. Subpasta por categoria só entra se um dia a lista crescer a ponto de justificar, decidido quando o caso real aparecer.
 
@@ -219,3 +221,4 @@ Tipo que cruza a fronteira com o backend é o gerado em `api/model.zod.ts` (`bac
 - Valor genérico repetido usa nome genérico, não um por domínio?
 - Tipo do contrato de API vem de `api/model.zod.ts`, e tipo do app compartilhado está em `shared/types/<módulo>.type.ts`, derivado de schema (`z.infer`) quando há validação em runtime, e estendido com `&`/`Pick` em vez de duplicado?
 - `ApiErrorType` vem de `@metri/core/errors`, não redeclarado no app nem substituído pelo `DomainErrorType`?
+- O dia de calendário local vem dos componentes locais da data? `grep -rnE "toISOString\(\)\.(slice\(0, ?10\)|split\(['\"]T)" apps/app-web/src packages/*/src --include='*.ts' --include='*.tsx'` devolve vazio.

@@ -28,6 +28,8 @@ Uma tela do `app-web` cumpre o UC com o menor esforço de quem a usa; a forma vi
 
 **Obrigatório.** O que o usuário procura primeiro aparece primeiro, e tamanho, peso e contraste seguem a ordem de importância.
 
+Quando o `docs/DESIGN.md` põe o celular primeiro ("Aparelhos"): **Obrigatório.** No celular, a ação principal fica ao alcance do polegar, na base da tela, sem rolagem até ela.
+
 ## Fluxo
 
 **Obrigatório.** O UC se cumpre no menor número de passos.
@@ -65,6 +67,7 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 ## Verificação
 
 - A tela tem uma ação principal, com o maior peso, e o que se procura primeiro vem primeiro?
+- Em produto de celular primeiro, a ação principal fica na base da tela, ao alcance do polegar, sem rolagem?
 - O UC se cumpre no menor número de passos, com o resultado e o próximo passo visíveis depois de cada ação, e toda tela tem saída?
 - Toda ação tem retorno imediato, a destrutiva desfaz (ou confirma, quando não dá para desfazer), e o teclado alcança tudo com foco visível?
 - A tela parte de uma tela canônica ou de uma referência, agrupada por proximidade e alinhamento?

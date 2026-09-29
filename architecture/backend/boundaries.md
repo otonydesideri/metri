@@ -85,7 +85,7 @@ Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dubl�
 
 ## Verificação
 
-Rodar da raiz do repositório. Cada comando deve devolver vazio, exceto onde indicado.
+Rodar da raiz do repositório. Cada comando devolve vazio; o check de fronteiras do projeto os roda no `lint` (`node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md`, "Destination"), e saída não vazia é violação.
 
 ```bash
 # domain importando db, Zod ou nestjs-pino
@@ -97,14 +97,14 @@ grep -rlP "from '@nestjs/(?!common')" apps/app-api/src/domain --include="*.ts" -
 # domain usando algo de @nestjs/common além de Injectable
 grep -rhoP "import \{[^}]*\} from '@nestjs/common'" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts" | grep -v "^import { Injectable }"
 
-# @metri/db fora de infra/persistence/prisma (deve devolver só test/setup-e2e.ts)
-grep -rlP "from '@metri/db" apps/app-api/src apps/app-api/test --include="*.ts" | grep -v "infra/persistence/prisma"
+# @metri/db fora de infra/persistence/prisma e do setup do e2e
+grep -rlP "from '@metri/db" apps/app-api/src apps/app-api/test --include="*.ts" | grep -v "infra/persistence/prisma" | grep -vx "apps/app-api/test/setup-e2e.ts"
 
 # core com dependência externa
-grep -rhoP "from '[^'.][^']*'" packages/core/src --include="*.ts" | grep -v "node:"
+grep -rhoP "from '[^'.][^']*'" packages/core/src --include="*.ts" --exclude="*.spec.ts" | grep -v "node:"
 
 # utils com dependência externa, incluindo o próprio core
-grep -rhoP "from '[^'.][^']*'" packages/utils/src --include="*.ts" | grep -v "node:"
+grep -rhoP "from '[^'.][^']*'" packages/utils/src --include="*.ts" --exclude="*.spec.ts" | grep -v "node:"
 
 # produção importando test/
 grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spec.ts" --exclude="*.e2e-spec.ts"
@@ -112,6 +112,6 @@ grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spe
 
 ## Em aberto
 
-- **Enforcement automatizado das fronteiras de dependência.** Enforcement automatizado destas regras (regra de lint de imports restritos ou ferramenta dedicada de grafo de dependência) não tem desenho fechado; a verificação é manual, pelos comandos acima. Até o check de fronteiras existir, esta regra mantém o `applies_to`, e o `rules-for` a entrega em todo arquivo do backend; com o check, o id dele entra em `enforced_by` e o `applies_to` sai.
+- **Enforcement global das fronteiras de dependência.** Um check da Source para estas regras (regra de lint de imports restritos ou ferramenta dedicada de grafo de dependência) não tem desenho fechado; até ele existir, cada projeto roda os comandos acima no próprio check de fronteiras, e esta regra mantém o `applies_to`.
   - Regra de lint de imports restritos
   - Ferramenta dedicada de grafo de dependência

@@ -29,6 +29,7 @@ describe('init', { timeout: 60_000 }, () => {
       expect(readlinkSync(join(dir, '.claude/agents', name))).toBe(`../../node_modules/metri/agents/${name}`);
     }
     expect(readFileSync(join(dir, 'CLAUDE.md'), 'utf8')).toBe('@AGENTS.md\n');
+    expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('!.env.test\n');
     expect(readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8')).not.toContain('mapeamento: pendente');
     expect(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).scripts).toMatchObject({
       verify: 'metri verify',

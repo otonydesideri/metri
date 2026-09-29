@@ -86,6 +86,13 @@ O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS 
 }
 ```
 
+O `test` da raiz repassa o filtro ao Vitest de cada pacote pelo `--`: sem ele, o Turborepo lê o filtro (`pnpm test order-confirmation`) como nome de task.
+
+```json
+// package.json da raiz
+"test": "turbo run test --"
+```
+
 O Vitest de cada app e pacote passa sem arquivo de teste, para o pacote recém-criado não derrubar o `verify`:
 
 ```ts
@@ -110,6 +117,9 @@ A versão com que a regra foi escrita, conferida na documentação oficial em 27
 | Biome | 2.5.14 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`; conferido em 29/09/2026 |
 | Vitest | 5.0.2 | https://vitest.dev/config/passwithnotests | |
 | `date-fns` / `@date-fns/tz` | 4.4.0 / 1.5.0 | https://date-fns.org | `TZDate`; conferido em 29/09/2026 |
+| `react-phone-number-input` | 3.4.18 | https://gitlab.com/catamphetamine/react-phone-number-input | `flags` embutidas; entradas `/react-hook-form`; conferido em 29/09/2026 |
+| Vite | 8.3.1 | https://vite.dev/config/shared-options | `resolve.tsconfigPaths`, `server.strictPort`; conferido em 29/09/2026 |
+| Turborepo | 2.11.5 | https://turborepo.com/docs/reference/run | `turbo run <task> -- <args>`; conferido em 29/09/2026 |
 | tsdown | 0.23.0 | https://tsdown.dev/reference/cli | `--watch`, `--on-success`; o metadata de decorator vem do Rolldown/Oxc pelo `tsconfig.json`; conferido em 29/09/2026 |
 | shadcn (CLI) | 4.21.0 | https://ui.shadcn.com/docs/monorepo | aliases no nome do pacote; conferido em 29/09/2026 |
 | Tailwind CSS | 4.3.3 | https://tailwindcss.com/docs/detecting-classes-in-source-files | `@source` relativo ao CSS; conferido em 29/09/2026 |

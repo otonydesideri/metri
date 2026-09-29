@@ -9,7 +9,7 @@ use_when:
 applies_to:
   - "apps/app-web/src/shared/schemas/**"
   - "apps/app-web/src/shared/components/inputs/**"
-keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", InputGroup, InputGroupInput, InputGroupAddon, input-group-control, Textarea, react-phone-number-input, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label, FieldError, aria-label, "@metri/ui"]
+keywords: [formulário, React Hook Form, useForm, handleSubmit, handleFormSubmit, handleFieldCommit, trigger, getValues, defaultValues, values, reset, z.coerce, schema de form, schema de API, "<módulo>.schema.ts", InputGroup, InputGroupInput, InputGroupAddon, input-group-control, Textarea, react-phone-number-input, "react-phone-number-input/flags", key, CDN, use-mask-input, withMask, useHookFormMask, Inputmask, showMaskOnHover, showMaskOnFocus, aria-describedby, label, Label, FieldError, aria-label, "@metri/ui"]
 not_covered:
   - "o modal de tarefa que contém o form e a regra de Esc e clique fora → frontend/routing"
   - "a mutation que o form dispara, o estado em voo e a notificação → frontend/data-fetching"
@@ -81,6 +81,10 @@ Quando o dado chega depois da montagem: **Obrigatório.** A tela aguarda o dado 
 
 **Obrigatório.** `reset` fica para um evento explícito que substitui os valores depois da montagem, nunca como hidratação automática por reflexo.
 
+Quando o mesmo formulário é reusado para outra fonte (o passo seguinte, outro item da lista): **Obrigatório.** Ele leva `key` com a identidade da fonte (`<DayForm key={day} ... />`), para montar do zero a cada troca.
+
+> **Por quê.** Sem a `key`, o React reaproveita o componente, o formulário guarda os `defaultValues` da fonte anterior, e o submit falha na validação sem nenhum erro visível.
+
 ### Schema de form e schema de API são coisas diferentes
 
 **Obrigatório.** Schema de form e schema de API são declarações separadas, mesmo quando coincidem campo a campo: o de form mora em `shared/schemas/<módulo>.schema.ts`, e o de API é o gerado em `api/model.zod.ts` (`backend/http-api.md`, "Contrato de API: o backend é a fonte").
@@ -111,7 +115,11 @@ Quando o campo precisa de uma dependência externa que o pacote não tem: **Obri
 
 Quando o campo precisa de um comportamento próprio sobre o campo do pacote: **Obrigatório.** O `InputGroup` entrega o campo e os afixos, e o app acrescenta o controle que falta num `InputGroupAddon`, ao lado do `InputGroupInput` (a senha, com o `InputGroupButton` que alterna o `type`).
 
-Quando o campo tem semântica de domínio com lib dedicada: **Obrigatório.** Ele usa a lib dedicada, que entrega máscara, parsing e formato canônico numa peça só: o telefone sai do `react-phone-number-input/input` já em E.164, sem conversão no submit nem na hidratação do form.
+Quando o campo tem semântica de domínio com lib dedicada: **Obrigatório.** Ele usa a lib dedicada, que entrega máscara, parsing e formato canônico numa peça só: o telefone sai do `react-phone-number-input` já em E.164, sem conversão no submit nem na hidratação do form, ligado ao React Hook Form pela entrada `react-phone-number-input/react-hook-form` (com o seletor de país) ou `react-phone-number-input/react-hook-form-input` (sem ele).
+
+**Obrigatório.** Componente de terceiro traz os assets embutidos, sem buscar nada em CDN durante o uso: as bandeiras do seletor de país do telefone entram por `import flags from 'react-phone-number-input/flags'`, passadas em `flags`.
+
+> **Por quê.** O asset de CDN falha offline e em rede restrita, sem erro na tela, e manda a quem usa o produto uma requisição a um terceiro que ninguém decidiu.
 
 Quando a máscara é puramente sintática (documento, CEP, moeda): **Obrigatório.** Ela usa o `use-mask-input`, sobre o Inputmask, pelo `withMask`, que devolve um ref callback e compõe com o campo controlado.
 
@@ -156,6 +164,8 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 - Formulário fica inline na página (ou dentro do componente-modal), sem camada "form genérico + wrapper", e a escrita vem de hook de mutation ou de comando de client externo no handler, não embutida no form?
 - O submit usa `handleFormSubmit`, commit por campo usa `handleFieldCommit` com `trigger`/`getValues`, e o campo é string com a conversão no submit?
 - O `defaultValues` referencia const nomeada, fora do componente quando estática e dentro quando deriva de dado disponível na montagem?
+- Formulário reusado para outra fonte leva `key` com a identidade dela?
+- Componente de terceiro usa assets embutidos, sem CDN?
 - Schema de form em `shared/schemas/<módulo>.schema.ts`, separado do schema de API, que vem de `api/model.zod.ts` sem cópia local?
 - Campo que o pacote não entrega mora em `shared/components/inputs/`, montado sobre as peças do `InputGroup`?
 - Campo mascarado monta o `use-mask-input` por `withMask`, com o array da máscara mais curta para a mais longa e `showMaskOn*` desligado?

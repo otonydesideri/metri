@@ -37,7 +37,19 @@ const SCRIPTS: Record<string, string> = {
   'design-tokens': 'metri design-tokens',
   sot: 'metri sot',
 };
-const GITIGNORE = ['node_modules/', '.env*', '!.env.example', 'dist/', '.turbo/', 'coverage/', ''].join('\n');
+const GITIGNORE = [
+  'node_modules/',
+  '.env*',
+  '!.env.example',
+  '!.env.test',
+  'dist/',
+  '.turbo/',
+  'coverage/',
+  'packages/db/**/generated/',
+  'test-results/',
+  'playwright-report/',
+  '',
+].join('\n');
 const CODE_DIRS = ['apps', 'packages', 'src'];
 const PENDING_MAPPING = 'mapeamento: pendente';
 

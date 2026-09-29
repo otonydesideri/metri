@@ -68,6 +68,10 @@ Quando a tarefa é curta e cancelável, como a criação de um registro simples:
 
 Quando o fluxo é longo, com passos ou estado que mereça link compartilhável: **Obrigatório.** Ele continua sendo rota.
 
+Quando a tarefa edita um item de uma lista curta e o editor não cabe num modal no celular: **Permitido.** Drill-down por estado, a terceira forma: a página troca a lista pelo editor em tela cheia com `useState`, fora da URL, com a ação "Voltar" para a lista, e o editor montado condicionalmente como o modal.
+
+> **Por quê.** O editor ganha a tela inteira sem virar lugar. O custo é que o Voltar do navegador sai da página em vez de voltar à lista, então vale só quando cada item grava ao salvar e fechar o editor não perde trabalho salvo.
+
 **Obrigatório.** O modal de tarefa é montado condicionalmente, nunca por `open` persistente: cada abertura monta o componente do zero e o formulário nasce zerado, sem `useEffect` de limpeza nem `reset` por reflexo.
 
 Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e clique fora não descartam o trabalho: `onEscapeKeyDown`/`onInteractOutside` fazem `preventDefault`, e descartar é ação explícita do Cancelar ou do X.
@@ -80,7 +84,7 @@ Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e cl
 
 > **Por quê.** São pequenos e sempre necessários.
 
-**Obrigatório.** O `<Suspense>` fica em cada layout, ao redor do `<Outlet />`, nunca em volta do `<Routes>` inteiro.
+**Obrigatório.** O `<Suspense>` fica em cada elemento de grupo que renderiza o `<Outlet />`, ao redor dele: o layout e também o guard de um grupo sem layout. A rota `*` leva o próprio `<Suspense>` em volta da página. Nunca em volta do `<Routes>` inteiro.
 
 > **Por quê.** Assim o layout (o header e a navegação lateral, por exemplo) continua montado quando o usuário navega entre páginas irmãs do mesmo grupo, e só a área da página troca pelo fallback.
 
@@ -145,7 +149,8 @@ O modal de tarefa montado por estado na página que o dispara:
 - Página nova entrou no grupo de rota certo, e conta com o que o guard daquele grupo garantiu, sem re-checar por dentro?
 - A isenção do guard é estrutural, sem lista de paths isentos, e rota sem match cai no `<Route path="*">`?
 - Rota nova nasceu para um lugar, e tarefa curta e cancelável virou modal por estado, montado condicionalmente, com Esc e clique fora bloqueados quando o form está sujo?
-- Página entra no router via `React.lazy`, com o `Suspense` no layout ao redor do `<Outlet />`?
+- Página entra no router via `React.lazy`, com o `Suspense` em cada layout ou guard de grupo ao redor do `<Outlet />`, e o da rota `*`?
+- Drill-down por estado só onde cada item grava ao salvar, com a ação "Voltar" para a lista?
 - Segmento de rota está em inglês e kebab-case, com recurso identificado por id?
 
 ## Em aberto

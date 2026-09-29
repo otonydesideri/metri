@@ -39,6 +39,15 @@
   fica no contexto de log, e a redação vale para credencial e dado pessoal (`infrastructure/logging`, `/diagnose`);
   WatchedList com identidade estrutural; biblioteca de cálculo puro no domínio por lista nomeada
   (`backend/boundaries`); regra nova `general/date-time`; VO de endereço com palavras reservadas.
+- **Frontend, testes e infra do piloto 2.** Drill-down por estado como terceira forma de `frontend/routing`, e o
+  `Suspense` também no guard de grupo e na rota `*`; formulário reusado leva `key`, e componente de terceiro traz os
+  assets embutidos, sem CDN (`frontend/forms`); dia local sem `toISOString` (`frontend/helpers`); NBSP no spec de
+  `Intl`, Vite 8 com `resolve.tsconfigPaths`, sessão do e2e por `addCookies` e o limite de locale do
+  `chromium-headless-shell` (`frontend/testing`); mock ancorado no dia real; Overview do `DESIGN.md` com aparelhos,
+  densidade, tema e o que evitar; tela canônica numa linha com a variante descartada e o princípio; ação principal
+  ao alcance do polegar em produto de celular. Os greps de `backend/boundaries` passam a devolver vazio, e o
+  `KNOWLEDGE-GATE` diz como ligar um check de projeto; `test: turbo run test --`; o `.gitignore` do `metri init`
+  ganha `!.env.test`, o `generated/` do Prisma e os relatórios do Playwright.
 
 ## v1.2.1 (2026-09-27)
 

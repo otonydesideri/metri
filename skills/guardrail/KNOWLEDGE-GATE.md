@@ -39,7 +39,7 @@ Most tickets and slices end with zero lessons: that is health, not omission. Man
 
 For a lesson that passed the gate:
 
-1. **Turned out verifiable?** Create the check; at most one line in the rule's `enforced_by`.
+1. **Turned out verifiable?** Create the check; at most one line in the rule's `enforced_by`. A project check is `scripts/check-<id>.sh`, run by a `<id>` script in the root `package.json` and chained into `lint` (`"lint": "turbo run lint && pnpm --silent <id>"`), since, of the project's scripts, `pnpm verify` runs only `typecheck`, `lint` and `test` (`metri verify --help`). It prints each violation and exits 1; its id goes in the `enforced_by` of the project rule it enforces, and the item it automates gets `(check: <id>)`.
 2. **Recurring pattern that can't be verified?** Canonical example in the code, plus a change to a rule or a new rule (call the Skill tool with "writing-for-agents").
 3. **Hard to reverse, surprising and the result of a real trade-off?** An ADR (call the Skill tool with "domain-language").
 4. **Domain term?** `docs/CONTEXT.md` (call the Skill tool with "domain-language").

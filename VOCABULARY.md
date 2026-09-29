@@ -51,7 +51,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | tracer                                    | `tracer`                                         | O UC: o ticket que corta um caminho fino e completo, demonstrável                             |
 | portão                                    | `gate`                                           | Ponto em que o trabalho só avança com checks verdes ou aprovação humana                       |
 | definido / inferido / perguntar           | `defined \| inferred \| ask`                     | A classe de uma decisão aberta antes de perguntar; todo portão mostra os três blocos (skill `grilling`) |
-| tela canônica                             | `canonical screen`                               | A tela de referência de um tipo, em "Telas canônicas" do `DESIGN.md` (`- <rota> → <para que serve>`) |
+| tela canônica                             | `canonical screen`                               | A tela de referência de um tipo, numa linha de "Telas canônicas" do `DESIGN.md`: a rota, o propósito, a variante descartada e o princípio que decidiu |
 | variante                                  | `variant` (`?variant=`)                          | Uma das 2–3 versões radicalmente diferentes de uma tela nova, na mesma rota, até o portão de padrão |
 | critério de tela                          | `Tela:`                                          | O critério julgado na tela: o único que leva evidência (`- [ ] Tela: <o que a tela mostra>`) |
 | evidência                                 | `.metri/tickets/<id>/<n>-desktop.png`, `<n>-mobile.png` | O screenshot de cada critério `Tela:`, `<n>` na ordem do critério, gravado com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`) |
