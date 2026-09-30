@@ -1,5 +1,76 @@
 # Changelog
 
+## v1.3.1 (2026-09-30)
+
+Revisão pós-release da v1.3.0: o cabeçalho e os comentários de código em inglês, o `@metri/ui` pelo caminho manual
+com o `cn` do kit, quatro correções no `metri sot`, as regras de F e G sem contradição entre si, e o guia de migração
+completo para a agenda do piloto 2.
+
+### O que muda
+
+- **Idioma.** O cabeçalho `SOURCE OF TRUTH` é todo em inglês, rótulos e texto, e os comentários de código passam a
+  inglês (`defaults/stack`, "Stack"; README, "Política de idioma"), inclusive nos exemplos das regras.
+- **`@metri/ui`.** O kit entra sempre pelo caminho manual de monorepo: o `shadcn init --monorepo` cria outro pacote,
+  com estilo de preset e os arquivos da CLI direto em `src/components/`. O layout de metri:ADR-0003 é o do shadcn
+  com a pasta `components/ui/` a mais. Desde 03/09/2026 o registry do shadcn importa o `cn` do pacote npm `cn`, com
+  qualquer alias `utils`; no mesmo `add`, o import passa ao `cn` do kit. Isso corrige a v1.3.0, que dava o alias
+  como solução do PP-3. O `globals.css` importa o `tw-animate-css`, e a verificação de `defaults/ui` separa as fontes,
+  que o `design-tokens` não confere, dos níveis de texto, que ele confere.
+- **`metri sot`.** Arquivo sem export (o `main.ts`, um script) não pede cabeçalho; quando o caminho linear o nomeia,
+  o cabeçalho fica acima da declaração do topo. "generated" ou "gerado por" no meio de um comentário não isenta mais
+  o arquivo; um `/**` dentro de string ou comentário (o glob `src/**/*.ts`) não engole o cabeçalho seguinte; arquivo
+  com CRLF passa.
+- **`metri docs-lint`.** Ticket com YAML inválido sai como erro no ticket, sem derrubar o comando.
+- **Backend e domínio.** O `APP_GUARD` registra o throttler e, com dono, o guard de sessão depois dele; o endpoint de
+  infra externa leva `@Public()` (`infrastructure/runtime`). O dev do app-api carrega o `.env`
+  (`node --env-file-if-exists=.env`). O e2e de exemplo entra com a sessão da factory no cookie. `backend/layers`
+  conhece `infra/auth/` e as bibliotecas de cálculo puro do domínio, e `backend/boundaries` ganha o grep delas. O
+  `.nullable()` sai com `null` no `type` ou no `anyOf`. A WatchedList de identidade estrutural entra no critério e na
+  verificação, e o VO de endereço público devolve uma sugestão no formato válido: a disponibilidade é do caso de uso.
+  `backend/access-scope` aponta o mecanismo padrão de autenticação para `defaults/stack`.
+- **Frontend.** O endereço público `/<slug>` é exceção ao "id, não slug" de `frontend/routing`. O formato do controle
+  nativo de data e hora vem do `LANG` do processo do browser, nos dois Chromium do Playwright, e não muda com o canal
+  (corrige a v1.3.0). `FieldError` no lugar de `Field.Error`. No `DESIGN.md`, "só claro" pede ADR.
+- **Skills e agentes.** O revisor de experiência e o teste do consumidor no navegador dependem do critério `Tela:`
+  também na abertura do /accept e na descrição dos agentes. O /build pode editar `areas`, o /diagnose grava `metrics`
+  no `done`, e o portão de conhecimento aceita o cabeçalho `SOURCE OF TRUTH` como destino. A `humanizer` não
+  acrescenta fato nos exemplos, mantém o contraste cujas duas metades informam, tira o embrulho de chat e o jargão
+  interno num só aparecimento e trata como prosa o texto de interface dentro do código. A SOT keyword volta a incluir
+  as palavras do tema. As skills e regras da v1.3 foram podadas.
+
+### Migrar de v1.3.0
+
+1. `pnpm add -D github:otonydesideri/metri#v1.3.1`.
+2. Comentários de código em inglês, a começar pelo cabeçalho `SOURCE OF TRUTH` (rótulos e texto).
+3. `@metri/ui`: nos arquivos de `src/components/ui/`, `import { cn } from "cn"` passa a
+   `import { cn } from '@metri/ui/lib/utils'`; o `globals.css` ganha `@import "tw-animate-css"` depois do
+   `@import "tailwindcss"`, com o `tw-animate-css` nas dependências do `@metri/ui`.
+4. app-api: o `dev` passa a `tsdown --watch --on-success "node --env-file-if-exists=.env dist/main.mjs"`; com guard de
+   sessão, ele vem no `APP_GUARD` depois do throttler, e o endpoint de health ganha `@Public()`.
+5. Controle nativo de data ou hora julgado num critério `Tela:`: o `playwright.config.ts` passa o `LANG` em
+   `use.launchOptions.env`, no lugar do `channel: 'chromium'`.
+6. `pnpm verify` verde e `pnpm docs-lint` sem aviso.
+
+### Migrar de v1.2.1
+
+Os passos de "Migrar de v1.2.1" da v1.3.0, com `#v1.3.1` no passo 1 e as correções abaixo; depois, os passos 2 a 5 de
+"Migrar de v1.3.0".
+
+- Passo 1: o `metri init` só acrescenta a seção que falta no `AGENTS.md`. As linhas "Find before you create" e a do
+  caminho linear passam ao texto de `node_modules/metri/cli/templates/AGENTS.md`. Regra do projeto com o id de uma
+  regra global nova (`general/date-time`) sai de `.metri/rules/`: com ela, o `rules-for` falha. O que ela tinha de
+  próprio vai para o `.metri/ARCHITECTURE.md` ou para um ADR, e depois roda `pnpm rules-index`.
+- Passo 2: o cabeçalho antigo é também o comentário do topo com a linha `SOT:`. Ele sai de todo arquivo que
+  `grep -rlE '^\s*(//|/?\*+|#)\s*SOT( keywords)?:' apps packages scripts` lista, inclusive spec, barrel e apoio de
+  teste, que ficam sem cabeçalho.
+- Passo 4: o `playwright.config.ts` tira a porta de `E2E_PORT` e sobe cada `webServer` com
+  `reuseExistingServer: false` (`node_modules/metri/architecture/frontend/testing.md`, "E2e de critério de UI").
+- Passo 5: os imports `#` dentro dos arquivos movidos passam ao nome do pacote (`#shadcn/button` →
+  `@metri/ui/components/ui/button`).
+- Passo 7: `test-results/` e `playwright-report/` entram no `.gitignore` de todo projeto com e2e, com ou sem banco.
+- Passo 8: além do `pnpm verify` verde, `pnpm docs-lint` sem aviso (id de ticket em regra do projeto, `PP-n` e
+  `GAP-n` fechado no código): o `verify` não mostra os avisos.
+
 ## v1.3.0 (2026-09-29)
 
 Consolidação do piloto 2: a slice construída fica registrada pelos donos no código e pelo caminho linear, só o
