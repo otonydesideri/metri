@@ -1,7 +1,10 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { emptyProject, REPO, removeCopies, run, write } from './lib/testing.ts';
+import { parse } from 'yaml';
+import { projectFiles } from './lib/layout.ts';
+import { emptyProject, fakePnpm, REPO, removeCopies, run, write } from './lib/testing.ts';
 
 afterAll(removeCopies);
 
@@ -10,8 +13,24 @@ const SKILLS = readdirSync(join(REPO, 'skills'), { withFileTypes: true })
   .map((entry) => entry.name);
 const AGENTS = readdirSync(join(REPO, 'agents')).filter((name) => name.endsWith('.md'));
 
+const STARTER = join(REPO, 'starter');
+const STARTER_FILES = projectFiles(STARTER).map((path) => path.slice(STARTER.length + 1));
+const CHANGE_LINE = /^(criado|atualizado|removido):/;
+
+// Without the starter: its copy runs pnpm install (initWithStarter fakes it).
 function init(dir: string): { status: number | null; lines: string[] } {
-  return run('init', ['--root', dir]);
+  return run('init', ['--root', dir, '--no-starter']);
+}
+
+// A git repository (api:drift compares through git) with the pnpm fake on the PATH.
+function newRepository(): { dir: string; pnpm: ReturnType<typeof fakePnpm> } {
+  const dir = emptyProject();
+  spawnSync('git', ['init', '-q'], { cwd: dir });
+  return { dir, pnpm: fakePnpm() };
+}
+
+function initWithStarter(dir: string, pnpm: ReturnType<typeof fakePnpm>): { status: number | null; lines: string[] } {
+  return run('init', ['--root', dir], pnpm.env);
 }
 
 describe('init', { timeout: 60_000 }, () => {
@@ -44,7 +63,7 @@ describe('init', { timeout: 60_000 }, () => {
     init(dir);
     const again = init(dir);
     expect(again.status).toBe(0);
-    expect(again.lines.filter((line) => /^(criado|atualizado|removido):/.test(line))).toEqual([]);
+    expect(again.lines.filter((line) => CHANGE_LINE.test(line))).toEqual([]);
   });
 
   it('projeto existente: marca o mapeamento pendente, mescla AGENTS.md e passa o CLAUDE.md para ele', () => {
@@ -74,6 +93,67 @@ describe('init', { timeout: 60_000 }, () => {
     expect(agents.match(/Use a VPN/g)).toHaveLength(1);
     expect(agents).toContain('## How to work here');
     expect(readFileSync(join(dir, 'CLAUDE.md'), 'utf8')).toBe('@AGENTS.md\n');
+  });
+
+  it('projeto novo: copia o starter com o nome do projeto, roda pnpm install e termina com verify', () => {
+    const { dir, pnpm } = newRepository();
+    const name = basename(dir).toLowerCase();
+    const { status, lines } = initWithStarter(dir, pnpm);
+    expect(status).toBe(0);
+    for (const path of STARTER_FILES) {
+      expect(existsSync(join(dir, path)), path).toBe(true);
+      expect(readFileSync(join(dir, path), 'utf8'), path).not.toContain('__PROJECT__');
+    }
+    expect(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))).toMatchObject({
+      name,
+      scripts: { 'db:up': 'bash scripts/db-up.sh', sot: 'metri sot' },
+    });
+    expect(readFileSync(join(dir, 'apps/app-web/index.html'), 'utf8')).toContain(`<title>${name}</title>`);
+    expect(readFileSync(join(dir, 'scripts/db-docker.sh'), 'utf8')).toContain(`CONTAINER=${name}-postgres`);
+    expect(readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8')).not.toContain('mapeamento: pendente');
+    expect(pnpm.calls()[0]).toBe('install');
+    expect(lines).toContain('ok sot');
+    expect(lines).toContain('ok api:drift');
+  });
+
+  it('o starter nunca sobrescreve arquivo que já existe; package.json e pnpm-workspace.yaml ganham só o que falta', () => {
+    const { dir, pnpm } = newRepository();
+    write(dir, 'package.json', JSON.stringify({ name: '@acme/minha-loja', scripts: { dev: 'x' }, devDependencies: { metri: 'link:../metri' } }));
+    write(dir, 'pnpm-workspace.yaml', 'allowBuilds:\n  esbuild: false\n');
+    write(dir, 'biome.json', '{}\n');
+    write(dir, 'scripts/db-up.sh', 'echo local\n');
+    const { status, lines } = initWithStarter(dir, pnpm);
+    expect(status).toBe(0);
+    expect(readFileSync(join(dir, 'biome.json'), 'utf8')).toBe('{}\n');
+    expect(readFileSync(join(dir, 'scripts/db-up.sh'), 'utf8')).toBe('echo local\n');
+    expect(lines).toContain('mantido: biome.json já existe');
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+    expect(pkg).toMatchObject({ name: '@acme/minha-loja', scripts: { dev: 'x', build: 'turbo run build' } });
+    expect(pkg.devDependencies).toMatchObject({ metri: 'link:../metri', turbo: expect.any(String) });
+    const workspace = parse(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8'));
+    expect(workspace.packages).toEqual(['apps/*', 'packages/*']);
+    expect(workspace.allowBuilds).toMatchObject({ esbuild: false, prisma: true });
+    expect(readFileSync(join(dir, 'apps/app-api/src/openapi.ts'), 'utf8')).toContain("setTitle('minha-loja API')");
+  });
+
+  it('starter: rodar de novo não muda nada nem reinstala', () => {
+    const { dir, pnpm } = newRepository();
+    expect(initWithStarter(dir, pnpm).status).toBe(0);
+    const again = initWithStarter(dir, pnpm);
+    expect(again.status).toBe(0);
+    expect(again.lines.filter((line) => CHANGE_LINE.test(line) || line.startsWith('mantido:'))).toEqual([]);
+    expect(pnpm.calls().filter((call) => call === 'install')).toHaveLength(1);
+  });
+
+  it('--no-starter e projeto existente: sem starter', () => {
+    const skipped = emptyProject();
+    expect(init(skipped).status).toBe(0);
+    expect(existsSync(join(skipped, 'apps'))).toBe(false);
+    const { dir, pnpm } = newRepository();
+    write(dir, 'src/main.ts', 'export {};\n');
+    expect(initWithStarter(dir, pnpm).status).toBe(0);
+    expect(existsSync(join(dir, 'apps'))).toBe(false);
+    expect(pnpm.calls()).not.toContain('install');
   });
 
   it('link para skill que o pacote não tem mais sai', () => {

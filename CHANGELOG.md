@@ -4,6 +4,13 @@
 
 ### O que muda
 
+- **Starter.** Num projeto novo (sem código em `apps/`, `packages/` ou `src/`), o `metri init` copia `starter/`, o
+  código da fundação extraído do piloto 2: a raiz do monorepo, com o Biome de referência, os checks de fronteiras,
+  de acesso e de data e o `db:up`; o app-api (NestJS sobre Fastify, env, erros, rate limit, request id, log, guard de
+  acesso fail-closed, OpenAPI 3.1, Prisma e e2e com banco por arquivo); o app-web (Vite, React, router, React Query,
+  Orval, Playwright e o shell do app); e `packages/core`, `db` e `ui`. `__PROJECT__` vira o nome do projeto, o
+  `pnpm install` roda e o `verify` fecha verde. Arquivo que já existe fica como está; o `package.json` e o
+  `pnpm-workspace.yaml` ganham só as chaves que faltam. `--no-starter` pula a cópia.
 - **Kit de UI.** Só `packages/ui/src/components/ui/` é código de fornecedor, sem cabeçalho e sem a formatação e o
   preset do Biome. O hook ou bloco que a CLI do shadcn grava fora dali é código do projeto: o `metri sot` pede o
   cabeçalho dele. O Biome de referência barra o pacote npm `cn` com o `noRestrictedImports`, também em

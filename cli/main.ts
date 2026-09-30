@@ -4,8 +4,8 @@ const HELP = `metri: a CLI do método Slices com Guardrails.
 Uso: metri <comando> [opções]   (metri <comando> --help explica cada um)
 
 Comandos:
-  init          prepara o projeto: AGENTS.md, CLAUDE.md, .metri/ARCHITECTURE.md, links de skills e agents,
-                .gitignore e scripts do package.json; termina rodando verify
+  init          prepara o projeto: num projeto novo, o starter; AGENTS.md, CLAUDE.md, .metri/ARCHITECTURE.md,
+                links de skills e agents, .gitignore e scripts do package.json; termina rodando verify
   verify        roda os checks e soma o resultado
   rules-for     lista as regras de arquitetura de caminhos ou de um ticket
   rules-index   gera os INDEX.md das regras (--check confere)

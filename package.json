@@ -13,6 +13,7 @@
     "skills/",
     "agents/",
     "cli/",
+    "starter/",
     "!cli/**/*.test.ts",
     "!cli/__fixtures__/",
     "!cli/lib/testing.ts",

@@ -1,6 +1,6 @@
 // Support for the CLI tests: runs a command through the bin and builds copies of the project fixture and of the source.
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,8 +13,12 @@ const BIN = join(CLI, 'metri.mjs');
 
 const copies: string[] = [];
 
-export function run(command: string, args: string[]): { status: number | null; lines: string[] } {
-  const result = spawnSync(process.execPath, [BIN, command, ...args], { cwd: REPO, encoding: 'utf8' });
+export function run(
+  command: string,
+  args: string[],
+  env: NodeJS.ProcessEnv = process.env,
+): { status: number | null; lines: string[] } {
+  const result = spawnSync(process.execPath, [BIN, command, ...args], { cwd: REPO, encoding: 'utf8', env });
   return { status: result.status, lines: `${result.stdout}${result.stderr}`.split('\n').filter(Boolean) };
 }
 
@@ -45,6 +49,19 @@ export function copySource(): string {
   cpSync(REPO, dir, { recursive: true, filter: (source) => !isSkipped(source) });
   copies.push(dir);
   return dir;
+}
+
+// A PATH whose first entry is a fake pnpm that logs its arguments to <dir>/pnpm.log and exits 0: init and verify
+// run without network, and the test reads what they asked pnpm to do.
+export function fakePnpm(): { env: NodeJS.ProcessEnv; calls: () => string[] } {
+  const dir = mkdtempSync(join(tmpdir(), 'metri-pnpm-'));
+  copies.push(dir);
+  const log = join(dir, 'pnpm.log');
+  writeFileSync(join(dir, 'pnpm'), `#!/bin/sh\necho "$*" >> "${log}"\n`, { mode: 0o755 });
+  return {
+    env: { ...process.env, PATH: `${dir}:${process.env.PATH}` },
+    calls: () => (existsSync(log) ? readFileSync(log, 'utf8').split('\n').filter(Boolean) : []),
+  };
 }
 
 export function write(dir: string, path: string, content: string): void {

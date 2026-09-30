@@ -1,18 +1,24 @@
 // init: prepares the project for the method, mechanically and idempotently. --help has the details.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
+import { parseDocument } from 'yaml';
 import { BIN, PACKAGE_NAME, PACKAGE_ROOT, PROJECT_INDEX, projectFiles, takeOption } from './lib/layout.ts';
 import { linkTargetOf, packageLinks, staleLinks } from './lib/links.ts';
 
 const HELP = `init: prepara o projeto para o método. Mecânico e idempotente: rodar de novo só completa o que falta.
 
-Uso: metri init [--root <dir>]
+Uso: metri init [--root <dir>] [--no-starter]
 
 Pré-requisito: o metri instalado no projeto, em node_modules/metri (pnpm add -D link:<caminho> ou
 github:<dono>/<repo>#<tag>).
 
 Cria o que falta:
+  - num projeto novo (sem código em apps/, packages/ ou src/), o starter: o código inicial da fundação, copiado
+    de starter/ com __PROJECT__ trocado pelo nome do projeto (o name do package.json ou, sem ele, o nome do
+    diretório). Arquivo que já existe fica como está; o package.json e o pnpm-workspace.yaml ganham só as chaves
+    que não têm. Depois da cópia, roda pnpm install. --no-starter pula a cópia; num projeto existente, ela não
+    acontece;
   - AGENTS.md e CLAUDE.md, de cli/templates/. Um AGENTS.md que já existe ganha as seções do template que não
     tem; um CLAUDE.md que já existe passa o conteúdo para o fim do AGENTS.md e fica só com "@AGENTS.md";
   - .metri/ARCHITECTURE.md, de cli/templates/; com código em apps/, packages/ ou src/, ganha a linha
@@ -52,16 +58,20 @@ const GITIGNORE = [
 ].join('\n');
 const CODE_DIRS = ['apps', 'packages', 'src'];
 const PENDING_MAPPING = 'mapeamento: pendente';
+const STARTER = join(PACKAGE_ROOT, 'starter');
+const PROJECT_PLACEHOLDER = /__PROJECT__/g;
 
 const args = process.argv.slice(2);
 if (args.includes('--help') || args.includes('-h')) {
   console.log(HELP);
   process.exit(0);
 }
+const skipsStarter = args.includes('--no-starter');
 const root = resolve(takeOption(args, '--root') ?? '.');
 process.chdir(root);
 
 const installed = join('node_modules', PACKAGE_NAME);
+const hadCode = hasCode();
 if (!existsSync(installed) || realpathSync(installed) !== realpathSync(PACKAGE_ROOT)) {
   console.log(`erro: o metri não está em ${installed}; instale antes (pnpm add -D link:<caminho> ou github:<dono>/<repo>#<tag>)`);
   process.exit(1);
@@ -123,7 +133,85 @@ function architecture(): void {
     return;
   }
   const content = template('ARCHITECTURE.md');
-  write(PROJECT_INDEX, hasCode() ? content.replace(/^(# .+\n)/, `$1\n${PENDING_MAPPING}\n`) : content);
+  write(PROJECT_INDEX, hadCode ? content.replace(/^(# .+\n)/, `$1\n${PENDING_MAPPING}\n`) : content);
+}
+
+// The project name for __PROJECT__: the package.json name without its scope, or the directory name, as a slug
+// that also works as a database and a container name.
+function projectName(): string {
+  const pkgName = existsSync('package.json') ? JSON.parse(readFileSync('package.json', 'utf8')).name : undefined;
+  const raw = typeof pkgName === 'string' && pkgName.trim() !== '' ? pkgName : basename(root);
+  const slug = raw
+    .replace(/^@[^/]+\//, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug === '' ? 'app' : slug;
+}
+
+// Adds to `target` the keys of `source` it lacks, one level into objects; the existing value always wins.
+function mergeMissing(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+  const merged = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    const current = merged[key];
+    if (current === undefined) {
+      merged[key] = value;
+    } else if (isPlainObject(current) && isPlainObject(value)) {
+      merged[key] = { ...value, ...current };
+    }
+  }
+  return merged;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function mergePackageJson(content: string): void {
+  const current = JSON.parse(readFileSync('package.json', 'utf8'));
+  write('package.json', `${JSON.stringify(mergeMissing(current, JSON.parse(content)), null, 2)}\n`);
+}
+
+function mergeWorkspace(content: string): void {
+  const document = parseDocument(readFileSync('pnpm-workspace.yaml', 'utf8'));
+  const current = (document.toJS() ?? {}) as Record<string, unknown>;
+  for (const [key, value] of Object.entries(mergeMissing(current, parseDocument(content).toJS()))) {
+    document.set(key, value);
+  }
+  write('pnpm-workspace.yaml', document.toString());
+}
+
+// Copies starter/ into a new project; returns whether it wrote anything.
+function starter(): boolean {
+  if (skipsStarter || hadCode || !existsSync(STARTER)) {
+    return false;
+  }
+  const name = projectName();
+  let hasWritten = false;
+  for (const source of projectFiles(STARTER)) {
+    const path = relative(STARTER, source);
+    const content = readFileSync(source, 'utf8').replace(PROJECT_PLACEHOLDER, name);
+    const before = existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+    if (path === 'package.json' && before !== undefined) {
+      mergePackageJson(content);
+    } else if (path === 'pnpm-workspace.yaml' && before !== undefined) {
+      mergeWorkspace(content);
+    } else if (before === undefined) {
+      write(path, content);
+    } else {
+      console.log(`mantido: ${path} já existe`);
+    }
+    hasWritten ||= !existsSync(path) || readFileSync(path, 'utf8') !== before;
+  }
+  return hasWritten;
+}
+
+function install(): void {
+  const installed = spawnSync('pnpm', ['install'], { stdio: 'inherit' });
+  if (installed.status !== 0) {
+    console.log('erro: o pnpm install falhou; corrija e rode metri init de novo');
+    process.exit(installed.status ?? 1);
+  }
 }
 
 function links(): void {
@@ -173,7 +261,11 @@ agentFiles();
 architecture();
 links();
 gitignore();
+const hasCopiedStarter = starter();
 packageScripts();
+if (hasCopiedStarter) {
+  install();
+}
 
 const verify = spawnSync(process.execPath, [BIN, 'verify', '--root', root], { stdio: 'inherit' });
 if (verify.status === 0) {
