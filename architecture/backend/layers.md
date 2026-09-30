@@ -38,7 +38,7 @@ src/
 
 `domain/` e `infra/` são as únicas pastas na raiz de `src/`; o resto é `main.ts` e `app.module.ts`. Módulo é pasta dentro de cada camada (`use-cases/<módulo>/`, `controllers/<módulo>/`, `dtos/<módulo>/`): um módulo novo não cria pasta própria na raiz de `src/` com camadas dentro, só ganha a sua pasta nas camadas que usa. As fronteiras que importam são as de camada (`backend/boundaries.md`); a pasta por módulo existe para navegação, não para enforcement. Nome de módulo é conceito do negócio, nunca subdivisão técnica (`backend/modules.md`).
 
-Layer-first, e não module-first, porque a fronteira que o projeto quer proteger é a de camada: domínio que não conhece infraestrutura. Com as camadas no primeiro nível, essa fronteira é visível na árvore de pastas e verificável por um `grep` de caminho (`backend/boundaries.md`, "Verificação"); com módulos no primeiro nível, ela vira convenção interna repetida em cada módulo.
+Layer-first, e não module-first, porque a fronteira que o projeto quer proteger é a de camada: domínio que não conhece infraestrutura. Com as camadas no primeiro nível, essa fronteira é visível na árvore de pastas e verificável por um `grep` de caminho (o check `boundaries`, `backend/boundaries.md`); com módulos no primeiro nível, ela vira convenção interna repetida em cada módulo.
 
 O que cada camada pode conhecer, em resumo (regras completas de import e exceções em `backend/boundaries.md`):
 
@@ -116,7 +116,7 @@ flowchart TD
 | Fila em memória | `test/queues/<fluxo>.in-memory-queue.impl.ts` | `backend/async-jobs.md` |
 | Dublê de transação | `test/transactions/<fluxo>.in-memory-transaction.impl.ts` | `backend/transactions.md` |
 | Primitivo de domínio compartilhado | `packages/core/src/<área>/` | instruções de projeto de `packages/core` |
-| Schema, migrations, client de banco | `packages/db/src/postgres/<banco>/` | instruções de projeto de `packages/db` |
+| Schema e migrations; client de banco gerado | `packages/db/prisma/` (`schema.prisma`, `models/`, `migrations/`); `packages/db/src/generated/prisma/` | `backend/persistence.md` |
 
 Paths de `src/` e `test/` são relativos ao app backend (`apps/app-api/`).
 

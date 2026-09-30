@@ -235,7 +235,7 @@ Ferramenta que só aparece em exemplo, ou cuja decisão tem outro owner, não ga
 
 Quando a verificação é comando: **Obrigatório.** O resultado esperado é declarado junto; comando sem resultado esperado não é verificação completa.
 
-Quando a regra é checável mecanicamente: **Padrão.** Verificação por comando executável, como em `backend/boundaries.md`.
+Quando a regra é checável mecanicamente: **Padrão.** Verificação por um check executável, com `(check: <id>)` no item e o id em `enforced_by`, como em `backend/boundaries.md`.
 
 Quando a regra não é checável mecanicamente: **Padrão.** Verificação por checklist de perguntas de sim/não.
 
@@ -349,7 +349,7 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 ### Referências
 
 - `architecture/INDEX.md`: autoridade e precedência da Source, navegação, decisões transversais e índice.
-- `backend/boundaries.md`: verificação por comando executável.
+- `backend/boundaries.md`: verificação por check executável.
 - `infrastructure/storage.md`: implementação de referência declarada.
 - `docs/adr/`: casa dos ADRs do projeto.
 - `node_modules/metri/skills/look-across/ACTIVATION.md`: ativação num projeto e decisões delegadas a ele.

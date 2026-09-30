@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.4.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.4.1.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -47,11 +47,11 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.4.0                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.4.1                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
-O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, instalado pelo `pnpm install`. Termina com `metri verify` verde; o `design-tokens` fica pendente até o `/shape` escrever o `docs/DESIGN.md`. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
+O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, instalado pelo `pnpm install`. Termina com `metri verify` verde, com o `design-tokens` pendente. Quando o `/shape` escreve um `docs/DESIGN.md` com a marca do projeto, o `design-tokens` passa a falhar até o ticket de design system, o primeiro da slice de fundação. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
 
 A slice de fundação fica com o que o starter não tem como saber. Com banco de dados, o agente mostra o que já roda na máquina e pergunta se o projeto usa esse Postgres ou sobe um container próprio; daí em diante, `pnpm db:up` prepara o banco e o `.env`, e no caminho Docker `pnpm db:docker:up` sobe o container e `pnpm db:docker:down` o remove (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"). Com interface, um ticket leva os tokens do `DESIGN.md` para o tema e ajusta o shell do starter.
 

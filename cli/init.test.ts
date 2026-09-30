@@ -110,7 +110,9 @@ describe('init', { timeout: 60_000 }, () => {
     });
     expect(readFileSync(join(dir, 'apps/app-web/index.html'), 'utf8')).toContain(`<title>${name}</title>`);
     expect(readFileSync(join(dir, 'scripts/db-docker.sh'), 'utf8')).toContain(`CONTAINER=${name}-postgres`);
-    expect(readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8')).not.toContain('mapeamento: pendente');
+    const architecture = readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8');
+    expect(architecture).not.toContain('mapeamento: pendente');
+    expect(architecture).toContain('## Caminho linear\n\n1. `apps/app-api/src/main.ts:bootstrap`');
     expect(pnpm.calls()[0]).toBe('install');
     expect(lines).toContain('ok sot');
     expect(lines).toContain('ok api:drift');
@@ -121,12 +123,17 @@ describe('init', { timeout: 60_000 }, () => {
     write(dir, 'package.json', JSON.stringify({ name: '@acme/minha-loja', scripts: { dev: 'x' }, devDependencies: { metri: 'link:../metri' } }));
     write(dir, 'pnpm-workspace.yaml', 'allowBuilds:\n  esbuild: false\n');
     write(dir, 'biome.json', '{}\n');
+    write(dir, '.gitignore', 'node_modules\n.env\n.env.*\n');
     write(dir, 'scripts/db-up.sh', 'echo local\n');
     const { status, lines } = initWithStarter(dir, pnpm);
     expect(status).toBe(0);
     expect(readFileSync(join(dir, 'biome.json'), 'utf8')).toBe('{}\n');
     expect(readFileSync(join(dir, 'scripts/db-up.sh'), 'utf8')).toBe('echo local\n');
     expect(lines).toContain('mantido: biome.json já existe');
+    const gitignore = readFileSync(join(dir, '.gitignore'), 'utf8');
+    expect(gitignore.startsWith('node_modules\n.env\n.env.*\n')).toBe(true);
+    expect(gitignore).toContain('!.env.test\n');
+    expect(gitignore).toContain('packages/db/**/generated/\n');
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
     expect(pkg).toMatchObject({ name: '@acme/minha-loja', scripts: { dev: 'x', build: 'turbo run build' } });
     expect(pkg.devDependencies).toMatchObject({ metri: 'link:../metri', turbo: expect.any(String) });

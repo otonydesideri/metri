@@ -3,7 +3,7 @@ import { Button } from '@metri/ui/components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 import { Suspense } from 'react';
 import { Link, Outlet } from 'react-router';
-import { AppSplash } from '@/shared/components/app-splash/app-splash';
+import { AppSplash } from '@/shared/components/app-splash';
 import { APP_NAME } from '@/shared/constants/app.constant';
 
 /** SOURCE OF TRUTH: AppLayout.

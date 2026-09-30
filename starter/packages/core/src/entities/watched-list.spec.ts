@@ -64,6 +64,26 @@ describe('WatchedList', () => {
 		expect(list.getRemovedItems()).toEqual([]);
 	});
 
+	it('adicionar, remover e readicionar um item novo → continua novo', () => {
+		const list = new LetterList(['a']);
+
+		list.add('b');
+		list.remove('b');
+		list.add('b');
+
+		expect(list.getItems()).toEqual(['a', 'b']);
+		expect(list.getNewItems()).toEqual(['b']);
+	});
+
+	it('não muta o array recebido', () => {
+		const initialItems = ['a'];
+		const list = new LetterList(initialItems);
+
+		list.add('b');
+
+		expect(initialItems).toEqual(['a']);
+	});
+
 	it('update() recalcula o delta contra o conjunto final completo', () => {
 		const list = new LetterList(['a', 'b']);
 

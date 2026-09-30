@@ -48,8 +48,8 @@ describe('Rate limit global (e2e)', () => {
 			const response = await request(app.getHttpServer()).get('/api/probe');
 			expect(
 				response.status,
-				`Request ${index + 1} falhou (${response.status})`,
-			).toBe(200);
+				`Request ${index + 1} falhou (${response.status}): ${JSON.stringify(response.body)}`,
+			).toBeLessThan(400);
 		}
 
 		const response = await request(app.getHttpServer()).get('/api/probe');

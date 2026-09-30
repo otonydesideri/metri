@@ -14,7 +14,7 @@
 		"test": "turbo run test --",
 		"verify": "metri verify",
 		"api:generate": "pnpm --filter app-api api:generate && pnpm --filter app-web api:generate",
-		"api:drift": "pnpm --silent api:generate && git status --porcelain -- apps/app-api/openapi.json apps/app-web/src/api | (! grep .)",
+		"api:drift": "bash scripts/check-api-drift.sh",
 		"db:up": "bash scripts/db-up.sh",
 		"db:docker:up": "bash scripts/db-docker.sh up",
 		"db:docker:down": "bash scripts/db-docker.sh down"

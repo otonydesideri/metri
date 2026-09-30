@@ -83,7 +83,7 @@ Schema Zod vive em dois lugares: `infra/http/dtos/<módulo>/` (formato HTTP e co
 
 ## Produção nunca importa `test/`
 
-Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dublês de `test/` à vontade; arquivo de produção, nunca. Atenção ao modo como essa violação falha: `check-types` e a IDE usam o `tsconfig.json` largo (que cobre `src/` e `test/`) e aceitam o import sem reclamar; o erro (`TS6059`) só aparece no `build`, que usa `tsconfig.build.json` escopado a `src/`.
+Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dublês de `test/` à vontade; arquivo de produção, nunca. Atenção ao modo como essa violação falha: o `typecheck` e a IDE usam o `tsconfig.json`, que cobre `src/` e `test/`, e o `tsdown` empacota o que o `main.ts` alcança, então o import passa calado pelos dois. Quem o barra é o check `boundaries`.
 
 ## Verificação
 

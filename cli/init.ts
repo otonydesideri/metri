@@ -17,7 +17,8 @@ Cria o que falta:
   - num projeto novo (sem código em apps/, packages/ ou src/), o starter: o código inicial da fundação, copiado
     de starter/ com __PROJECT__ trocado pelo nome do projeto (o name do package.json ou, sem ele, o nome do
     diretório). Arquivo que já existe fica como está; o package.json e o pnpm-workspace.yaml ganham só as chaves
-    que não têm. Depois da cópia, roda pnpm install. --no-starter pula a cópia; num projeto existente, ela não
+    que não têm, e o .gitignore, as linhas do .gitignore do init que não tem. O "Caminho linear" vazio do
+    .metri/ARCHITECTURE.md ganha os donos do starter. Depois da cópia, roda pnpm install. --no-starter pula a cópia; num projeto existente, ela não
     acontece;
   - AGENTS.md e CLAUDE.md, de cli/templates/. Um AGENTS.md que já existe ganha as seções do template que não
     tem; um CLAUDE.md que já existe passa o conteúdo para o fim do AGENTS.md e fica só com "@AGENTS.md";
@@ -243,6 +244,27 @@ function gitignore(): void {
   }
 }
 
+// The starter depends on these lines (the versioned .env.test, the generated client out of Biome): an existing
+// .gitignore gains the ones it lacks, after its own, so a negation such as !.env.test wins.
+function mergeGitignore(): void {
+  const current = readFileSync('.gitignore', 'utf8');
+  const lines = current.split('\n').map((line) => line.trim());
+  const missing = GITIGNORE.split('\n').filter((line) => line !== '' && !lines.includes(line));
+  if (missing.length > 0) {
+    write('.gitignore', `${current.trimEnd()}\n\n# metri starter\n${missing.join('\n')}\n`);
+  }
+}
+
+// The owners of the starter as the first steps of the linear path, which /accept extends slice by slice.
+function starterLinearPath(): void {
+  const index = readFileSync(PROJECT_INDEX, 'utf8');
+  const steps = template('STARTER-LINEAR-PATH.md').trimEnd();
+  if (!/^## Caminho linear\n\n## /m.test(index)) {
+    return;
+  }
+  write(PROJECT_INDEX, index.replace(/^## Caminho linear\n\n/m, `## Caminho linear\n\n${steps}\n\n`));
+}
+
 function packageScripts(): void {
   const pkg = existsSync('package.json')
     ? JSON.parse(readFileSync('package.json', 'utf8'))
@@ -264,6 +286,8 @@ gitignore();
 const hasCopiedStarter = starter();
 packageScripts();
 if (hasCopiedStarter) {
+  mergeGitignore();
+  starterLinearPath();
   install();
 }
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# The dependency-graph check: runs from the root each command of the "Verificação" of
-# node_modules/metri/architecture/backend/boundaries.md, plus the app-web grep of frontend/testing.md,
-# and any output is a violation. Run by the root `pnpm lint`, and through it by `pnpm verify`.
-# A command enters here when the rule gains one; a project ADR that allows a domain import adds it
-# to the allowlist of the third command.
+# The dependency-graph check of node_modules/metri/architecture/backend/boundaries.md ("O grafo permitido") and
+# of the production/test boundary of frontend/testing.md: one command per boundary, run from the root, and any
+# output is a violation. This script is the home of the commands: a new boundary adds its command here, and a
+# project ADR that allows a pure-calculation library in the domain adds it to the allowlist ("fora da
+# allowlist"). Run by the root `pnpm lint`, and through it by `pnpm verify`.
 
 set -u
 cd "$(dirname "$0")/.."
@@ -28,6 +28,12 @@ check "domain importando db, Zod ou nestjs-pino" \
 
 check "domain importando NestJS além de @nestjs/common" \
 	"grep -rslP \"from '@nestjs/(?!common')\" apps/app-api/src/domain --include='*.ts' --exclude='*.spec.ts'"
+
+check "enterprise importando NestJS" \
+	"grep -rslP \"from '@nestjs/\" apps/app-api/src/domain/enterprise --include='*.ts' --exclude='*.spec.ts'"
+
+check "domain importando src/infra" \
+	"grep -rslP \"from '[^']*/infra/\" apps/app-api/src/domain --include='*.ts' --exclude='*.spec.ts'"
 
 check "domain importando pacote externo fora da allowlist" \
 	"grep -rshoP \"from '(?!\\.|node:|@metri/(core|utils)(/|')|@nestjs/common'|date-fns(/|')|@date-fns/tz')[^']*'\" apps/app-api/src/domain --include='*.ts' --exclude='*.spec.ts'"

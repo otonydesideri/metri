@@ -20,7 +20,7 @@ not_covered:
   - "uso de token e tema no código → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
   - "o spec de rota e guard → frontend/testing"
-examples: [starter/apps/app-web/src/app/router/routes.tsx, starter/apps/app-web/src/app/layouts/app/app-layout.tsx, starter/apps/app-web/src/shared/components/app-splash/app-splash.tsx]
+examples: [starter/apps/app-web/src/app/router/routes.tsx, starter/apps/app-web/src/app/layouts/app/app-layout.tsx, starter/apps/app-web/src/shared/components/app-splash.tsx]
 status: active
 ---
 # Rotas do frontend

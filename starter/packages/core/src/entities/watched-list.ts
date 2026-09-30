@@ -11,8 +11,9 @@ export abstract class WatchedList<T> {
 	private removedItems: T[];
 
 	constructor(initialItems: T[] = []) {
-		this.currentItems = initialItems;
-		this.initial = initialItems;
+		// copies: `add()` pushes into the current items, and neither the initial set nor the caller's array may change
+		this.currentItems = [...initialItems];
+		this.initial = [...initialItems];
 		this.newItems = [];
 		this.removedItems = [];
 	}

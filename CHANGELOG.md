@@ -1,5 +1,52 @@
 # Changelog
 
+## v1.4.1 (2026-09-30)
+
+Revisão da v1.4.0 com foco no starter, por revisores isolados em cinco eixos: regras, segurança e operação, ponteiros
+das regras, uso real num projeto novo e skills.
+
+### O que muda
+
+- **Um `DATABASE_URL`.** O `.env` e o `.env.test` ficam na raiz, lidos pelo app-api e pelo `@metri/db`
+  (`prisma.config.ts`, sem o `dotenv`). Saem os `.env.example` e `.env.test` por pacote e o aviso de divergência do
+  `db:up` (`infrastructure/runtime`, "Banco de desenvolvimento").
+- **Domínio.** O `WatchedList` copia a lista inicial: antes, readicionar um item novo que tinha sido removido o
+  deixava fora de `getNewItems()`, e o array de quem chamou mudava. O spec da entidade separa `create()` de
+  `reconstitute()`.
+- **Acesso.** O `AccessGuard` lê só a declaração da classe, e `@Public()` é decorator de classe. O check
+  `access-boundaries` exige o marcador na linha da classe e acha o controller pelo `@Controller(`, fora dos specs:
+  um `@Public()` em comentário ou um arquivo fora do padrão de nome não passam mais.
+- **Fronteiras.** O check `boundaries` pega o `enterprise` importando NestJS e o domínio importando `src/infra` por
+  caminho relativo.
+- **Banco.** O `db:docker:up` espera o Postgres por TCP. Os scripts leem o `.env` como o Node (aspas e CR) e passam o
+  nome do banco ao SQL por variável do psql.
+- **app-web.** O proxy de dev segue o `PORT` do `.env` da raiz. A página inicial mostra loading e erro com o
+  `Skeleton` e o `Empty`, que entram no `@metri/ui`. O `AppSplash` vira arquivo solto em `shared/components/`, a
+  página não encontrada passa a `ErrorsNotFoundPage`, e o app-web depende do `sonner` na versão do `@metri/ui`.
+- **Testes.** O e2e de serialização passa a `infra/common/response-serialization/`, e o guard de Arrange do e2e de
+  rate limit segue `backend/testing`. O `pnpm api:drift` compara antes e depois de gerar, como o `metri verify`.
+- **`metri init`.** Com o starter, um `.gitignore` que já existe ganha as linhas que faltam (o `!.env.test` e o
+  client gerado), e o "Caminho linear" do `.metri/ARCHITECTURE.md` nasce com os donos do starter.
+- **Regras e skills.** O ticket de design system abre a Slice 0 e bloqueia os outros, porque o `design-tokens` falha
+  desde que o `/shape` escreve o `DESIGN.md`. No ACTIVATION, a sonda do banco não roda mais o `db:up`, o `.env.test`
+  recebe host e porta do Postgres escolhido, e o marcador do dono vai para a "Identidade do dono". `backend/layers`,
+  `backend/boundaries`, `frontend/testing`, `infrastructure/runtime`, `infrastructure/logging` e `RULE-FORMAT` deixam
+  de citar o que a v1.4.0 tirou ou mudou.
+
+### Migrar de v1.4.0
+
+1. `pnpm add -D github:otonydesideri/metri#v1.4.1`.
+2. Junte o `apps/app-api/.env` e o `packages/db/.env` num `.env` na raiz, com o `.env.example` e o `.env.test` ao
+   lado. O `dev` e o `start` do app-api passam a `--env-file-if-exists=../../.env`, o `vitest.config.e2e.ts` lê
+   `../../.env.test`, e o `prisma.config.ts`, o `db-up.sh` e o `db-docker.sh` seguem os de
+   `node_modules/metri/starter/`.
+3. No construtor do `WatchedList`, copie `initialItems` para a lista corrente e para a inicial.
+4. Guard e checks de acesso e de fronteiras como no starter: `reflector.get(IS_PUBLIC_ROUTE, context.getClass())`,
+   `Public(): ClassDecorator`, `scripts/check-access-boundaries.sh` e `scripts/check-boundaries.sh`.
+5. Com o "Caminho linear" vazio, os passos de `node_modules/metri/cli/templates/STARTER-LINEAR-PATH.md` que o
+   projeto ainda tem, com o cabeçalho `SOURCE OF TRUTH` do `bootstrap` no `main.ts`.
+6. `pnpm verify` verde.
+
 ## v1.4.0 (2026-09-30)
 
 O starter: a fundação do piloto 2 vira o código que o `metri init` entrega a um projeto novo, e as regras apontam para

@@ -12,7 +12,10 @@ CONTAINER=__PROJECT__-postgres
 PG_IMAGE=postgres:17-alpine
 
 [ -f .env ] || cp .env.example .env
-database_url="$(sed -n 's/^DATABASE_URL=//p' .env | tail -n 1 | tr -d '"')"
+# the value as Node reads it: without a trailing CR and without the quotes around it
+database_url="$(sed -n 's/^DATABASE_URL=//p' .env | tail -n 1 | tr -d '\r')"
+database_url="${database_url#[\"\']}"
+database_url="${database_url%[\"\']}"
 rest="${database_url#*://}"
 credentials="${rest%%@*}"
 user="${credentials%%:*}"
@@ -31,11 +34,11 @@ up)
 	elif ! docker run -d --name "$CONTAINER" -e POSTGRES_USER="$user" -e POSTGRES_PASSWORD="$password" \
 		-p "$port:5432" "$PG_IMAGE" >/dev/null; then
 		docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
-		echo "erro: o container $CONTAINER não subiu na porta $port; com a porta ocupada, troque-a no DATABASE_URL do .env" >&2
+		echo "erro: o container $CONTAINER não subiu na porta $port; com a porta ocupada, troque-a no DATABASE_URL do .env e do .env.test" >&2
 		exit 1
 	fi
 	for _ in $(seq 30); do
-		docker exec "$CONTAINER" pg_isready -q -U "$user" && break
+		docker exec "$CONTAINER" pg_isready -q -h 127.0.0.1 -U "$user" && break
 		sleep 1
 	done
 	bash scripts/db-up.sh

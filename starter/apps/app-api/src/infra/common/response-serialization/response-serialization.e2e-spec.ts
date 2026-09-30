@@ -8,8 +8,8 @@ import { createZodDto, ZodResponse } from 'nestjs-zod';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { AppModule } from '../../app.module';
-import { Public } from '../common/access/public.decorator';
+import { AppModule } from '../../../app.module';
+import { Public } from '../access/public.decorator';
 
 class ProbeResponseDto extends createZodDto(
 	z.object({ probe: z.object({ name: z.string() }) }),

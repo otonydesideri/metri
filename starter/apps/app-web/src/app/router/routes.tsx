@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router';
-import { AppSplash } from '@/shared/components/app-splash/app-splash';
+import { AppSplash } from '@/shared/components/app-splash';
 import { AppLayout } from '../layouts/app/app-layout';
 
 const HomeStartPage = lazy(() =>
@@ -9,9 +9,9 @@ const HomeStartPage = lazy(() =>
 	})),
 );
 
-const NotFoundPage = lazy(() =>
+const ErrorsNotFoundPage = lazy(() =>
 	import('@/pages/errors/not-found/not-found-page').then((m) => ({
-		default: m.NotFoundPage,
+		default: m.ErrorsNotFoundPage,
 	})),
 );
 
@@ -30,7 +30,7 @@ export function AppRoutes() {
 				path="*"
 				element={
 					<Suspense fallback={<AppSplash />}>
-						<NotFoundPage />
+						<ErrorsNotFoundPage />
 					</Suspense>
 				}
 			/>

@@ -15,7 +15,7 @@ applies_to:
   - "apps/app-web/vite.config.ts"
   - "apps/app-web/playwright.config.ts"
   - "apps/app-web/e2e/**"
-keywords: [pirâmide, spec, addCookies, chromium-headless-shell, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
+keywords: [pirâmide, spec, addCookies, chromium-headless-shell, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 enforced_by: [boundaries]
@@ -89,9 +89,9 @@ O `saveEvidence` de `e2e/evidence.ts` (`starter/apps/app-web/e2e/evidence.ts`) g
 
 Tela atrás de login recebe a sessão pelo banco, não pela tela de login: o teste grava a sessão como a factory do backend grava (`backend/testing.md`, "Como escrever um e2e-spec de controller") e injeta o cookie `HttpOnly` com `context.addCookies` antes do primeiro `goto`. O provedor externo de login fica fora do e2e; a tela de login ganha o próprio teste, até o redirect.
 
-Controle nativo de formulário (`<input type="time">`, `<input type="date">`) sai na evidência no formato do locale do sistema do processo do browser, não do `locale` do contexto nem do `--lang`: no Linux, o Chromium do Playwright (o `chromium-headless-shell` e o canal `chromium`) o lê de `LANG`. O teste afirma o valor (`toHaveValue('14:00')`), e o formato desse controle não é julgado pela evidência; quando ele for critério, o `playwright.config.ts` passa o locale ao browser em `use.launchOptions.env` (`{ ...process.env, LANG: 'pt_BR.UTF-8' }`).
+Controle nativo de formulário (`<input type="time">`, `<input type="date">`) sai na evidência no formato do locale do sistema do processo do browser, não do `locale` do contexto nem do `--lang`: no Linux, o Chromium do Playwright (o `chromium-headless-shell` e o canal `chromium`) o lê de `LANG`. O teste afirma o valor (`toHaveValue('14:00')`), e o `playwright.config.ts` passa o locale ao browser em `use.launchOptions.env` (`{ ...process.env, LANG: 'pt_BR.UTF-8' }`), para a evidência mostrar o controle no formato de quem usa o produto.
 
-O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção, e a raiz do app para o que prova o config dele. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`, e aqui essa fronteira não tem rede de segurança automática, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos. A verificação é o grep da última seção.
+O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção, e a raiz do app para o que prova o config dele. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`. O compilador não a guarda, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos; quem guarda é o check `boundaries` (`starter/scripts/check-boundaries.sh`).
 
 ## Convenção de nome e execução
 
@@ -103,7 +103,7 @@ O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação c
 
 A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. As rotas REST saem sob `/api`, na mesma origem: o path vem do OpenAPI. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
-Execução por `pnpm --filter app-web test:unit`, ou pela task `test:unit` do Turbo na raiz; o e2e de critério de UI, por `pnpm --filter app-web test:e2e`.
+Execução por `pnpm --filter app-web test`, ou pelo `pnpm test` da raiz; o e2e de critério de UI, por `pnpm --filter app-web test:e2e`.
 
 ## O dublê de rede é um só: MSW no nível do fetch
 
