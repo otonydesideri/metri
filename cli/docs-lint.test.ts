@@ -236,6 +236,12 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     );
   });
 
+  it('Tickets: YAML inválido é erro no ticket, sem derrubar o docs-lint', () => {
+    const { status, output } = lintChanged(inTicket('T2.1', 'type: task', 'type: [task'));
+    expect(status).toBe(1);
+    expect(output).toContain(`${TICKETS}/T2.1.md:1: frontmatter: YAML inválido`);
+  });
+
   it('Tickets: status, mode, type e sensitive dentro do permitido; draft só no UC', () => {
     expect(lintChanged(inTicket('T2.1', 'mode: hitl', 'mode: solo')).output).toContain('mode: solo fora de afk | hitl');
     expect(lintChanged(inTicket('T2.1', 'type: task', 'type: tracer')).output).toContain('type: tracer fora de pattern | task | release');

@@ -87,17 +87,16 @@ when missing or empty, the rest are written only with a value.
   name in the path. A command with a backtick, space or `·` is written as a quoted YAML string
   (`` "`pnpm test order-confirmation`" ``).
 - `metrics`: `{ rules: <n>, tokens: <n> }`, whole numbers, written at `done`: `rules` always, the count of rules
-  `pnpm rules-for --ticket <id>` lists; `tokens` only when the tool reports them. `pnpm docs-lint` checks the form.
+  `pnpm rules-for --ticket <id>` lists; `tokens` only when the tool reports them.
 - "Critérios": a criterion judged on the screen starts with `Tela:`
   (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
   `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
 - "Notas": written only when there's something to say, and only what the code, the tests and git don't show, in
-  at most 10 lines (`pnpm docs-lint` checks the cap). A decision leaves the Notas for an ADR, a rule or a code
+  at most 10 lines. A decision leaves the Notas for an ADR, a rule or a code
   header, at the knowledge gate of /accept.
 
 A ticket file is never pruned or collapsed, because the board reads it: done, it keeps its title, its frontmatter
-and its body, with `status: done`, in its own file (the "Pruning" rule of "Matrix rules" below collapses the MATRIX
-and removes the evidence folders, never a ticket file).
+and its body, with `status: done`, in its own file.
 
 ### UC block
 
@@ -268,6 +267,7 @@ slice: S2
 status: done
 mode: afk
 checks: ["`pnpm verify`", "`pnpm test forms-submit`"]
+metrics: { rules: 2 }
 ---
 
 # UC1.2 · Receber resposta
@@ -356,27 +356,13 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 
 ## Contrato de slice
 
-While the slice is a plan, and until /accept prunes it, its contract is the slice's `contract` block:
-
-```markdown
-horizon: now · blocked_by: [S<n>]
-contract:
-  responsibility: <o que a slice garante, numa frase>
-  interface: <o que os consumidores chamam>
-  invariants: <o que vale sempre>
-  consumers: [<F<n>, S<n> ou agente>]
-  planned: <o que o contrato já acomoda, mas não está construído>
-```
+While the slice is a plan, and until /accept prunes it, its contract is the slice's `contract` block, as in "Skeleton".
 
 `planned` describes what is still missing, in words: a GAP or PP id lives only in Gaps and Pattern proposals.
 
-Once built, the slice is registered in two places, and its line keeps only the symbols (`status: done · sot:
-[<símbolo>]`):
+Once built, the slice is registered in two places:
 
 - the header of each canonical owner, in the code:
   `node_modules/metri/skills/guardrail/SKILL.md`, "While writing code", step 5;
 - its steps in the linear path of `.metri/ARCHITECTURE.md`, one `arquivo:símbolo` per step:
   `node_modules/metri/skills/look-across/ACTIVATION.md`, "Record".
-
-`pnpm sot` checks that every symbol of `sot:` and every step of the linear path has its header, and that a done
-slice keeps no `contract` block.

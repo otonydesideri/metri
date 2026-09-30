@@ -62,7 +62,7 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 
 **Obrigatório.** A tela funciona em desktop e em mobile.
 
-**Obrigatório.** Cada critério `Tela:` de um ticket (o critério julgado na tela) tem screenshot em desktop e em mobile na pasta do ticket: `.metri/tickets/<id>/<n>-desktop.png` e `<n>-mobile.png`, com `<n>` a ordem do critério entre todos os do ticket. A poda da slice tira a pasta da árvore, e o git a guarda.
+**Obrigatório.** Cada critério `Tela:` de um ticket (o critério julgado na tela) tem screenshot em desktop e em mobile na pasta do ticket: `.metri/tickets/<id>/<n>-desktop.png` e `<n>-mobile.png`, com `<n>` a ordem do critério entre todos os do ticket.
 
 ## Verificação
 

@@ -697,7 +697,12 @@ function lintTickets(): void {
     for (const { line, message } of problems) {
       report(path, line, message);
     }
-    const frontmatter = frontmatterOf(source);
+    let frontmatter: Record<string, unknown> | undefined;
+    try {
+      frontmatter = frontmatterOf(source);
+    } catch {
+      continue; // YAML inválido já saiu como erro em ticketProblems.
+    }
     if (typeof frontmatter?.slice === 'string') {
       servedSlices.add(frontmatter.slice);
     }

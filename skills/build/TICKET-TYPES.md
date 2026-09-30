@@ -8,7 +8,7 @@ A T is work without a UC; what each `type` means: `node_modules/metri/skills/loo
 - It is the only ticket that writes in `.metri/rules/`, `docs/adr/`, `docs/CONTEXT.md` or `docs/DESIGN.md`.
 - Its `status` stays `in_progress` until the human reviews the rule, the example and the enforcement, shown in the three blocks of the grilling skill (call the Skill tool with "grilling"); `done` releases the tickets it blocks.
 - An update of the Source version is a `pattern` ticket made from `node_modules/metri/CHANGELOG.md`.
-- A T "Padrão de tela: <tipo>" (adapted from the `prototype` skill of mattpocock/skills, MIT): 2–3 radically different variants of the screen, in structure and not only in colour, on the same route, switched by `?variant=`, frontend only, over seed data. The human picks one at the pattern gate; the winner stays and enters "Telas canônicas" of `docs/DESIGN.md` in the one line of `node_modules/metri/skills/shape/DESIGN-FORMAT.md` (the route, what it is for, the discarded variant and the principle that decided), and the other variants are deleted in the same ticket.
+- A T "Padrão de tela: <tipo>" (adapted from the `prototype` skill of mattpocock/skills, MIT): 2–3 radically different variants of the screen, in structure and not only in colour, on the same route, switched by `?variant=`, frontend only, over seed data. The human picks one at the pattern gate; the winner stays and enters "Telas canônicas" of `docs/DESIGN.md` in the one line of `node_modules/metri/skills/shape/DESIGN-FORMAT.md`, and the other variants are deleted in the same ticket.
 
 ## task
 

@@ -18,7 +18,7 @@ status: active
 Backend:
 
 - NestJS sobre Fastify, Prisma/Postgres via `@metri/db` (backend/layers, backend/persistence, infrastructure/runtime).
-- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node dist/main.mjs"` no dev), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
+- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node --env-file-if-exists=.env dist/main.mjs"` no dev), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
 - Validação de formato HTTP e contrato de API: Zod via `nestjs-zod` (`createZodDto`, `@ZodResponse`), pipe e serializer globais; OpenAPI pelo `@nestjs/swagger`, com o `cleanupOpenApiDoc` do nestjs-zod (backend/http-api, backend/boundaries).
 - Log: `nestjs-pino` (infrastructure/logging).
 - Rate limit: `@nestjs/throttler`, guard global (infrastructure/runtime, backend/errors).
@@ -34,7 +34,7 @@ Frontend (`app-web`):
 - Dado do servidor: React Query (frontend/data-fetching).
 - Cliente HTTP: as funções geradas do OpenAPI pelo Orval (`client: 'fetch'`, schemas Zod), sobre o `fetch` (frontend/data-fetching).
 - Formulários: React Hook Form + Zod; `react-phone-number-input` e `use-mask-input` (sobre o Inputmask) (frontend/forms).
-- UI: consome `@metri/ui` (kit de componentes shadcn/ui, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
+- UI: consome `@metri/ui` (kit de componentes shadcn/ui com `tw-animate-css`, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
 - Tema: `next-themes`, o provider de tema do `@metri/ui` (frontend/theming, defaults/ui).
 - Notificação: `sonner`, com o `Toaster` do `@metri/ui` e o `toast` da lib (defaults/ui, frontend/data-fetching).
 - Estado global cliente: Zustand (frontend/state, em aberto).

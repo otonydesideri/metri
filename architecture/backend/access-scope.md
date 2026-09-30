@@ -9,7 +9,8 @@ use_when:
 keywords: [escopo do dono, dono, APP_GUARD, fail-closed, "@Public()", "@CustomerOwned()", "@CurrentCustomerId()", createParamDecorator, customer-context, identificador de dono, isolamento, prova A/B, where, SQL cru, recurso filho, fronteira de request, asset, registro de upload, não-encontrado, businessId, organizationId, tenantId, customerId]
 not_covered:
   - "a identidade concreta do dono (usuário, organização, tenant, entidade pai), a entidade que o representa e o nome do identificador (`businessId`, `organizationId`, `tenantId`), que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
-  - "autenticação e login (\"Delegações\") → project:ARCHITECTURE"
+  - "o mecanismo padrão de autenticação: sessão no servidor, cookie e logout (\"Autenticação\") → defaults/stack"
+  - "o provedor de login e o mecanismo que troca o padrão (\"Delegações\") → project:ARCHITECTURE"
   - "mascaramento de recurso de outro dono, anti-enumeração e status HTTP (\"Erros sensíveis\") → backend/errors"
   - "query de exibição, paginação, projeção e não-encontrado da leitura → backend/reading"
   - "storage → infrastructure/storage"

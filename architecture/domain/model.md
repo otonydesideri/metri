@@ -186,7 +186,7 @@ Exemplo completo: model.examples.md#money
 
 - `add()` devolve instância nova, `zero()` dá nome ao caso conhecido, e uma invariante de operação (somar moedas diferentes, por exemplo) falharia aqui dentro. Um VO que só valida e normaliza (um slug, por exemplo) é o mínimo do padrão, não o teto dele.
 
-O VO de um endereço público, que vira o primeiro segmento de URL na raiz da SPA, recusa as palavras reservadas (`general/http-surface.md`, "Superfície HTTP") e devolve na falha uma sugestão livre:
+O VO de um endereço público, que vira o primeiro segmento de URL na raiz da SPA, recusa as palavras reservadas (`general/http-surface.md`, "Superfície HTTP") e devolve na falha uma sugestão no formato válido; a disponibilidade fica com o caso de uso:
 
 Exemplo completo: model.examples.md#productslug
 

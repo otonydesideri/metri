@@ -8,13 +8,13 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
-Before showing the reports, the gate or a lesson's text, call the Skill tool with "humanizer" on their prose.
+Before showing the reports or a lesson's text, call the Skill tool with "humanizer" on their prose.
 
 Judge what no check judges, on the diff of a slice, along separate axes:
 
 - **Contract**: does the code deliver the slice contract, its UCs and its T tickets?
 - **Patterns**: does the code pass the verification items of its rules that no check covers?
-- **Experience**, when the slice has UI: what does the user live on its screens?
+- **Experience**, when the slice has a `Tela:` criterion: what does the user live on its screens?
 
 The work never judges itself: each axis is a reviewer agent that gets nothing from the builder's conversation, all run in parallel, and this skill aggregates their findings.
 
@@ -68,7 +68,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n`, repeated fixes and the 
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`: the done slice becomes `status: done · sot: [<símbolo>]` and its `contract` leaves; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`; its ticket files stay, `status: done`, each in its own file, and `pnpm exec metri prune <slice id>` takes their evidence out of the tree. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

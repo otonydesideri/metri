@@ -1,6 +1,6 @@
 ---
 name: reviewer-ux
-description: Judges the experience of a slice's screens from their screenshots, against docs/DESIGN.md, its canonical screens, the UCs and the rule frontend/experience. /accept calls it for a slice with UI, in parallel with the other reviewers.
+description: Judges the experience of a slice's screens from their screenshots, against docs/DESIGN.md, its canonical screens, the UCs and the rule frontend/experience. /accept calls it for a slice with a `Tela:` criterion, in parallel with the other reviewers.
 tools: Read, Glob
 ---
 

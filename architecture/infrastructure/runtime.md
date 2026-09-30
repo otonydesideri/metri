@@ -44,7 +44,7 @@ O mesmo `AppModule` sobe em dois lugares: no processo real, pelo `main.ts`, e no
 
 ### Composição no `AppModule`
 
-Quando o endpoint é consumido por infra externa (probe, monitor), não por usuário: **Obrigatório.** Ele leva `@SkipThrottle()` e mora num `@Module` próprio importado direto no `AppModule`.
+Quando o endpoint é consumido por infra externa (probe, monitor), não por usuário: **Obrigatório.** Ele leva `@SkipThrottle()` e, com o guard de sessão, `@Public()`, e mora num `@Module` próprio importado direto no `AppModule`.
 
 **Proibido.** Endpoint de infra externa dentro do `HttpModule`.
 
@@ -98,7 +98,7 @@ O Postgres de desenvolvimento é delegação do projeto, decidida no planejament
 
 Com Docker: **Obrigatório.** Um container por projeto, com o nome do projeto, que todos os worktrees usam; `pnpm db:down` remove o container.
 
-**Obrigatório.** Worktree ou piloto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:down`.
+**Obrigatório.** Worktree ou projeto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:down`.
 
 > **Por quê.** Container por worktree e processo esquecido disputam porta e memória com o próximo trabalho, e um servidor velho na porta responde no lugar do novo.
 
@@ -107,7 +107,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 ## Aplicação
 
 - O bootstrap de processo que a Source descreve cria o app sobre o `FastifyAdapter` e troca o logger do Nest (`infrastructure/logging.md`, "Bootstrap"), aplica o prefixo `/api` (`general/http-surface.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
-- No `AppModule`, `APP_PIPE` registra o `ZodValidationPipe` composto com `toInvalidRequestException` (`backend/errors.md`), `APP_FILTER` registra o `UnexpectedErrorFilter` (`backend/errors.md`), `APP_INTERCEPTOR` registra o `ZodSerializerInterceptor` (`backend/http-api.md`) e os interceptors de log na ordem que `infrastructure/logging.md` fixa, e `APP_GUARD` registra o throttler, de que os endpoints de infra externa saem com `@SkipThrottle()`.
+- No `AppModule`, `APP_PIPE` registra o `ZodValidationPipe` composto com `toInvalidRequestException` (`backend/errors.md`), `APP_FILTER` registra o `UnexpectedErrorFilter` (`backend/errors.md`), `APP_INTERCEPTOR` registra o `ZodSerializerInterceptor` (`backend/http-api.md`) e os interceptors de log na ordem que `infrastructure/logging.md` fixa, e `APP_GUARD` registra o throttler e, com dono, o guard de sessão depois dele (`backend/access-scope.md`, "Declaração por controller"); o endpoint de infra externa sai do throttler com `@SkipThrottle()` e do guard de sessão com `@Public()`.
 - O `PgBossService` (a fila padrão, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; é o caso da Source em que o runtime depende do shutdown gracioso: sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
 - A fronteira que resolve o escopo do dono é uma destas peças; o contrato do escopo está em `backend/access-scope.md`.
 - Os e2e montam o app pela forma de `backend/testing.md`, sem `main.ts`, repetindo o que o teste precisa do bootstrap (o prefixo `/api`; o limite de corpo, no e2e de asset de `infrastructure/storage.md`).
@@ -117,7 +117,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 
 - Pipe, interceptor, filtro e guard globais estão registrados com `APP_*` no `AppModule`, sem nenhum `useGlobal*` no `main.ts`?
 - O `main.ts` guarda só bootstrap que depende do processo?
-- Endpoint de infra externa leva `@SkipThrottle()` e mora num `@Module` próprio importado no `AppModule`, fora do `HttpModule`?
+- Endpoint de infra externa leva `@SkipThrottle()` (e `@Public()`, com o guard de sessão) e mora num `@Module` próprio importado no `AppModule`, fora do `HttpModule`?
 - Env lida por `EnvService.getOrThrow(...)`, sem `ConfigService`?
 - O client nasce só no construtor ou num `useFactory`, nunca no top-level do arquivo?
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?

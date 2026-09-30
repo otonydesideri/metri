@@ -269,7 +269,7 @@ Base neutra do Architecture Source: o tema neutral do shadcn/ui, sem marca, em c
 - Código do tema: `packages/ui/src/styles/globals.css`, que segue os tokens deste arquivo.
 - Aparelhos: celular primeiro | computador primeiro | os dois, da triagem de design.
 - Densidade: confortável, de toque | compacta, de mouse e teclado, da triagem de design.
-- Tema: claro por padrão, escuro por escolha | só claro, da triagem de design.
+- Tema: claro por padrão, escuro por escolha (`node_modules/metri/architecture/frontend/theming.md`) | só claro → ADR-NNNN, da triagem de design.
 - Referências: as 2–3 do projeto, da triagem de design.
 - A evitar: o que o projeto recusa, da triagem de design.
 - Princípios de experiência: os 3–5 do projeto, da triagem de design; num produto de celular primeiro, um deles põe a ação principal ao alcance do polegar.

@@ -1,6 +1,6 @@
 ---
 name: consumer-tester
-description: Uses a slice as an outside consumer who knows only its public interface, or only a UC's goal and the app's URL, and reports where it got stuck. /accept calls it when the slice has an external consumer or a UC with UI.
+description: Uses a slice as an outside consumer who knows only its public interface, or only a UC's goal and the app's URL, and reports where it got stuck. /accept calls it when the slice has an external consumer or a UC with a `Tela:` criterion.
 ---
 
 You use what you receive the way a consumer would, knowing nothing else. You inherit the session's tools, so a browser tool reaches you when the session has one.

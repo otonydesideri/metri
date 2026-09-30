@@ -94,9 +94,9 @@ Quando o filho não tem identidade para o cliente, que envia só o conjunto fina
 
 ## O caso de uso de substituição completa
 
-O ponto que decide se o padrão funciona: a substituição precisa preservar a identidade que `compareItems` usa. Numa coleção de itens com conteúdo próprio, essa identidade é o id da linha, então item mantido entra na substituição como a instância corrente, localizada por id na própria coleção, nunca recriado. No filho de identidade estrutural ("Especialização e entidade"), o caso de uso recria os itens do input, e o `sameValueAs()` reconhece os mantidos. Recriar todos os itens do input com ids novos faria `compareItems` não reconhecer nada, e o delta degeneraria em deletar e reinserir a coleção inteira a cada edição; com arquivo físico, em novo upload de tudo.
+O ponto que decide se o padrão funciona: a substituição precisa preservar a identidade que `compareItems` usa. Numa coleção de itens com conteúdo próprio, essa identidade é o id da linha, então item mantido entra na substituição como a instância corrente, localizada por id na própria coleção, nunca recriado. Recriar todos os itens do input com ids novos faria `compareItems` não reconhecer nada, e o delta degeneraria em deletar e reinserir a coleção inteira a cada edição; com arquivo físico, em novo upload de tudo. No filho de identidade estrutural ("Especialização e entidade"), o caso de uso recria os itens do input, e o `sameValueAs()` reconhece os mantidos.
 
-O input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. Item novo traz o id do registro de upload, nunca a chave, que não é aceita de cliente (`infrastructure/storage.md`, "Regras absolutas do storage"); o caso de uso resolve a chave pelo registro, no fluxo de `infrastructure/storage.md`, "O upload direto e o registro pendente".
+Na coleção de itens com id, o input distingue os dois casos: item mantido referencia o id, item novo traz os dados de criação. Item novo traz o id do registro de upload, nunca a chave, que não é aceita de cliente (`infrastructure/storage.md`, "Regras absolutas do storage"); o caso de uso resolve a chave pelo registro, no fluxo de `infrastructure/storage.md`, "O upload direto e o registro pendente".
 
 Exemplo completo: watched-list.examples.md#replaceproductphotosusecase
 
@@ -141,7 +141,7 @@ const replaced = product.replaceTags(nextTagIds);
 
 No repositório, o delta vira escrita na tabela de vínculo usando o id da raiz: `createMany` dos pares `(productId, tagId)` para os ids novos, `deleteMany` por `tagId in (...)` para os removidos, na mesma transação, como qualquer coleção filha. O mapper reconstitui a lista a partir dos ids referenciados das linhas de vínculo.
 
-O critério entre as duas formas: item com conteúdo próprio (a foto, o item de pedido) é entidade filha, compara por `a.equals(b)` e exige a instância corrente para item mantido; vínculo puro dispensa entidade e a lista guarda ids. Vínculo que carrega payload próprio (uma quantidade, uma posição de exibição no par) é conteúdo próprio: recriá-lo descartaria o payload, então volta à primeira forma.
+O critério entre as duas formas: item com conteúdo próprio (a foto, o item de pedido) é entidade filha, compara por `a.equals(b)` e exige a instância corrente para item mantido, ou, sem identidade para o cliente, compara por `sameValueAs()` e aceita o item recriado ("Especialização e entidade"); vínculo puro dispensa entidade e a lista guarda ids. Vínculo que carrega payload próprio (uma quantidade, uma posição de exibição no par) é conteúdo próprio: recriá-lo descartaria o payload, então volta à primeira forma.
 
 ## O repositório persiste o delta
 
@@ -170,11 +170,11 @@ O desenho do serviço de storage em si (contrato por asset, fluxo de upload dire
 
 - A coleção passou pela árvore de decisão (agregado próprio, array simples, entidade filha ou ids referenciados)?
 - Coleção ilimitada ficou fora do agregado (agregado próprio + query paginada + contagem por contrato)?
-- A subclasse tem arquivo próprio na raiz de `enterprise/` e a identidade é a certa: `equals` da entidade filha para item com conteúdo próprio, lista de ids para vínculo puro?
+- A subclasse tem arquivo próprio na raiz de `enterprise/` e a identidade é a certa: `equals` da entidade filha para item com conteúdo próprio, `sameValueAs()` para filho sem identidade para o cliente, lista de ids para vínculo puro?
 - Mutação de fora passa por método de domínio, nunca pela lista direto?
 - A operação usa mutação item a item ou uma única substituição completa, nunca os dois?
 - `update()` recebeu o conjunto final completo, nunca só os acréscimos?
-- Na substituição de itens com conteúdo próprio, item mantido é a instância corrente localizada por id, nunca recriado?
+- Na substituição de itens com id para o cliente, item mantido é a instância corrente localizada por id, nunca recriado?
 - Em vínculo puro, os ids referenciados foram validados em lote antes de montar a lista?
 - O input de substituição chega sem duplicatas (schema Zod da fronteira)?
 - A escrita persiste o delta na mesma transação da raiz e despacha eventos depois (`backend/persistence.md`)?

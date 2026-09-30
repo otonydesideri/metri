@@ -108,6 +108,8 @@ Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e cl
 
 > **Por quê.** Slug muda quando alguém renomeia, e todo link já compartilhado passa a apontar para lugar nenhum.
 
+- **Exceção.** Endereço público escolhido pelo usuário, na raiz (`/<slug>`, `general/http-surface.md`): o slug é o identificador que ele divulga, e o value object dele recusa as palavras reservadas (`domain/model.md`, "Aplicação").
+
 ## Aplicação
 
 A página no router, com o import mapeado para o default que o `lazy` espera:

@@ -166,7 +166,9 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { UniqueEntityID } from '@metri/core/entities';
 import request from 'supertest';
 import { OrderFactory } from '../../../../../test/factories/make-order.factory';
+import { SessionFactory } from '../../../../../test/factories/make-session.factory';
 import { AppModule } from '../../../../app.module';
+import { SESSION_COOKIE_NAME } from '../../../common/session/session-cookie';
 import { PersistenceModule } from '../../../persistence/persistence.module';
 import { PrismaService } from '../../../persistence/prisma/prisma.service';
 
@@ -174,11 +176,12 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
   let orderFactory: OrderFactory;
+  let sessionFactory: SessionFactory;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule, PersistenceModule],
-      providers: [OrderFactory],
+      providers: [OrderFactory, SessionFactory],
     }).compile();
 
     app = moduleRef.createNestApplication<NestFastifyApplication>(
@@ -191,6 +194,7 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
 
     prisma = moduleRef.get(PrismaService);
     orderFactory = moduleRef.get(OrderFactory);
+    sessionFactory = moduleRef.get(SessionFactory);
   });
 
   afterAll(async () => {
@@ -201,11 +205,12 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
     const customerId = new UniqueEntityID();
     const order = await orderFactory.makePrismaOrder({ customerId });
 
-    // the owner's credential has the project's shape: the helper that builds it is the
-    // project's (.metri/ARCHITECTURE.md, "Delegações")
+    // the factory stores the token's SHA-256 hash and returns the raw token (defaults/stack, "Autenticação")
+    const { token } = await sessionFactory.makePrismaSession({ customerId: customerId.toValue() });
+
     const response = await request(app.getHttpServer())
       .post(`/api/orders/${order.id.toValue()}/confirm`)
-      .set(ownerCredential(customerId.toValue()));
+      .set('Cookie', `${SESSION_COOKIE_NAME}=${token}`);
 
     expect(response.status).toBe(200);
 

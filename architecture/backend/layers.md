@@ -31,6 +31,7 @@ src/
 │   ├── persistence/             # Prisma: repositórios, mappers, implementações de query
 │   ├── services/<capacidade>/   # implementações de integração externa (e-mail, storage, ...)
 │   ├── health/                  # endpoints de infra, fora do throttler global
+│   ├── auth/                    # redirects de protocolo antes da sessão (OAuth), módulo próprio
 │   └── common/                  # env, constantes e fronteiras transversais de request
 └── main.ts
 ```
@@ -41,7 +42,7 @@ Layer-first, e não module-first, porque a fronteira que o projeto quer proteger
 
 O que cada camada pode conhecer, em resumo (regras completas de import e exceções em `backend/boundaries.md`):
 
-- `domain/enterprise`: só `@metri/core` e `@metri/utils`. Nada de NestJS, Prisma, Zod ou HTTP.
+- `domain/enterprise`: só `@metri/core`, `@metri/utils` e as bibliotecas de cálculo puro que `backend/boundaries.md` permite (`date-fns`, `@date-fns/tz`). Nada de NestJS, Prisma, Zod ou HTTP.
 - `domain/application`: o mesmo, mais o decorator `@Injectable()` de `@nestjs/common`, e nada além dele.
 - `infra/`: conhece `domain/` e as bibliotecas de infraestrutura. É o único lugar que toca Prisma e HTTP.
 
@@ -96,6 +97,7 @@ flowchart TD
 | Contrato de repositório | `src/domain/application/repositories/<agregado>-repository.contract.ts` | `backend/persistence.md` |
 | Contrato + service de integração | `src/domain/application/services/<capacidade>/` + `src/infra/services/<capacidade>/` | `infrastructure/services.md` |
 | Controller | `src/infra/http/controllers/<módulo>/<ação>.controller.ts` | `backend/http-api.md` |
+| Controller de redirect de protocolo (OAuth) | `src/infra/auth/<ação>.controller.ts`, no `auth.module.ts` | `infrastructure/runtime.md` |
 | DTO | `src/infra/http/dtos/<módulo>/<nome>.dto.ts` | `backend/http-api.md` |
 | Presenter | `src/infra/http/presenters/<agregado>.presenter.ts` | `backend/http-api.md` |
 | Repositório concreto | `src/infra/persistence/prisma/repositories/<agregado>.prisma-repository.impl.ts` | `backend/persistence.md` |

@@ -85,7 +85,7 @@ Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dubl�
 
 ## Verificação
 
-Rodar da raiz do repositório. Cada comando devolve vazio; o check de fronteiras do projeto os roda no `lint` (`node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md`, "Destination"), e saída não vazia é violação.
+Rodar da raiz do repositório. Cada comando devolve vazio; o check de fronteiras do projeto os roda no `lint` (`node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md`, "Destination").
 
 ```bash
 # domain importing db, Zod or nestjs-pino
@@ -93,6 +93,9 @@ grep -rlP "from '(@metri/db|zod|nestjs-zod|nestjs-pino)" apps/app-api/src/domain
 
 # domain importing NestJS beyond @nestjs/common
 grep -rlP "from '@nestjs/(?!common')" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
+
+# domain importing an external package outside the allowlist (date-fns, @date-fns/tz; add the ones a project ADR names)
+grep -rhoP "from '(?!\.|node:|@metri/(core|utils)(/|')|@nestjs/common'|date-fns(/|')|@date-fns/tz')[^']*'" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
 
 # domain using anything from @nestjs/common other than Injectable
 grep -rhoP "import \{[^}]*\} from '@nestjs/common'" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts" | grep -v "^import { Injectable }"
@@ -112,6 +115,6 @@ grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spe
 
 ## Em aberto
 
-- **Enforcement global das fronteiras de dependência.** Um check da Source para estas regras (regra de lint de imports restritos ou ferramenta dedicada de grafo de dependência) não tem desenho fechado; até ele existir, cada projeto roda os comandos acima no próprio check de fronteiras, e esta regra mantém o `applies_to`.
+- **Enforcement global das fronteiras de dependência.** Um check da Source para estas regras não tem desenho fechado; até ele existir, esta regra mantém o `applies_to`.
   - Regra de lint de imports restritos
   - Ferramenta dedicada de grafo de dependência

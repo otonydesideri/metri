@@ -1,6 +1,6 @@
 ---
 id: defaults/ui
-description: "o kit de UI padrão — shadcn/ui dentro do `@metri/ui`, no layout padrão do shadcn em monorepo (`components/ui`, `components/blocks`, `components/providers`, `hooks`, `lib/utils.ts`, `styles/globals.css`), com o `components.json`, os `paths` e os `exports` do pacote; como um componente entra (CLI do shadcn no pacote) e como o app o importa (import nomeado); o ajuste visual pelo token e, quando o token não resolve, no próprio arquivo; os tokens como CSS variables de tema, em claro e escuro, com os dois `@source`, a tipografia, o `cn` que conhece os níveis de texto e o espaçamento; o que é do projeto."
+description: "o kit de UI padrão — shadcn/ui dentro do `@metri/ui`, no layout de monorepo do shadcn com os arquivos da CLI numa pasta própria (`components/ui`, `components/blocks`, `components/providers`, `hooks`, `lib/utils.ts`, `styles/globals.css`), com o `components.json`, os `paths` e os `exports` do pacote; como um componente entra (CLI do shadcn no pacote, com o `cn` do kit) e como o app o importa (import nomeado); o ajuste visual pelo token e, quando o token não resolve, no próprio arquivo; os tokens como CSS variables de tema, em claro e escuro, com os dois `@source`, a tipografia, o `cn` que conhece os níveis de texto e o espaçamento; o que é do projeto."
 use_when:
   - "adicionar ou atualizar um componente do shadcn no `@metri/ui`"
   - "ajustar o visual de um componente do `@metri/ui`"
@@ -27,15 +27,15 @@ status: active
 
 ## Kit
 
-- shadcn/ui, instalado dentro do `@metri/ui` pelo setup de monorepo do shadcn, no layout padrão dele (metri:ADR-0003): `shadcn init --monorepo` no monorepo que nasce dele.
-- Monorepo que não nasceu do shadcn segue o caminho manual da documentação (https://ui.shadcn.com/docs/monorepo):
+- shadcn/ui, instalado dentro do `@metri/ui` pelo caminho manual da documentação de monorepo (https://ui.shadcn.com/docs/monorepo), no layout de "O pacote" (metri:ADR-0003), também em monorepo novo. O `shadcn init --monorepo` não serve: cria o pacote `@workspace/ui`, grava um estilo de preset no lugar do `new-york` (o estilo não muda depois do init) e põe os arquivos da CLI direto em `src/components/`.
   - `packages/ui/components.json` com o `style`, o `baseColor` e os aliases de "O pacote", e `"tailwind": { "config": "", "css": "src/styles/globals.css" }` (Tailwind v4);
   - o `app-web` depende do `@metri/ui` (`workspace:*`) e importa `@metri/ui/styles/globals.css` na entrada.
-- O `globals.css` abre com `@import "tailwindcss"` e dois `@source`, relativos a ele: um para os arquivos de `apps/` e outro para os do próprio pacote.
+- O `globals.css` abre com `@import "tailwindcss"`, `@import "tw-animate-css"` (as animações das classes que os arquivos da CLI usam, dependência do `@metri/ui`) e dois `@source`, relativos a ele: um para os arquivos de `apps/` e outro para os do próprio pacote.
 
 ```css
 /* packages/ui/src/styles/globals.css */
 @import "tailwindcss";
+@import "tw-animate-css";
 @source "../../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 ```
@@ -49,7 +49,7 @@ status: active
 
 ## O pacote
 
-O `@metri/ui` segue o layout padrão do shadcn em monorepo:
+O `@metri/ui` segue o layout de monorepo do shadcn com uma pasta a mais: os arquivos da CLI ficam em `src/components/ui/` (alias `ui`), separados dos blocos e providers que o projeto escreve, e é essa pasta que o Biome e o `metri sot` deixam de fora.
 
 | Pasta | O quê |
 | --- | --- |
@@ -87,11 +87,10 @@ O `@metri/ui` segue o layout padrão do shadcn em monorepo:
 }
 ```
 
-- Com o alias `utils` no nome do pacote, o arquivo que a CLI grava importa o `cn` do kit (`@metri/ui/lib/utils`), com os níveis de texto do tema.
-
 ## Componente novo
 
 - Entra pela CLI do shadcn (`shadcn@latest add <componente>`), rodada no `@metri/ui`, nunca copiado à mão; a CLI o grava em `src/components/ui/`.
+- No mesmo `add`, o import do `cn` passa ao do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"`, o pacote `cn` do npm: desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`.
 - O arquivo é código do projeto, com os exports nomeados que a CLI escreveu (`Tabs`, `TabsList`); o app o importa por eles (`frontend/components.md`, "Composição e o que sobe pro pacote").
 - O `toast` vem da lib `sonner`, como na documentação do shadcn: o `app-web` depende do `sonner` na mesma versão do `@metri/ui`, porque duas cópias da lib não se falam e o toast não chega ao `Toaster`.
 
@@ -111,7 +110,7 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 - Os valores são os do `DESIGN.md`, a fonte deles, e o `metri design-tokens` confere o tema contra ele; a base neutra é `skills/shape/DESIGN-TEMPLATE.md`.
 - O escuro liga pela classe no `documentElement`. O provider de tema do `@metri/ui` é o next-themes: o `ThemeProvider` do pacote o configura com `attribute="class"`, `themes={['light', 'dark']}` e `enableSystem={false}`, pelo contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 - O script inline do `index.html` do `app-web` aplica a classe antes do primeiro paint e lê a mesma chave de armazenamento que o `ThemeProvider` usa (a `theme` do next-themes): `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
-- O `sonner.tsx` da CLI lê o tema pelo `useTheme()` do next-themes e funciona como a CLI o escreveu, montado dentro do `ThemeProvider`.
+- O `sonner.tsx` da CLI lê o tema pelo `useTheme()` do next-themes, montado dentro do `ThemeProvider`.
 
 ## Tipografia e espaçamento
 
@@ -119,7 +118,7 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 - Cada nível de `typography` do `DESIGN.md` vira `--text-<nível>` no `@theme`, com `--line-height`, `--letter-spacing` e `--font-weight` do nível; a classe é `text-<nível>` (`text-body-sm`, `text-display-lg`).
 - A família não entra no nível: nível em Geist Mono (`code`, `caption-mono`) leva `font-mono` junto (`text-code font-mono`).
 - O `cn` do `@metri/ui` (`packages/ui/src/lib/utils.ts`) monta o tailwind-merge com `extendTailwindMerge`, com cada nível de `typography` do `DESIGN.md` como tamanho de fonte (`theme.text`). Sem isso, o tailwind-merge lê `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
-- Nível novo no `@theme` entra na lista do `cn` na mesma edição; o `metri design-tokens` confere a lista contra os `--text-*` do `@theme`.
+- Nível novo no `@theme` entra na lista do `cn` na mesma edição.
 
 ```ts
 // packages/ui/src/lib/utils.ts
@@ -177,8 +176,9 @@ export function cn(...inputs: ClassValue[]) {
 
 - Componente novo entrou pela CLI, no `@metri/ui`, em `src/components/ui/`?
 - O `components.json` tem `style` `new-york`, `baseColor` `neutral` e os aliases no nome do pacote, com o `paths` do `tsconfig.json` e os `exports` para as mesmas pastas?
-- O `globals.css` tem os dois `@source`, o de `apps/` e o do pacote?
+- O `globals.css` importa o `tw-animate-css` e tem os dois `@source`, o de `apps/` e o do pacote?
 - Os arquivos da CLI importam o `cn` do kit? `grep -rn "import { cn }" packages/ui/src/components | grep -v "@metri/ui/lib/utils"` devolve vazio.
 - O ajuste visual começou pelo token, e cor nova tem valor em `:root` e em `.dark`?
-- O `@theme` tem `--font-sans`, `--font-mono` e um `--text-<nível>` por nível de `typography` do `DESIGN.md`? (check: design-tokens)
+- O `@theme` tem `--font-sans` e `--font-mono` com as famílias do `DESIGN.md`?
+- O `@theme` tem um `--text-<nível>` por nível de `typography` do `DESIGN.md`? (check: design-tokens)
 - O `cn` usa `extendTailwindMerge`, com cada `--text-<nível>` do `@theme` em `theme.text`? (check: design-tokens)

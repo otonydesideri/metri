@@ -181,7 +181,7 @@ interface ProductSlugProps {
   value: string;
 }
 
-/** The product's public address, `/<slug>` at the SPA root; the failure carries an available suggestion. */
+/** The product's public address, `/<slug>` at the SPA root; the failure carries a suggestion in the valid format, and availability is the use case's check. */
 export class ProductSlug extends ValueObject<ProductSlugProps> {
   private constructor(props: ProductSlugProps) {
     super(props);
