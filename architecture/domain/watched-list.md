@@ -12,7 +12,7 @@ keywords: [WatchedList, compareItems, sameValueAs, identidade estrutural, "getIt
 not_covered:
   - "a escrita do delta no repositório → backend/persistence"
   - "a ordem do arquivo físico em volta da escrita → infrastructure/storage"
-examples: [domain/watched-list.examples.md]
+examples: [domain/watched-list.examples.md, starter/packages/core/src/entities/watched-list.ts]
 status: active
 ---
 # WatchedList
@@ -58,7 +58,7 @@ Fora dessas condições, o padrão não se aplica:
 
 ## A classe base
 
-`WatchedList<T>` vive em `@metri/core/entities`, pronta; nenhum app reimplementa. A superfície:
+`WatchedList<T>` vive em `@metri/core/entities` (`starter/packages/core/src/entities/watched-list.ts`), pronta; nenhum app reimplementa. A superfície:
 
 | Membro | Papel |
 | --- | --- |

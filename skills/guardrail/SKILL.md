@@ -7,7 +7,7 @@ description: "Keep code findable and guarded while writing it: find before you c
 
 1. **Find before you create.** Assume it already exists: grep `SOURCE OF TRUTH:` with the identifiers of `docs/CONTEXT.md`, read the linear path of `.metri/ARCHITECTURE.md`, open only the relevant files, and reuse what you find.
 2. **Third-party before own code.** What the project and its stack (`node_modules/metri/architecture/defaults/stack.md`) lack comes from a well-known library before code of your own. A library that swaps a stack item or carries lock-in (database, auth, queue, UI kit) is a decision: stop, flag it and ask (AGENTS.md, "How to work here").
-3. **Copy the canonical example.** Each rule names its example in `examples`: follow it, and go through the pattern's central points (the block, the registry), never around them.
+3. **Copy the canonical example.** Each rule names its example in `examples`: follow it, and go through the pattern's central points (the block, the registry), never around them. An example under `starter/` is the project's own file at the same path, copied from `node_modules/metri/starter/` by `metri init`.
 4. **Name with the glossary.** Identifiers are the English identifiers of `docs/CONTEXT.md`.
 5. **Source of truth in code.** Every canonical owner (the export a concept lives in) carries this header right above that export, after the imports:
 

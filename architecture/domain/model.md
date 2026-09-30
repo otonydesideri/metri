@@ -23,7 +23,7 @@ not_covered:
   - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
   - "Domain Service / Policy → domain/domain-services"
   - "bounded context → domain/bounded-contexts"
-examples: [domain/model.examples.md]
+examples: [domain/model.examples.md, starter/packages/core/src/entities/entity.ts, starter/packages/core/src/entities/value-object.ts, starter/packages/core/src/types/either.ts]
 status: active
 ---
 # Modelo de domínio

@@ -11,6 +11,17 @@
   Orval, Playwright e o shell do app); e `packages/core`, `db` e `ui`. `__PROJECT__` vira o nome do projeto, o
   `pnpm install` roda e o `verify` fecha verde. Arquivo que já existe fica como está; o `package.json` e o
   `pnpm-workspace.yaml` ganham só as chaves que faltam. `--no-starter` pula a cópia.
+- **Regras e starter.** Onde um arquivo do starter é o exemplo canônico de uma regra, o `examples:` aponta para
+  ele e o trecho equivalente saiu do texto: o Biome, o `test` da raiz e o Vitest (`defaults/stack`), o `AppModule`, o
+  `main.ts` e o env (`infrastructure/runtime`, `infrastructure/logging`), o filtro de erro, o `toHttpException` e o
+  `DomainError` (`backend/errors`), o Prisma (`backend/persistence`), o `components.json`, o `globals.css` e o `cn`
+  (`defaults/ui`), o tema (`frontend/theming`), as rotas (`frontend/routing`), o cliente HTTP, o Orval e o `App`
+  (`frontend/data-fetching`) e o MSW, o Playwright e a evidência (`frontend/testing`). Um exemplo em `starter/` é o
+  arquivo do mesmo caminho no projeto. Os comandos de verificação de `backend/boundaries`, `general/date-time` e
+  `backend/access-scope` viram os checks `boundaries`, `date-time` e `access-boundaries` do starter.
+- **Slice 0.** Num projeto novo, a fundação é o que falta depois do `init`: o banco de desenvolvimento (a delegação e o
+  `db:up`), o ticket de design system (os tokens do `DESIGN.md` no tema e o shell) e o que as capacidades ativas
+  pedirem. O caminho Docker do banco passa a `db:docker:up` e `db:docker:down`, no lugar do `db:down`.
 - **Kit de UI.** Só `packages/ui/src/components/ui/` é código de fornecedor, sem cabeçalho e sem a formatação e o
   preset do Biome. O hook ou bloco que a CLI do shadcn grava fora dali é código do projeto: o `metri sot` pede o
   cabeçalho dele. O Biome de referência barra o pacote npm `cn` com o `noRestrictedImports`, também em

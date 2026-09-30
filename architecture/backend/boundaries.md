@@ -1,6 +1,6 @@
 ---
 id: backend/boundaries
-description: "o grafo de dependência permitido entre camadas e pacotes do backend — o que cada camada e pacote pode importar, com as exceções declaradas (`@Injectable()` no domínio, `@metri/db` só em `infra/persistence/prisma`, Zod só na fronteira, produção sem `test/`); os comandos que verificam o grafo."
+description: "o grafo de dependência permitido entre camadas e pacotes do backend — o que cada camada e pacote pode importar, com as exceções declaradas (`@Injectable()` no domínio, `@metri/db` só em `infra/persistence/prisma`, Zod só na fronteira, produção sem `test/`); o check que verifica o grafo."
 use_when:
   - "adicionar um import que cruza camada ou pacote do backend"
   - "criar uma área nova em `src/`"
@@ -13,6 +13,8 @@ applies_to:
 keywords: [import, grafo de dependência, allowlist, biblioteca de cálculo puro, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
 not_covered:
   - "as regras próprias do frontend → frontend/structure"
+enforced_by: [boundaries]
+examples: [starter/scripts/check-boundaries.sh]
 status: active
 ---
 # Fronteiras de dependência
@@ -85,36 +87,8 @@ Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dubl�
 
 ## Verificação
 
-Rodar da raiz do repositório. Cada comando devolve vazio; o check de fronteiras do projeto os roda no `lint` (`node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md`, "Destination").
-
-```bash
-# domain importing db, Zod or nestjs-pino
-grep -rlP "from '(@metri/db|zod|nestjs-zod|nestjs-pino)" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
-
-# domain importing NestJS beyond @nestjs/common
-grep -rlP "from '@nestjs/(?!common')" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
-
-# domain importing an external package outside the allowlist (date-fns, @date-fns/tz; add the ones a project ADR names)
-grep -rhoP "from '(?!\.|node:|@metri/(core|utils)(/|')|@nestjs/common'|date-fns(/|')|@date-fns/tz')[^']*'" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts"
-
-# domain using anything from @nestjs/common other than Injectable
-grep -rhoP "import \{[^}]*\} from '@nestjs/common'" apps/app-api/src/domain --include="*.ts" --exclude="*.spec.ts" | grep -v "^import { Injectable }"
-
-# @metri/db outside infra/persistence/prisma and the e2e setup
-grep -rlP "from '@metri/db" apps/app-api/src apps/app-api/test --include="*.ts" | grep -v "infra/persistence/prisma" | grep -vx "apps/app-api/test/setup-e2e.ts"
-
-# core with an external dependency
-grep -rhoP "from '[^'.][^']*'" packages/core/src --include="*.ts" --exclude="*.spec.ts" | grep -v "node:"
-
-# utils with an external dependency, including core itself
-grep -rhoP "from '[^'.][^']*'" packages/utils/src --include="*.ts" --exclude="*.spec.ts" | grep -v "node:"
-
-# production code importing test/
-grep -rlP "from '[^']*/test/" apps/app-api/src --include="*.ts" --exclude="*.spec.ts" --exclude="*.e2e-spec.ts"
-```
+- Nenhum import atravessa o grafo permitido, com os specs e o setup do e2e fora da conta? (check: boundaries)
 
 ## Em aberto
 
-- **Enforcement global das fronteiras de dependência.** Um check da Source para estas regras não tem desenho fechado; até ele existir, esta regra mantém o `applies_to`.
-  - Regra de lint de imports restritos
-  - Ferramenta dedicada de grafo de dependência
+- **Ferramenta do check.** O `boundaries` é um script de grep por fronteira (`starter/scripts/check-boundaries.sh`), que ganha o comando da fronteira nova e o pacote que um ADR do projeto libera no domínio. A troca por uma regra de lint de imports restritos ou por uma ferramenta de grafo de dependência não tem desenho fechado.

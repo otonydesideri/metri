@@ -76,31 +76,6 @@ export function useOrders(filters: FetchOrdersParams) {
 }
 ```
 
-## App
-
-```tsx
-// app/index.tsx
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '@metri/ui/components/providers/theme-provider';
-import { Toaster } from '@metri/ui/components/ui/sonner';
-import { BrowserRouter } from 'react-router';
-import { queryClient } from './providers/query-client';
-import { AppRoutes } from './router/routes';
-
-export function App() {
-  return (
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster />
-        </BrowserRouter>
-      </QueryClientProvider>
-    </ThemeProvider>
-  );
-}
-```
-
 ## useCancelOrder
 
 ```ts

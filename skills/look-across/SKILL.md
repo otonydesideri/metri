@@ -65,7 +65,11 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 ### 7. Slice 0
 
-- **New project**: the foundation slice, `S0`: the monorepo of `general/code-placement`, with `pnpm verify` green; with a database, the delegation "Banco de desenvolvimento" of [ACTIVATION.md](ACTIVATION.md) is an open question of the plan gate; with an interface, the `design-system` slice installs the library, builds the theme from `docs/DESIGN.md` and the app shell, and closes on the human's visual approval.
+- **New project**: `metri init` delivered the starter, the monorepo of `general/code-placement` with `pnpm verify` green. The foundation slice, `S0`, is what is left after it:
+  - with a database, the development database: the delegation "Banco de desenvolvimento" of [ACTIVATION.md](ACTIVATION.md), an open question of the plan gate, done when `pnpm db:up` is green;
+  - with an interface, the design-system ticket: the tokens of `docs/DESIGN.md` in `packages/ui/src/styles/globals.css` and the app shell of `apps/app-web/src/app/layouts/`, with `pnpm design-tokens` green, closed on the human's visual approval;
+  - what each active capability asks for before its first UC.
+- **New project without the starter** (`metri init --no-starter`): `S0` also builds the monorepo, by the rules the starter follows.
 - **Existing project**: the mapping of step 0.
 
 ### 8. Quiz the user

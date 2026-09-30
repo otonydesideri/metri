@@ -20,6 +20,7 @@ not_covered:
   - "uso de token e tema no código → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
   - "o spec de rota e guard → frontend/testing"
+examples: [starter/apps/app-web/src/app/router/routes.tsx, starter/apps/app-web/src/app/layouts/app/app-layout.tsx, starter/apps/app-web/src/shared/components/app-splash/app-splash.tsx]
 status: active
 ---
 # Rotas do frontend
@@ -112,28 +113,7 @@ Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e cl
 
 ## Aplicação
 
-A página no router, com o import mapeado para o default que o `lazy` espera:
-
-```tsx
-// app/router/routes.tsx
-import { lazy } from 'react';
-
-// the page uses a named export, so the import maps it to the default that lazy expects
-const OrderListPage = lazy(() =>
-  import('@/pages/order/list/list-page').then((m) => ({
-    default: m.OrderListPage,
-  })),
-);
-```
-
-O `Suspense` no layout:
-
-```tsx
-// app/layouts/app/app-layout.tsx
-<Suspense fallback={<AppSplash />}>
-  <Outlet />
-</Suspense>
-```
+A página no router, com o import mapeado para o default que o `lazy` espera, e o `Suspense` no layout: `starter/apps/app-web/src/app/router/routes.tsx` e `starter/apps/app-web/src/app/layouts/app/app-layout.tsx`.
 
 O modal de tarefa montado por estado na página que o dispara:
 

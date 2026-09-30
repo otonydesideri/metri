@@ -18,7 +18,8 @@ applies_to:
 keywords: [pirâmide, spec, addCookies, chromium-headless-shell, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock, "test:unit"]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
-examples: [frontend/testing.examples.md]
+enforced_by: [boundaries]
+examples: [frontend/testing.examples.md, starter/apps/app-web/playwright.config.ts, starter/apps/app-web/e2e/evidence.ts, starter/apps/app-web/src/structure.spec.ts, starter/apps/app-web/dev-server-proxy.spec.ts]
 status: active
 ---
 # Testes do frontend
@@ -82,9 +83,9 @@ test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo
 });
 ```
 
-Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da ferramenta, com `strictPort: true` no `vite.config.ts`: porta ocupada é erro, nunca a porta seguinte. O `playwright.config.ts` tira a porta do e2e de `E2E_PORT` (o app-web nela, o app-api na seguinte, com o proxy do dev server apontando para ela) e sobe cada `webServer` com `reuseExistingServer: false`, para o e2e nunca bater no servidor de outro projeto ou de outro worktree.
+Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da ferramenta, com `strictPort: true` no `vite.config.ts`: porta ocupada é erro, nunca a porta seguinte. O `playwright.config.ts` tira a porta do e2e de `E2E_PORT` (o app-web nela, o app-api na seguinte, com o proxy do dev server apontando para ela) e sobe cada `webServer` com `reuseExistingServer: false`, para o e2e nunca bater no servidor de outro projeto ou de outro worktree (`starter/apps/app-web/playwright.config.ts`).
 
-O `saveEvidence` de `e2e/evidence.ts` grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
+O `saveEvidence` de `e2e/evidence.ts` (`starter/apps/app-web/e2e/evidence.ts`) grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
 
 Tela atrás de login recebe a sessão pelo banco, não pela tela de login: o teste grava a sessão como a factory do backend grava (`backend/testing.md`, "Como escrever um e2e-spec de controller") e injeta o cookie `HttpOnly` com `context.addCookies` antes do primeiro `goto`. O provedor externo de login fica fora do e2e; a tela de login ganha o próprio teste, até o redirect.
 
@@ -119,34 +120,7 @@ Regras de uso:
 - O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda de que o path gerado sai na origem da página, não uma segunda prova da operação de domínio.
 - `vi.mock` fica reservado a fronteira que não é rede: o `toast` da lib `sonner`, quando o teste afirma título e descrição sem montar o `Toaster`, e uma função de `lib/<integração>/` cujo efeito é sobre a biblioteca, não sobre a tela. Nunca para substituir uma chamada de rede.
 
-```ts
-// test/msw/server.ts
-import { setupServer } from 'msw/node';
-
-/**
- * No default handler on purpose: each spec declares what its own
- * assertion depends on, with `server.use(...)`.
- */
-export const server = setupServer();
-```
-
-```ts
-// test/setup.ts
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
-import { server } from './msw/server';
-
-server.listen({ onUnhandledRequest: 'error' });
-
-afterEach(() => {
-  cleanup();
-  server.resetHandlers();
-});
-
-afterAll(() => {
-  server.close();
-});
-```
+Exemplo completo: `starter/apps/app-web/test/msw/server.ts` e `starter/apps/app-web/test/setup.ts`.
 
 ## Store de biblioteca externa em teste
 
@@ -272,5 +246,5 @@ Schema de form mais estrito que o do backend não é divergência, é decisão d
 - `MemoryRouter` está inline no `it()`, com o destino observado como texto de rota-sonda?
 - O helper de render, se existe, é local ao arquivo e só monta providers?
 - O teste afirma reação da interface ao contrato, e não uma regra derivada que só o servidor pode provar?
-- Produção não importa de `test/`? `grep -rlP "from '[^']*/test/|from '@/test" apps/app-web/src --include="*.ts" --include="*.tsx" --exclude="*.spec.ts" --exclude="*.spec.tsx"` devolve vazio; o check de fronteiras do projeto roda este comando junto dos de `backend/boundaries.md`, "Verificação".
+- Produção não importa de `test/`? (check: boundaries)
 - Tela atrás de login recebe no e2e a sessão gravada no banco e o cookie por `addCookies`, sem o provedor externo?

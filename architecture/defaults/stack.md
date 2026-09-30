@@ -5,6 +5,7 @@ use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
   - "implementar login, sessão ou logout"
+examples: [starter/biome.json, starter/package.json, starter/apps/app-api/vitest.config.ts]
 status: active
 ---
 # Stack padrão
@@ -61,60 +62,15 @@ Quando o produto tem identidade autenticada, a delegação "Autenticação" (`no
 
 O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS (`tailwindDirectives`: `@theme`, `@source`, `@custom-variant`). O código gerado do contrato de API, que o `api:drift` confere, fica fora dele, com `!` (o scanner ainda lê os tipos). O código de fornecedor do kit, `packages/ui/src/components/ui/`, fica sem formatação e sem as regras do preset, para a CLI e o código continuarem iguais; só o `noRestrictedImports` vale nele, e em todo o repositório: barra o pacote npm `cn`, que a CLI do shadcn grava no lugar do `cn` do kit (`defaults/ui.md`, "Componente novo"). O override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
 
-```json
-{
-  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "javascript": { "formatter": { "quoteStyle": "single" } },
-  "css": { "parser": { "tailwindDirectives": true } },
-  "files": {
-    "includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json"]
-  },
-  "linter": {
-    "rules": {
-      "preset": "recommended",
-      "style": {
-        "noRestrictedImports": {
-          "level": "error",
-          "options": { "paths": { "cn": "Import cn from '@metri/ui/lib/utils', the kit's cn (defaults/ui)." } }
-        }
-      }
-    }
-  },
-  "overrides": [
-    {
-      "includes": ["packages/ui/src/components/ui/**"],
-      "formatter": { "enabled": false },
-      "assist": { "enabled": false },
-      "linter": { "rules": { "preset": "none" } }
-    },
-    {
-      "includes": ["apps/app-api/**"],
-      "javascript": { "parser": { "unsafeParameterDecoratorsEnabled": true } },
-      "linter": {
-        "rules": {
-          "style": { "useImportType": "off" },
-          "complexity": { "noStaticOnlyClass": "off" }
-        }
-      }
-    }
-  ]
-}
-```
+Exemplo completo: `starter/biome.json`.
 
 O `test` da raiz repassa o filtro ao Vitest de cada pacote pelo `--`: sem ele, o Turborepo lê o filtro (`pnpm test order-confirmation`) como nome de task.
 
-```json
-// root package.json
-"test": "turbo run test --"
-```
+Exemplo completo: `starter/package.json`.
 
-O Vitest de cada app e pacote passa sem arquivo de teste, para o pacote recém-criado não derrubar o `verify`:
+O Vitest de cada app e pacote passa sem arquivo de teste (`passWithNoTests`), para o pacote recém-criado não derrubar o `verify`: no `vite.config.ts` do app-web, nos dois configs do app-api (`backend/testing.md`) e no de cada pacote do `starter/`.
 
-```ts
-// in the test block of vite.config.ts (app-web), of both app-api Vitest configs (unit and e2e, backend/testing) and of each package
-test: { passWithNoTests: true },
-```
+O `turbo.json` desliga o `agentGuidance`: o Turborepo 2.11 grava um bloco próprio no `AGENTS.md` quando detecta um agente, e o `AGENTS.md` do projeto é do `metri init`.
 
 ## Versões de referência
 

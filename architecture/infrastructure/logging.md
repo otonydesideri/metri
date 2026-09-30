@@ -15,7 +15,7 @@ not_covered:
   - "métrica, alerta e reconciliação → infrastructure/observability"
   - "o contrato de log do caso de uso (\"Log no caso de uso\") → backend/application"
   - "o registro global dos interceptors de log → infrastructure/runtime"
-examples: [infrastructure/logging.examples.md]
+examples: [infrastructure/logging.examples.md, starter/apps/app-api/src/main.ts, starter/apps/app-api/src/app.module.ts]
 status: active
 ---
 # Log
@@ -32,29 +32,7 @@ Cobre qualquer request que passa pelo pipeline do Nest, então qualquer falha qu
 
 ## Bootstrap
 
-```ts
-// main.ts
-import { randomUUID } from 'node:crypto';
-import { NestFactory } from '@nestjs/core';
-import {
-  FastifyAdapter,
-  type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import { Logger } from 'nestjs-pino';
-import { AppModule } from './app.module';
-
-async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({ genReqId: () => randomUUID() }),
-    { bufferLogs: true, bodyParser: false },
-  );
-
-  app.useLogger(app.get(Logger));
-
-  // ...
-}
-```
+Exemplo completo: `starter/apps/app-api/src/main.ts`.
 
 Os interceptors globais de log entram no `AppModule` via `APP_INTERCEPTOR`, pela regra de registro global de `infrastructure/runtime.md`:
 
@@ -77,44 +55,9 @@ Pontos-chave:
 
 `LoggerModule` é configurado com `forRootAsync`, lendo o ambiente do `EnvService`. Nível por ambiente numa tabela declarativa: `info` em produção, `warn` em teste (erro continua visível, o `LoggerErrorInterceptor` loga em `error`, sem inundar a saída dos e2e com a linha automática de request), `debug` em `local`/`development`. Transport `pino-pretty` (devDependency) só onde um humano lê o terminal (`local`/`development`); em produção e teste a saída é o JSON do pino direto no stdout, e o destino das linhas (coletor, agregador) é decisão de projeto (`.metri/ARCHITECTURE.md`, "Delegações"), fora deste documento.
 
-```ts
-// app.module.ts
-const LOG_LEVEL_BY_ENV: Record<NodeEnvironment, string> = {
-  local: 'debug',
-  development: 'debug',
-  test: 'warn',
-  production: 'info',
-};
-
-LoggerModule.forRootAsync({
-  imports: [EnvModule],
-  inject: [EnvService],
-  useFactory: (env: EnvService) => {
-    const nodeEnv = env.getOrThrow('NODE_ENV');
-    const isHumanReadable = nodeEnv === 'local' || nodeEnv === 'development';
-    const options: Params = {
-      pinoHttp: {
-        level: LOG_LEVEL_BY_ENV[nodeEnv],
-        transport: isHumanReadable
-          ? {
-              target: 'pino-pretty',
-              options: {
-                messageFormat: '{if context}[{context}] {end}{msg}',
-                ignore: 'pid,hostname,context',
-              },
-            }
-          : undefined,
-      },
-      assignResponse: true,
-    };
-    return options;
-  },
-}),
-```
+Exemplo completo: `starter/apps/app-api/src/app.module.ts`, com o `LOG_LEVEL_BY_ENV` e o `LoggerModule.forRootAsync`.
 
 `context` vem de `setContext` (ver "Como logar num provider") e, sem essa config, o `pino-pretty` imprime como propriedade solta numa linha abaixo da mensagem, pra qualquer log de qualquer provider que chame `setContext`. `messageFormat` funde o context na própria linha da mensagem (`[NomeDoContext] mensagem`); `ignore` tira o campo de aparecer de novo como propriedade abaixo, já que virou parte da mensagem. O `{if context}...{end}` é condicional: linha automática de request do `pino-http` não carrega `context` (não passa por `PinoLogger.call`), então cai no `{msg}` puro sem colchete vazio sobrando.
-
-A seção "Redação de campo sensível" mostra a opção num `forRoot` isolado, pra leitura; a config real é uma só, este `forRootAsync`.
 
 Com `level: 'info'`, chamada de `debug` em produção custa quase nada: o pino checa o nível antes de serializar qualquer argumento.
 
@@ -122,7 +65,7 @@ Com `level: 'info'`, chamada de `debug` em produção custa quase nada: o pino c
 
 Toda linha logada durante uma request carrega o `req.id` dela: o `pino-http` cria um child logger por request e o `nestjs-pino` o propaga por AsyncLocalStorage, então `Logger`/`PinoLogger` em qualquer provider sai com o mesmo id, sem passar contexto na mão. Agrupar as linhas de uma request no agregador é filtrar por esse id.
 
-O id default do Fastify é "req-N", incremental por processo, ambíguo com mais de uma instância ou depois de um restart: requests distintas aparecem no agregador com o mesmo id. A troca por UUID é no `genReqId` do `FastifyAdapter`, no snippet de "Bootstrap". Quem devolve o id na resposta é o primeiro hook `onRequest` da instância, escrevendo o header no response cru: assim alcança também quem responde fora do ciclo do Nest, incluindo a própria recusa de uma fronteira. O `genReqId` do `pinoHttp` não funciona neste stack e não é usado: o middie do `@nestjs/platform-fastify` copia o id do Fastify pro request cru antes de o `pino-http` rodar, e o `pino-http` só gera id quando o request ainda não carrega um.
+O id default do Fastify é "req-N", incremental por processo, ambíguo com mais de uma instância ou depois de um restart: requests distintas aparecem no agregador com o mesmo id. A troca por UUID é no `genReqId` do `FastifyAdapter`, no `main.ts` de "Bootstrap". Quem devolve o id na resposta é o primeiro hook `onRequest` da instância, escrevendo o header no response cru: assim alcança também quem responde fora do ciclo do Nest, incluindo a própria recusa de uma fronteira. O `genReqId` do `pinoHttp` não funciona neste stack e não é usado: o middie do `@nestjs/platform-fastify` copia o id do Fastify pro request cru antes de o `pino-http` rodar, e o `pino-http` só gera id quando o request ainda não carrega um.
 
 Pontos-chave:
 
@@ -146,24 +89,9 @@ Três regras valem para qualquer campo que entre nesse contexto:
 
 ## Redação de campo sensível
 
-A linha automática de request do `pino-http` inclui headers de request e de response por padrão. Sem redação, isso grava no log qualquer cookie e qualquer header `Authorization`. A lista de campos redigidos fica no `redact` do `pinoHttp`:
+A linha automática de request do `pino-http` inclui headers de request e de response por padrão. Sem redação, isso grava no log qualquer cookie e qualquer header `Authorization`. A lista de campos redigidos fica no `redact` do `pinoHttp`, na config única do `forRootAsync`:
 
-```ts
-// app.module.ts
-LoggerModule.forRoot({
-  pinoHttp: {
-    redact: {
-      paths: [
-        'req.headers.authorization',
-        'req.headers.cookie',
-        'res.headers["set-cookie"]',
-        'res.headers.location',
-      ],
-      censor: '[REDACTED]',
-    },
-  },
-}),
-```
+Exemplo completo: o `redact` do `starter/apps/app-api/src/app.module.ts`.
 
 Pontos-chave:
 

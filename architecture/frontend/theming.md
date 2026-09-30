@@ -15,6 +15,7 @@ not_covered:
   - "valores e vocabulário visual → project:DESIGN"
   - "preferência de tema fora da árvore de estado cliente → frontend/state"
 enforced_by: [design-tokens]
+examples: [starter/packages/ui/src/components/providers/theme-provider.tsx, starter/apps/app-web/index.html]
 status: active
 ---
 # Token e tema no frontend
@@ -75,33 +76,7 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 
 - O `ThemeProvider` do `@metri/ui` é o do next-themes, configurado; o arquivo reexporta o `useTheme()`, que expõe `theme` e `setTheme` para o toggle do app.
 
-```tsx
-// packages/ui/src/components/providers/theme-provider.tsx
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import type { ReactNode } from 'react';
-
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  return (
-    <NextThemesProvider attribute="class" themes={['light', 'dark']} enableSystem={false}>
-      {children}
-    </NextThemesProvider>
-  );
-}
-
-export { useTheme } from 'next-themes';
-```
-
-```html
-<!-- apps/app-web/index.html, in <head> -->
-<style>
-  /* --background from :root and from .dark, in packages/ui/src/styles/globals.css */
-  html { background: oklch(1 0 0); }
-  html.dark { background: oklch(0.145 0 0); }
-</style>
-<script>
-  document.documentElement.classList.add(localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
-</script>
-```
+Exemplo completo: `starter/packages/ui/src/components/providers/theme-provider.tsx` e o `<head>` de `starter/apps/app-web/index.html`.
 
 - Preferência de tema não é estado de store (`frontend/state.md`, "Tema não é estado de store"): é este provider, montado em `app/`.
 

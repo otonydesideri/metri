@@ -11,7 +11,7 @@ applies_to:
   - "apps/app-api/src/domain/enterprise/errors/**"
   - "packages/core/src/errors/**"
 keywords: [DomainError, DomainErrorType, ApiErrorType, type, code, Either, failure, throw, toHttpException, STATUS_MAP, "Record<DomainErrorType, number>", toInvalidRequestException, ZodValidationPipe, APP_PIPE, UnexpectedErrorFilter, APP_FILTER, envelope, INVALID_REQUEST, INTERNAL_ERROR, REQUEST_REJECTED, erros sensíveis, anti-enumeração, "@metri/core/errors"]
-examples: [backend/errors.examples.md]
+examples: [backend/errors.examples.md, starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts, starter/apps/app-api/src/infra/common/errors/to-http-exception.ts, starter/packages/core/src/errors/domain-error.ts]
 status: active
 ---
 # Erros
@@ -34,25 +34,7 @@ A recusa nativa do framework (rota inexistente, throttler) não é um quarto tip
 
 Vivem em `packages/core/src/errors`. Com o `ApiErrorType` do protocolo ("O formato de resposta de erro", adiante), são a única coisa que o core define sobre erros; as classes concretas pertencem aos módulos.
 
-```ts
-export enum DomainErrorType {
-  BUSINESS_RULE = 'BUSINESS_RULE',
-  RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
-  CONFLICT = 'CONFLICT',
-  AUTHORIZATION = 'AUTHORIZATION',
-  VALIDATION = 'VALIDATION',
-}
-
-export abstract class DomainError extends Error {
-  abstract readonly type: DomainErrorType;
-  abstract readonly code: string;
-
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
-```
+Exemplo completo: `starter/packages/core/src/errors/domain-error.ts`.
 
 ### O significado de `type`
 
@@ -144,24 +126,7 @@ expect(result.value).toBeInstanceOf(OrderNotFoundError);
 
 Nenhum controller escreve `switch` por erro. A tradução é uma tabela declarativa mais uma função, na infra do app.
 
-```ts
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { DomainError, DomainErrorType } from '@metri/core/errors';
-
-const STATUS_MAP: Record<DomainErrorType, number> = {
-  [DomainErrorType.BUSINESS_RULE]: HttpStatus.UNPROCESSABLE_ENTITY,
-  [DomainErrorType.RESOURCE_NOT_FOUND]: HttpStatus.NOT_FOUND,
-  [DomainErrorType.CONFLICT]: HttpStatus.CONFLICT,
-  [DomainErrorType.AUTHORIZATION]: HttpStatus.FORBIDDEN,
-  [DomainErrorType.VALIDATION]: HttpStatus.BAD_REQUEST,
-};
-
-export function toHttpException(error: DomainError): HttpException {
-  const body = { code: error.code, message: error.message, type: error.type };
-  const exception = new HttpException(body, STATUS_MAP[error.type]);
-  return exception;
-}
-```
+Exemplo completo: `starter/apps/app-api/src/infra/common/errors/to-http-exception.ts`.
 
 O handler vira uma linha:
 
@@ -198,14 +163,7 @@ O corpo produzido por `toHttpException` é o formato único de erro da API, o en
 
 O cliente discrimina por `code`; `type` e o status HTTP dão a categoria. O `type` do envelope é o `ApiErrorType`, a taxonomia do protocolo HTTP, distinta da do domínio: ela contém os valores do `DomainErrorType` e as categorias que só a porta HTTP produz.
 
-```ts
-// packages/core/src/errors
-export type ApiErrorType =
-  | `${DomainErrorType}`
-  | 'INVALID_REQUEST'
-  | 'INTERNAL_ERROR'
-  | 'REQUEST_REJECTED';
-```
+Exemplo completo: `starter/packages/core/src/errors/api-error.ts`.
 
 - `INVALID_REQUEST`: erro de formato HTTP (`toInvalidRequestException`, adiante).
 - `INTERNAL_ERROR`: erro inesperado (o filtro global, adiante).
@@ -217,30 +175,7 @@ O `ApiErrorType` vive ao lado do `DomainErrorType`, em `packages/core/src/errors
 
 O erro de formato não passa pelas tabelas acima (não é `DomainError`), mas o corpo da resposta fala o mesmo formato único. A tradução é a `createValidationException` do `ZodValidationPipe`, composta em `app.module.ts` e registrada via `APP_PIPE`, pela regra de registro global de `infrastructure/runtime.md`:
 
-```ts
-export function toInvalidRequestException(error: unknown): HttpException {
-  const zodError = error as ZodError;
-  const message = zodError.issues
-    .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-    .join('; ');
-
-  const body = {
-    code: 'INVALID_REQUEST_FORMAT',
-    message,
-    type: 'INVALID_REQUEST',
-  };
-  const exception = new HttpException(body, HttpStatus.BAD_REQUEST);
-  return exception;
-}
-```
-
-```ts
-const ZodValidationPipe = createZodValidationPipe({
-  createValidationException: toInvalidRequestException,
-});
-
-providers: [{ provide: APP_PIPE, useClass: ZodValidationPipe }];
-```
+Exemplo completo: `starter/apps/app-api/src/infra/common/errors/to-invalid-request-exception.ts`, composto no `starter/apps/app-api/src/app.module.ts`.
 
 Pontos-chave:
 
@@ -252,11 +187,7 @@ Pontos-chave:
 
 Erro inesperado não passa pela tabela de tradução acima: não é um `DomainError`, é uma exceção lançada por acidente de programação ou por falha de infraestrutura externa. A captura é um filtro global do Nest, registrado via `APP_FILTER` (`infrastructure/runtime.md`):
 
-Exemplo completo: errors.examples.md#unexpectederrorfilter
-
-```ts
-providers: [{ provide: APP_FILTER, useClass: UnexpectedErrorFilter }];
-```
+Exemplo completo: `starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts`, registrado no `starter/apps/app-api/src/app.module.ts`.
 
 `FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O projeto já decidiu Fastify como única plataforma HTTP (`defaults/stack.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
 

@@ -10,6 +10,8 @@ not_covered:
   - "a formatação e o dia de calendário local no frontend (\"Nível 3: fora do módulo, a casa é o que a função conhece\") → frontend/helpers"
   - "a forma e a casa da policy → domain/domain-services"
   - "o import da biblioteca no domínio → backend/boundaries"
+enforced_by: [date-time]
+examples: [starter/scripts/check-date-time.sh]
 status: active
 ---
 # Data e fuso
@@ -66,4 +68,4 @@ flowchart TD
 - Todo instante gravado ou passado entre camadas é UTC, sem fuso embutido?
 - Todo momento de parede de negócio leva a data ou o dia, a hora e o fuso IANA juntos?
 - A conversão passa pela policy, com o spec de ida e volta em dois fusos e na troca de horário de verão?
-- O backend e os pacotes não montam data no fuso do processo? `grep -rnP 'new Date\((?!Date\.UTC\()[^)]*,' apps/app-api/src apps/app-api/test packages/*/src --include='*.ts'` devolve vazio.
+- O backend e os pacotes não montam data no fuso do processo (`new Date(ano, mês, dia)`)? (check: date-time)

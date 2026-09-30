@@ -1,18 +1,18 @@
 ---
 id: infrastructure/runtime
-description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (`db:up`, `db:down`)."
+description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (`db:up`, `db:docker:up`, `db:docker:down`)."
 use_when:
   - "editar `main.ts` ou `app.module.ts`"
   - "registrar pipe, interceptor, filtro ou guard global"
   - "ler variável de ambiente ou montar o client de uma capacidade"
   - "criar hook de request, guard, interceptor ou filter"
   - "depender de hook de shutdown no encerramento do processo"
-  - "subir, trocar ou derrubar o banco de desenvolvimento (`db:up`, `db:down`)"
+  - "subir, trocar ou derrubar o banco de desenvolvimento (`db:up`, `db:docker:up`, `db:docker:down`)"
 applies_to:
   - "apps/app-api/src/main.ts"
   - "apps/app-api/src/app.module.ts"
   - "apps/app-api/src/infra/common/**"
-keywords: [main.ts, app.module.ts, db:up, db:down, pg_isready, Docker, ".env.example", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
+keywords: [main.ts, app.module.ts, db:up, "db:docker:up", "db:docker:down", pg_isready, Docker, ".env.example", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
 not_covered:
   - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"
   - "o que cada provider global faz — log → infrastructure/logging"
@@ -22,6 +22,7 @@ not_covered:
   - "o contrato de escopo do dono → backend/access-scope"
   - "o formato do e2e → backend/testing"
   - "a topologia de deploy de cada projeto (\"Delegações\") → project:ARCHITECTURE"
+examples: [starter/apps/app-api/src/main.ts, starter/apps/app-api/src/app.module.ts, starter/apps/app-api/src/infra/common/env/env.service.ts, starter/scripts/db-up.sh, starter/scripts/db-docker.sh]
 status: active
 ---
 # Runtime da aplicação
@@ -96,9 +97,9 @@ O Postgres de desenvolvimento é delegação do projeto, decidida no planejament
 
 > **Por quê.** Sem o `pg_isready` na frente, o banco fora do ar só aparece no timeout do Prisma, minutos depois.
 
-Com Docker: **Obrigatório.** Um container por projeto, com o nome do projeto, que todos os worktrees usam; `pnpm db:down` remove o container.
+Com Docker: **Obrigatório.** Um container por projeto, com o nome do projeto, que todos os worktrees usam; `pnpm db:docker:up` o sobe e roda o `db:up`, e `pnpm db:docker:down` remove o container.
 
-**Obrigatório.** Worktree ou projeto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:down`.
+**Obrigatório.** Worktree ou projeto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:docker:down`.
 
 > **Por quê.** Container por worktree e processo esquecido disputam porta e memória com o próximo trabalho, e um servidor velho na porta responde no lugar do novo.
 
@@ -123,7 +124,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?
 - Hook, guard, interceptor e filter ficaram fora do `ServicesModule`, em `infra/common/<fronteira>/`, com o contexto viajando na request?
 - `pnpm db:up` roda de novo sem erro, falha em segundos com o banco fora do ar e cria o `.env` que falta?
-- Com Docker, há um container só, com o nome do projeto, e o `pnpm db:down` o remove?
+- Com Docker, há um container só, com o nome do projeto, e o `pnpm db:docker:down` o remove?
 
 ## Em aberto
 

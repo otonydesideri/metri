@@ -15,6 +15,8 @@ not_covered:
   - "query de exibição, paginação, projeção e não-encontrado da leitura → backend/reading"
   - "storage → infrastructure/storage"
   - "a fronteira de request como peça do framework → infrastructure/runtime"
+enforced_by: [access-boundaries]
+examples: [starter/apps/app-api/src/infra/common/access/access.guard.ts, starter/scripts/check-access-boundaries.sh]
 status: active
 ---
 # Escopo de acesso
@@ -111,7 +113,7 @@ export const CurrentCustomerId = createParamDecorator((_data: unknown, context: 
 
 ## Verificação
 
-- Todo controller declara `@Public()` ou `@<Dono>Owned()`? Com o marcador do projeto no lugar de `CustomerOwned`, `grep -rLE --include='*.controller.ts' '@(Public|CustomerOwned)\(\)' apps/app-api/src` devolve vazio.
+- Todo controller declara `@Public()` ou `@<Dono>Owned()`? (check: access-boundaries, com o marcador do dono como argumento do script)
 - Dado protegido carrega o escopo do dono no input, vindo da fronteira de request, e o `where` filtra por ele, também em SQL cru?
 - ID vindo de path, query ou body coincide com o escopo ou é recusado, sem substituí-lo?
 - Recurso filho é localizado junto do dono na mesma consulta?

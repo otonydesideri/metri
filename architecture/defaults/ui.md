@@ -19,6 +19,7 @@ not_covered:
   - "o formato de import e a composição no app → frontend/components"
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
+examples: [starter/packages/ui/components.json, starter/packages/ui/src/styles/globals.css, starter/packages/ui/src/lib/utils.ts]
 adr: [metri:ADR-0003]
 enforced_by: [design-tokens, sot, lint]
 status: active
@@ -32,13 +33,7 @@ status: active
   - o `app-web` depende do `@metri/ui` (`workspace:*`) e importa `@metri/ui/styles/globals.css` na entrada.
 - O `globals.css` abre com `@import "tailwindcss"`, `@import "tw-animate-css"` (as animações das classes que os arquivos da CLI usam, dependência do `@metri/ui`) e dois `@source`, relativos a ele: um para os arquivos de `apps/` e outro para os do próprio pacote.
 
-```css
-/* packages/ui/src/styles/globals.css */
-@import "tailwindcss";
-@import "tw-animate-css";
-@source "../../../../apps/**/*.{ts,tsx}";
-@source "../**/*.{ts,tsx}";
-```
+Exemplo completo: `starter/packages/ui/src/styles/globals.css`, com a base neutra de `skills/shape/DESIGN-TEMPLATE.md`.
 
 > **Por quê.** O Tailwind procura classes a partir da pasta de quem processa o CSS, o app. Sem o segundo `@source`, as classes dos componentes do pacote (`bg-primary`, `rounded-md`) somem do CSS final, sem erro.
 
@@ -62,30 +57,7 @@ O `@metri/ui` segue o layout de monorepo do shadcn com uma pasta a mais: os comp
 
 - Os aliases do `components.json` usam o nome do pacote, com o `@`; o `tsconfig.json` do pacote tem o `paths` que os resolve, e os `exports` expõem as mesmas pastas.
 
-```json
-"aliases": {
-  "components": "@metri/ui/components/blocks",
-  "ui": "@metri/ui/components/ui",
-  "lib": "@metri/ui/lib",
-  "hooks": "@metri/ui/hooks",
-  "utils": "@metri/ui/lib/utils"
-}
-```
-
-```json
-// packages/ui/tsconfig.json, in compilerOptions
-"paths": { "@metri/ui/*": ["./src/*"] }
-```
-
-```json
-// packages/ui/package.json
-"exports": {
-  "./components/*": "./src/components/*.tsx",
-  "./lib/*": "./src/lib/*.ts",
-  "./hooks/*": "./src/hooks/*.ts",
-  "./styles/globals.css": "./src/styles/globals.css"
-}
-```
+Exemplo completo: `starter/packages/ui/components.json`, `starter/packages/ui/tsconfig.json` e `starter/packages/ui/package.json`.
 
 ## Componente novo
 
@@ -120,51 +92,7 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 - O `cn` do `@metri/ui` (`packages/ui/src/lib/utils.ts`) monta o tailwind-merge com `extendTailwindMerge`, com cada nível de `typography` do `DESIGN.md` como tamanho de fonte (`theme.text`). Sem isso, o tailwind-merge lê `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
 - Nível novo no `@theme` entra na lista do `cn` na mesma edição.
 
-```ts
-// packages/ui/src/lib/utils.ts
-import { type ClassValue, clsx } from 'clsx';
-import { extendTailwindMerge } from 'tailwind-merge';
-
-const twMerge = extendTailwindMerge({
-  extend: {
-    theme: {
-      text: [
-        'display-xl',
-        'display-lg',
-        'display-md',
-        'display-sm',
-        'body-lg',
-        'body-md',
-        'body-md-strong',
-        'body-sm',
-        'body-sm-strong',
-        'caption',
-        'caption-mono',
-        'code',
-        'button-md',
-        'button-lg',
-      ],
-    },
-  },
-});
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-```
-
-```css
-/* packages/ui/src/styles/globals.css (excerpt) */
-@theme {
-  --font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-
-  --text-display-lg: 32px;
-  --text-display-lg--line-height: 40px;
-  --text-display-lg--letter-spacing: -1.28px;
-  --text-display-lg--font-weight: 600;
-}
-```
+Exemplo completo: `starter/packages/ui/src/lib/utils.ts`, com o `@theme` de `starter/packages/ui/src/styles/globals.css`.
 
 - Espaçamento: a escala padrão do Tailwind, sem variável própria no `@theme`. Ela coincide com a `spacing` do `DESIGN.md` (`xxs` 4px = `1`, `md` 16px = `4`, `4xl` 64px = `16`).
 

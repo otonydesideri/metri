@@ -51,9 +51,9 @@ pnpm add -D github:otonydesideri/metri#v1.3.1                  # ou link:<caminh
 pnpm exec metri init
 ```
 
-O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source") e termina com `metri verify` verde. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
+O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, instalado pelo `pnpm install`. Termina com `metri verify` verde; o `design-tokens` fica pendente até o `/shape` escrever o `docs/DESIGN.md`. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
 
-Com banco de dados, o planejamento da fundação decide o Postgres de desenvolvimento: o agente mostra o que já roda na máquina (`pg_isready`, `docker ps`) e pergunta se o projeto usa esse Postgres ou sobe um container próprio. A partir daí, `pnpm db:up` prepara o banco e o `.env`, e `pnpm db:down` remove o container (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento").
+A slice de fundação fica com o que o starter não tem como saber. Com banco de dados, o agente mostra o que já roda na máquina e pergunta se o projeto usa esse Postgres ou sobe um container próprio; daí em diante, `pnpm db:up` prepara o banco e o `.env`, e no caminho Docker `pnpm db:docker:up` sobe o container e `pnpm db:docker:down` o remove (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"). Com interface, um ticket leva os tokens do `DESIGN.md` para o tema e monta o shell do app.
 
 As skills e os agents entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
 
@@ -125,7 +125,7 @@ docs/
   MATRIX.md                   plano vivo: features, slices e contratos, Fog, Gaps, Pattern proposals
   tickets/<id>.md             um arquivo por ticket (UC ou T): frontmatter, critérios e notas
   tickets/<id>/*.png          evidência dos critérios `Tela:` do ticket, até a poda da slice
-apps/  packages/              código
+apps/  packages/  scripts/    código: no projeto novo, nasce do starter do metri init
 ```
 
 - **Critério de casa:** `docs/` é o conhecimento do produto e vale sem a metodologia; `.metri/` é o estado da metodologia no projeto.
@@ -145,6 +145,7 @@ adr/                            decisões globais (inclusive as que sustentam os
 agents/                         os subagentes por função, no formato do Claude Code ("Agentes")
 skills/                         as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e a base que a skill adapta no projeto (<ARQUIVO>-TEMPLATE.md)
 cli/                            a CLI metri (TypeScript com tsx, sem build) e, em cli/templates/, o que o metri init copia
+starter/                        o código inicial que o metri init copia num projeto novo; o exemplo canônico que as regras citam em examples
 VOCABULARY.md                   vocabulário da metodologia (chaves canônicas)
 README.md                       a metodologia para humano: porquê, princípios, mapa e referências
 AGENTS.md, CLAUDE.md            instruções do agente neste repositório
@@ -340,6 +341,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | Caso de uso como unidade de definição, ligando planejamento e código                                                                                                                  | DDD                                      |
 | `DESIGN.md` como referência de design para agentes                                                                                                                                    | Formato do getdesign.md (spec do Google) |
 | Skill `humanizer`: os sinais de texto gerado por IA e como reescrever sem inventar fato                                                                                               | blader/humanizer (a partir do "Signs of AI writing" da Wikipedia) |
+| Starter: o código da fundação que o `metri init` copia num projeto novo                                                                                                                  | Piloto 2 (a agenda), fundação aceita no `/accept` |
 
 Referências:
 
@@ -381,7 +383,6 @@ Estes itens ainda estão fora do método e são a direção declarada dele. O mo
 | **Board próprio**                               | Formato estrito, legível por máquina, com ids estáveis e chaves em inglês, validado por lint; a MATRIX e os tickets são a fonte única | Um board próprio, sem ferramenta externa: uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles |
 | **Comunicação entre agentes**                   | Comunicação por artefatos (status, `PP`, `GAP`, `notes`), mediada pelo coordenador                                                                                                                         | Canais ou "rooms"; troca de informação entre workers (nunca repasse de trabalho)                   |
 | **Acompanhamento de consumo de tokens**         | Campo `metrics` no ticket, `{ rules, tokens }`, preenchido pelo `/build` no `done`: as regras sempre, os tokens quando a ferramenta expõe o dado | Painel de consumo, orçamentos por agente e por slice                                               |
-| **Starter de código**                           | As regras de `architecture/` descrevem o esqueleto que a slice de fundação monta, e o `metri init` já cria a árvore de docs e os scripts | Um starter com o esqueleto da slice de fundação e do kit de UI: a raiz, o app-api, o app-web, `packages/core`, `db` e `ui`. A fonte é o `../metri-pilot2/COLHEITA.md`, seção "1. Fundação para starter", e os itens que esta versão adiou: o esqueleto de infra do app-api (#11), os primitivos de domínio de `packages/core` (#12), o check de um componente por arquivo (#26), o helper de evidência (#40) e o código do banco por arquivo de e2e (#36) e do `db:up` (#50) |
 | **Times de agentes coordenados**                | Papéis de coordenador e worker; matriz como grafo de dependências (`blocked_by`, `touches`); convenção de branches `slice/<id>` e `ticket/<id>`; worktrees                                                 | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações                 |
 
 ### Validação e melhoria (piloto)
@@ -390,7 +391,7 @@ O piloto é interativo: o usuário responde às perguntas dos portões, numa ini
 
 1. "Começar um projeto" e `metri init`.
 2. `/shape`, com a triagem de design, e `/look-across`.
-3. Slice 0, a fundação e, com interface, tema e shell: se o source ainda não tem template de código (block, registry, regras de lint), ele nasce aqui; os exemplos canônicos passam para o código do starter, e os `.examples.md` viram ponteiro.
+3. Slice 0: o que falta depois do starter, o banco de desenvolvimento e, com interface, o tema e o shell.
 4. 2–3 slices até o `/accept` e um release.
 
 Anotar:

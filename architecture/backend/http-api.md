@@ -24,6 +24,7 @@ not_covered:
   - "o client gerado no frontend — `api/`, o Orval e o cliente HTTP → frontend/data-fetching"
   - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
   - "o schema de form → frontend/forms"
+examples: [starter/apps/app-api/src/openapi.ts, starter/apps/app-api/src/infra/health/health.controller.ts, starter/apps/app-api/src/infra/http/dtos/health/health-response.dto.ts]
 status: active
 ---
 # API HTTP
@@ -108,7 +109,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
 - O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
 - O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`).
-- A geração: `src/openapi.ts` cria o app com `{ preview: true }` e o mesmo prefixo `/api` do `main.ts`, e escreve `openapi.json` com `SwaggerModule.createDocument` e o `cleanupOpenApiDoc` do nestjs-zod. O `DocumentBuilder` fixa `.setOpenAPIVersion('3.1.0')`: o `.nullable()` do Zod 4 sai com `null` no `type` (`["string", "null"]`) ou no `anyOf`, JSON Schema que só o OpenAPI 3.1 aceita e que o Orval lê. Roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"). O `operationIdFactory` devolve o nome do controller sem o sufixo (`CreateOrderController` → `createOrder` no app-web).
+- A geração: `starter/apps/app-api/src/openapi.ts`, que roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"). O `DocumentBuilder` fixa `.setOpenAPIVersion('3.1.0')`: o `.nullable()` do Zod 4 sai com `null` no `type` (`["string", "null"]`) ou no `anyOf`, JSON Schema que só o OpenAPI 3.1 aceita e que o Orval lê.
 - O script `api:generate` da raiz roda os dois lados, o `openapi.json` e o Orval do app-web; o `verify` o roda e falha quando ele muda algum arquivo (`api:drift`).
 - O limite nasce no DTO, e o schema de form do frontend importa a constante gerada, podendo ser mais estrito que ela (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 

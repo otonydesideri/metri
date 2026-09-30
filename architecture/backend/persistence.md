@@ -21,7 +21,7 @@ not_covered:
   - "a query de exibição → backend/reading"
   - "quem importa `@metri/db` e `PrismaService` → backend/boundaries"
   - "o dublê em memória → backend/testing"
-examples: [backend/persistence.examples.md]
+examples: [backend/persistence.examples.md, starter/packages/db/prisma.config.ts, starter/apps/app-api/src/infra/persistence/prisma/prisma.service.ts]
 status: active
 ---
 # Persistência
@@ -144,7 +144,7 @@ Exemplo completo: persistence.examples.md#orderprismamapper
 
 Exemplo completo: persistence.examples.md#orderprismarepositoryimpl
 
-O client do Prisma 7, no `@metri/db` e no `PrismaService`: persistence.examples.md#metridb-e-prismaservice
+O client do Prisma 7: o `@metri/db` do starter (`starter/packages/db/prisma/schema.prisma`, `starter/packages/db/prisma.config.ts`, com a URL fora do schema, e o `postinstall` que gera o client, exportado como `@metri/db/client`) e o `starter/apps/app-api/src/infra/persistence/prisma/prisma.service.ts`, que monta o client com o driver adapter.
 
 - `toDomain()` chama `reconstitute()`, nunca `create()`, pela regra de `domain/model.md`: linha do banco não passa de novo pela validação de nascimento.
 - O delta vem de `getNewItems()`/`getRemovedItems()` da `WatchedList` (`domain/watched-list.md`), que rastreia pertencimento, não conteúdo.
