@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>__PROJECT__</title>
+		<!-- frontend/theming, "Tema: contrato de classe e provider no `@metri/ui`": the background paints before the
+		first paint with the light and the dark --background of packages/ui/src/styles/globals.css, and the script
+		reads the same key (`theme`) as the ThemeProvider (next-themes), with `light` as the default. -->
+		<style>
+			html {
+				background: oklch(1 0 0);
+			}
+			html.dark {
+				background: oklch(0.145 0 0);
+			}
+		</style>
+		<script>
+			document.documentElement.classList.add(
+				localStorage.getItem('theme') === 'dark' ? 'dark' : 'light',
+			);
+		</script>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>

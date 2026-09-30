@@ -63,7 +63,7 @@ O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS 
 
 ```json
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "javascript": { "formatter": { "quoteStyle": "single" } },
   "css": { "parser": { "tailwindDirectives": true } },
@@ -130,7 +130,7 @@ A versão com que a regra foi escrita, conferida na documentação oficial em 27
 | Playwright | 1.63.0 | https://playwright.dev/docs/test-projects | `devices['Desktop Chrome']` e `devices['Pixel 7']` (chromium) |
 | Prisma | 7.10.0 | https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7 | fixar o 7: a tag `latest` do CLI aponta para o 8 em release candidate |
 | pg-boss | 12.35.0 | https://pgboss.io | Node 22.12+ e Postgres 13+ |
-| Biome | 2.5.15 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`, `linter.rules.preset` (o `recommended` está obsoleto); conferido em 30/09/2026 |
+| Biome | 2.5.14 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`, `linter.rules.preset` no lugar do `recommended`, obsoleto desde a 2.5.15; conferido em 30/09/2026 |
 | Vitest | 5.0.2 | https://vitest.dev/config/passwithnotests | |
 | `date-fns` / `@date-fns/tz` | 4.4.0 / 1.5.0 | https://date-fns.org | `TZDate`; conferido em 29/09/2026 |
 | `react-phone-number-input` | 3.4.18 | https://gitlab.com/catamphetamine/react-phone-number-input | `flags` embutidas; entradas `/react-hook-form`; conferido em 29/09/2026 |

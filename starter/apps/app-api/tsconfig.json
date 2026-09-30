@@ -1,0 +1,15 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"types": ["node"]
+	},
+	"include": [
+		"vitest.config.ts",
+		"vitest.config.e2e.ts",
+		"tsdown.config.ts",
+		"src",
+		"test"
+	]
+}

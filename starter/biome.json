@@ -1,0 +1,42 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+	"javascript": { "formatter": { "quoteStyle": "single" } },
+	"css": { "parser": { "tailwindDirectives": true } },
+	"files": {
+		"includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json"]
+	},
+	"linter": {
+		"rules": {
+			"preset": "recommended",
+			"style": {
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"paths": {
+							"cn": "Import cn from '@metri/ui/lib/utils', the kit's cn (defaults/ui)."
+						}
+					}
+				}
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["packages/ui/src/components/ui/**"],
+			"formatter": { "enabled": false },
+			"assist": { "enabled": false },
+			"linter": { "rules": { "preset": "none" } }
+		},
+		{
+			"includes": ["apps/app-api/**"],
+			"javascript": { "parser": { "unsafeParameterDecoratorsEnabled": true } },
+			"linter": {
+				"rules": {
+					"style": { "useImportType": "off" },
+					"complexity": { "noStaticOnlyClass": "off" }
+				}
+			}
+		}
+	]
+}

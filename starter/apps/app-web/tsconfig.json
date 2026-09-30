@@ -1,0 +1,18 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["es2023", "dom", "dom.iterable"],
+		"jsx": "react-jsx",
+		"types": ["node", "vite/client"],
+		"paths": { "@/*": ["./src/*"] }
+	},
+	"include": [
+		"vite.config.ts",
+		"orval.config.ts",
+		"playwright.config.ts",
+		"dev-server-proxy.spec.ts",
+		"src",
+		"test",
+		"e2e"
+	]
+}

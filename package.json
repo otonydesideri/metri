@@ -27,7 +27,7 @@
     "rules-index": "node cli/metri.mjs rules-index",
     "rules-index:check": "node cli/metri.mjs rules-index --check",
     "design-tokens": "node cli/metri.mjs design-tokens",
-    "test": "vitest run cli"
+    "test": "vitest run --dir cli"
   },
   "dependencies": {
     "culori": "^4.0.2",

@@ -1,0 +1,12 @@
+{
+	"$schema": "https://turborepo.com/schema.json",
+	"agentGuidance": false,
+	"globalDependencies": ["biome.json", "tsconfig.base.json"],
+	"tasks": {
+		"dev": { "cache": false, "persistent": true },
+		"build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
+		"typecheck": { "outputs": [] },
+		"lint": { "outputs": [] },
+		"test": { "outputs": [] }
+	}
+}

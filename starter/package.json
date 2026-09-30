@@ -1,0 +1,35 @@
+{
+	"name": "__PROJECT__",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "turbo run dev",
+		"build": "turbo run build",
+		"typecheck": "turbo run typecheck",
+		"lint": "turbo run lint && pnpm --silent boundaries && pnpm --silent access-boundaries && pnpm --silent date-time",
+		"boundaries": "bash scripts/check-boundaries.sh",
+		"access-boundaries": "bash scripts/check-access-boundaries.sh",
+		"date-time": "bash scripts/check-date-time.sh",
+		"test": "turbo run test --",
+		"verify": "metri verify",
+		"api:generate": "pnpm --filter app-api api:generate && pnpm --filter app-web api:generate",
+		"api:drift": "pnpm --silent api:generate && git status --porcelain -- apps/app-api/openapi.json apps/app-web/src/api | (! grep .)",
+		"db:up": "bash scripts/db-up.sh",
+		"db:docker:up": "bash scripts/db-docker.sh up",
+		"db:docker:down": "bash scripts/db-docker.sh down"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "11.20.0",
+			"onFail": "download"
+		}
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.14",
+		"turbo": "2.11.5",
+		"typescript": "6.0.3",
+		"vitest": "5.0.2"
+	}
+}

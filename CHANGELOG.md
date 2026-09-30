@@ -7,7 +7,7 @@
 - **Kit de UI.** Só `packages/ui/src/components/ui/` é código de fornecedor, sem cabeçalho e sem a formatação e o
   preset do Biome. O hook ou bloco que a CLI do shadcn grava fora dali é código do projeto: o `metri sot` pede o
   cabeçalho dele. O Biome de referência barra o pacote npm `cn` com o `noRestrictedImports`, também em
-  `components/ui/`, e troca o `recommended` obsoleto pelo `preset` (Biome 2.5.15).
+  `components/ui/`, e usa o `preset` no lugar do `recommended`, obsoleto desde o Biome 2.5.15.
 - **`metri sot`.** Cada símbolo do `sot:` de uma slice done aparece no caminho linear do `.metri/ARCHITECTURE.md`, e
   um cabeçalho antigo `// SOT:` é erro.
 - **Skills.** A `humanizer` ganha o padrão da ênfase vazia ("exatamente", "é quem", o gerúndio pendurado), e o jargão
