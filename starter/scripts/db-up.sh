@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `pnpm db:up` (node_modules/metri/architecture/infrastructure/runtime.md, "Banco de desenvolvimento"):
-# idempotent, the only step before `pnpm dev`. Creates each missing `.env` from its `.env.example`,
-# checks the Postgres of the DATABASE_URL in apps/app-api/.env with `pg_isready` and fails in seconds
+# idempotent, the only step before `pnpm dev`. Creates the root `.env` from `.env.example` when missing,
+# checks the Postgres of its DATABASE_URL with `pg_isready` and fails in seconds
 # when it does not answer, creates the project's database when it is missing and applies the @metri/db
 # migrations to it. The Postgres is a project delegation: the one already running on the machine, or
 # the project's container (`pnpm db:docker:up`). The client tools come from the host, or from the
@@ -11,26 +11,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 PG_IMAGE=postgres:17-alpine
-ENV_FILES=(apps/app-api/.env packages/db/.env)
 
-for env_file in "${ENV_FILES[@]}"; do
-	if [ ! -f "$env_file" ]; then
-		cp "$env_file.example" "$env_file"
-		echo "criado: $env_file (de $env_file.example)"
-	fi
-done
-
-url_of() {
-	sed -n 's/^DATABASE_URL=//p' "$1" | tail -n 1 | tr -d '"'
-}
-
-database_url="$(url_of apps/app-api/.env)"
-if [ -z "$database_url" ]; then
-	echo "erro: apps/app-api/.env não tem DATABASE_URL (modelo em apps/app-api/.env.example)" >&2
-	exit 1
+if [ ! -f .env ]; then
+	cp .env.example .env
+	echo "criado: .env (de .env.example)"
 fi
-if [ "$(url_of packages/db/.env)" != "$database_url" ]; then
-	echo "aviso: o DATABASE_URL de packages/db/.env difere do de apps/app-api/.env; o db:up usa o do app-api" >&2
+
+database_url="$(sed -n 's/^DATABASE_URL=//p' .env | tail -n 1 | tr -d '"')"
+if [ -z "$database_url" ]; then
+	echo "erro: o .env não tem DATABASE_URL (modelo em .env.example)" >&2
+	exit 1
 fi
 
 without_query="${database_url%%\?*}"
@@ -50,7 +40,7 @@ pg() {
 }
 
 if ! pg pg_isready -q -t 3 -d "$server_url"; then
-	echo "erro: o Postgres do DATABASE_URL (apps/app-api/.env) não responde em $address." >&2
+	echo "erro: o Postgres do DATABASE_URL (.env) não responde em $address." >&2
 	echo "Suba o Postgres que o projeto usa, ou o container dele com 'pnpm db:docker:up', e rode 'pnpm db:up' de novo." >&2
 	exit 1
 fi

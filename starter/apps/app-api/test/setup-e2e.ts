@@ -13,7 +13,7 @@ import { afterAll } from 'vitest';
 const serverUrl = process.env.DATABASE_URL;
 if (!serverUrl) {
 	throw new Error(
-		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo nesse Postgres (apps/app-api/.env.test)',
+		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo nesse Postgres (.env.test na raiz)',
 	);
 }
 

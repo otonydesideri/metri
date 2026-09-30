@@ -19,7 +19,7 @@ status: active
 Backend:
 
 - NestJS sobre Fastify, Prisma/Postgres via `@metri/db` (backend/layers, backend/persistence, infrastructure/runtime).
-- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node --env-file-if-exists=.env dist/main.mjs"` no dev), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
+- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node --env-file-if-exists=../../.env dist/main.mjs"` no dev, com o `.env` da raiz), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
 - Validação de formato HTTP e contrato de API: Zod via `nestjs-zod` (`createZodDto`, `@ZodResponse`), pipe e serializer globais; OpenAPI pelo `@nestjs/swagger`, com o `cleanupOpenApiDoc` do nestjs-zod (backend/http-api, backend/boundaries).
 - Log: `nestjs-pino` (infrastructure/logging).
 - Rate limit: `@nestjs/throttler`, guard global (infrastructure/runtime, backend/errors).

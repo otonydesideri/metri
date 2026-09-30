@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsdown",
-		"dev": "tsdown --watch --on-success \"node --env-file-if-exists=.env dist/main.mjs\"",
-		"start": "node --env-file-if-exists=.env dist/main.mjs",
+		"dev": "tsdown --watch --on-success \"node --env-file-if-exists=../../.env dist/main.mjs\"",
+		"start": "node --env-file-if-exists=../../.env dist/main.mjs",
 		"api:generate": "tsdown --logLevel warn && node dist/openapi.mjs",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",

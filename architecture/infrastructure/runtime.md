@@ -93,7 +93,11 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 
 O Postgres de desenvolvimento é delegação do projeto, decidida no planejamento da fundação: o que já roda na máquina ou um container Docker do projeto (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Delegation matrix").
 
-**Obrigatório.** `pnpm db:up` é idempotente e é o único passo antes do `pnpm dev`: confere o banco com `pg_isready` e falha em segundos quando ele não responde, cria o banco do projeto quando falta, cria cada `.env` que falta a partir do `.env.example` e aplica as migrations.
+**Obrigatório.** `pnpm db:up` é idempotente e é o único passo antes do `pnpm dev`: confere o banco com `pg_isready` e falha em segundos quando ele não responde, cria o banco do projeto quando falta, cria o `.env` da raiz a partir do `.env.example` quando falta e aplica as migrations.
+
+**Obrigatório.** Um `DATABASE_URL` só: o `.env` da raiz, e o `.env.test` ao lado dele para o e2e, lidos pelo app-api e pelo `@metri/db`.
+
+> **Por quê.** Com um `.env` por pacote, o app e as migrations acabam em bancos diferentes sem nenhum erro.
 
 > **Por quê.** Sem o `pg_isready` na frente, o banco fora do ar só aparece no timeout do Prisma, minutos depois.
 
@@ -123,7 +127,8 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - O client nasce só no construtor ou num `useFactory`, nunca no top-level do arquivo?
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?
 - Hook, guard, interceptor e filter ficaram fora do `ServicesModule`, em `infra/common/<fronteira>/`, com o contexto viajando na request?
-- `pnpm db:up` roda de novo sem erro, falha em segundos com o banco fora do ar e cria o `.env` que falta?
+- `pnpm db:up` roda de novo sem erro, falha em segundos com o banco fora do ar e cria o `.env` da raiz quando falta?
+- O `DATABASE_URL` está só no `.env` e no `.env.test` da raiz?
 - Com Docker, há um container só, com o nome do projeto, e o `pnpm db:docker:down` o remove?
 
 ## Em aberto
