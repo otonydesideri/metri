@@ -20,7 +20,7 @@ not_covered:
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
 adr: [metri:ADR-0003]
-enforced_by: [design-tokens]
+enforced_by: [design-tokens, sot, lint]
 status: active
 ---
 # Biblioteca de UI padrão
@@ -49,11 +49,11 @@ status: active
 
 ## O pacote
 
-O `@metri/ui` segue o layout de monorepo do shadcn com uma pasta a mais: os arquivos da CLI ficam em `src/components/ui/` (alias `ui`), separados dos blocos e providers que o projeto escreve, e é essa pasta que o Biome e o `metri sot` deixam de fora.
+O `@metri/ui` segue o layout de monorepo do shadcn com uma pasta a mais: os componentes da CLI ficam em `src/components/ui/` (alias `ui`), separados dos blocos e providers. Só essa pasta é código de fornecedor: fica sem cabeçalho `SOURCE OF TRUTH` e sem a formatação e o preset do Biome. O que a CLI grava fora dela (um hook, um bloco) vira código do projeto no mesmo ticket: ganha o cabeçalho e passa pelo Biome.
 
 | Pasta | O quê |
 | --- | --- |
-| `src/components/ui/` | os arquivos da CLI do shadcn, código do projeto |
+| `src/components/ui/` | os componentes da CLI do shadcn, código de fornecedor |
 | `src/components/blocks/` | blocos: composições de primitivos que mais de um app usa, da CLI ou do projeto |
 | `src/components/providers/` | os providers do kit, como o `ThemeProvider` (`frontend/theming.md`) |
 | `src/hooks/` | os hooks do kit |
@@ -90,15 +90,15 @@ O `@metri/ui` segue o layout de monorepo do shadcn com uma pasta a mais: os arqu
 ## Componente novo
 
 - Entra pela CLI do shadcn (`shadcn@latest add <componente>`), rodada no `@metri/ui`, nunca copiado à mão; a CLI o grava em `src/components/ui/`.
-- No mesmo `add`, o import do `cn` passa ao do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"`, o pacote `cn` do npm: desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`.
-- O arquivo é código do projeto, com os exports nomeados que a CLI escreveu (`Tabs`, `TabsList`); o app o importa por eles (`frontend/components.md`, "Composição e o que sobe pro pacote").
+- O componente usa o `cn` do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"`, o pacote `cn` do npm (desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`), e o `noRestrictedImports` do Biome falha no `lint` até o import passar ao do kit (`defaults/stack.md`, "Configuração de referência").
+- O app importa o componente pelos exports nomeados que a CLI escreveu (`Tabs`, `TabsList`) (`frontend/components.md`, "Composição e o que sobe pro pacote").
 - O `toast` vem da lib `sonner`, como na documentação do shadcn: o `app-web` depende do `sonner` na mesma versão do `@metri/ui`, porque duas cópias da lib não se falam e o toast não chega ao `Toaster`.
 
 ## Ajuste visual
 
 **Obrigatório.** O ajuste visual começa pelo token: a CSS variable de tema em `packages/ui/src/styles/globals.css`, antes de qualquer mudança em componente.
 
-Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo de `src/components/ui/`, que é código do projeto.
+Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo de `src/components/ui/`.
 
 > **Por quê.** A CLI não sobrescreve um arquivo que já existe sem `--overwrite`; atualizar um componente ajustado é uma mesclagem à mão com a versão nova.
 
@@ -177,7 +177,8 @@ export function cn(...inputs: ClassValue[]) {
 - Componente novo entrou pela CLI, no `@metri/ui`, em `src/components/ui/`?
 - O `components.json` tem `style` `new-york`, `baseColor` `neutral` e os aliases no nome do pacote, com o `paths` do `tsconfig.json` e os `exports` para as mesmas pastas?
 - O `globals.css` importa o `tw-animate-css` e tem os dois `@source`, o de `apps/` e o do pacote?
-- Os arquivos da CLI importam o `cn` do kit? `grep -rn "import { cn }" packages/ui/src/components | grep -v "@metri/ui/lib/utils"` devolve vazio.
+- Os arquivos da CLI importam o `cn` do kit, pelo `noRestrictedImports` do Biome? (check: lint)
+- Hook e bloco gravados pela CLI fora de `src/components/ui/` têm o cabeçalho `SOURCE OF TRUTH`? (check: sot)
 - O ajuste visual começou pelo token, e cor nova tem valor em `:root` e em `.dark`?
 - O `@theme` tem `--font-sans` e `--font-mono` com as famílias do `DESIGN.md`?
 - O `@theme` tem um `--text-<nível>` por nível de `typography` do `DESIGN.md`? (check: design-tokens)

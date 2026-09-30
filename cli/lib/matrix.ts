@@ -1,6 +1,6 @@
-// Leitura do .metri/MATRIX.md: títulos, blocos (feature, slice) e itens de lista (Fog, Gaps, Pattern proposals).
-// O conteúdo de cada ticket (UC ou T) mora no arquivo dele, em .metri/tickets/<id>.md (ticket-lint.ts).
-// Só lê; o que é válido quem decide é o docs-lint. Linha que não se lê entra em problems.
+// Reading of .metri/MATRIX.md: titles, blocks (feature, slice) and list items (Fog, Gaps, Pattern proposals).
+// Each ticket's content (UC or T) lives in its own file, .metri/tickets/<id>.md (ticket-lint.ts).
+// It only reads; docs-lint decides what is valid. An unreadable line goes into problems.
 
 export type Field = { key: string; value: string; line: number };
 export type Kind = 'feature' | 'slice';
@@ -20,7 +20,7 @@ export type Matrix = {
   problems: { line: number; message: string }[];
 };
 
-// Campo cujo valor é prosa: a linha inteira, sem separar por " · ".
+// A field whose value is prose: the whole line, not split by " · ".
 const PROSE_KEYS = ['outcome'];
 
 const HEADING_IDS: Record<string, { kind: Kind; pattern: RegExp; section: string }> = {
@@ -113,7 +113,7 @@ function fieldsOf(text: string, line: number): Field[] | undefined {
   return fields;
 }
 
-// "[a, `b, c`, d]" → ["a", "`b, c`", "d"]; undefined quando o valor não é lista.
+// "[a, `b, c`, d]" → ["a", "`b, c`", "d"]; undefined when the value is not a list.
 export function listOf(value: string): string[] | undefined {
   const match = /^\[(.*)\]$/.exec(value);
   if (!match) {

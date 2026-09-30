@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.4.0 (em preparo)
+
+### O que muda
+
+- **Kit de UI.** Só `packages/ui/src/components/ui/` é código de fornecedor, sem cabeçalho e sem a formatação e o
+  preset do Biome. O hook ou bloco que a CLI do shadcn grava fora dali é código do projeto: o `metri sot` pede o
+  cabeçalho dele. O Biome de referência barra o pacote npm `cn` com o `noRestrictedImports`, também em
+  `components/ui/`, e troca o `recommended` obsoleto pelo `preset` (Biome 2.5.15).
+- **`metri sot`.** Cada símbolo do `sot:` de uma slice done aparece no caminho linear do `.metri/ARCHITECTURE.md`, e
+  um cabeçalho antigo `// SOT:` é erro.
+- **Skills.** A `humanizer` ganha o padrão da ênfase vazia ("exatamente", "é quem", o gerúndio pendurado), e o jargão
+  interno passa a cobrir a linguagem de construção na interface ("layout público", "(S4)", "mock").
+- **CLI.** Os comentários do código da CLI passam a inglês.
+
 ## v1.3.1 (2026-09-30)
 
 Revisão pós-release da v1.3.0: o cabeçalho e os comentários de código em inglês, o `@metri/ui` pelo caminho manual

@@ -1,4 +1,4 @@
-// init: prepara o projeto para o método, de forma mecânica e idempotente. A explicação está no --help.
+// init: prepares the project for the method, mechanically and idempotently. --help has the details.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -81,14 +81,14 @@ function write(path: string, content: string): void {
   console.log(`${isNew ? 'criado' : 'atualizado'}: ${path}`);
 }
 
-// Seções "## ..." de um markdown, cada uma com o título e o corpo.
+// The "## ..." sections of a markdown, each with its title and body.
 function sections(source: string): string[] {
   return source.split(/\n(?=## )/).filter((part) => part.startsWith('## '));
 }
 
 function agentFiles(): void {
   const claudePointer = template('CLAUDE.md');
-  // CLAUDE.md e AGENTS.md ligados um ao outro por link têm um conteúdo só, lido pelo AGENTS.md.
+  // CLAUDE.md and AGENTS.md linked to each other hold one content, read through AGENTS.md.
   const isLinked = linkTargetOf('CLAUDE.md') !== undefined || linkTargetOf('AGENTS.md') !== undefined;
   let agents = existsSync('AGENTS.md') ? readFileSync('AGENTS.md', 'utf8') : template('AGENTS.md');
   for (const section of sections(template('AGENTS.md'))) {
@@ -162,7 +162,7 @@ function packageScripts(): void {
   const scripts: Record<string, string> = { ...(pkg.scripts ?? {}) };
   for (const [name, command] of Object.entries(scripts)) {
     if (command.includes('.metri/template/scripts/')) {
-      delete scripts[name]; // script da v1.1, que rodava o source montado em .metri/.
+      delete scripts[name]; // a v1.1 script, which ran the source mounted in .metri/.
     }
   }
   pkg.scripts = { ...scripts, ...SCRIPTS };

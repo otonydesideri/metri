@@ -1,4 +1,4 @@
-// verify: roda os checks e soma o resultado. A explicação está no --help.
+// verify: runs the checks and adds up the result. --help has the details.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
@@ -47,7 +47,7 @@ function spawn(command: string, commandArgs: string[]): Result {
 const metri = (...rest: string[]) => () => spawn(process.execPath, [BIN, ...rest, '--root', root]);
 const pnpm = (name: string) => () => spawn('pnpm', ['--silent', 'run', name]);
 
-// Arquivos fora do estado do commit (modificados ou novos), com o hash do conteúdo de cada um.
+// Files that differ from the commit (modified or new), each with the hash of its content.
 function dirtyFiles(): Map<string, string> | undefined {
   const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' });
   const status = spawnSync('git', ['status', '--porcelain', '-z', '--untracked-files=all'], { encoding: 'utf8' });
@@ -62,9 +62,9 @@ function dirtyFiles(): Map<string, string> | undefined {
       continue;
     }
     if (/[RC]/.test(entry.slice(0, 2))) {
-      index++; // o caminho de origem de um rename vem na entrada seguinte
+      index++; // the source path of a rename comes in the next entry
     }
-    // no porcelain, o caminho é relativo à raiz do repositório
+    // in porcelain, the path is relative to the repository root
     const path = join(top.stdout.trim(), entry.slice(3));
     const content = !existsSync(path) ? 'removido' : statSync(path).isFile() ? readFileSync(path) : 'diretório';
     files.set(relative(root, path), createHash('sha1').update(content).digest('hex'));
@@ -72,7 +72,7 @@ function dirtyFiles(): Map<string, string> | undefined {
   return files;
 }
 
-// api:drift: o gerador do contrato roda de novo, e qualquer arquivo que ele mude é deriva.
+// api:drift: the contract generator runs again, and any file it changes is drift.
 function apiDrift(): Result {
   const before = dirtyFiles();
   if (before === undefined) {

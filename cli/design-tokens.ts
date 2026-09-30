@@ -1,4 +1,4 @@
-// design-tokens: confere se o tema do código segue os tokens do docs/DESIGN.md. A explicação está no --help.
+// design-tokens: checks that the code's theme follows the tokens of docs/DESIGN.md. --help has the details.
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { differenceEuclidean, parse } from 'culori';
@@ -32,7 +32,7 @@ const DEFAULT_THEME = 'packages/ui/src/styles/globals.css';
 const DEFAULT_UTILS = 'packages/ui/src/lib/utils.ts';
 const DEFAULT_INDEX = 'apps/app-web/index.html';
 const DARK_SUFFIX = '-dark';
-// Distância no OKLab abaixo da qual duas cores são a mesma, depois do arredondamento de cada formato.
+// OKLab distance below which two colors are the same, after each format's rounding.
 const COLOR_TOLERANCE = 0.002;
 const TYPOGRAPHY_VARS: Record<string, string> = {
   fontSize: '',
@@ -59,11 +59,11 @@ function pending(reason: string): never {
   process.exit(0);
 }
 
-// Variáveis de :root, .dark e @theme do CSS do tema (só blocos sem chaves aninhadas).
+// Variables of :root, .dark and @theme in the theme CSS (only blocks without nested braces).
 function blocksOf(css: string): Blocks {
   const blocks: Blocks = { light: new Map(), dark: new Map(), theme: new Map() };
   for (const [, selector, body] of css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    // o seletor é o que vem depois do último `;`: @import, @source e @custom-variant antes do bloco ficam de fora
+    // the selector is what follows the last `;`: @import, @source and @custom-variant before the block are left out
     const name = selector.split(';').at(-1)?.trim() ?? '';
     const target =
       name === ':root' ? blocks.light : name === '.dark' ? blocks.dark : name.startsWith('@theme') ? blocks.theme : undefined;
@@ -152,7 +152,7 @@ for (const [level, properties] of Object.entries(typography)) {
 
 const codeProblems: string[] = [];
 
-// theme.text do cn × --text-<nível> do @theme (as chaves --text-<nível>--<propriedade> ficam de fora).
+// theme.text of cn × --text-<level> of @theme (the --text-<level>--<property> keys are left out).
 if (existsSync(utilsPath)) {
   const levels = [...blocks.theme.keys()].filter((key) => key.startsWith('text-') && !key.includes('--')).map((key) => key.slice(5));
   const list = /\btext\s*:\s*\[([\s\S]*?)\]/.exec(readFileSync(utilsPath, 'utf8'))?.[1];
@@ -168,7 +168,7 @@ if (existsSync(utilsPath)) {
   }
 }
 
-// O <style> inline do index.html pinta html e html.dark com o --background claro e o escuro.
+// The inline <style> of index.html paints html and html.dark with the light and the dark --background.
 if (existsSync(indexPath)) {
   const style = [...readFileSync(indexPath, 'utf8').matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(([, css]) => css).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
   for (const [selector, block, variableBlock] of [['html', blocks.light, ':root'], ['html.dark', blocks.dark, '.dark']] as const) {

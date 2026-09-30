@@ -1,5 +1,5 @@
-// rules-for: devolve as regras que valem para caminhos ou para um ticket, sem o conteúdo delas.
-// A explicação completa está no --help.
+// rules-for: returns the rules that apply to paths or to a ticket, without their content.
+// --help has the details.
 import { existsSync, readFileSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
 import picomatch from 'picomatch';
@@ -65,7 +65,7 @@ type Rule = {
   description: string;
   appliesTo: string[];
   readFirst: string[];
-  // Ids de regra que ela cita: os de not_covered e os caminhos `<área>/<tema>.md` do corpo.
+  // Rule ids it cites: those of not_covered and the `<area>/<topic>.md` paths of the body.
   cited: string[];
   isConditional: boolean;
   isProject: boolean;
@@ -207,7 +207,7 @@ if (ticket !== undefined) {
   }
   const frontmatter = frontmatterOf(readFileSync(ticketPath, 'utf8'));
   const areas = asList(frontmatter?.areas);
-  // O primeiro ticket depois de um pattern novo carrega as regras que o pattern acabou de escrever.
+  // The first ticket after a new pattern carries the rules the pattern has just written.
   afterPattern = asList(frontmatter?.blocked_by).find((id) => {
     const blocker = `${TICKETS_DIR}/${id}.md`;
     return existsSync(blocker) && frontmatterOf(readFileSync(blocker, 'utf8'))?.type === 'pattern';
@@ -240,7 +240,7 @@ while (queue.length > 0) {
   }
 }
 
-// No projeto, capacidade condicional só vale quando está em "Capacidades ativas".
+// In a project, a conditional capability applies only when it is in "Capacidades ativas".
 function isActive(rule: Rule): boolean {
   return !layout.isProject || !rule.isConditional || activeIds.has(rule.id);
 }

@@ -59,19 +59,35 @@ Quando o produto tem identidade autenticada, a delegação "Autenticação" (`no
 
 ## Configuração de referência
 
-O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS (`tailwindDirectives`: `@theme`, `@source`, `@custom-variant`). Ficam fora dele, com `!` (o scanner ainda lê os tipos): o código gerado do contrato de API, que o `api:drift` confere, e os arquivos da CLI do shadcn em `packages/ui/src/components/ui/`, para a CLI e o código continuarem iguais. O override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
+O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS (`tailwindDirectives`: `@theme`, `@source`, `@custom-variant`). O código gerado do contrato de API, que o `api:drift` confere, fica fora dele, com `!` (o scanner ainda lê os tipos). O código de fornecedor do kit, `packages/ui/src/components/ui/`, fica sem formatação e sem as regras do preset, para a CLI e o código continuarem iguais; só o `noRestrictedImports` vale nele, e em todo o repositório: barra o pacote npm `cn`, que a CLI do shadcn grava no lugar do `cn` do kit (`defaults/ui.md`, "Componente novo"). O override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
 
 ```json
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "javascript": { "formatter": { "quoteStyle": "single" } },
   "css": { "parser": { "tailwindDirectives": true } },
   "files": {
-    "includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json", "!packages/ui/src/components/ui"]
+    "includes": ["**", "!apps/app-web/src/api", "!apps/app-api/openapi.json"]
   },
-  "linter": { "rules": { "recommended": true } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": { "paths": { "cn": "Import cn from '@metri/ui/lib/utils', the kit's cn (defaults/ui)." } }
+        }
+      }
+    }
+  },
   "overrides": [
+    {
+      "includes": ["packages/ui/src/components/ui/**"],
+      "formatter": { "enabled": false },
+      "assist": { "enabled": false },
+      "linter": { "rules": { "preset": "none" } }
+    },
     {
       "includes": ["apps/app-api/**"],
       "javascript": { "parser": { "unsafeParameterDecoratorsEnabled": true } },
@@ -114,7 +130,7 @@ A versão com que a regra foi escrita, conferida na documentação oficial em 27
 | Playwright | 1.63.0 | https://playwright.dev/docs/test-projects | `devices['Desktop Chrome']` e `devices['Pixel 7']` (chromium) |
 | Prisma | 7.10.0 | https://www.prisma.io/docs/guides/upgrade-prisma-orm/v7 | fixar o 7: a tag `latest` do CLI aponta para o 8 em release candidate |
 | pg-boss | 12.35.0 | https://pgboss.io | Node 22.12+ e Postgres 13+ |
-| Biome | 2.5.14 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`; conferido em 29/09/2026 |
+| Biome | 2.5.15 | https://biomejs.dev/reference/configuration | `vcs`, `css.parser.tailwindDirectives`, `linter.rules.preset` (o `recommended` está obsoleto); conferido em 30/09/2026 |
 | Vitest | 5.0.2 | https://vitest.dev/config/passwithnotests | |
 | `date-fns` / `@date-fns/tz` | 4.4.0 / 1.5.0 | https://date-fns.org | `TZDate`; conferido em 29/09/2026 |
 | `react-phone-number-input` | 3.4.18 | https://gitlab.com/catamphetamine/react-phone-number-input | `flags` embutidas; entradas `/react-hook-form`; conferido em 29/09/2026 |

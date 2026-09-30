@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// metri: o bin do pacote. Roda o TypeScript de cli/ sem build, pelo tsx (dependência do pacote).
+// metri: the package bin. Runs the TypeScript in cli/ without a build, through tsx (a package dependency).
 import { register } from 'tsx/esm/api';
 
 register();

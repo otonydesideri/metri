@@ -12,7 +12,7 @@ function lint(dir: string): { status: number | null; lines: string[] } {
   return run('docs-lint', ['--root', dir]);
 }
 
-// Roda o docs-lint numa cópia da fixture depois da mudança e devolve a saída.
+// Runs docs-lint on a copy of the fixture after the change and returns the output.
 function lintChanged(change: (dir: string) => void): { status: number | null; output: string } {
   const dir = copyFixture();
   change(dir);
@@ -31,7 +31,7 @@ function inTicket(id: string, from: string, to: string): (dir: string) => void {
 describe('docs-lint', { timeout: 60_000 }, () => {
   it('passa: a fixture de projeto e este repositório (modo source)', () => {
     expect(lint(copyFixture())).toEqual({ status: 0, lines: [] });
-    // No source, só sai aviso de citação a arquivo planejado (cli/docs-lint.planned.json).
+    // In the source, the only warnings are citations of planned files (cli/docs-lint.planned.json).
     const source = lint(REPO);
     expect(source.status).toBe(0);
     expect(source.lines.filter((line) => !/: aviso: citação: .+ é arquivo planejado/.test(line))).toEqual([]);
@@ -296,7 +296,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     const { status, output } = lintChanged(inMatrix('ucs: [UC1.1, UC1.2]', 'ucs: [UC1.2]'));
     expect(status).toBe(1);
     expect(output).toContain('UC1.1: fora da lista ucs da feature F1 em .metri/MATRIX.md');
-    // Draft não precisa aparecer em ucs (nem a chave precisa existir).
+    // A draft need not appear in ucs (nor must the key exist).
     expect(lintChanged(inMatrix('ucs: [UC2.1]\n', '')).status).toBe(0);
   });
 
@@ -324,7 +324,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   });
 
   it('adr: metri:ADR-NNNN é global e ADR-NNNN é do projeto, sem cair de um no outro', () => {
-    // A fixture tem docs/adr/0001; o pacote tem os globais 0001 e 0002.
+    // The fixture has docs/adr/0001; the package has the global 0001 and 0002.
     const rule = '.metri/rules/frontend/order-list.md';
     const { output } = lintChanged((dir) =>
       edit(dir, rule, (source) => source.replace('adr: [ADR-0001]', 'adr: [ADR-0001, metri:ADR-0001, ADR-0002]')),
@@ -339,7 +339,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
 
   it('evidência: critério Tela: de ticket done tem desktop e mobile, até a poda da slice', () => {
     const done = inTicket('UC1.1', 'status: in_progress', 'status: done');
-    // critério que não começa com "Tela:" não pede evidência, com qualquer área
+    // a criterion that does not start with "Tela:" asks for no evidence, whatever the area
     expect(lintChanged(done)).toEqual({ status: 0, output: '' });
     const screen = (dir: string) => {
       done(dir);
@@ -355,7 +355,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
       write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
     });
     expect(withEvidence).toEqual({ status: 0, output: '' });
-    // sub-item recuado não é critério; n é a ordem entre todos os critérios
+    // an indented sub-item is not a criterion; n is the order among all criteria
     const second = lintChanged((dir) => {
       screen(dir);
       inTicket('UC1.1', '- [ ] Tela: a lista mostra', '- [ ] O backend ordena.\n  - inclusive com zero pedidos\n- [ ] Tela: a lista mostra')(dir);

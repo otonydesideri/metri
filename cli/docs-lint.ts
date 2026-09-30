@@ -1,4 +1,4 @@
-// docs-lint: lint estrutural do source e do projeto. As checagens de cada modo estão no --help.
+// docs-lint: structural lint of the source and of the project. --help lists the checks of each mode.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, normalize, relative, resolve } from 'node:path';
@@ -120,18 +120,18 @@ const root = resolve(takeOption(args, '--root') ?? '.');
 process.chdir(root);
 
 const layout = layoutOf();
-// Pastas de regra onde um id é procurado: o projeto primeiro, depois o global do pacote.
+// Rule folders where an id is looked up: the project first, then the package's global one.
 const RULE_DIRS = layout.isProject ? [PROJECT_RULES, layout.globalDir] : ['architecture'];
 const ARCHITECTURE = 'architecture';
 const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'agents', 'cli/templates', 'VOCABULARY.md', 'README.md'];
-// Onde o README não é citado: as regras, as skills (com os formatos de cada uma), os agents e os templates.
+// Where the README is not cited: the rules, the skills (with each one's formats), the agents and the templates.
 const NO_README_ROOTS = ['architecture', 'skills', 'agents', 'cli/templates'];
-// Prefixo de um arquivo do pacote citado a partir do projeto; no source, é o caminho sem ele.
+// Prefix of a package file cited from the project; in the source, the path goes without it.
 const PACKAGE_PREFIX = /^node_modules\/metri\//;
 const README_CITATION = /`(?:node_modules\/metri\/)?README\.md`/;
 const SKILLS = 'skills';
 const AGENTS = 'agents';
-// Pastas fora da varredura de markdown do source: a fixture de teste é um projeto.
+// Folders outside the source's markdown walk: the test fixture is a project.
 const SKIPPED_DIRS = ['node_modules', '__fixtures__'];
 const GENERATED_HEADER = 'Gerado por rules-index. Não edite.';
 const REQUIRED_KEYS = ['id', 'description', 'use_when', 'status'];
@@ -154,16 +154,16 @@ const PROJECT_TARGETS = [
   'project:DESIGN',
   'project:ARCHITECTURE',
 ];
-// Arquivos do projeto citados pelo nome: moram no projeto, não no source.
+// Project files cited by name: they live in the project, not in the source.
 const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md', 'ARCHITECTURE.md'];
 const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md'];
 const METRI_FILES = [PROJECT_INDEX, MATRIX];
 const EVIDENCE_DEVICES = ['desktop', 'mobile'];
-// Caminho de arquivo .md: ticket e MATRIX citam só ids.
+// Path of a .md file: tickets and the MATRIX cite only ids.
 const MD_PATH = /(?<![\w/.-])[\w./-]*[\w-]\.md(?![\w-])/g;
 const AGENTS_MAX_LINES = 30;
 const TICKET_ID_IN_TEXT = /\b(?:UC|T)\d+\.\d+\b/g;
-// Código do projeto onde GAP-n e PP-n são conferidos, e as pastas que ficam de fora.
+// Project code where GAP-n and PP-n are checked, and the folders left out.
 const CODE_DIRS = ['apps', 'packages'];
 const CODE_FILE = /\.[cm]?[jt]sx?$/;
 const CODE_SKIPPED = ['node_modules', 'dist', 'build', 'coverage', '.turbo', 'generated'];
@@ -188,7 +188,7 @@ function warn(file: string, line: number, message: string): void {
   problems.push({ file, line, message, isWarning: true });
 }
 
-// Os .md de uma pasta, recursivamente; um arquivo .md entra sozinho.
+// The .md files of a folder, recursively; a .md file counts on its own.
 function listMarkdown(dir: string): string[] {
   if (!existsSync(dir)) {
     return [];
@@ -212,7 +212,7 @@ function isRuleFile(path: string): boolean {
   return name !== 'INDEX.md' && !name.endsWith('.examples.md');
 }
 
-// Linhas fora do frontmatter e de bloco de código cercado, com o número de cada uma.
+// Lines outside the frontmatter and fenced code blocks, each with its number.
 function proseLines(source: string): { text: string; line: number }[] {
   const lines = source.split('\n');
   const result: { text: string; line: number }[] = [];
@@ -261,7 +261,7 @@ function headingsOf(path: string): Heading[] {
   return headings;
 }
 
-// A seção citada é o título inteiro, o trecho antes dos dois-pontos ou o título sem o parêntese final.
+// The cited section is the whole title, the part before the colon or the title without the final parenthesis.
 function hasSection(path: string, section: string): boolean {
   const wanted = section.replaceAll('`', '');
   return headingsOf(path).some(({ text }) => {
@@ -284,8 +284,8 @@ function citationCandidates(from: string, cited: string): string[] {
   );
 }
 
-// Resolve o caminho citado: raiz do source, architecture/ e a pasta do arquivo que cita.
-// Devolve null para arquivo do projeto, que o source não tem como conferir.
+// Resolves the cited path: the source root, architecture/ and the folder of the citing file.
+// Returns null for a project file, which the source cannot check.
 function resolveCitation(from: string, cited: string): string | null | undefined {
   if (!layout.isProject && (/^(docs|\.metri)\//.test(cited) || PROJECT_FILES.includes(cited))) {
     return null;
@@ -298,13 +298,13 @@ function plannedBy(from: string, cited: string): string | undefined {
   return match === undefined ? undefined : planned[match];
 }
 
-// Citação: o caminho .md (do source, do pacote em node_modules/metri/ ou do projeto em .metri/), a âncora
-// opcional e, depois do caminho entre crases, as seções entre aspas (`x.md`, "A" e "B" ou `x.md` ("A", ...)).
+// Citation: the .md path (of the source, of the package in node_modules/metri/ or of the project in .metri/), the
+// optional anchor and, after the backticked path, the quoted sections (`x.md`, "A" e "B" or `x.md` ("A", ...)).
 const CITATION =
   /(?<![\w./<>*{}-])(`?)((?:\.metri\/)?[A-Za-z0-9_][\w./-]*\.md)(#[\w-]+)?(`?)((?:(?:,| e|,? \(|) ?"[^"]+")*)/g;
 
-// Fora de crase, só conta o que tem cara de caminho: pasta, âncora ou arquivo de exemplos.
-// O resto é prosa que termina em .md (o nome de um site, por exemplo).
+// Outside backticks, only what looks like a path counts: a folder, an anchor or an examples file.
+// The rest is prose that ends in .md (a site's name, for example).
 function isPathLike(cited: string, anchor: string | undefined): boolean {
   return cited.includes('/') || anchor !== undefined || cited.endsWith('.examples.md');
 }
@@ -336,7 +336,7 @@ function lintCitations(path: string): void {
       if (anchor && !hasAnchor(target, anchor.slice(1))) {
         report(path, line, `âncora: ${cited}${anchor} não resolve`);
       }
-      // A seção só conta quando vem logo depois do caminho entre crases.
+      // The section counts only right after the backticked path.
       if (!openingTick || !closingTick || !sectionList) {
         continue;
       }
@@ -364,12 +364,12 @@ function keyLine(lines: string[], key: string): number {
   return index === -1 ? 1 : index + 1;
 }
 
-// Caminho da regra com esse id, na primeira pasta de regra que a tem.
+// Path of the rule with this id, in the first rule folder that has it.
 function rulePath(id: string): string | undefined {
   return RULE_DIRS.map((dir) => join(dir, `${id}.md`)).find((path) => existsSync(path) && isRuleFile(path));
 }
 
-// Pasta de um id de ADR, sem cair de uma na outra: metri:ADR-NNNN é global (adr/ do pacote), ADR-NNNN é do projeto.
+// Folder of an ADR id, with no fallback between them: metri:ADR-NNNN is global (the package's adr/), ADR-NNNN is the project's.
 function adrDir(id: string): string {
   return id.startsWith('metri:') ? layout.globalAdrDir : 'docs/adr';
 }
@@ -384,7 +384,7 @@ function adrPath(id: string): string | undefined {
   return name ? join(dir, name) : undefined;
 }
 
-// Destino de read_first e not_covered: id de regra ou destino project: da lista fechada.
+// Target of read_first and not_covered: a rule id or a project: target from the closed list.
 function lintTarget(path: string, line: number, key: string, target: string): void {
   if (target.startsWith('project:')) {
     if (!PROJECT_TARGETS.includes(target)) {
@@ -502,7 +502,7 @@ function lintGenerated(): void {
   }
 }
 
-// Toda linha conta, inclusive frontmatter e bloco de código: o README é para humano.
+// Every line counts, frontmatter and code blocks included: the README is for humans.
 function lintReadmeCitations(path: string): void {
   const source = readFileSync(path, 'utf8');
   if (source.startsWith(GENERATED_HEADER)) {
@@ -525,7 +525,7 @@ function lintPlanned(): void {
   }
 }
 
-// Cada pasta de skills/ tem SKILL.md, com name igual ao nome da pasta e description no frontmatter.
+// Each folder of skills/ has a SKILL.md, with name equal to the folder name and a description in the frontmatter.
 function lintSkills(): void {
   if (!existsSync(SKILLS)) {
     return;
@@ -554,7 +554,7 @@ function lintSkills(): void {
   }
 }
 
-// Cada agents/<nome>.md tem name igual ao nome do arquivo, description e, quando tem, tools não vazio.
+// Each agents/<name>.md has name equal to the file name, a description and, when present, a non-empty tools.
 function lintAgentFiles(): void {
   for (const name of existsSync(AGENTS) ? readdirSync(AGENTS).filter((file) => file.endsWith('.md')).sort() : []) {
     const path = join(AGENTS, name);
@@ -617,11 +617,11 @@ function lintMetriTree(): void {
         report(path, 1, `árvore de .metri/: INDEX de área é gerado ("${GENERATED_HEADER}")`);
       }
     } else if (/^\.metri\/rules\/[^/]+\/[a-z0-9-]+\.examples\.md$/.test(path)) {
-      continue; // exemplos de regra não têm frontmatter.
+      continue; // rule examples have no frontmatter.
     } else if (/^\.metri\/rules\/[^/]+\/[a-z0-9-]+\.md$/.test(path)) {
       lintFrontmatter(path, PROJECT_RULES);
     } else if (/^\.metri\/tickets\/[^/]+\.md$/.test(path)) {
-      continue; // checado em lintTickets, que também confere o nome do arquivo.
+      continue; // checked in lintTickets, which also checks the file name.
     } else if (/^\.metri\/tickets\/(?:UC|T)\d+\.\d+\/[^/]+\.png$/.test(path)) {
       continue;
     } else {
@@ -630,7 +630,7 @@ function lintMetriTree(): void {
   }
 }
 
-// .claude/skills/<nome> e .claude/agents/<nome>.md: um link para cada skill e agent do pacote.
+// .claude/skills/<name> and .claude/agents/<name>.md: one link per skill and agent of the package.
 function lintLinks(): void {
   for (const { path, target } of packageLinks()) {
     const current = linkTargetOf(path);
@@ -642,7 +642,7 @@ function lintLinks(): void {
   }
 }
 
-// Ticket e MATRIX citam só ids: caminho de arquivo .md neles é erro.
+// Tickets and the MATRIX cite only ids: a .md file path in them is an error.
 function lintIdsOnly(path: string): void {
   readFileSync(path, 'utf8')
     .split('\n')
@@ -653,7 +653,7 @@ function lintIdsOnly(path: string): void {
     });
 }
 
-// Ids da feature (F<n>) e da slice (S<n>) presentes na matriz, e o valor de "ucs" de cada feature.
+// Feature (F<n>) and slice (S<n>) ids present in the matrix, and the "ucs" value of each feature.
 function matrixIds(matrixSource: string): {
   featureIds: Set<string>;
   sliceIds: Set<string>;
@@ -672,7 +672,7 @@ function matrixIds(matrixSource: string): {
   return { featureIds, sliceIds, featureUcs, featureSlices };
 }
 
-// Tickets (.metri/tickets/<id>.md): frontmatter, corpo e referências para a MATRIX.
+// Tickets (.metri/tickets/<id>.md): frontmatter, body and references to the MATRIX.
 function lintTickets(): void {
   const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
   const { featureIds, sliceIds, featureUcs, featureSlices } = matrixIds(matrixSource);
@@ -701,7 +701,7 @@ function lintTickets(): void {
     try {
       frontmatter = frontmatterOf(source);
     } catch {
-      continue; // YAML inválido já saiu como erro em ticketProblems.
+      continue; // invalid YAML has already come out as an error in ticketProblems.
     }
     if (typeof frontmatter?.slice === 'string') {
       servedSlices.add(frontmatter.slice);
@@ -719,7 +719,7 @@ function lintTickets(): void {
   }
 }
 
-// Ticket done tem, por critério "Tela:", a evidência em desktop e em mobile (frontend/experience).
+// A done ticket has, per "Tela:" criterion, the evidence on desktop and on mobile (frontend/experience).
 function lintEvidence(path: string, id: string, frontmatter: Record<string, unknown> | undefined, source: string): void {
   if (frontmatter?.status !== 'done') {
     return;
@@ -734,7 +734,7 @@ function lintEvidence(path: string, id: string, frontmatter: Record<string, unkn
   });
 }
 
-// PNG de ticket de slice done: a poda do /accept tira a evidência da árvore (metri prune).
+// PNG of a ticket of a done slice: the /accept prune removes the evidence from the tree (metri prune).
 function lintPrunedEvidence(files: string[], collapsed: Set<string>): void {
   for (const name of files) {
     const id = name.replace(/\.md$/, '');
@@ -742,7 +742,7 @@ function lintPrunedEvidence(files: string[], collapsed: Set<string>): void {
     try {
       slice = frontmatterOf(readFileSync(join(TICKETS_DIR, name), 'utf8'))?.slice;
     } catch {
-      continue; // YAML inválido já sai como erro na checagem do ticket.
+      continue; // invalid YAML already comes out as an error in the ticket check.
     }
     const dir = join(TICKETS_DIR, id);
     if (!collapsed.has(String(slice)) || !existsSync(dir)) {
@@ -754,7 +754,7 @@ function lintPrunedEvidence(files: string[], collapsed: Set<string>): void {
   }
 }
 
-// Cada critério do primeiro nível ("- [ ]" ou "- [x]" sem recuo) da seção "Critérios": a linha e se é "Tela:".
+// Each top-level criterion ("- [ ]" or "- [x]" without indent) of the "Critérios" section: its line and whether it is "Tela:".
 function topLevelCriteria(source: string): { line: number; isScreen: boolean }[] {
   const lines = source.split('\n');
   const start = lines.indexOf('## Critérios');
@@ -768,7 +768,7 @@ function topLevelCriteria(source: string): { line: number; isScreen: boolean }[]
   return result;
 }
 
-// A evidência podada saiu da árvore, mas continua no histórico do git.
+// Pruned evidence left the tree but stays in the git history.
 function isInGitHistory(path: string): boolean {
   const result = spawnSync('git', ['log', '-1', '--format=%h', '--', path], { encoding: 'utf8' });
   return result.status === 0 && result.stdout.trim() !== '';
@@ -826,7 +826,7 @@ function lintMatrix(): void {
   }
 }
 
-// Glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum arquivo: candidata a poda.
+// A glob of a project rule or of "Caminhos do projeto" that matches no file: a pruning candidate.
 function lintAppliesTo(): void {
   const files = projectFiles();
   const globs: { glob: string; file: string; line: number }[] = [];
@@ -836,7 +836,7 @@ function lintAppliesTo(): void {
     try {
       frontmatter = frontmatterOf(source);
     } catch {
-      continue; // YAML inválido já sai como erro na checagem do frontmatter.
+      continue; // invalid YAML already comes out as an error in the frontmatter check.
     }
     for (const glob of asList(frontmatter?.applies_to)) {
       globs.push({ glob, file: path, line: keyLine(source.split('\n'), 'applies_to') });
@@ -858,7 +858,7 @@ function lintAppliesTo(): void {
   }
 }
 
-// Regra do projeto vale além do ticket que a criou: citar o id dele é aviso.
+// A project rule outlives the ticket that created it: citing that ticket's id is a warning.
 function lintRuleTicketIds(): void {
   for (const path of existsSync(PROJECT_RULES) ? projectFiles(PROJECT_RULES) : []) {
     if (!path.endsWith('.md') || path.endsWith('/INDEX.md')) {
@@ -874,7 +874,7 @@ function lintRuleTicketIds(): void {
   }
 }
 
-// GAP-n e PP-n no código: o PP nunca, o GAP só aberto e fora do cabeçalho SOURCE OF TRUTH.
+// GAP-n and PP-n in code: PP never, GAP only while open and outside the SOURCE OF TRUTH header.
 function lintTransientIds(): void {
   const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
   const openGaps = new Set(

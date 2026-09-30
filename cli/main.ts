@@ -1,4 +1,4 @@
-// main: despacha "metri <comando>" para o arquivo do comando, que lê process.argv como antes.
+// main: dispatches "metri <command>" to the command's file, which reads process.argv as before.
 const HELP = `metri: a CLI do método Slices com Guardrails.
 
 Uso: metri <comando> [opções]   (metri <comando> --help explica cada um)

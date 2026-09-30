@@ -1,6 +1,6 @@
-// Raiz, modo e leitura comum aos comandos.
-// Modo: na raiz do pacote metri (package.json com "name": "metri"), é o source (regras globais em architecture/);
-// em qualquer outra raiz, é projeto: regras globais na pasta do pacote, regras do projeto em .metri/rules/.
+// Root, mode and reading shared by the commands.
+// Mode: at the root of the metri package (package.json with "name": "metri"), it is the source (global rules in
+// architecture/); at any other root, it is a project: global rules in the package folder, project rules in .metri/rules/.
 import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,18 +8,18 @@ import { parse } from 'yaml';
 
 export type Layout = {
   isProject: boolean;
-  // Regras e ADRs globais, como caminho legível a partir da raiz.
+  // Global rules and ADRs, as a readable path from the root.
   globalDir: string;
   globalAdrDir: string;
-  // Regras do projeto e o arquivo que leva o marcador do rules-index.
+  // Project rules and the file that holds the rules-index marker.
   projectDir?: string;
   rootIndex: string;
 };
 
-// A pasta do pacote metri: de onde vêm regras, ADRs, skills e agents globais.
+// The metri package folder: where the global rules, ADRs, skills and agents come from.
 export const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const PACKAGE_NAME = 'metri';
-// O bin do pacote: os comandos que chamam outros comandos rodam por ele.
+// The package bin: commands that call other commands run through it.
 export const BIN = join(PACKAGE_ROOT, 'cli/metri.mjs');
 
 export const PROJECT_INDEX = '.metri/ARCHITECTURE.md';
@@ -27,7 +27,7 @@ export const PROJECT_RULES = '.metri/rules';
 export const MATRIX = '.metri/MATRIX.md';
 export const TICKETS_DIR = '.metri/tickets';
 
-// Pastas que a varredura de arquivos do projeto não percorre.
+// Folders the project file walk skips.
 const SKIPPED_DIRS = ['node_modules', '.git'];
 
 function isSource(root: string): boolean {
@@ -42,8 +42,8 @@ function isSource(root: string): boolean {
   }
 }
 
-// Caminho de um arquivo do pacote visto da raiz: node_modules/metri/... quando o projeto tem o pacote instalado,
-// senão o caminho absoluto.
+// Path of a package file seen from the root: node_modules/metri/... when the project has the package installed,
+// otherwise the absolute path.
 export function packagePath(root: string, path: string): string {
   const installed = join(root, 'node_modules', PACKAGE_NAME);
   if (existsSync(installed) && realpathSync(installed) === realpathSync(PACKAGE_ROOT)) {
@@ -65,7 +65,7 @@ export function layoutOf(root = '.'): Layout {
   };
 }
 
-// Tira "<nome> <valor>" de args e devolve o valor.
+// Removes "<name> <value>" from args and returns the value.
 export function takeOption(args: string[], name: string): string | undefined {
   const at = args.indexOf(name);
   if (at === -1) {
@@ -83,7 +83,7 @@ export function isRuleName(name: string): boolean {
   return name.endsWith('.md') && name !== 'INDEX.md' && !name.endsWith('.examples.md');
 }
 
-// Arquivos de regra de uma pasta de arquitetura: <dir>/<área>/<tema>.md.
+// Rule files of an architecture folder: <dir>/<area>/<topic>.md.
 export function ruleFiles(dir: string): string[] {
   if (!existsSync(dir)) {
     return [];
@@ -99,7 +99,7 @@ export function ruleFiles(dir: string): string[] {
     );
 }
 
-// Id de uma regra pelo caminho: <área>/<tema>.
+// A rule's id from its path: <area>/<topic>.
 export function ruleIdOf(dir: string, path: string): string {
   return relative(dir, path).replace(/\.md$/, '');
 }
@@ -113,14 +113,14 @@ export function asList(value: unknown): string[] {
   return Array.isArray(value) ? value.map(String) : [];
 }
 
-// Itens "- ..." da seção "## <título>" de um markdown, sem o prefixo "- ", com o número da linha.
+// The "- ..." items of the "## <title>" section of a markdown, without the "- " prefix, with the line number.
 export function sectionItems(source: string, title: string): { text: string; line: number }[] {
   return sectionLines(source, title)
     .filter(({ text }) => text.startsWith('- '))
     .map(({ text, line }) => ({ text: text.slice(2).trim(), line }));
 }
 
-// Linhas não vazias da seção "## <título>" de um markdown, com o número da linha (inclui as que não são "- ").
+// Non-empty lines of the "## <title>" section of a markdown, with the line number (including those that are not "- ").
 export function sectionLines(source: string, title: string): { text: string; line: number }[] {
   const lines = source.split('\n');
   const start = lines.indexOf(`## ${title}`);
@@ -136,7 +136,7 @@ export function sectionLines(source: string, title: string): { text: string; lin
   return items;
 }
 
-// Todos os arquivos sob a raiz, em caminho relativo, fora de node_modules e .git.
+// All files under the root, as relative paths, outside node_modules and .git.
 export function projectFiles(dir = '.'): string[] {
   return readdirSync(dir)
     .sort()

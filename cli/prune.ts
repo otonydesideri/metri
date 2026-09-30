@@ -1,4 +1,4 @@
-// prune: tira da árvore a evidência dos tickets de uma slice, na poda do /accept. A explicação está no --help.
+// prune: removes a slice's ticket evidence from the tree, in the /accept prune. --help has the details.
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { frontmatterOf, takeOption, TICKETS_DIR } from './lib/layout.ts';
@@ -32,7 +32,7 @@ for (const name of tickets) {
   try {
     frontmatter = frontmatterOf(readFileSync(join(TICKETS_DIR, name), 'utf8'));
   } catch {
-    continue; // YAML inválido: o docs-lint aponta.
+    continue; // invalid YAML: docs-lint reports it.
   }
   const dir = join(TICKETS_DIR, name.replace(/\.md$/, ''));
   if (frontmatter?.slice === slice && existsSync(dir)) {

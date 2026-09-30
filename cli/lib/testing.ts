@@ -1,4 +1,4 @@
-// Apoio aos testes da CLI: roda um comando pelo bin e monta cópias da fixture de projeto e do source.
+// Support for the CLI tests: runs a command through the bin and builds copies of the project fixture and of the source.
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -18,7 +18,7 @@ export function run(command: string, args: string[]): { status: number | null; l
   return { status: result.status, lines: `${result.stdout}${result.stderr}`.split('\n').filter(Boolean) };
 }
 
-// Pasta temporária com o pacote instalado: node_modules/metri aponta para este repositório.
+// Temporary folder with the package installed: node_modules/metri points to this repository.
 export function emptyProject(): string {
   const dir = mkdtempSync(join(tmpdir(), 'metri-project-'));
   mkdirSync(join(dir, 'node_modules'));
@@ -27,7 +27,7 @@ export function emptyProject(): string {
   return dir;
 }
 
-// Cópia da fixture com o pacote instalado e os links de .claude/ que o metri init cria.
+// Copy of the fixture with the package installed and the .claude/ links that metri init creates.
 export function copyFixture(): string {
   const dir = emptyProject();
   cpSync(FIXTURE, dir, { recursive: true });
@@ -38,7 +38,7 @@ export function copyFixture(): string {
   return dir;
 }
 
-// Cópia deste repositório (modo source) numa pasta temporária, sem node_modules, .git e a fixture de projeto.
+// Copy of this repository (source mode) in a temporary folder, without node_modules, .git and the project fixture.
 export function copySource(): string {
   const dir = mkdtempSync(join(tmpdir(), 'metri-source-'));
   const isSkipped = (source: string) => /(^|\/)(node_modules|\.git|__fixtures__)(\/|$)/.test(relative(REPO, source));

@@ -1,6 +1,6 @@
-// Checagens do .metri/MATRIX.md no modo projeto do docs-lint: só o plano (features, slices, Fog, Gaps,
-// Pattern proposals). O que valida cada ticket (UC ou T), em .metri/tickets/<id>.md, está em ticket-lint.ts.
-// A lista está no --help do docs-lint.
+// Checks of .metri/MATRIX.md in docs-lint's project mode: only the plan (features, slices, Fog, Gaps,
+// Pattern proposals). What validates each ticket (UC or T), in .metri/tickets/<id>.md, is in ticket-lint.ts.
+// docs-lint --help has the list.
 import { type Block, fieldOf, type Kind, listOf, parseMatrix } from './matrix.ts';
 
 export type MatrixProblem = { line: number; message: string };
@@ -159,7 +159,7 @@ function lintSlice(
   }
   const hasContract = seen.has('contract');
   const isDone = fieldOf(block, 'status')?.value === 'done';
-  // A slice done é conferida pelo metri sot; a de plano tem o contrato ou, reaberta, os donos em sot.
+  // A done slice is checked by metri sot; a planned one has the contract or, when reopened, the owners in sot.
   if (block.id !== FOUNDATION && !isDone && !hasContract && !seen.has('sot')) {
     report(block.line, `${block.id}: sem contract nem sot`);
   }

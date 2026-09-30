@@ -1,5 +1,5 @@
-// rules-index: gera o INDEX.md de cada área a partir do frontmatter das regras e, abaixo do marcador do índice
-// raiz, a lista de áreas e a tabela "Capacidades condicionais" das regras com activation.
+// rules-index: generates each area's INDEX.md from the rules' frontmatter and, below the marker of the root
+// index, the list of areas and the "Capacidades condicionais" table of the rules with activation.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { parse } from 'yaml';

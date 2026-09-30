@@ -12,7 +12,7 @@ kind: decision
 
 ## Decisão
 
-- O shadcn/ui é instalado dentro do `@metri/ui`, pelo caminho manual de monorepo do shadcn, no layout dele com os arquivos da CLI numa pasta própria: `src/components/ui/` para os arquivos da CLI, que são código do projeto, `src/components/blocks/`, `src/components/providers/`, `src/hooks/`, `src/lib/utils.ts` e `src/styles/globals.css`.
+- O shadcn/ui é instalado dentro do `@metri/ui`, pelo caminho manual de monorepo do shadcn, no layout dele com os arquivos da CLI numa pasta própria: `src/components/ui/` para os componentes da CLI, código de fornecedor (o que a CLI grava fora dela é código do projeto), `src/components/blocks/`, `src/components/providers/`, `src/hooks/`, `src/lib/utils.ts` e `src/styles/globals.css`.
 - Os aliases do `components.json` usam o nome do pacote (`@metri/ui/components/ui`, `@metri/ui/lib/utils`), resolvidos pelo `paths` do `tsconfig.json` e pelos `exports` do pacote.
 - O app importa o primitivo pelos exports nomeados, como na documentação do shadcn (`import { Tabs, TabsList } from '@metri/ui/components/ui/tabs'`). O compound fica só para o componente composto do próprio app.
 - O default em detalhe: `architecture/defaults/ui.md`.

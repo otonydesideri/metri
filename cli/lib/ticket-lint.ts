@@ -1,5 +1,5 @@
-// Checagens de um ticket (.metri/tickets/<id>.md): frontmatter, corpo (O que entrega / Critérios do T) e
-// referências cruzadas com a MATRIX (feature, slice, blocked_by). Chamado pelo docs-lint, um arquivo por vez.
+// Checks of one ticket (.metri/tickets/<id>.md): frontmatter, body (the T's O que entrega / Critérios) and
+// cross-references to the MATRIX (feature, slice, blocked_by). Called by docs-lint, one file at a time.
 import { parse } from 'yaml';
 import { sectionItems, sectionLines } from './layout.ts';
 
@@ -42,7 +42,7 @@ function keyLine(lines: string[], key: string): number {
   return index === -1 ? 1 : index + 1;
 }
 
-// UC<f>.<n> ou T<s>.<n>: id, número da feature/slice do id, e o kind.
+// UC<f>.<n> or T<s>.<n>: the id, the feature/slice number in the id, and the kind.
 function idParts(id: string): { kind: 'uc' | 't'; owner: string } | undefined {
   const uc = /^UC(\d+)\.\d+$/.exec(id);
   if (uc) {

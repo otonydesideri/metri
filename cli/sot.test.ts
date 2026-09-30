@@ -10,7 +10,7 @@ const PAGE = 'apps/app-web/src/pages/orders/orders-page.tsx';
 const header = (owner: string) =>
   `/** SOURCE OF TRUTH: ${owner}.\n * WHAT: does one thing.\n * WHY: the flow needs it.\n * WHERE: called by the module.\n */\n`;
 
-// Roda o metri sot numa cópia da fixture depois da mudança e devolve a saída.
+// Runs metri sot on a copy of the fixture after the change and returns the output.
 function sotChanged(change: (dir: string) => void = () => {}): { status: number | null; output: string } {
   const dir = copyFixture();
   change(dir);
@@ -98,6 +98,40 @@ describe('sot', { timeout: 60_000 }, () => {
     expect(noSot.output).toContain('S1: slice done sem sot: [<símbolo>]');
     const done = sotChanged((dir) => edit(dir, MATRIX, (source) => source.replace('horizon: now · sot: [OrdersPage]', 'status: done · sot: [OrdersPage]')));
     expect(done).toEqual({ status: 0, output: '' });
+  });
+
+  it('slice done: cada símbolo do sot aparece no caminho linear', () => {
+    const offPath = sotChanged((dir) => {
+      edit(dir, MATRIX, (source) => source.replace('horizon: now · sot: [OrdersPage]', 'status: done · sot: [OrdersPage]'));
+      edit(dir, ARCHITECTURE, (source) => source.replace(/1\. `apps\/app-web[^\n]*\n/, ''));
+    });
+    expect(offPath.status).toBe(1);
+    expect(offPath.output).toContain('.metri/MATRIX.md:20: sot de S1: OrdersPage não está no Caminho linear do .metri/ARCHITECTURE.md');
+    const planned = sotChanged((dir) => edit(dir, ARCHITECTURE, (source) => source.replace(/1\. `apps\/app-web[^\n]*\n/, '')));
+    expect(planned).toEqual({ status: 0, output: '' });
+  });
+
+  it('cabeçalho antigo "// SOT:" é erro', () => {
+    const { status, output } = sotChanged((dir) =>
+      write(dir, 'packages/core/src/money.ts', `// SOT: Money, dinheiro em centavos
+${header('Money')}export class Money {}
+`),
+    );
+    expect(status).toBe(1);
+    expect(output).toContain('packages/core/src/money.ts:1: cabeçalho: "SOT:" é o formato antigo');
+  });
+
+  it('kit de UI: só components/ui/ fica sem cabeçalho; hook e bloco da CLI são código do projeto', () => {
+    const { status, output } = sotChanged((dir) => {
+      write(dir, 'packages/ui/src/components/ui/button.tsx', 'export function Button() {\n  return null;\n}\n');
+      write(dir, 'packages/ui/src/hooks/use-mobile.ts', 'export function useIsMobile() {\n  return false;\n}\n');
+      write(dir, 'packages/ui/src/components/blocks/login-form.tsx', 'export function LoginForm() {\n  return null;\n}\n');
+    });
+    expect(status).toBe(1);
+    expect(output).not.toContain('button.tsx');
+    expect(output).toContain('packages/ui/src/hooks/use-mobile.ts:1: cabeçalho: arquivo-fonte sem SOURCE OF TRUTH');
+    expect(output).toContain('packages/ui/src/components/blocks/login-form.tsx:1: cabeçalho: arquivo-fonte sem SOURCE OF TRUTH');
+    expect(output).toContain('fora de components/ui/ é código do projeto');
   });
 
   it('caminho linear: cada passo com `arquivo:símbolo` que existe e tem cabeçalho', () => {
