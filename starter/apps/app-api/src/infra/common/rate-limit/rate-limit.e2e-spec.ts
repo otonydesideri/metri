@@ -19,46 +19,89 @@ class ProbeController {
 	}
 }
 
+async function mount(trustProxy: number): Promise<NestFastifyApplication> {
+	const moduleRef: TestingModule = await Test.createTestingModule({
+		imports: [AppModule],
+		controllers: [ProbeController],
+	}).compile();
+
+	// main.ts gives the adapter the `TRUST_PROXY` of the env; the e2e repeats it
+	const app = moduleRef.createNestApplication<NestFastifyApplication>(
+		new FastifyAdapter({ trustProxy }),
+		{ bodyParser: false },
+	);
+	app.setGlobalPrefix('api');
+	await app.init();
+	await app.getHttpAdapter().getInstance().ready();
+	return app;
+}
+
+async function exhaustLimit(
+	app: NestFastifyApplication,
+	forwardedFor: string,
+): Promise<void> {
+	for (let index = 0; index < RATE_LIMIT.limit; index++) {
+		const response = await request(app.getHttpServer())
+			.get('/api/probe')
+			.set('X-Forwarded-For', forwardedFor);
+		expect(
+			response.status,
+			`Request ${index + 1} falhou (${response.status}): ${JSON.stringify(response.body)}`,
+		).toBeLessThan(400);
+	}
+}
+
 describe('Rate limit global (e2e)', () => {
-	let app: NestFastifyApplication;
+	describe('sem proxy na frente (TRUST_PROXY=0)', () => {
+		let app: NestFastifyApplication;
 
-	beforeAll(async () => {
-		const moduleRef: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
-			controllers: [ProbeController],
-		}).compile();
+		beforeAll(async () => {
+			app = await mount(0);
+		});
 
-		app = moduleRef.createNestApplication<NestFastifyApplication>(
-			new FastifyAdapter(),
-			{
-				bodyParser: false,
-			},
-		);
-		app.setGlobalPrefix('api');
-		await app.init();
-		await app.getHttpAdapter().getInstance().ready();
+		afterAll(async () => {
+			await app.close();
+		});
+
+		it('recusa a request acima do limite com 429 no envelope, com o X-Forwarded-For ignorado', async () => {
+			await exhaustLimit(app, '203.0.113.10');
+
+			const response = await request(app.getHttpServer())
+				.get('/api/probe')
+				.set('X-Forwarded-For', '203.0.113.20');
+
+			expect(response.status).toBe(429);
+			expect(response.body).toEqual({
+				code: 'TOO_MANY_REQUESTS',
+				message: 'Requisição não atendida',
+				type: 'REQUEST_REJECTED',
+			});
+		});
 	});
 
-	afterAll(async () => {
-		await app.close();
-	});
+	describe('atrás de um proxy (TRUST_PROXY=1)', () => {
+		let app: NestFastifyApplication;
 
-	it('recusa a request acima do limite com 429 no envelope', async () => {
-		for (let index = 0; index < RATE_LIMIT.limit; index++) {
-			const response = await request(app.getHttpServer()).get('/api/probe');
-			expect(
-				response.status,
-				`Request ${index + 1} falhou (${response.status}): ${JSON.stringify(response.body)}`,
-			).toBeLessThan(400);
-		}
+		beforeAll(async () => {
+			app = await mount(1);
+		});
 
-		const response = await request(app.getHttpServer()).get('/api/probe');
+		afterAll(async () => {
+			await app.close();
+		});
 
-		expect(response.status).toBe(429);
-		expect(response.body).toEqual({
-			code: 'TOO_MANY_REQUESTS',
-			message: 'Requisição não atendida',
-			type: 'REQUEST_REJECTED',
+		it('conta a cota pelo IP do cliente que o proxy informa', async () => {
+			await exhaustLimit(app, '203.0.113.10');
+
+			const exhausted = await request(app.getHttpServer())
+				.get('/api/probe')
+				.set('X-Forwarded-For', '203.0.113.10');
+			const otherClient = await request(app.getHttpServer())
+				.get('/api/probe')
+				.set('X-Forwarded-For', '203.0.113.20');
+
+			expect(exhausted.status).toBe(429);
+			expect(otherClient.status).toBe(200);
 		});
 	});
 });

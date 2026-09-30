@@ -65,7 +65,7 @@ describe('Serialização de resposta (e2e)', () => {
 		expect(response.body).toEqual({ probe: { name: 'Ana' } });
 	});
 
-	it('resposta fora do DTO → 500 no envelope, sem o retorno cru', async () => {
+	it('resposta fora do DTO → 500 genérico no envelope, sem o retorno cru', async () => {
 		const response = await request(app.getHttpServer()).get(
 			'/api/probe/wrong-shape',
 		);
@@ -73,8 +73,8 @@ describe('Serialização de resposta (e2e)', () => {
 		expect(response.status).toBe(500);
 		expect(response.body).toEqual({
 			code: 'INTERNAL_SERVER_ERROR',
-			message: 'Requisição não atendida',
-			type: 'REQUEST_REJECTED',
+			message: 'Erro interno inesperado',
+			type: 'INTERNAL_ERROR',
 		});
 	});
 });

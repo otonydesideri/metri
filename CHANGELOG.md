@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.4.2 (2026-09-30)
+
+Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
+
+### O que muda
+
+- **Proxy.** O app-api lê o `TRUST_PROXY`, os saltos de proxy confiáveis, e o rate limit conta o IP do cliente. O
+  número vem da delegação "Topologia de deploy", com 0 em desenvolvimento (`infrastructure/runtime`, "O bootstrap do
+  processo").
+- **Erro 5xx.** Todo status 500 ou mais sai como `INTERNAL_ERROR`, com o corpo genérico; a resposta fora do DTO é 500
+  (`backend/errors`, "Erro inesperado: filtro global").
+- **`metri design-tokens`.** Acusa a dependência npm `cn` no `package.json` do `@metri/ui`, mesmo sem `DESIGN.md`, e
+  confere o `fontFamily` de cada nível de `typography` contra o `--font-sans` ou o `--font-mono` do `@theme`.
+
+### Migrar de v1.4.1
+
+1. `pnpm add -D github:otonydesideri/metri#v1.4.2`.
+2. `TRUST_PROXY` no `env.validation.ts`, no `.env.example` (0) e no `FastifyAdapter` do `main.ts`, como em
+   `node_modules/metri/starter/`; o valor de cada ambiente entra na "Topologia de deploy" do `.metri/ARCHITECTURE.md`.
+3. O `UnexpectedErrorFilter` trata todo status 500 ou mais como erro inesperado, como o do starter.
+4. Sem o pacote `cn` no `packages/ui/package.json`.
+5. `pnpm verify` verde.
+
 ## v1.4.1 (2026-09-30)
 
 Revisão da v1.4.0 com foco no starter, por revisores isolados em cinco eixos: regras, segurança e operação, ponteiros

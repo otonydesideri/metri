@@ -62,7 +62,7 @@ Exemplo completo: `starter/packages/ui/components.json`, `starter/packages/ui/ts
 ## Componente novo
 
 - Entra pela CLI do shadcn (`shadcn@latest add <componente>`), rodada no `@metri/ui`, nunca copiado à mão; a CLI o grava em `src/components/ui/`.
-- O componente usa o `cn` do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"`, o pacote `cn` do npm (desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`), e o `noRestrictedImports` do Biome falha no `lint` até o import passar ao do kit (`defaults/stack.md`, "Configuração de referência").
+- O componente usa o `cn` do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"` e instala o pacote `cn` do npm no `@metri/ui` (desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`); o `noRestrictedImports` do Biome falha no `lint` até o import passar ao do kit (`defaults/stack.md`, "Configuração de referência"), e o `metri design-tokens` falha até a dependência sair do `package.json`.
 - O app importa o componente pelos exports nomeados que a CLI escreveu, como `Tabs` e `TabsList` (`frontend/components.md`, "Composição e o que sobe pro pacote").
 - O `toast` vem da lib `sonner`, como na documentação do shadcn: o `app-web` depende do `sonner` na mesma versão do `@metri/ui`, porque duas cópias da lib não se falam e o toast não chega ao `Toaster`.
 
@@ -106,8 +106,9 @@ Exemplo completo: `starter/packages/ui/src/lib/utils.ts`, com o `@theme` de `sta
 - O `components.json` tem `style` `new-york`, `baseColor` `neutral` e os aliases no nome do pacote, com o `paths` do `tsconfig.json` e os `exports` para as mesmas pastas?
 - O `globals.css` importa o `tw-animate-css` e tem os dois `@source`, o de `apps/` e o do pacote?
 - Os arquivos da CLI importam o `cn` do kit, pelo `noRestrictedImports` do Biome? (check: lint)
+- O `package.json` do `@metri/ui` não depende do pacote `cn` do npm? (check: design-tokens)
 - Hook e bloco gravados pela CLI fora de `src/components/ui/` têm o cabeçalho `SOURCE OF TRUTH`? (check: sot)
 - O ajuste visual começou pelo token, e cor nova tem valor em `:root` e em `.dark`?
-- O `@theme` tem `--font-sans` e `--font-mono` com as famílias do `DESIGN.md`?
+- O `@theme` tem `--font-sans` e `--font-mono` com as famílias do `DESIGN.md`? (check: design-tokens)
 - O `@theme` tem um `--text-<nível>` por nível de `typography` do `DESIGN.md`? (check: design-tokens)
 - O `cn` usa `extendTailwindMerge`, com cada `--text-<nível>` do `@theme` em `theme.text`? (check: design-tokens)

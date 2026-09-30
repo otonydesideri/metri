@@ -127,4 +127,28 @@ describe('design-tokens', { timeout: 30_000 }, () => {
       'apps/app-web/index.html: o <style> sem html { background }; o valor é o --background de :root',
     );
   });
+
+  it('typography.fontFamily: a lista do nível é a de --font-sans ou de --font-mono, sem as aspas', () => {
+    const dir = project();
+    edit(dir, 'docs/DESIGN.md', (source) => source.replace('    fontSize: 14px', '    fontFamily: Geist Variable, system-ui\n    fontSize: 14px'));
+    const theme = (sans: string) => CSS.replace('@theme inline {', `@theme {\n  --font-sans: ${sans};\n  --font-mono: "Geist Mono Variable", monospace;\n}\n\n@theme inline {`);
+    write(dir, THEME, theme('"Geist Variable", system-ui'));
+    expect(run('design-tokens', ['--root', dir])).toEqual({ status: 0, lines: [] });
+    write(dir, THEME, theme('"Geist", system-ui'));
+    expect(run('design-tokens', ['--root', dir])).toEqual({
+      status: 1,
+      lines: [`${THEME}: typography.body-sm.fontFamily: Geist Variable, system-ui no DESIGN.md, sem --font-sans nem --font-mono igual no @theme`],
+    });
+  });
+
+  it('a dependência npm cn no package.json do kit de UI é erro, mesmo com o tema pendente', () => {
+    const dir = copyFixture();
+    write(dir, 'packages/ui/package.json', JSON.stringify({ name: '@metri/ui', dependencies: { cn: '1.0.0', clsx: '2.1.1' } }));
+    expect(run('design-tokens', ['--root', dir])).toEqual({
+      status: 1,
+      lines: ['packages/ui/package.json: a dependência npm cn em dependencies; o cn do kit é o de lib/utils.ts (defaults/ui, "Componente novo")'],
+    });
+    write(dir, 'packages/ui/package.json', JSON.stringify({ name: '@metri/ui', dependencies: { clsx: '2.1.1' } }));
+    expect(run('design-tokens', ['--root', dir]).status).toBe(0);
+  });
 });

@@ -1,5 +1,11 @@
 import type { ArgumentsHost } from '@nestjs/common';
-import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+	HttpException,
+	HttpStatus,
+	InternalServerErrorException,
+	NotFoundException,
+	ServiceUnavailableException,
+} from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UnexpectedErrorFilter } from './unexpected-error.filter';
 
@@ -48,6 +54,35 @@ describe('UnexpectedErrorFilter', () => {
 		sut.catch(new Error('conexão recusada em 10.0.0.1:5432'), host);
 
 		expect(reply.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+		expect(reply.send).toHaveBeenCalledWith({
+			code: 'INTERNAL_SERVER_ERROR',
+			message: 'Erro interno inesperado',
+			type: 'INTERNAL_ERROR',
+		});
+	});
+
+	it('responde 500 genérico à HttpException 500, mesmo com o corpo no formato do envelope', () => {
+		sut.catch(
+			new InternalServerErrorException({
+				code: 'FALHA_INTERNA',
+				message: 'detalhe interno',
+				type: 'REQUEST_REJECTED',
+			}),
+			host,
+		);
+
+		expect(reply.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+		expect(reply.send).toHaveBeenCalledWith({
+			code: 'INTERNAL_SERVER_ERROR',
+			message: 'Erro interno inesperado',
+			type: 'INTERNAL_ERROR',
+		});
+	});
+
+	it('mantém o status da HttpException acima de 500, com o corpo genérico', () => {
+		sut.catch(new ServiceUnavailableException('pool esgotado'), host);
+
+		expect(reply.status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
 		expect(reply.send).toHaveBeenCalledWith({
 			code: 'INTERNAL_SERVER_ERROR',
 			message: 'Erro interno inesperado',

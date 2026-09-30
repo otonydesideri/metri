@@ -12,7 +12,7 @@ applies_to:
   - "apps/app-api/src/main.ts"
   - "apps/app-api/src/app.module.ts"
   - "apps/app-api/src/infra/common/**"
-keywords: [main.ts, app.module.ts, db:up, "db:docker:up", "db:docker:down", pg_isready, Docker, ".env.example", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
+keywords: [main.ts, app.module.ts, TRUST_PROXY, trustProxy, X-Forwarded-For, db:up, "db:docker:up", "db:docker:down", pg_isready, Docker, ".env.example", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
 not_covered:
   - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"
   - "o que cada provider global faz — log → infrastructure/logging"
@@ -42,6 +42,10 @@ O mesmo `AppModule` sobe em dois lugares: no processo real, pelo `main.ts`, e no
 ### O bootstrap do processo
 
 **Obrigatório.** O `main.ts` fica só com o bootstrap que depende do processo.
+
+**Obrigatório.** O Fastify confia em `TRUST_PROXY` saltos de proxy (`trustProxy`), e o rate limit conta o IP do cliente. O número é o de proxies na frente do app-api em cada ambiente, da delegação "Topologia de deploy" (`.metri/ARCHITECTURE.md`, "Delegações"), e é 0 em desenvolvimento.
+
+> **Por quê.** Atrás de um proxy, com 0, toda request chega com o IP do proxy e os clientes dividem uma cota só; com saltos a mais, o cliente escreve o próprio `X-Forwarded-For` e escapa do limite.
 
 ### Composição no `AppModule`
 
@@ -121,7 +125,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 ## Verificação
 
 - Pipe, interceptor, filtro e guard globais estão registrados com `APP_*` no `AppModule`, sem nenhum `useGlobal*` no `main.ts`?
-- O `main.ts` guarda só bootstrap que depende do processo?
+- O `main.ts` guarda só bootstrap que depende do processo, com o `trustProxy` no `TRUST_PROXY` da topologia de deploy?
 - Endpoint de infra externa leva `@SkipThrottle()` e `@Public()` e mora num `@Module` próprio importado no `AppModule`, fora do `HttpModule`?
 - Env lida por `EnvService.getOrThrow(...)`, sem `ConfigService`?
 - O client nasce só no construtor ou num `useFactory`, nunca no top-level do arquivo?

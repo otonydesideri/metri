@@ -8,8 +8,14 @@ import {
 } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 
+const UNEXPECTED: ApiErrorResponse = {
+	code: 'INTERNAL_SERVER_ERROR',
+	message: 'Erro interno inesperado',
+	type: 'INTERNAL_ERROR',
+};
+
 /** SOURCE OF TRUTH: UnexpectedErrorFilter.
- * WHAT: the global error filter: an `HttpException` that is already the envelope passes; a native one keeps its status with the body as `REQUEST_REJECTED`; anything else becomes a generic 500.
+ * WHAT: the global error filter: a status of 500 or more, from an `HttpException` or not, becomes the generic `INTERNAL_ERROR` (a response outside its DTO included); below 500, an `HttpException` that is already the envelope passes, and a native one keeps its status with the body as `REQUEST_REJECTED`.
  * WHY: no native body or internal message reaches the client (backend/errors, "Erro inesperado: filtro global").
  * WHERE: registered by `APP_FILTER` in `AppModule`; the 401 of `AccessGuard` and the 429 of the throttler go through it. It does not log: `LoggerErrorInterceptor` logs the real error.
  */
@@ -18,7 +24,10 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
 	catch(exception: unknown, host: ArgumentsHost): void {
 		const reply = host.switchToHttp().getResponse<FastifyReply>();
 
-		if (exception instanceof HttpException) {
+		if (
+			exception instanceof HttpException &&
+			exception.getStatus() < HttpStatus.INTERNAL_SERVER_ERROR
+		) {
 			const status = exception.getStatus();
 			const response = exception.getResponse();
 
@@ -42,11 +51,11 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
 			return;
 		}
 
-		const unexpected: ApiErrorResponse = {
-			code: 'INTERNAL_SERVER_ERROR',
-			message: 'Erro interno inesperado',
-			type: 'INTERNAL_ERROR',
-		};
-		reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send(unexpected);
+		// a 5xx HttpException, such as the serializer's for a response outside its DTO, keeps its status
+		const status =
+			exception instanceof HttpException
+				? exception.getStatus()
+				: HttpStatus.INTERNAL_SERVER_ERROR;
+		reply.status(status).send(UNEXPECTED);
 	}
 }

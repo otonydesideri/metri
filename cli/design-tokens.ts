@@ -9,13 +9,17 @@ const HELP = `design-tokens: confere se o tema do código segue os tokens do doc
 Uso: metri design-tokens [--root <dir>] [--theme <arquivo css>] [--utils <arquivo>] [--index <arquivo html>]
 Padrões: tema packages/ui/src/styles/globals.css, cn packages/ui/src/lib/utils.ts, apps/app-web/index.html.
 
+Antes de tudo, mesmo sem docs/DESIGN.md: o package.json do kit de UI (packages/ui/package.json) sem a
+dependência npm cn, que a CLI do shadcn instala; o cn do kit é o de lib/utils.ts (defaults/ui, "Componente novo").
+
 Compara:
   - colors.<nome> com --<nome> em :root, e colors.<nome>-dark com --<nome> em .dark, nos dois sentidos: token
     sem variável e variável de cor sem token são erro. As cores são comparadas no espaço OKLab (hex, rgb(),
     hsl() e oklch() valem igual), com a transparência;
   - rounded.lg com --radius em :root;
   - typography.<nível> com --text-<nível> (fontSize), --text-<nível>--line-height, --text-<nível>--letter-spacing
-    e --text-<nível>--font-weight no @theme.
+    e --text-<nível>--font-weight no @theme, e o fontFamily do nível com --font-sans ou --font-mono do @theme
+    (a mesma lista de famílias, sem as aspas).
 
 E, no código, quando o arquivo existe:
   - a lista theme.text do cn (extendTailwindMerge) com os níveis --text-<nível> do @theme, nos dois sentidos
@@ -31,6 +35,9 @@ const DESIGN = 'docs/DESIGN.md';
 const DEFAULT_THEME = 'packages/ui/src/styles/globals.css';
 const DEFAULT_UTILS = 'packages/ui/src/lib/utils.ts';
 const DEFAULT_INDEX = 'apps/app-web/index.html';
+const UI_PACKAGE = 'packages/ui/package.json';
+const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
+const FONT_VARS = ['font-sans', 'font-mono'];
 const DARK_SUFFIX = '-dark';
 // OKLab distance below which two colors are the same, after each format's rounding.
 const COLOR_TOLERANCE = 0.002;
@@ -94,6 +101,16 @@ function isColor(value: string): boolean {
   return !value.startsWith('var(') && parse(value) !== undefined;
 }
 
+// The npm cn, which the shadcn CLI installs next to the import it writes, is an error with or without DESIGN.md.
+if (existsSync(UI_PACKAGE)) {
+  const manifest = JSON.parse(readFileSync(UI_PACKAGE, 'utf8')) as Record<string, Record<string, string> | undefined>;
+  const fields = DEPENDENCY_FIELDS.filter((field) => manifest[field]?.cn !== undefined);
+  if (fields.length > 0) {
+    console.log(`${UI_PACKAGE}: a dependência npm cn em ${fields.join(', ')}; o cn do kit é o de lib/utils.ts (defaults/ui, "Componente novo")`);
+    process.exit(1);
+  }
+}
+
 if (!existsSync(DESIGN)) {
   pending(`sem ${DESIGN}`);
 }
@@ -133,8 +150,22 @@ if (radius !== undefined && actualRadius === undefined) {
   problems.push(`rounded.lg: ${String(radius)} no DESIGN.md, ${actualRadius} em --radius de :root`);
 }
 
+// "Geist Variable", system-ui → Geist Variable,system-ui
+function families(value: string): string {
+  return value
+    .split(',')
+    .map((family) => family.trim().replace(/^["']|["']$/g, ''))
+    .join(',');
+}
+
 const typography = (tokens.typography ?? {}) as Record<string, Record<string, unknown>>;
+const fontVars = FONT_VARS.filter((variable) => blocks.theme.has(variable));
 for (const [level, properties] of Object.entries(typography)) {
+  const fontFamily = properties?.fontFamily;
+  const matches = (variable: string) => families(String(fontFamily)) === families(blocks.theme.get(variable) ?? '');
+  if (fontFamily !== undefined && !fontVars.some(matches)) {
+    problems.push(`typography.${level}.fontFamily: ${String(fontFamily)} no DESIGN.md, sem --font-sans nem --font-mono igual no @theme`);
+  }
   for (const [property, suffix] of Object.entries(TYPOGRAPHY_VARS)) {
     const expected = properties?.[property];
     if (expected === undefined) {

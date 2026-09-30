@@ -108,7 +108,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
 - O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
-- O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`).
+- O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`); a resposta fora do DTO sai 500, `INTERNAL_ERROR` (`backend/errors.md`, "Erro inesperado: filtro global").
 - A geração: `starter/apps/app-api/src/openapi.ts`, que roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"). O `DocumentBuilder` fixa `.setOpenAPIVersion('3.1.0')`: o `.nullable()` do Zod 4 sai com `null` no `type` (`["string", "null"]`) ou no `anyOf`, JSON Schema que só o OpenAPI 3.1 aceita e que o Orval lê.
 - O script `api:generate` da raiz roda os dois lados, o `openapi.json` e o Orval do app-web; o `verify` o roda e falha quando ele muda algum arquivo (`api:drift`).
 - O limite nasce no DTO, e o schema de form do frontend importa a constante gerada, podendo ser mais estrito que ela (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
