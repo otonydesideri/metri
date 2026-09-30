@@ -7,7 +7,8 @@
 import * as zod from 'zod';
 
 export const HealthResponseDto = zod.object({
-  "status": zod.literal("ok")
+  "status": zod.literal("ok"),
+  "database": zod.enum(['up', 'down'])
 })
 
 export type HealthResponseDto = zod.input<typeof HealthResponseDto>;

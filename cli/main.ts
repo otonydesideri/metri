@@ -7,6 +7,7 @@ Comandos:
   init          prepara o projeto: num projeto novo, o starter; AGENTS.md, CLAUDE.md, .metri/ARCHITECTURE.md,
                 links de skills e agents, .gitignore e scripts do package.json; termina rodando verify
   verify        roda os checks e soma o resultado
+  check         os checks de código que nenhum lint cobre: boundaries, access-boundaries e date-time
   rules-for     lista as regras de arquitetura de caminhos ou de um ticket
   rules-index   gera os INDEX.md das regras (--check confere)
   docs-lint     lint estrutural do source e do projeto
@@ -15,7 +16,7 @@ Comandos:
   prune         tira da árvore a evidência dos tickets de uma slice, na poda do /accept
 `;
 
-const COMMANDS = ['init', 'verify', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot', 'prune'];
+const COMMANDS = ['init', 'verify', 'check', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot', 'prune'];
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === undefined || command === '--help' || command === '-h') {

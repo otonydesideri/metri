@@ -13,6 +13,16 @@ Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
   (`backend/errors`, "Erro inesperado: filtro global").
 - **`metri design-tokens`.** Acusa a dependência npm `cn` no `package.json` do `@metri/ui`, mesmo sem `DESIGN.md`, e
   confere o `fontFamily` de cada nível de `typography` contra o `--font-sans` ou o `--font-mono` do `@theme`.
+- **`metri check`.** Os checks de fronteiras, acesso e datas saem de `scripts/` e viram `metri check <nome>`, e o
+  `lint` do starter chama `metri check`. Parâmetro de check fica na chave `metri` do `package.json`
+  (`checks.access-boundaries.ownerMarkers`, `checks.boundaries.domainPackages`). O script `api:drift` da raiz sai,
+  porque o `metri verify` já o roda, e o starter fica sem `scripts/`.
+- **Env.** O starter traz só o `.env.example`, na raiz, e o `metri init` cria o `.env` a partir dele, sem
+  sobrescrever um que exista. O `.env.test` sai: o e2e tira a conexão do `.env` e cria e apaga o próprio banco.
+- **Banco.** Saem o `db-up.sh` e o `db-docker.sh`, e entra o `compose.yaml`: `db:up` é `docker compose up -d
+  --wait` e `db:down`, `docker compose down`. No Postgres que já roda, não há o que rodar: o `prisma migrate dev`
+  cria o banco que falta, e o ticket da delegação apaga o `compose.yaml` e os dois scripts. O app-api confere o banco
+  no boot e falha em segundos dizendo o que fazer, e o `/api/health` informa o banco (`database: up | down`).
 
 ### Migrar de v1.4.1
 
@@ -21,7 +31,20 @@ Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
    `node_modules/metri/starter/`; o valor de cada ambiente entra na "Topologia de deploy" do `.metri/ARCHITECTURE.md`.
 3. O `UnexpectedErrorFilter` trata todo status 500 ou mais como erro inesperado, como o do starter.
 4. Sem o pacote `cn` no `packages/ui/package.json`.
-5. `pnpm verify` verde.
+5. `scripts/` vira `metri check`: `"lint": "turbo run lint && metri check"`, e saem os scripts `boundaries`,
+   `access-boundaries`, `date-time` e `api:drift` e os `scripts/check-*.sh`. O marcador do dono passa a
+   `"metri": { "checks": { "access-boundaries": { "ownerMarkers": ["<Dono>Owned"] } } }` no `package.json`, e o pacote
+   que um ADR libera no domínio, a `checks.boundaries.domainPackages`. Uma fronteira que o projeto tinha somado ao
+   `check-boundaries.sh` vira check próprio (`node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md`, "Destination").
+6. O `.env.test` sai: o `vitest.config.e2e.ts` e o `test/setup-e2e.ts` como os do starter, e o `!.env.test` sai do
+   `.gitignore`. O que o `.env.test` tinha de diferente no `DATABASE_URL` vai para o `.env`.
+7. Banco pelo Docker: entra o `compose.yaml` do starter, com o nome do projeto no `name:` e no `POSTGRES_DB`, e o
+   `POSTGRES_PORT` no `.env`; `db:up` e `db:down` como os do starter, e saem `db:docker:up`, `db:docker:down` e os
+   `scripts/db-*.sh`. O container antigo sai com `docker rm -f -v <projeto>-postgres`, com os dados dele. Banco no
+   Postgres que já roda: saem os scripts `db:*` e os `scripts/db-*.sh`.
+8. `PrismaService`, `DatabaseHealth`, `HealthModule`, `HealthController` e o DTO do health como os do starter, e
+   `pnpm api:generate`.
+9. `pnpm verify` verde.
 
 ## v1.4.1 (2026-09-30)
 

@@ -14,7 +14,6 @@ keywords: [import, grafo de dependência, allowlist, biblioteca de cálculo puro
 not_covered:
   - "as regras próprias do frontend → frontend/structure"
 enforced_by: [boundaries]
-examples: [starter/scripts/check-boundaries.sh]
 status: active
 ---
 # Fronteiras de dependência
@@ -50,7 +49,7 @@ main.ts / app.module.ts
 
 Paths de `src/` e `test/` são relativos a `apps/app-api/`.
 
-Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client de vendor (data e fuso, decimal): **Permitido.** `src/domain` a importa, quando uma regra da Source a nomeia (`date-fns` e `@date-fns/tz`, `general/date-time.md`) ou um ADR do projeto nomeia cada pacote; o check de fronteiras do projeto usa essa lista.
+Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client de vendor (data e fuso, decimal): **Permitido.** `src/domain` a importa, quando uma regra da Source a nomeia (`date-fns` e `@date-fns/tz`, `general/date-time.md`) ou um ADR do projeto nomeia cada pacote, listado em `metri.checks.boundaries.domainPackages` do `package.json` (`metri check --help`).
 
 > **Por quê.** Refazer à mão o cálculo que a biblioteca resolve (horário de verão, arredondamento) é a classe de bug que ela existe para evitar, e um contrato de infra em volta dela seria abstração sem troca real.
 
@@ -91,4 +90,4 @@ Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dubl�
 
 ## Em aberto
 
-- **Ferramenta do check.** O `boundaries` é um script de grep por fronteira (`starter/scripts/check-boundaries.sh`), que ganha o comando da fronteira nova e o pacote que um ADR do projeto libera no domínio. A troca por uma regra de lint de imports restritos ou por uma ferramenta de grafo de dependência não tem desenho fechado.
+- **Ferramenta do check.** O `boundaries` é um check do `metri check`, uma lista de fronteiras por import: a fronteira nova entra nele, na Source, e o pacote que um ADR do projeto libera no domínio, no `package.json`. A troca por uma regra de lint de imports restritos ou por uma ferramenta de grafo de dependência não tem desenho fechado.

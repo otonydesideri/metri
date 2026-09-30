@@ -18,7 +18,8 @@ Cria o que falta:
     de starter/ com __PROJECT__ trocado pelo nome do projeto (o name do package.json ou, sem ele, o nome do
     diretório). Arquivo que já existe fica como está; o package.json e o pnpm-workspace.yaml ganham só as chaves
     que não têm, e o .gitignore, as linhas do .gitignore do init que não tem. O "Caminho linear" vazio do
-    .metri/ARCHITECTURE.md ganha os donos do starter. Depois da cópia, roda pnpm install. --no-starter pula a cópia; num projeto existente, ela não
+    .metri/ARCHITECTURE.md ganha os donos do starter. Depois da cópia, cria o .env a partir do .env.example, sem
+    sobrescrever um que já exista, e roda pnpm install. --no-starter pula a cópia; num projeto existente, ela não
     acontece;
   - AGENTS.md e CLAUDE.md, de cli/templates/. Um AGENTS.md que já existe ganha as seções do template que não
     tem; um CLAUDE.md que já existe passa o conteúdo para o fim do AGENTS.md e fica só com "@AGENTS.md";
@@ -48,7 +49,6 @@ const GITIGNORE = [
   'node_modules/',
   '.env*',
   '!.env.example',
-  '!.env.test',
   'dist/',
   '.turbo/',
   'coverage/',
@@ -244,14 +244,21 @@ function gitignore(): void {
   }
 }
 
-// The starter depends on these lines (the versioned .env.test, the generated client out of Biome): an existing
-// .gitignore gains the ones it lacks, after its own, so a negation such as !.env.test wins.
+// The starter depends on these lines (the .env out of git, the generated client out of Biome): an existing
+// .gitignore gains the ones it lacks, after its own, so a negation such as !.env.example wins.
 function mergeGitignore(): void {
   const current = readFileSync('.gitignore', 'utf8');
   const lines = current.split('\n').map((line) => line.trim());
   const missing = GITIGNORE.split('\n').filter((line) => line !== '' && !lines.includes(line));
   if (missing.length > 0) {
     write('.gitignore', `${current.trimEnd()}\n\n# metri starter\n${missing.join('\n')}\n`);
+  }
+}
+
+// The project's .env, from the starter's .env.example; one that exists is never overwritten.
+function env(): void {
+  if (existsSync('.env.example') && !existsSync('.env')) {
+    write('.env', readFileSync('.env.example', 'utf8'));
   }
 }
 
@@ -287,6 +294,7 @@ const hasCopiedStarter = starter();
 packageScripts();
 if (hasCopiedStarter) {
   mergeGitignore();
+  env();
   starterLinearPath();
   install();
 }

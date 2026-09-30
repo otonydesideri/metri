@@ -48,7 +48,7 @@ describe('init', { timeout: 60_000 }, () => {
       expect(readlinkSync(join(dir, '.claude/agents', name))).toBe(`../../node_modules/metri/agents/${name}`);
     }
     expect(readFileSync(join(dir, 'CLAUDE.md'), 'utf8')).toBe('@AGENTS.md\n');
-    expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('!.env.test\n');
+    expect(readFileSync(join(dir, '.gitignore'), 'utf8')).toContain('.env*\n!.env.example\n');
     expect(readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8')).not.toContain('mapeamento: pendente');
     expect(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).scripts).toMatchObject({
       verify: 'metri verify',
@@ -106,10 +106,13 @@ describe('init', { timeout: 60_000 }, () => {
     }
     expect(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))).toMatchObject({
       name,
-      scripts: { 'db:up': 'bash scripts/db-up.sh', sot: 'metri sot' },
+      scripts: { lint: 'turbo run lint && metri check', 'db:up': 'docker compose up -d --wait', sot: 'metri sot' },
     });
+    expect(existsSync(join(dir, 'scripts'))).toBe(false);
     expect(readFileSync(join(dir, 'apps/app-web/index.html'), 'utf8')).toContain(`<title>${name}</title>`);
-    expect(readFileSync(join(dir, 'scripts/db-docker.sh'), 'utf8')).toContain(`CONTAINER=${name}-postgres`);
+    expect(readFileSync(join(dir, 'compose.yaml'), 'utf8')).toContain(`\nname: ${name}\n`);
+    expect(readFileSync(join(dir, '.env'), 'utf8')).toBe(readFileSync(join(dir, '.env.example'), 'utf8'));
+    expect(readFileSync(join(dir, '.env'), 'utf8')).toContain(`@localhost:5432/${name}\n`);
     const architecture = readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8');
     expect(architecture).not.toContain('mapeamento: pendente');
     expect(architecture).toContain('## Caminho linear\n\n1. `apps/app-api/src/main.ts:bootstrap`');
@@ -124,15 +127,15 @@ describe('init', { timeout: 60_000 }, () => {
     write(dir, 'pnpm-workspace.yaml', 'allowBuilds:\n  esbuild: false\n');
     write(dir, 'biome.json', '{}\n');
     write(dir, '.gitignore', 'node_modules\n.env\n.env.*\n');
-    write(dir, 'scripts/db-up.sh', 'echo local\n');
+    write(dir, '.env', 'DATABASE_URL=postgresql://postgres:segredo@localhost:5432/loja\n');
     const { status, lines } = initWithStarter(dir, pnpm);
     expect(status).toBe(0);
     expect(readFileSync(join(dir, 'biome.json'), 'utf8')).toBe('{}\n');
-    expect(readFileSync(join(dir, 'scripts/db-up.sh'), 'utf8')).toBe('echo local\n');
+    expect(readFileSync(join(dir, '.env'), 'utf8')).toBe('DATABASE_URL=postgresql://postgres:segredo@localhost:5432/loja\n');
     expect(lines).toContain('mantido: biome.json já existe');
     const gitignore = readFileSync(join(dir, '.gitignore'), 'utf8');
     expect(gitignore.startsWith('node_modules\n.env\n.env.*\n')).toBe(true);
-    expect(gitignore).toContain('!.env.test\n');
+    expect(gitignore).toContain('!.env.example\n');
     expect(gitignore).toContain('packages/db/**/generated/\n');
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
     expect(pkg).toMatchObject({ name: '@acme/minha-loja', scripts: { dev: 'x', build: 'turbo run build' } });

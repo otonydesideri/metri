@@ -11,7 +11,6 @@ not_covered:
   - "a forma e a casa da policy → domain/domain-services"
   - "o import da biblioteca no domínio → backend/boundaries"
 enforced_by: [date-time]
-examples: [starter/scripts/check-date-time.sh]
 status: active
 ---
 # Data e fuso

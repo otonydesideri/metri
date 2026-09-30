@@ -7,17 +7,12 @@
 		"dev": "turbo run dev",
 		"build": "turbo run build",
 		"typecheck": "turbo run typecheck",
-		"lint": "turbo run lint && pnpm --silent boundaries && pnpm --silent access-boundaries && pnpm --silent date-time",
-		"boundaries": "bash scripts/check-boundaries.sh",
-		"access-boundaries": "bash scripts/check-access-boundaries.sh",
-		"date-time": "bash scripts/check-date-time.sh",
+		"lint": "turbo run lint && metri check",
 		"test": "turbo run test --",
 		"verify": "metri verify",
 		"api:generate": "pnpm --filter app-api api:generate && pnpm --filter app-web api:generate",
-		"api:drift": "bash scripts/check-api-drift.sh",
-		"db:up": "bash scripts/db-up.sh",
-		"db:docker:up": "bash scripts/db-docker.sh up",
-		"db:docker:down": "bash scripts/db-docker.sh down"
+		"db:up": "docker compose up -d --wait",
+		"db:down": "docker compose down"
 	},
 	"devEngines": {
 		"packageManager": {

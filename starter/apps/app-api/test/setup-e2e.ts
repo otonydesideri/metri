@@ -13,7 +13,7 @@ import { afterAll } from 'vitest';
 const serverUrl = process.env.DATABASE_URL;
 if (!serverUrl) {
 	throw new Error(
-		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo nesse Postgres (.env.test na raiz)',
+		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo no Postgres dele (o .env da raiz, que o metri init cria do .env.example)',
 	);
 }
 

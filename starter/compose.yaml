@@ -1,0 +1,26 @@
+# The development Postgres of the Docker path (node_modules/metri/architecture/infrastructure/runtime.md, "Banco de
+# desenvolvimento"): `pnpm db:up` starts it and waits for the healthcheck, `pnpm db:down` removes the container and
+# keeps the volume. One per project, shared by every worktree. User, password and database are the ones of the
+# DATABASE_URL of .env.example; the host port is the POSTGRES_PORT of the root .env, which compose reads.
+name: __PROJECT__
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: __PROJECT__
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      # over TCP: while the image initializes the database, the server answers only on the socket
+      test: ["CMD", "pg_isready", "-q", "-h", "127.0.0.1", "-U", "postgres", "-d", "__PROJECT__"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

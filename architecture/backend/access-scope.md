@@ -16,7 +16,7 @@ not_covered:
   - "storage → infrastructure/storage"
   - "a fronteira de request como peça do framework → infrastructure/runtime"
 enforced_by: [access-boundaries]
-examples: [starter/apps/app-api/src/infra/common/access/access.guard.ts, starter/scripts/check-access-boundaries.sh]
+examples: [starter/apps/app-api/src/infra/common/access/access.guard.ts]
 status: active
 ---
 # Escopo de acesso
@@ -113,7 +113,7 @@ export const CurrentCustomerId = createParamDecorator((_data: unknown, context: 
 
 ## Verificação
 
-- Todo controller declara `@Public()` ou `@<Dono>Owned()`? (check: access-boundaries, com o marcador do dono como argumento do script)
+- Todo controller declara `@Public()` ou `@<Dono>Owned()`? (check: access-boundaries, com o marcador do dono em `metri.checks.access-boundaries.ownerMarkers` do `package.json`)
 - Dado protegido carrega o escopo do dono no input, vindo da fronteira de request, e o `where` filtra por ele, também em SQL cru?
 - ID vindo de path, query ou body coincide com o escopo ou é recusado, sem substituí-lo?
 - Recurso filho é localizado junto do dono na mesma consulta?

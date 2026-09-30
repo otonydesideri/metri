@@ -39,10 +39,18 @@
           "status": {
             "type": "string",
             "const": "ok"
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ]
           }
         },
         "required": [
-          "status"
+          "status",
+          "database"
         ]
       }
     }

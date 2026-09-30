@@ -1,18 +1,18 @@
 ---
 id: infrastructure/runtime
-description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (`db:up`, `db:docker:up`, `db:docker:down`)."
+description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (o `.env` da raiz, o `compose.yaml`, `db:up` e `db:down`)."
 use_when:
   - "editar `main.ts` ou `app.module.ts`"
   - "registrar pipe, interceptor, filtro ou guard global"
   - "ler variável de ambiente ou montar o client de uma capacidade"
   - "criar hook de request, guard, interceptor ou filter"
   - "depender de hook de shutdown no encerramento do processo"
-  - "subir, trocar ou derrubar o banco de desenvolvimento (`db:up`, `db:docker:up`, `db:docker:down`)"
+  - "subir, trocar ou derrubar o banco de desenvolvimento (`compose.yaml`, `db:up`, `db:down`)"
 applies_to:
   - "apps/app-api/src/main.ts"
   - "apps/app-api/src/app.module.ts"
   - "apps/app-api/src/infra/common/**"
-keywords: [main.ts, app.module.ts, TRUST_PROXY, trustProxy, X-Forwarded-For, db:up, "db:docker:up", "db:docker:down", pg_isready, Docker, ".env.example", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
+keywords: [main.ts, app.module.ts, TRUST_PROXY, trustProxy, X-Forwarded-For, db:up, db:down, compose.yaml, docker compose, Docker, ".env", ".env.example", DATABASE_URL, "migrate dev", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
 not_covered:
   - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"
   - "o que cada provider global faz — log → infrastructure/logging"
@@ -22,7 +22,7 @@ not_covered:
   - "o contrato de escopo do dono → backend/access-scope"
   - "o formato do e2e → backend/testing"
   - "a topologia de deploy de cada projeto (\"Delegações\") → project:ARCHITECTURE"
-examples: [starter/apps/app-api/src/main.ts, starter/apps/app-api/src/app.module.ts, starter/apps/app-api/src/infra/common/env/env.service.ts, starter/scripts/db-up.sh, starter/scripts/db-docker.sh]
+examples: [starter/apps/app-api/src/main.ts, starter/apps/app-api/src/app.module.ts, starter/apps/app-api/src/infra/common/env/env.service.ts, starter/apps/app-api/src/infra/persistence/prisma/prisma.service.ts, starter/compose.yaml]
 status: active
 ---
 # Runtime da aplicação
@@ -95,19 +95,21 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 
 ### Banco de desenvolvimento
 
-O Postgres de desenvolvimento é delegação do projeto, decidida no planejamento da fundação: o que já roda na máquina ou um container Docker do projeto (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Delegation matrix").
+O Postgres de desenvolvimento é delegação do projeto, decidida no planejamento da fundação: o que já roda na máquina ou o do `compose.yaml` do projeto (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Delegation matrix").
 
-**Obrigatório.** `pnpm db:up` é idempotente e é o único passo antes do `pnpm dev`: confere o banco com `pg_isready` e falha em segundos quando ele não responde, cria o banco do projeto quando falta, cria o `.env` da raiz a partir do `.env.example` quando falta e aplica as migrations.
-
-**Obrigatório.** Um `DATABASE_URL` só: o `.env` da raiz, e o `.env.test` ao lado dele para o e2e, lidos pelo app-api e pelo `@metri/db`.
+**Obrigatório.** Um `DATABASE_URL` só, no `.env` da raiz, lido pelo app-api, pelo `@metri/db` e pelo e2e; o `metri init` cria o `.env` a partir do `.env.example`, e nenhum app tem `.env` próprio.
 
 > **Por quê.** Com um `.env` por pacote, o app e as migrations acabam em bancos diferentes sem nenhum erro.
 
-> **Por quê.** Sem o `pg_isready` na frente, o banco fora do ar só aparece no timeout do Prisma, minutos depois.
+**Obrigatório.** O app-api confere o banco no boot e falha em segundos quando ele não responde, com a mensagem do que fazer: subir o Postgres, criar o banco pelas migrations (`prisma migrate dev` cria o banco que falta) ou corrigir o `DATABASE_URL`.
 
-Com Docker: **Obrigatório.** Um container por projeto, com o nome do projeto, que todos os worktrees usam; `pnpm db:docker:up` o sobe e roda o `db:up`, e `pnpm db:docker:down` remove o container.
+> **Por quê.** Sem a conferência no boot, o banco fora do ar só aparece na primeira request, pelo timeout do driver.
 
-**Obrigatório.** Worktree ou projeto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:docker:down`.
+Com o Postgres que já roda: **Obrigatório.** O `.env` aponta para ele, e o ticket que resolve a delegação apaga o `compose.yaml` e os scripts `db:up` e `db:down`.
+
+Com Docker: **Obrigatório.** O `compose.yaml` da raiz, com o nome do projeto (`name:`), que todos os worktrees usam: `pnpm db:up` (`docker compose up -d --wait`) sobe o Postgres e espera o healthcheck, e `pnpm db:down` (`docker compose down`) remove o container e guarda o volume.
+
+**Obrigatório.** Worktree ou projeto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:down`.
 
 > **Por quê.** Container por worktree e processo esquecido disputam porta e memória com o próximo trabalho, e um servidor velho na porta responde no lugar do novo.
 
@@ -131,9 +133,9 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - O client nasce só no construtor ou num `useFactory`, nunca no top-level do arquivo?
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?
 - Hook, guard, interceptor e filter ficaram fora do `ServicesModule`, em `infra/common/<fronteira>/`, com o contexto viajando na request?
-- `pnpm db:up` roda de novo sem erro, falha em segundos com o banco fora do ar e cria o `.env` da raiz quando falta?
-- O `DATABASE_URL` está só no `.env` e no `.env.test` da raiz?
-- Com Docker, há um container só, com o nome do projeto, e o `pnpm db:docker:down` o remove?
+- O `DATABASE_URL` está só no `.env` da raiz, criado do `.env.example`?
+- Com o banco fora do ar, o app-api falha no boot em segundos, dizendo o que fazer?
+- Com Docker, há um `compose.yaml` só, com o nome do projeto, e o `pnpm db:down` remove o container? Com o Postgres que já roda, o `compose.yaml` e os scripts `db:up` e `db:down` saíram?
 
 ## Em aberto
 
