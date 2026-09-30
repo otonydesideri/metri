@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.3.1.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.4.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -43,17 +43,17 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 
 ## Começar um projeto
 
-Na raiz do repositório do projeto, instale o pacote `metri` numa tag e rode o `metri init`:
+Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode o `metri init`:
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.3.1                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.4.0                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
 O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, instalado pelo `pnpm install`. Termina com `metri verify` verde; o `design-tokens` fica pendente até o `/shape` escrever o `docs/DESIGN.md`. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
 
-A slice de fundação fica com o que o starter não tem como saber. Com banco de dados, o agente mostra o que já roda na máquina e pergunta se o projeto usa esse Postgres ou sobe um container próprio; daí em diante, `pnpm db:up` prepara o banco e o `.env`, e no caminho Docker `pnpm db:docker:up` sobe o container e `pnpm db:docker:down` o remove (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"). Com interface, um ticket leva os tokens do `DESIGN.md` para o tema e monta o shell do app.
+A slice de fundação fica com o que o starter não tem como saber. Com banco de dados, o agente mostra o que já roda na máquina e pergunta se o projeto usa esse Postgres ou sobe um container próprio; daí em diante, `pnpm db:up` prepara o banco e o `.env`, e no caminho Docker `pnpm db:docker:up` sobe o container e `pnpm db:docker:down` o remove (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"). Com interface, um ticket leva os tokens do `DESIGN.md` para o tema e ajusta o shell do starter.
 
 As skills e os agents entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
 
@@ -132,7 +132,7 @@ apps/  packages/  scripts/    código: no projeto novo, nasce do starter do metr
 - **Os arquivos que agentes já reconhecem pelo nome ficam em maiúsculas:** `AGENTS.md`, `CONTEXT.md` (nome do Matt), `DESIGN.md` (nome do spec). O nome funciona como palavra-guia.
 - **`AGENTS.md` fica na raiz**, porque as ferramentas o procuram lá.
 - **Arquivos gerados** (`INDEX.md` de área) têm como primeira linha "Gerado por rules-index. Não edite."; no `.metri/ARCHITECTURE.md`, só a lista abaixo do marcador `<!-- rules-index -->` é gerada. O `rules-index --check` confere se estão atualizados.
-- **O lint estrutural** aceita exatamente essa árvore (`pnpm docs-lint --help`).
+- **O lint estrutural** aceita só essa árvore (`pnpm docs-lint --help`).
 
 ### Árvore do Architecture Source
 
@@ -236,7 +236,7 @@ Escada de regras: `skills/guardrail/SKILL.md`, "The rules ladder".
 Não é uma etapa própria do fluxo; é uma camada que atravessa as etapas:
 
 - **Moldar:** a triagem de design procura o DS já dado, pergunta só o que falta e propõe os princípios de experiência (`skills/shape/DESIGN-TRIAGE.md`); os tokens do `DESIGN.md` são a fonte do tema.
-- **Look across:** critérios de UI por UC, e o que se julga na tela começa com `Tela:`; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 monta tema e shell com aprovação visual.
+- **Look across:** critérios de UI por UC, e o que se julga na tela começa com `Tela:`; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 leva os tokens do `DESIGN.md` ao tema e ao shell do starter, com aprovação visual.
 - **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério `Tela:`, com autocrítica de até 2 rodadas; os textos da interface passam pela skill `humanizer`.
 - **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md`, o shadcn/ui dentro do `@metri/ui`, com os arquivos da CLI em `components/ui/` e o primitivo importado pelo nome (metri:ADR-0003).
 
@@ -315,7 +315,7 @@ Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o mot
 
 Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents` e `humanizer`, que tira do texto lido por humano (a prosa de `docs/` e dos ADRs, a interface, os portões e os relatórios) os sinais de texto gerado. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
-**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init`, `verify`, `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas) e `prune` (tira a evidência da slice na poda do `/accept`). Cada comando explica o que faz em `--help`.
+**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init` (com o starter num projeto novo), `verify`, `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas) e `prune` (tira a evidência da slice na poda do `/accept`). Cada comando explica o que faz em `--help`.
 
 ## Referências e origem de cada peça
 

@@ -1,6 +1,9 @@
 # Changelog
 
-## v1.4.0 (em preparo)
+## v1.4.0 (2026-09-30)
+
+O starter: a fundação do piloto 2 vira o código que o `metri init` entrega a um projeto novo, e as regras apontam para
+ele no lugar dos trechos que repetiam o mesmo código. Junto, os ajustes da revisão da v1.3.1.
 
 ### O que muda
 
@@ -10,7 +13,8 @@
   acesso fail-closed, OpenAPI 3.1, Prisma e e2e com banco por arquivo); o app-web (Vite, React, router, React Query,
   Orval, Playwright e o shell do app); e `packages/core`, `db` e `ui`. `__PROJECT__` vira o nome do projeto, o
   `pnpm install` roda e o `verify` fecha verde. Arquivo que já existe fica como está; o `package.json` e o
-  `pnpm-workspace.yaml` ganham só as chaves que faltam. `--no-starter` pula a cópia.
+  `pnpm-workspace.yaml` ganham só as chaves que faltam. `--no-starter` pula a cópia. O `turbo.json` desliga o
+  `agentGuidance`, que faz o Turborepo 2.11 gravar um bloco próprio no `AGENTS.md`.
 - **Regras e starter.** Onde um arquivo do starter é o exemplo canônico de uma regra, o `examples:` aponta para
   ele e o trecho equivalente saiu do texto: o Biome, o `test` da raiz e o Vitest (`defaults/stack`), o `AppModule`, o
   `main.ts` e o env (`infrastructure/runtime`, `infrastructure/logging`), o filtro de erro, o `toHttpException` e o
@@ -31,6 +35,22 @@
 - **Skills.** A `humanizer` ganha o padrão da ênfase vazia ("exatamente", "é quem", o gerúndio pendurado), e o jargão
   interno passa a cobrir a linguagem de construção na interface ("layout público", "(S4)", "mock").
 - **CLI.** Os comentários do código da CLI passam a inglês.
+
+### Migrar de v1.3.1
+
+1. `pnpm add -D github:otonydesideri/metri#v1.4.0`.
+2. Projeto existente não recebe o starter: o `metri init` só copia `starter/` num repositório sem código em `apps/`,
+   `packages/` ou `src/`. Uma peça que o projeto queira trazer está em `node_modules/metri/starter/`.
+3. Um cabeçalho `// SOT:` que restou vira `/** SOURCE OF TRUTH: ... */`, e cada símbolo do `sot:` das slices done
+   entra num passo do "Caminho linear" do `.metri/ARCHITECTURE.md`: o `metri sot` passa a acusar os dois.
+4. `biome.json`: `"preset": "recommended"` no lugar de `"recommended": true`, o `noRestrictedImports` do pacote `cn` e
+   o override de `packages/ui/src/components/ui/**`, como em `node_modules/metri/starter/biome.json`. Hook ou bloco
+   da CLI do shadcn fora dessa pasta ganha o cabeçalho.
+5. Com o banco pelo Docker, o script `db:down` passa a `db:docker:down`, e o que sobe o container, a `db:docker:up`
+   (`node_modules/metri/starter/scripts/db-docker.sh`).
+6. Com o Turborepo 2.11: `"agentGuidance": false` no `turbo.json` e, se ele já gravou, o bloco
+   `turborepo-agent-rules` sai do `AGENTS.md`.
+7. `pnpm verify` verde.
 
 ## v1.3.1 (2026-09-30)
 

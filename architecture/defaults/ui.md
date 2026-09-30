@@ -33,7 +33,7 @@ status: active
   - o `app-web` depende do `@metri/ui` (`workspace:*`) e importa `@metri/ui/styles/globals.css` na entrada.
 - O `globals.css` abre com `@import "tailwindcss"`, `@import "tw-animate-css"` (as animações das classes que os arquivos da CLI usam, dependência do `@metri/ui`) e dois `@source`, relativos a ele: um para os arquivos de `apps/` e outro para os do próprio pacote.
 
-Exemplo completo: `starter/packages/ui/src/styles/globals.css`, com a base neutra de `skills/shape/DESIGN-TEMPLATE.md`.
+Exemplo completo: `starter/packages/ui/src/styles/globals.css`.
 
 > **Por quê.** O Tailwind procura classes a partir da pasta de quem processa o CSS, o app. Sem o segundo `@source`, as classes dos componentes do pacote (`bg-primary`, `rounded-md`) somem do CSS final, sem erro.
 
@@ -63,7 +63,7 @@ Exemplo completo: `starter/packages/ui/components.json`, `starter/packages/ui/ts
 
 - Entra pela CLI do shadcn (`shadcn@latest add <componente>`), rodada no `@metri/ui`, nunca copiado à mão; a CLI o grava em `src/components/ui/`.
 - O componente usa o `cn` do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"`, o pacote `cn` do npm (desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`), e o `noRestrictedImports` do Biome falha no `lint` até o import passar ao do kit (`defaults/stack.md`, "Configuração de referência").
-- O app importa o componente pelos exports nomeados que a CLI escreveu (`Tabs`, `TabsList`) (`frontend/components.md`, "Composição e o que sobe pro pacote").
+- O app importa o componente pelos exports nomeados que a CLI escreveu, como `Tabs` e `TabsList` (`frontend/components.md`, "Composição e o que sobe pro pacote").
 - O `toast` vem da lib `sonner`, como na documentação do shadcn: o `app-web` depende do `sonner` na mesma versão do `@metri/ui`, porque duas cópias da lib não se falam e o toast não chega ao `Toaster`.
 
 ## Ajuste visual
