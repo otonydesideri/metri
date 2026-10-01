@@ -39,7 +39,6 @@ kind: decision
 - O repositório que recebe escrita fora de um `UnitOfWork` ativo recusa, mecanicamente; a condição de `version` nunca carrega regra de negócio no SQL.
 - O starter ganha a implementação de referência do `UnitOfWork` (contrato, Prisma, `version` por padrão em `AggregateRoot`), sem domínio nenhum nela; o exemplo com agregado e caso de uso continua didático, em `backend/transactions.examples.md`.
 - Toda regra de negócio com estado disputado ganha prova por teste de requisições simultâneas contra Postgres real, repetido, conferindo o estado final do banco — não só as respostas — e contando deadlock.
-- Fica em aberto, como decisão de produto e não de regra: o que fazer com uma entrada que chega depois do fechamento do período a que pertencia (recusar, cair no período seguinte ou entrar no período original como ajuste pós-fechamento). Nenhum desenho do teste resolveu isso sozinho, porque a entrada não carrega o id do período; cada projeto decide quando tiver esse requisito de fato.
 
 ## Imposto por
 
