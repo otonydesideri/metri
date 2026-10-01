@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.4.2.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.5.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -47,7 +47,7 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.4.2                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.5.0                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 

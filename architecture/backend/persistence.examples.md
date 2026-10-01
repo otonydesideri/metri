@@ -100,8 +100,6 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
   }
 
   async save(order: Order): Promise<void> {
-    // no condition besides `version` rides on the `where`: the decision already happened in the domain, before
-    // this call (backend/persistence, "Repositório")
     const data = OrderPrismaMapper.toPrisma(order);
     const newItems = order.items.getNewItems();
     const removedItems = order.items.getRemovedItems();

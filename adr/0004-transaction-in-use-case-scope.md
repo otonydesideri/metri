@@ -34,10 +34,10 @@ kind: decision
 
 ## Consequências
 
-- `backend/transactions.md`, `backend/transactions.examples.md`, `backend/operation-routing.md`, `backend/persistence.md`, `backend/boundaries.md`, `backend/testing.md`, `domain/domain-services.md`, `domain/domain-services.examples.md`, `domain/model.md`, `domain/watched-list.md`, `backend/events.md`, `backend/layers.md`, `backend/modules.md`, `backend/reading.md`, `general/date-time.md`, `domain/bounded-contexts.md` e os índices de área mudam para refletir `UnitOfWork`, `version` por padrão, o "pai que fecha" e "domain service".
+- `backend/transactions.md` e as regras que ele toca mudam para refletir `UnitOfWork`, `version` por padrão, o "pai que fecha" e "domain service"; o diff completo está no histórico do Git.
 - `metri check boundaries` ganha a fronteira `infra/` não importa `domain/enterprise/domain-services/`.
 - O repositório que recebe escrita fora de um `UnitOfWork` ativo recusa, mecanicamente; a condição de `version` nunca carrega regra de negócio no SQL.
-- O starter ganha a implementação de referência do `UnitOfWork` (contrato + Prisma), com `AggregateRoot` e repositório seguindo `version` por padrão; o exemplo canônico das regras de transação passa a ser esse código, e `.examples.md` encolhe para apontar para ele.
+- O starter ganha a implementação de referência do `UnitOfWork` (contrato, Prisma, `version` por padrão em `AggregateRoot`), sem domínio nenhum nela; o exemplo com agregado e caso de uso continua didático, em `backend/transactions.examples.md`.
 - Toda regra de negócio com estado disputado ganha prova por teste de requisições simultâneas contra Postgres real, repetido, conferindo o estado final do banco — não só as respostas — e contando deadlock.
 - Fica em aberto, como decisão de produto e não de regra: o que fazer com uma entrada que chega depois do fechamento do período a que pertencia (recusar, cair no período seguinte ou entrar no período original como ajuste pós-fechamento). Nenhum desenho do teste resolveu isso sozinho, porque a entrada não carrega o id do período; cada projeto decide quando tiver esse requisito de fato.
 

@@ -1,5 +1,33 @@
 # Changelog
 
+## v1.5.0 (2026-10-01)
+
+Transação no escopo do caso de uso: o contrato de transação vira `UnitOfWork`, `version` passa a ser o padrão de proteção de concorrência, e "policy" vira "domain service" em toda a Source. Decisão e evidência em `adr/0004-transaction-in-use-case-scope.md`.
+
+### O que muda
+
+- **`UnitOfWork`.** O contrato de transação, antes um por fluxo e invisível ao caso de uso, vira uma porta genérica (`run(work)`) que o caso de uso abre para ler, decidir e gravar no mesmo escopo. A infra publica o `tx` por contexto assíncrono (`backend/transactions`, "Unidade de trabalho"). O starter traz a implementação de referência — contrato, `TransactionContext`, `PrismaUnitOfWork` — sem domínio nela; o caso de uso com agregado versionado continua exemplo didático, em `backend/transactions.examples.md`.
+- **`version` é o padrão.** `AggregateRoot` carrega `version` por padrão; o `save()` do repositório confere a esperada no `where`, grava a incrementada e devolve `'saved' | 'conflict'`. A condição é mecânica — nenhum critério de negócio entra no `where` junto com ela (`backend/persistence`, "Repositório").
+- **Repositório recusa escrita fora do `UnitOfWork`.** A implementação lança exceção técnica quando chamada sem escopo aberto; leitura continua livre fora dele.
+- **"Pai que fecha" volta.** Entrada de filho confere o pai aberto com `FOR SHARE`; o fechamento trava para escrita com `FOR UPDATE` antes de ler os filhos (`backend/transactions`, "Pai que fecha").
+- **"Policy" sai; "domain service" entra.** Mesmo artefato (regra de domínio sem estado e sem IO), um nome só. `enterprise/policies/` vira `enterprise/domain-services/`, e `<regra>.policy.ts` vira `<regra>.ts`.
+- **Entrada externa que não pode se perder.** Webhook e consumo de fila gravam o payload bruto numa tabela de entrada antes de chamar qualquer caso de uso, e o processamento sai por job comum (`backend/async-jobs`, "Entrada externa: grava antes de processar").
+- **Teste de concorrência real.** Toda regra de negócio sobre agregado com `version` ganha um `*.concurrency.e2e-spec.ts`: N requisições simultâneas, 5 rodadas, invariante conferida no estado final do banco, com contagem de deadlock (`backend/testing`, "Teste de concorrência real"; check: `concurrency`).
+- **`metri check boundaries`.** Duas fronteiras novas: `infra/` não importa `domain/enterprise/domain-services/`, e entidade não importa `domain-services/`.
+
+### Migrar de v1.4.2
+
+1. `pnpm add -D github:otonydesideri/metri#v1.5.0`.
+2. `enterprise/policies/` vira `enterprise/domain-services/`; `<regra>.policy.ts` e `<regra>.policy.spec.ts` perdem o `.policy`; ajuste os imports. Nenhuma regra de domínio muda de comportamento, só o nome e o caminho.
+3. Cada contrato de transação por fluxo (`<fluxo>.transaction.contract.ts` ou equivalente) vira uma chamada ao `UnitOfWork` único do starter: mova para dentro do `work` a leitura, a decisão e a gravação que antes aconteciam antes da chamada à transação; o repositório usado dentro do escopo passa a usar `context.client()` (leitura) ou `context.requireTx()` (escrita) no lugar do client recebido por parâmetro.
+4. Agregado com escrita concorrente ganha coluna `version` (`Int @default(1)`) no schema, se ainda não tiver, e o `save()` do repositório passa a conferir e incrementar, devolvendo `'saved' | 'conflict'`, como em `backend/persistence`, "Repositório".
+5. Se `AggregateRoot` do projeto não vier de `@metri/core/entities`, ou tiver sido copiado antes desta versão: adicione `version` ao construtor, como no `starter/packages/core/src/entities/aggregate-root.ts`.
+6. Revise todo lugar que grava um agregado fora de um `UnitOfWork`: ou passa a abrir o escopo, ou o repositório vai lançar em produção.
+7. Turno, pedido ou qualquer "pai que fecha" que hoje revalida com uma condição solta em SQL: revise contra `backend/transactions`, "Pai que fecha".
+8. Webhook ou consumo de fila existente: revise contra `backend/async-jobs`, "Entrada externa: grava antes de processar", se uma entrada ainda puder se perder entre o recebimento e o processamento.
+9. Para cada agregado com `version` que já tem fluxo de escrita disputada: um `*.concurrency.e2e-spec.ts` novo, como em `backend/testing`, "Teste de concorrência real".
+10. `pnpm verify` verde, incluindo `metri check boundaries`.
+
 ## v1.4.2 (2026-10-01)
 
 Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
