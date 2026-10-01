@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.4.2 (2026-09-30)
+## v1.4.2 (2026-10-01)
 
 Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
 

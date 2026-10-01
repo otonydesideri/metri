@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 
+// the title of the docs page, from the OpenAPI document of app-api
+const API_DOCS_TITLE = /__PROJECT__ API/;
+
 test('o app abre em / com o nome do projeto, a API e o banco no ar, na mesma origem', async ({
 	page,
 }) => {
@@ -26,7 +29,7 @@ test('a documentação da API abre pela página inicial', async ({ page }) => {
 
 	await expect(page).toHaveURL(/\/api\/docs/);
 	await expect(
-		page.getByRole('heading', { name: /__PROJECT__ API/ }),
+		page.getByRole('heading', { name: API_DOCS_TITLE }),
 	).toBeVisible();
 });
 
