@@ -86,9 +86,10 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 
 ## Tipografia e espaçamento
 
-- `--font-sans` e `--font-mono` entram no `@theme` do `globals.css`, com as famílias do `DESIGN.md` (Geist e Geist Mono).
+- `--font-sans` e `--font-mono` entram no `@theme` do `globals.css`, com as famílias do `DESIGN.md` (Geist Variable e Geist Mono Variable, na base neutra).
+- A fonte é variável e servida pelo projeto, sem CDN: o pacote `@fontsource-variable/<família>`, dependência do `@metri/ui`, importado no `globals.css`; o Vite empacota o arquivo da fonte com o app.
 - Cada nível de `typography` do `DESIGN.md` vira `--text-<nível>` no `@theme`, com `--line-height`, `--letter-spacing` e `--font-weight` do nível; a classe é `text-<nível>` (`text-body-sm`, `text-display-lg`).
-- A família não entra no nível: nível em Geist Mono (`code`, `caption-mono`) leva `font-mono` junto (`text-code font-mono`).
+- A família não entra no nível: nível em Geist Mono Variable (`code`, `caption-mono`) leva `font-mono` junto (`text-code font-mono`).
 - O `cn` do `@metri/ui` (`packages/ui/src/lib/utils.ts`) monta o tailwind-merge com `extendTailwindMerge`, com cada nível de `typography` do `DESIGN.md` como tamanho de fonte (`theme.text`). Sem isso, o tailwind-merge lê `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
 - Nível novo no `@theme` entra na lista do `cn` na mesma edição.
 
@@ -109,6 +110,6 @@ Exemplo completo: `starter/packages/ui/src/lib/utils.ts`, com o `@theme` de `sta
 - O `package.json` do `@metri/ui` não depende do pacote `cn` do npm? (check: design-tokens)
 - Hook e bloco gravados pela CLI fora de `src/components/ui/` têm o cabeçalho `SOURCE OF TRUTH`? (check: sot)
 - O ajuste visual começou pelo token, e cor nova tem valor em `:root` e em `.dark`?
-- O `@theme` tem `--font-sans` e `--font-mono` com as famílias do `DESIGN.md`? (check: design-tokens)
+- O `@theme` tem `--font-sans` e `--font-mono` com as famílias do `DESIGN.md`, servidas pelo projeto? (check: design-tokens)
 - O `@theme` tem um `--text-<nível>` por nível de `typography` do `DESIGN.md`? (check: design-tokens)
 - O `cn` usa `extendTailwindMerge`, com cada `--text-<nível>` do `@theme` em `theme.text`? (check: design-tokens)

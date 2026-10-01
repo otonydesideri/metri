@@ -107,7 +107,7 @@ O Postgres de desenvolvimento é delegação do projeto, decidida no planejament
 
 Com o Postgres que já roda: **Obrigatório.** O `.env` aponta para ele, e o ticket que resolve a delegação apaga o `compose.yaml` e os scripts `db:up` e `db:down`.
 
-Com Docker: **Obrigatório.** O `compose.yaml` da raiz, com o nome do projeto (`name:`), que todos os worktrees usam: `pnpm db:up` (`docker compose up -d --wait`) sobe o Postgres e espera o healthcheck, e `pnpm db:down` (`docker compose down`) remove o container e guarda o volume.
+Com Docker: **Obrigatório.** O `compose.yaml` da raiz, com o nome do projeto (`name:`), que todos os worktrees usam: `pnpm db:up` sobe o Postgres e espera o healthcheck, e `pnpm db:down` remove o container e guarda o volume.
 
 **Obrigatório.** Worktree ou projeto encerrado não deixa nada rodando: os servidores que ele subiu são encerrados, e o container de um projeto encerrado sai pelo `db:down`.
 

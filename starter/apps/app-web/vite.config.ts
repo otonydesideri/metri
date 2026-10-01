@@ -10,11 +10,19 @@ const ROOT_ENV = new URL('../../.env', import.meta.url);
 const rootEnv = existsSync(ROOT_ENV)
 	? parseEnv(readFileSync(ROOT_ENV, 'utf8'))
 	: {};
+// the metri version installed in the project, for the start page footer; empty outside a project
+const METRI_PACKAGE = new URL(
+	'../../node_modules/metri/package.json',
+	import.meta.url,
+);
+const METRI_VERSION: string = existsSync(METRI_PACKAGE)
+	? JSON.parse(readFileSync(METRI_PACKAGE, 'utf8')).version
+	: '';
 const WEB_PORT = Number(process.env.WEB_PORT ?? 5279);
 const API_PORT = Number(process.env.API_PORT ?? rootEnv.PORT ?? 3333);
 
 /** SOURCE OF TRUTH: devServerProxy, the Vite and Vitest config of app-web.
- * WHAT: the dev server on its own port (`WEB_PORT`, strict), forwarding `/api` to app-api (`API_PORT`, or the `PORT` of the root .env) without rewriting the Host or the cookie domain, and the two Vitest projects.
+ * WHAT: the dev server on its own port (`WEB_PORT`, strict), forwarding `/api` to app-api (`API_PORT`, or the `PORT` of the root .env) without rewriting the Host or the cookie domain, the installed metri version as `__METRI_VERSION__`, and the two Vitest projects.
  * WHY: page and API share one origin (frontend/data-fetching, "O cliente HTTP"); a taken port is an error, never another project's server answering (frontend/testing, "E2e de critério de UI").
  * WHERE: read by Vite and Vitest; playwright.config.ts sets both ports from `E2E_PORT`; dev-server-proxy.spec.ts imports `devServerProxy`.
  * Vitest projects: `unit`, in jsdom with test/setup.ts, and `dev-server`, in node, only for the proxy spec.
@@ -29,6 +37,7 @@ export const devServerProxy: Record<string, ProxyOptions> = {
 
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
+	define: { __METRI_VERSION__: JSON.stringify(METRI_VERSION) },
 	resolve: { tsconfigPaths: true },
 	server: { port: WEB_PORT, strictPort: true, proxy: devServerProxy },
 	test: {

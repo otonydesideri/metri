@@ -6,11 +6,14 @@
  * of apps/app-web/index.html changes in the same edit (frontend/theming).
  * `@custom-variant dark` is the class contract of the theme, toggled by the `ThemeProvider` and by the
  * inline script of index.html. Two `@source`: `apps/`, which imports this file, and this package, whose
- * component classes would otherwise vanish from the final CSS.
+ * component classes would otherwise vanish from the final CSS. The fonts are variable and served by the project:
+ * the @fontsource-variable packages, whose files Vite bundles with the app, never a CDN (defaults/ui).
  */
 
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 @source "../../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
@@ -130,9 +133,10 @@
 }
 
 @theme {
-	--font-sans: "Geist", "Inter", system-ui, -apple-system, sans-serif;
+	--font-sans: "Geist Variable", system-ui, -apple-system, sans-serif;
 	--font-mono:
-		"Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+		"Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco,
+		monospace;
 
 	--text-display-xl: 48px;
 	--text-display-xl--line-height: 48px;

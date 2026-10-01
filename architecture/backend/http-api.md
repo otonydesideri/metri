@@ -13,7 +13,7 @@ applies_to:
   - "apps/app-api/src/infra/http/dtos/**"
   - "apps/app-api/src/infra/http/presenters/**"
   - "apps/app-api/src/openapi.ts"
-keywords: [controller, endpoint, DTO, setOpenAPIVersion, ApiExcludeController, redirect, OAuth, createZodDto, ZodValidationPipe, ZodResponse, ApiTags, OpenAPI, cleanupOpenApiDoc, api:generate, api:drift, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, união fechada, sortBy, sortDirection, ApiErrorType]
+keywords: [controller, endpoint, DTO, setOpenAPIVersion, createOpenApiDocument, /api/docs, SwaggerModule, ApiExcludeController, redirect, OAuth, createZodDto, ZodValidationPipe, ZodResponse, ApiTags, OpenAPI, cleanupOpenApiDoc, api:generate, api:drift, "@Param", z.uuid, z.uuidv4, presenter, toHTTP, toHttpException, PaginatedResult, contrato de API, união fechada, sortBy, sortDirection, ApiErrorType]
 not_covered:
   - "`DomainError`, tipos e codes, `Either`, tabela de tradução, formato da resposta de erro, mascaramento e erro inesperado → backend/errors"
   - "o adaptador fino em geral → backend/application"
@@ -111,6 +111,7 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 - O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`); a resposta fora do DTO sai 500, `INTERNAL_ERROR` (`backend/errors.md`, "Erro inesperado: filtro global").
 - A geração: `starter/apps/app-api/src/openapi.ts`, que roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"). O `DocumentBuilder` fixa `.setOpenAPIVersion('3.1.0')`: o `.nullable()` do Zod 4 sai com `null` no `type` (`["string", "null"]`) ou no `anyOf`, JSON Schema que só o OpenAPI 3.1 aceita e que o Orval lê.
 - O script `api:generate` da raiz roda os dois lados, o `openapi.json` e o Orval do app-web; o `verify` o roda e falha quando ele muda algum arquivo (`api:drift`).
+- Fora de produção, o `main.ts` serve em `/api/docs` a documentação do mesmo documento (`createOpenApiDocument`).
 - O limite nasce no DTO, e o schema de form do frontend importa a constante gerada, podendo ser mais estrito que ela (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 
 ```ts

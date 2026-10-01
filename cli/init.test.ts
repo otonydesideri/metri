@@ -143,7 +143,7 @@ describe('init', { timeout: 60_000 }, () => {
     const workspace = parse(readFileSync(join(dir, 'pnpm-workspace.yaml'), 'utf8'));
     expect(workspace.packages).toEqual(['apps/*', 'packages/*']);
     expect(workspace.allowBuilds).toMatchObject({ esbuild: false, prisma: true });
-    expect(readFileSync(join(dir, 'apps/app-api/src/openapi.ts'), 'utf8')).toContain("setTitle('minha-loja API')");
+    expect(readFileSync(join(dir, 'apps/app-api/src/infra/http/openapi-document.ts'), 'utf8')).toContain("setTitle('minha-loja API')");
   });
 
   it('starter: rodar de novo não muda nada nem reinstala', () => {

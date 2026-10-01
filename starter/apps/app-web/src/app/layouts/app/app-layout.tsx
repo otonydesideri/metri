@@ -34,7 +34,7 @@ export function AppLayout() {
 					{isDark ? <Sun /> : <Moon />}
 				</Button>
 			</header>
-			<main className="flex-1">
+			<main className="flex flex-1 flex-col">
 				<Suspense fallback={<AppSplash />}>
 					<Outlet />
 				</Suspense>

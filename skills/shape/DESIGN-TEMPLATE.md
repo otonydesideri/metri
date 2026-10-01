@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Base neutra
-description: Base visual neutra do Architecture Source — o tema neutral do shadcn/ui em claro e escuro, sem marca, com a tipografia Geist e a escala de raio do shadcn.
+description: Base visual neutra do Architecture Source — o tema neutral do shadcn/ui em claro e escuro, sem marca, com a Geist variável servida pelo projeto e a escala de raio do shadcn.
 
 colors:
   background: "oklch(1 0 0)"
@@ -69,79 +69,79 @@ colors:
 
 typography:
   display-xl:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 48px
     fontWeight: 600
     lineHeight: 48px
     letterSpacing: -2.4px
   display-lg:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 32px
     fontWeight: 600
     lineHeight: 40px
     letterSpacing: -1.28px
   display-md:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 24px
     fontWeight: 600
     lineHeight: 32px
     letterSpacing: -0.96px
   display-sm:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 20px
     fontWeight: 600
     lineHeight: 28px
     letterSpacing: -0.6px
   body-lg:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 18px
     fontWeight: 400
     lineHeight: 28px
     letterSpacing: 0px
   body-md:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 16px
     fontWeight: 400
     lineHeight: 24px
   body-md-strong:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 16px
     fontWeight: 500
     lineHeight: 24px
   body-sm:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 14px
     fontWeight: 400
     lineHeight: 20px
     letterSpacing: -0.28px
   body-sm-strong:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 14px
     fontWeight: 500
     lineHeight: 20px
     letterSpacing: -0.28px
   caption:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 12px
     fontWeight: 400
     lineHeight: 16px
   caption-mono:
-    fontFamily: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
+    fontFamily: Geist Mono Variable, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
     fontSize: 12px
     fontWeight: 400
     lineHeight: 16px
   code:
-    fontFamily: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
+    fontFamily: Geist Mono Variable, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
     fontSize: 13px
     fontWeight: 400
     lineHeight: 20px
   button-md:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 14px
     fontWeight: 500
     lineHeight: 20px
   button-lg:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Geist Variable, system-ui, -apple-system, sans-serif
     fontSize: 16px
     fontWeight: 500
     lineHeight: 24px
@@ -296,7 +296,7 @@ Pares de superfície e texto: o token base é a cor da superfície, e o `-foregr
 
 ## Typography
 
-Geist no texto e Geist Mono no código, da análise da Vercel. A documentação do shadcn/ui não define escala tipográfica.
+Geist no texto e Geist Mono no código, da análise da Vercel, nas versões variáveis (`Geist Variable` e `Geist Mono Variable`), servidas pelo projeto (`node_modules/metri/architecture/defaults/ui.md`, "Tipografia e espaçamento"). A documentação do shadcn/ui não define escala tipográfica.
 
 - **Display (`xl`, `lg`, `md`, `sm`):** títulos, peso 600, tracking negativo.
 - **Body (`lg`, `md`, `sm`):** texto corrido, peso 400; a variante `-strong` tem peso 500.

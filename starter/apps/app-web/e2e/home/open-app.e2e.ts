@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('o app abre em / com o nome do projeto e fala com a API na mesma origem', async ({
+test('o app abre em / com o nome do projeto, a API e o banco no ar, na mesma origem', async ({
 	page,
 }) => {
 	const healthRequest = page.waitForRequest((request) =>
@@ -12,9 +12,22 @@ test('o app abre em / com o nome do projeto e fala com a API na mesma origem', a
 	await expect(
 		page.getByRole('heading', { level: 1, name: '__PROJECT__' }),
 	).toBeVisible();
-	await expect(page.getByText('Servidor conectado.')).toBeVisible();
+	await expect(page.getByText('API respondendo')).toBeVisible();
+	await expect(page.getByText('Banco conectado')).toBeVisible();
+	await expect(page.getByText(/^metri \d+\.\d+\.\d+$/)).toBeVisible();
 	const requestUrl = new URL((await healthRequest).url());
 	expect(requestUrl.origin).toBe(new URL(page.url()).origin);
+});
+
+test('a documentação da API abre pela página inicial', async ({ page }) => {
+	await page.goto('/');
+
+	await page.getByRole('link', { name: 'Documentação da API' }).click();
+
+	await expect(page).toHaveURL(/\/api\/docs/);
+	await expect(
+		page.getByRole('heading', { name: /__PROJECT__ API/ }),
+	).toBeVisible();
 });
 
 test('endereço sem rota → página não encontrada, com a saída para o início', async ({

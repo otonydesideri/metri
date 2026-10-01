@@ -23,6 +23,13 @@ Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
   --wait` e `db:down`, `docker compose down`. No Postgres que já roda, não há o que rodar: o `prisma migrate dev`
   cria o banco que falta, e o ticket da delegação apaga o `compose.yaml` e os dois scripts. O app-api confere o banco
   no boot e falha em segundos dizendo o que fazer, e o `/api/health` informa o banco (`database: up | down`).
+- **Tela inicial.** A página `/` do app-web mostra o nome do projeto, os próximos passos (`/shape`, `/look-across` e
+  `/build`), o estado real da API e do banco com os estados de leitura, o link para a documentação da API e a versão
+  do metri no rodapé, com tema claro e escuro; a página não encontrada segue a mesma linha. Fora de produção, o
+  app-api serve a documentação OpenAPI em `/api/docs`, do mesmo documento do `api:generate` (`backend/http-api`).
+- **Fonte.** A Geist e a Geist Mono variáveis, servidas pelo projeto pelos pacotes `@fontsource-variable`, sem CDN,
+  entram como token na base neutra do `DESIGN-TEMPLATE` (`Geist Variable`, `Geist Mono Variable`) e no `globals.css`
+  (`defaults/ui`, "Tipografia e espaçamento").
 
 ### Migrar de v1.4.1
 
@@ -44,7 +51,11 @@ Os ajustes da revisão da v1.4.1 e o ambiente do projeto novo.
    Postgres que já roda: saem os scripts `db:*` e os `scripts/db-*.sh`.
 8. `PrismaService`, `DatabaseHealth`, `HealthModule`, `HealthController` e o DTO do health como os do starter, e
    `pnpm api:generate`.
-9. `pnpm verify` verde.
+9. Opcional, para a tela inicial e a fonte do starter: `apps/app-web/src/pages/home/start/`,
+   `apps/app-api/src/infra/http/openapi-document.ts` e o `main.ts`, com o `@fastify/static` no app-api; os
+   `@fontsource-variable/geist` e `geist-mono` no `@metri/ui`, importados no `globals.css`, e o `fontFamily` do
+   `docs/DESIGN.md` igual ao `--font-sans` e ao `--font-mono`, que o `design-tokens` passa a conferir.
+10. `pnpm verify` verde.
 
 ## v1.4.1 (2026-09-30)
 
