@@ -147,7 +147,7 @@ O critério entre as duas formas: item com conteúdo próprio (a foto, o item de
 
 A escrita upsert com `createMany` dos novos e `deleteMany` dos removidos na mesma transação da raiz, e o despacho de eventos depois dela, já são o padrão de `backend/persistence.md` ("Escrita canônica do agregado", com o upsert em backend/persistence.examples.md#orderprismarepositoryimpl) e de `backend/events.md` ("A entidade registra, o repositório despacha"); esta seção não muda nada dele, só fixa um limite. O `save()` de `Product` segue aquele desenho com `ProductPhotoPrismaMapper`.
 
-O limite que este documento fixa: o delta rastreia pertencimento, não conteúdo. Um item que permaneceu na coleção mas mudou um campo interno não aparece em `getNewItems()` nem em `getRemovedItems()`, e a escrita canônica do agregado não persiste essa edição. Fluxo que precisa editar item filho no lugar ainda não tem instância nem desenho decidido; quando aparecer, parar e decidir antes de implementar (ver "Pontos em aberto").
+O limite que este documento fixa: o delta rastreia pertencimento, não conteúdo. Um item que permaneceu na coleção mas mudou um campo interno não aparece em `getNewItems()` nem em `getRemovedItems()`, e a escrita canônica do agregado não persiste essa edição. A edição de item filho no lugar segue `backend/persistence.md`, "Escrita canônica do agregado".
 
 ## Arquivo físico na coleção
 
@@ -181,6 +181,3 @@ O desenho do serviço de storage em si (contrato por asset, fluxo de upload dire
 - Nenhuma instância de agregado é salva duas vezes (o delta não zera)?
 - Arquivo físico: upload antes da escrita, remoção física depois?
 
-## Em aberto
-
-- **Edição de item filho no lugar.** Edição de item filho no lugar (campo interno de item que permanece na coleção) não tem instância nem desenho na escrita canônica; quando o caso aparecer, a decisão edita a escrita canônica de `backend/persistence.md` e esta coleção.

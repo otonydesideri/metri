@@ -1,6 +1,6 @@
 ---
 id: general/date-time
-description: "instante × momento de parede — o instante em UTC; o momento de parede (dia e hora) sempre com o fuso IANA explícito; a conversão entre os dois numa policy do domínio, com `date-fns` e `@date-fns/tz`; a exibição no fuso de quem olha; o comando que acha data montada no fuso do processo."
+description: "instante × momento de parede — o instante em UTC; o momento de parede (dia e hora) sempre com o fuso IANA explícito; a conversão entre os dois num domain service, com `date-fns` e `@date-fns/tz`; a exibição no fuso de quem olha; o comando que acha data montada no fuso do processo."
 use_when:
   - "guardar, comparar ou passar entre camadas um instante: um prazo, um agendamento, um criado em"
   - "guardar ou converter um momento de parede: um dia e uma hora que valem num fuso, como um horário de funcionamento"
@@ -8,7 +8,7 @@ use_when:
 keywords: [instante, momento de parede, wall clock, fuso, timezone, IANA, UTC, TZDate, date-fns, "@date-fns/tz", "new Date", timestamptz, horário de verão, Temporal]
 not_covered:
   - "a formatação e o dia de calendário local no frontend (\"Nível 3: fora do módulo, a casa é o que a função conhece\") → frontend/helpers"
-  - "a forma e a casa da policy → domain/domain-services"
+  - "a forma e a casa do domain service → domain/domain-services"
   - "o import da biblioteca no domínio → backend/boundaries"
 enforced_by: [date-time]
 status: active
@@ -40,13 +40,13 @@ Todo valor de data ou hora é um de dois conceitos, nunca uma mistura: o instant
 
 ## A conversão
 
-**Obrigatório.** A conversão entre momento de parede e instante mora numa policy do domínio (`domain/domain-services.md`), com `date-fns` e `@date-fns/tz`: o `TZDate` monta e lê a data no fuso que recebe.
+**Obrigatório.** A conversão entre momento de parede e instante mora num domain service (`domain/domain-services.md`), com `date-fns` e `@date-fns/tz`: o `TZDate` monta e lê a data no fuso que recebe.
 
 > **Por quê.** Horário de verão, fuso de offset não inteiro e mudança histórica de fuso são a classe de bug que a biblioteca resolve; a conta à mão com `Intl` e `Date` erra justo nesses dias.
 
-**Obrigatório.** A policy devolve o instante como `Date` comum (`new Date(zoned.getTime())`), sem o `TZDate`: quem recebe um instante não leva adiante o fuso de origem.
+**Obrigatório.** O domain service devolve o instante como `Date` comum (`new Date(zoned.getTime())`), sem o `TZDate`: quem recebe um instante não leva adiante o fuso de origem.
 
-**Obrigatório.** O spec da policy prova a ida e a volta em dois fusos, um deles atravessando a troca de horário de verão.
+**Obrigatório.** O spec do domain service prova a ida e a volta em dois fusos, um deles atravessando a troca de horário de verão.
 
 ## Exibição
 
@@ -58,7 +58,7 @@ Todo valor de data ou hora é um de dois conceitos, nunca uma mistura: o instant
 flowchart TD
   Q1{É um ponto fixo no tempo?} -->|sim| A[Instante: UTC, sem fuso]
   Q1 -->|não, é dia e hora num fuso| Q2{Converte para instante ou de instante?}
-  Q2 -->|sim| B[A policy, com date-fns e @date-fns/tz]
+  Q2 -->|sim| B[O domain service, com date-fns e @date-fns/tz]
   Q2 -->|não, só exibe| C[Intl, no fuso de quem olha]
 ```
 
@@ -66,5 +66,5 @@ flowchart TD
 
 - Todo instante gravado ou passado entre camadas é UTC, sem fuso embutido?
 - Todo momento de parede de negócio leva a data ou o dia, a hora e o fuso IANA juntos?
-- A conversão passa pela policy, com o spec de ida e volta em dois fusos e na troca de horário de verão?
+- A conversão passa pelo domain service, com o spec de ida e volta em dois fusos e na troca de horário de verão?
 - O backend e os pacotes não montam data no fuso do processo (`new Date(ano, mês, dia)`)? (check: date-time)

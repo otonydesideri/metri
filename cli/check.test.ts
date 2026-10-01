@@ -79,15 +79,41 @@ describe('check', { timeout: 30_000 }, () => {
 
   it('date-time: new Date com componentes soltos no app-api e nos pacotes; o app-web fica de fora', () => {
     const dir = project();
-    write(dir, 'apps/app-api/src/domain/enterprise/policies/cutoff.ts', 'const a = 1;\nconst cutoff = new Date(2026, 8, 30, 14);\n');
+    write(dir, 'apps/app-api/src/domain/enterprise/domain-services/cutoff.ts', 'const a = 1;\nconst cutoff = new Date(2026, 8, 30, 14);\n');
     write(dir, 'apps/app-web/src/shared/utils/today.ts', 'const today = new Date(2026, 8, 30);\n');
     expect(check(dir, 'date-time')).toEqual({
       status: 1,
       lines: [
         'falha date-time: new Date(...) com componentes soltos, sem fuso explícito (use TZDate, de @date-fns/tz, ou um instante ISO com offset ou Z)',
-        '  apps/app-api/src/domain/enterprise/policies/cutoff.ts:2',
+        '  apps/app-api/src/domain/enterprise/domain-services/cutoff.ts:2',
       ],
     });
+  });
+
+  it('boundaries: infra importando domain service', () => {
+    const dir = project();
+    write(dir, 'apps/app-api/src/infra/persistence/prisma/repositories/order.prisma-repository.impl.ts', "import { calculateLoyaltyDiscount } from '../../../../domain/enterprise/domain-services/calculate-loyalty-discount';\n");
+    expect(check(dir, 'boundaries')).toEqual({
+      status: 1,
+      lines: [
+        'falha boundaries: infra importando domain service',
+        '  apps/app-api/src/infra/persistence/prisma/repositories/order.prisma-repository.impl.ts: ../../../../domain/enterprise/domain-services/calculate-loyalty-discount',
+      ],
+    });
+  });
+
+  it('concurrency: model com version sem *.concurrency.e2e-spec.ts nomeado pelo model', () => {
+    const dir = project();
+    write(dir, 'packages/db/prisma/models/order.prisma', 'model Order {\n  id      String @id\n  version Int    @default(1)\n}\n');
+    expect(check(dir, 'concurrency')).toEqual({
+      status: 1,
+      lines: [
+        'falha concurrency: model com version sem *.concurrency.e2e-spec.ts nomeado pelo model',
+        '  packages/db/prisma/models/order.prisma: Order',
+      ],
+    });
+    write(dir, 'apps/app-api/src/infra/persistence/prisma/order.concurrency.e2e-spec.ts', '');
+    expect(check(dir, 'concurrency')).toEqual({ status: 0, lines: [] });
   });
 
   it('check ou parâmetro que não existe é erro', () => {

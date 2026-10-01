@@ -13,7 +13,7 @@ applies_to:
   - "packages/db/**/models/*.prisma"
 keywords: [repositório, mapper, toDomain, toPrisma, reconstitute, save, upsert, createMany, deleteMany, delta, WatchedList, leitura em lote, N+1, findManyByIds, Map, PrismaService, PrismaClient, UncheckedCreateInput, SQL cru, $queryRaw, $queryRawUnsafe, outcome de persistência, "models/<módulo>.prisma"]
 not_covered:
-  - "atomicidade entre agregados, contrato de transação, unit of work, concorrência e a escada de locking → backend/transactions"
+  - "atomicidade entre agregados, unidade de trabalho, concorrência e locking → backend/transactions"
   - "o mecanismo de contrato `abstract class` e o caso de uso → backend/application"
   - "a propriedade do agregado e o formato do id → domain/model"
   - "quando a coleção usa `WatchedList` → domain/watched-list"
@@ -48,9 +48,25 @@ Persistência é a borda entre o agregado em memória e o banco: o repositório 
 
 > **Por quê.** A decisão sai da entidade e vai para o repositório, onde passa a existir em duas cópias, a real e a do dublê de teste.
 
-**Proibido.** Escrita que não é o estado do agregado carregado no contrato do repositório: outra tabela, duas linhas na mesma transação ou condição que só o banco avalia na gravação são contrato de transação (`backend/transactions.md`, "Contrato de transação" e "Concorrência e locking").
+**Proibido.** Escrita que não é o estado do agregado carregado no contrato do repositório: outra tabela ou condição sobre outro agregado entram pela unidade de trabalho, com o repositório de cada agregado (`backend/transactions.md`, "Unidade de trabalho").
+
+Quando o agregado tem coluna `version`: **Obrigatório.** O `save()` confere a `version` esperada no `where`, grava a incrementada e devolve o outcome `'saved' | 'conflict'` (`backend/transactions.md`, "Concorrência e locking").
+
+**Obrigatório.** A condição de `version` no `where` é mecânica: compara o número lido com o número gravado, nada além disso.
+
+**Proibido.** `where` de uma escrita condicional carregar critério de regra de negócio (um limite, um estado permitido, uma faixa) além da própria `version` ou da constraint de unicidade; a decisão que motiva a escrita já aconteceu no domínio, antes de chamar o repositório (`backend/transactions.md`, "O domínio decide; a infra só faz IO").
+
+> **Por quê.** `where` com condição de negócio decide sem o domínio ver, e o outcome devolvido vira `'conflict'` mesmo quando a causa real não foi disputa de concorrência — ninguém consegue distinguir as duas coisas de fora do repositório.
+
+**Obrigatório.** Dentro de um escopo de `UnitOfWork`, o repositório usa o `tx` do escopo, pelo contexto que a implementação publica (`backend/transactions.md`, "Unidade de trabalho").
 
 - **Exceção.** Enfileiramento transacional de `backend/async-jobs.md`, "Quem enfileira": quando nem a janela entre o commit e o enqueue é aceitável, o job é enfileirado dentro da mesma `$transaction` da escrita, pelo caminho de exceção que aquele documento descreve.
+
+**Obrigatório.** Toda escrita do repositório recusa rodar fora de um escopo de `UnitOfWork` ativo: a implementação lança exceção técnica, nunca `Either`, quando chamada sem transação publicada no contexto.
+
+**Permitido.** Leitura do repositório, com ou sem escopo de `UnitOfWork` ativo.
+
+> **Por quê.** Escrita sem transação ativa é erro de programação, não um resultado de negócio esperado — o mesmo motivo que separa erro inesperado de erro de domínio em `backend/errors.md`.
 
 ### Mapper
 
@@ -71,6 +87,10 @@ Quando um filho parece precisar de contrato de repositório: **Obrigatório.** T
 **Obrigatório.** O `save()` grava a raiz e o delta da coleção filha numa única transação: novos por `createMany`, removidos por `deleteMany`.
 
 **Proibido.** Reescrever a coleção filha inteira a cada gravação.
+
+Quando um filho que continua na coleção muda de conteúdo (o saldo de um lote): **Obrigatório.** A raiz marca os filhos alterados, e o `save()` grava cada um por `update`, no mesmo `tx`.
+
+Quando a coleção filha cresce sem limite (lotes, histórico): **Obrigatório.** O repositório carrega só o subconjunto que a regra usa, por um método de leitura que diz qual (`findWithAvailableLots`), e a raiz declara que a coleção carregada é esse subconjunto.
 
 **Obrigatório.** A tabela do filho é escrita direto no `tx` da escrita da raiz, pelo mapper do filho.
 
@@ -177,6 +197,8 @@ O outcome de persistência chega ao caso de uso como valor comum. Dentro de uma 
 - Model novo está no `models/<módulo>.prisma` do módulo dono?
 - SQL cru usa template tag, sem `$queryRawUnsafe` fora do adapter da fila, e identificador variável é união fechada?
 - Escrita com condição que só o banco avalia devolve o outcome declarado (`false` ou a união que nomeia cada resultado), com o código do driver lido só na implementação, sem `Either`, `DomainError` nem tipo genérico de resultado?
+- A condição de `version` no `where` é só a comparação mecânica, sem critério de negócio junto?
+- A implementação recusa escrita fora de um escopo de `UnitOfWork` ativo, com leitura livre para acontecer fora?
 
 ## Em aberto
 
@@ -184,7 +206,7 @@ O outcome de persistência chega ao caso de uso como valor comum. Dentro de uma 
 
 ## Referências
 
-- `backend/transactions.md`: contrato de transação, concorrência e locking.
+- `backend/transactions.md`: unidade de trabalho, concorrência e locking.
 - `backend/application.md`: o mecanismo de contrato e o caso de uso.
 - `domain/model.md`: entidade, `reconstitute()`, propriedade do agregado e formato do id.
 - `domain/watched-list.md`: o delta da coleção filha.

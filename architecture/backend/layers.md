@@ -23,7 +23,7 @@ src/
 │       ├── use-cases/<módulo>/  # casos de uso
 │       ├── queries/<módulo>/    # contratos e DTOs de leitura de exibição
 │       ├── repositories/        # contratos de repositório (abstract class)
-│       ├── transactions/        # contratos de transação (abstract class)
+│       ├── transactions/        # a porta UnitOfWork (abstract class)
 │       ├── queues/              # contratos de fila (abstract class)
 │       └── services/<capacidade>/  # contratos de service (abstract class)
 ├── infra/
@@ -89,7 +89,7 @@ flowchart TD
 | Lista rastreada de coleção filha | `src/domain/enterprise/<coleção>-list.ts`, vínculo puro em `<referenciado>-ids.ts` | `domain/watched-list.md` |
 | Família de regra com variação (Strategy) | `src/domain/enterprise/strategies/<regra>.strategy.ts` | `domain/strategy.md` |
 | Regra com mais de um consumidor (Specification) | `src/domain/enterprise/specifications/<regra>.specification.ts` | `domain/specification.md` |
-| Regra de domínio sem dono natural (Domain Service / Policy) | `src/domain/enterprise/policies/<regra>.policy.ts` | `domain/domain-services.md` |
+| Regra de domínio sem dono natural (Domain Service) | `src/domain/enterprise/domain-services/<regra>.ts` | `domain/domain-services.md` |
 | Value object | `src/domain/enterprise/value-objects/<nome>.vo.ts` | `domain/model.md` |
 | Enum de domínio | `src/domain/enterprise/enums/<nome>.enum.ts` | `domain/model.md` |
 | Domain event | `src/domain/enterprise/events/<evento>.event.ts` | `backend/events.md` |
@@ -104,8 +104,8 @@ flowchart TD
 | Mapper | `src/infra/persistence/prisma/mappers/<agregado>.prisma-mapper.ts` | `backend/persistence.md` |
 | Contrato + DTO de query de exibição | `src/domain/application/queries/<módulo>/<ação>.query.ts` | `backend/reading.md` |
 | Implementação Prisma de query | `src/infra/persistence/prisma/queries/<módulo>/<ação>.prisma-query.impl.ts` | `backend/reading.md` |
-| Contrato de transação | `src/domain/application/transactions/<fluxo>-transaction.contract.ts` | `backend/transactions.md` |
-| Implementação Prisma de transação | `src/infra/persistence/prisma/transactions/<fluxo>.prisma-transaction.impl.ts` | `backend/transactions.md` |
+| Unidade de trabalho | `src/domain/application/transactions/unit-of-work.contract.ts` | `backend/transactions.md` |
+| Implementação Prisma da unidade de trabalho | `src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts` | `backend/transactions.md` |
 | Subscriber de evento | `src/infra/events/on-<evento>.subscriber.ts` | `backend/events.md` |
 | Contrato de fila | `src/domain/application/queues/<fluxo>-queue.contract.ts` | `backend/async-jobs.md` |
 | Worker de job | `src/infra/jobs/<job>.worker.ts` | `backend/async-jobs.md` |
@@ -114,7 +114,7 @@ flowchart TD
 | Factory de teste | `test/factories/make-<agregado>.factory.ts` | `backend/testing.md` |
 | Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` | `backend/testing.md` |
 | Fila em memória | `test/queues/<fluxo>.in-memory-queue.impl.ts` | `backend/async-jobs.md` |
-| Dublê de transação | `test/transactions/<fluxo>.in-memory-transaction.impl.ts` | `backend/transactions.md` |
+| Dublê da unidade de trabalho | `test/transactions/in-memory-unit-of-work.ts` | `backend/transactions.md` |
 | Primitivo de domínio compartilhado | `packages/core/src/<área>/` | instruções de projeto de `packages/core` |
 | Schema e migrations; client de banco gerado | `packages/db/prisma/` (`schema.prisma`, `models/`, `migrations/`); `packages/db/src/generated/prisma/` | `backend/persistence.md` |
 

@@ -44,7 +44,7 @@ main.ts / app.module.ts
 | `packages/utils/src` | builtins do Node (`node:*`) | Qualquer pacote externo, mais `@metri/core` |
 | `src/domain/enterprise` | `@metri/core`, `@metri/utils`, `node:*` e as bibliotecas de cálculo puro permitidas, abaixo | NestJS, `@metri/db`, Zod, `src/infra`, `test/` |
 | `src/domain/application` | O de cima, mais `Injectable` de `@nestjs/common` | O resto de `@nestjs/common` e qualquer outro `@nestjs/*`, `nestjs-pino`, `@metri/db`, Zod, `src/infra`, `test/` |
-| `src/infra` | `src/domain`, `@metri/core`, `@metri/utils`, bibliotecas de infraestrutura | `test/` |
+| `src/infra` | `src/domain`, `@metri/core`, `@metri/utils`, bibliotecas de infraestrutura | `test/`, `src/domain/enterprise/domain-services` |
 | `test/` | Tudo | |
 
 Paths de `src/` e `test/` são relativos a `apps/app-api/`.
@@ -54,6 +54,10 @@ Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client
 > **Por quê.** Refazer à mão o cálculo que a biblioteca resolve (horário de verão, arredondamento) é a classe de bug que ela existe para evitar, e um contrato de infra em volta dela seria abstração sem troca real.
 
 - **Exceção.** `packages/core` e `packages/utils` ficam sem dependência externa mesmo assim: a permissão vale só para o domínio do app.
+
+## A infra não importa regra de domínio
+
+`src/infra` importa entidades, contratos e mappers do domínio, mas nunca `domain/enterprise/domain-services/`: regra chamada pela infra sai do caminho do caso de uso (`backend/transactions.md`).
 
 ## `packages/core` não depende de nada externo
 

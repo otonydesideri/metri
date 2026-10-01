@@ -1,9 +1,9 @@
-# Domain Service e Policy: exemplos
+# Domain Service: exemplos
 
 ## calculateLoyaltyDiscount
 
 ```ts
-// domain/enterprise/policies/loyalty-discount.policy.ts
+// domain/enterprise/domain-services/loyalty-discount.ts
 import { CustomerTier } from '../enums/customer-tier.enum';
 import type { Customer } from '../customer.entity';
 import type { Order } from '../order.entity';

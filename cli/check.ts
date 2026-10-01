@@ -1,7 +1,7 @@
-// check: the code checks of the Source that no linter covers (boundaries, access-boundaries, date-time). --help has
-// the details.
+// check: the code checks of the Source that no linter covers (boundaries, access-boundaries, date-time,
+// concurrency). --help has the details.
 import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { projectFiles, takeOption } from './lib/layout.ts';
 
 const HELP = `check: os checks de código da Source que nenhum lint cobre. Sem nome, roda todos.
@@ -16,6 +16,8 @@ Checks:
                       (backend/access-scope, "Declaração por controller")
   date-time           o construtor Date com componentes soltos (new Date(ano, mês, dia)) no app-api e nos pacotes,
                       que monta a data no fuso do processo; Date.UTC(...) dentro dele passa (general/date-time)
+  concurrency         todo model do schema Prisma com coluna version tem um *.concurrency.e2e-spec.ts em algum lugar
+                      do app-api, nomeado pelo model em kebab-case (backend/testing, "Teste de concorrência real")
 
 Parâmetros, na chave metri do package.json da raiz:
   "metri": {
@@ -107,6 +109,10 @@ const boundaries: Check = ({ domainPackages }) => {
       items: importing(domain, (s) => !isRelative(s) && !isBuiltin(s) && !allowed.has(packageOf(s))),
     },
     {
+      label: 'infra importando domain service',
+      items: importing(tsFiles(`${API_SRC}/infra`), (s) => /(^|\/)domain\/enterprise\/domain-services\//.test(s)),
+    },
+    {
       label: 'domain usando de @nestjs/common algo além de Injectable',
       items: domain.flatMap((path) =>
         [...readFileSync(path, 'utf8').matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]@nestjs\/common['"]/g)]
@@ -167,7 +173,36 @@ const dateTime: Check = () => {
   ];
 };
 
-const CHECKS: Record<string, Check> = { boundaries, 'access-boundaries': accessBoundaries, 'date-time': dateTime };
+// The model names (PascalCase, as declared) of a .prisma source that have a `version` field.
+function versionedModelsOf(source: string): string[] {
+  return [...source.matchAll(/model\s+(\w+)\s*\{([^}]*)\}/g)]
+    .filter(([, , body]) => /^\s*version\s+Int\b/m.test(body))
+    .map(([, name]) => name);
+}
+
+const toKebabCase = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+const concurrency: Check = () => {
+  const schemaDir = 'packages/db/prisma/models';
+  const models = existsSync(schemaDir)
+    ? projectFiles(schemaDir)
+        .filter((path) => path.endsWith('.prisma'))
+        .flatMap((path) => versionedModelsOf(readFileSync(path, 'utf8')).map((name) => `${path}: ${name}`))
+    : [];
+  const specs = tsFiles(API_SRC, { specs: true }).filter((path) => path.endsWith('.concurrency.e2e-spec.ts'));
+  const specNames = new Set(specs.map((path) => basename(path)));
+  return [
+    {
+      label: 'model com version sem *.concurrency.e2e-spec.ts nomeado pelo model',
+      items: models.filter((item) => {
+        const name = item.split(': ').pop() as string;
+        return ![...specNames].some((fileName) => fileName.startsWith(`${toKebabCase(name)}.`));
+      }),
+    },
+  ];
+};
+
+const CHECKS: Record<string, Check> = { boundaries, 'access-boundaries': accessBoundaries, 'date-time': dateTime, concurrency };
 
 // The metri.checks key of the root package.json; an unknown check or parameter is an error, never ignored.
 function paramsOf(name: string): Params | string {

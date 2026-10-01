@@ -1,10 +1,11 @@
 ---
 id: backend/async-jobs
-description: "a construção de um job depois que a operação vira job — o contrato de fila e a implementação dele; o worker no que tem de específico, com o registro e o ciclo de vida dele; quem enfileira, o enfileiramento transacional e as tarefas agendadas; a idempotência e o destino de um job que falha (retry e dead letter)."
+description: "a construção de um job depois que a operação vira job — o contrato de fila e a implementação dele; o worker no que tem de específico, com o registro e o ciclo de vida dele; quem enfileira, o enfileiramento transacional, a entrada externa que grava antes de processar e as tarefas agendadas; a idempotência e o destino de um job que falha (retry e dead letter)."
 use_when:
   - "criar job, worker ou cron novo"
   - "tirar uma operação do fluxo de quem pediu para executar depois, com garantia"
   - "enfileirar um job a partir de caso de uso ou subscriber"
+  - "receber webhook ou consumir fila de um sistema externo"
   - "tornar um job idempotente ou decidir o retry e a dead letter dele"
   - "trocar a ferramenta de fila do default (por ADR)"
 activation: "`backend/operation-routing.md` leva alguma operação do projeto a job ou tarefa agendada?"
@@ -12,7 +13,7 @@ applies_to:
   - "apps/app-api/src/domain/application/queues/**"
   - "apps/app-api/src/infra/jobs/**"
   - "apps/app-api/test/queues/**"
-keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
+keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, inbox, webhook, entrada externa, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
 not_covered:
   - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
   - "o processo em que os workers rodam, que é decisão de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
@@ -108,6 +109,20 @@ await this.prisma.client.$transaction(async (tx) => {
 
 `sendInTransaction` repassa o `tx` ao pg-boss pela opção `db` (um adapter `executeSql` sobre `tx.$queryRawUnsafe(text, ...values)`). É a exceção sancionada da política de SQL cru de `backend/persistence.md`: o SQL vem da biblioteca, parametrizado, sem identificador interpolado nosso. Job inserido na transação só fica visível para workers depois do commit, e some junto no rollback. Este é o caminho de exceção: a maioria dos efeitos tolera a janela mínima do subscriber, e o custo aqui é acoplar o repositório ao enfileiramento. Usar só quando a perda for inaceitável mesmo entre o commit e o enqueue. O mecanismo mostrado supõe a fila no próprio Postgres; ferramenta de outra família troca este caminho por uma tabela de outbox com processo drenador, desenhada junto com a decisão.
 
+## Entrada externa: grava antes de processar
+
+Webhook e consumo de fila externa (`backend/application.md`, "Adaptador de entrada fino") entregam um payload que não existe em mais nenhum lugar: perdê-lo antes de processar é definitivo, ao contrário de um comando nosso, que a fila ou o remetente interno sempre podem reconstituir.
+
+**Obrigatório.** O adapter de entrada grava o payload bruto, intacto, numa tabela de entrada (`<origem>_inbox`, com o id de evento do remetente, quando ele existe, como chave de deduplicação) antes de chamar qualquer caso de uso, numa transação curta que só faz essa gravação.
+
+**Obrigatório.** O processamento do payload gravado acontece por um job comum ("O contrato de fila", acima), enfileirado na mesma escrita de entrada ou por um worker que varre entradas pendentes; nunca em linha, dentro do handler que recebeu o request.
+
+> **Por quê.** Gravar e responder antes de processar é o que torna o recebimento durável: o processamento pode falhar, reiniciar e retentar sem o remetente saber nem reenviar nada; processar em linha faz o payload desaparecer junto com uma queda no meio do caminho.
+
+**Obrigatório.** Id de evento do remetente vira constraint de unicidade na tabela de entrada: reentrega do mesmo evento grava uma vez, pela técnica 3 de "Idempotência", abaixo.
+
+Tentativa esgotada do job de processamento segue "Falha, retry e dead letter" como qualquer outro job: vai para a dead letter com o payload de origem, e o alerta de profundidade cobre a entrada externa perdida, não só um efeito interno.
+
 ## Tarefas agendadas
 
 Cron é a própria fila com um agendamento: o pg-boss grava o cronograma no banco e garante um único disparo por horário entre N instâncias do app, comparando os relógios com o do banco. Não existe scheduler como artefato separado; a tarefa agendada é um worker comum cuja fila recebe jobs por tempo, registrado no mesmo `onModuleInit`:
@@ -198,6 +213,7 @@ Para caso de uso que enfileira, a asserção nos `items` entra no spec unitário
 - O handler sobrevive a reexecução (idempotência por construção, verificação de estado ou constraint)?
 - Tarefa agendada computa por estado, tolerando tick perdido?
 - Quem enfileira tem spec assertando o dublê da fila?
+- Webhook ou consumo de fila externa grava o payload bruto antes de chamar um caso de uso, com o id de evento do remetente como constraint de unicidade quando ele existe?
 
 ## Em aberto
 

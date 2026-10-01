@@ -96,7 +96,7 @@ async save(order: Order): Promise<void> {
 Pontos-chave:
 
 - Registrar não é despachar. Entre `addDomainEvent()` e o despacho, o evento só existe dentro do agregado; se o caso de uso retornar `failure(...)` antes de gravar, nenhum subscriber fica sabendo de nada.
-- Contrato de transação (`backend/transactions.md`) despacha para cada agregado envolvido, depois do commit da `$transaction`: `dispatchEventsForAggregate(params.order.id)` e depois `dispatchEventsForAggregate(params.invoice.id)`. Cada agregado carrega os próprios eventos e cada um pode interessar a subscribers diferentes.
+- Dentro de um escopo de `UnitOfWork` (`backend/transactions.md`), o repositório registra o agregado no contexto em vez de despachar, e a unidade de trabalho despacha os eventos de cada agregado gravado depois do commit; num escopo desfeito, descarta-os. Cada agregado carrega os próprios eventos e cada um pode interessar a subscribers diferentes.
 - O dublê em memória espelha o real também nisso: cada método de escrita de `test/repositories/` termina com o mesmo `dispatchEventsForAggregate(...)`. Sem isso, o spec unitário de subscriber não tem como provar a reação.
 - Falha técnica entre o registro e o despacho (a escrita lança e a request morre em 500) deixa o agregado retido na lista estática de marcados. O desenho aceita esse resíduo: o gatilho é raro e o processo é reciclado em deploy. Se um dia virar problema de memória real, a revisita é aqui.
 

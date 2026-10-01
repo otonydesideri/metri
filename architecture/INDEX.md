@@ -58,7 +58,7 @@ Resumo das decisões que valem em todo documento e em todo app; cada uma é defi
 | Controller | Definida em `backend/http-api.md`, "Controller por ação" |
 | Servidor HTTP | Definida em `defaults/stack.md`, "Stack" |
 | Env | Definida em `infrastructure/runtime.md`, "Env e montagem de client" |
-| Transação | Definida em `backend/transactions.md`, "Contrato de transação" |
+| Transação | Definida em `backend/transactions.md`, "Unidade de trabalho" |
 | Id | Definida em `domain/model.md`, "Entidade: criação e reconstituição são caminhos separados" |
 | Idioma | Definida em `defaults/stack.md`, "Stack" |
 | Default silencioso | Definida em `general/principles.md`, "Princípios não negociáveis" |

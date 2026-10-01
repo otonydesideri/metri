@@ -21,7 +21,7 @@ not_covered:
   - "Specification → domain/specification"
   - "Builder → domain/builder"
   - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
-  - "Domain Service / Policy → domain/domain-services"
+  - "Domain Service → domain/domain-services"
   - "bounded context → domain/bounded-contexts"
 examples: [domain/model.examples.md, starter/packages/core/src/entities/entity.ts, starter/packages/core/src/entities/value-object.ts, starter/packages/core/src/types/either.ts]
 status: active
@@ -62,6 +62,10 @@ O modelo de domínio é TypeScript puro em `domain/enterprise`: entidades e valu
 
 **Obrigatório.** Dado que participa das invariantes de um agregado tem a representação de domínio desta seção, entidade ou value object, inclusive quando a tabela é externa.
 
+**Obrigatório.** Estado persistido que uma regra de negócio lê e reescreve (um saldo, um contador de tentativas, os lotes e o déficit de um produto) tem entidade dona, com os métodos dessa regra, e repositório.
+
+> **Por quê.** Sem o dono, a regra procura casa e acaba em função solta ou na infra, e o estado vira número cru mexido de fora.
+
 Tabela sem representação no modelo de domínio (estado técnico de persistência, tabela de suporte, dado só de leitura) não é parte modelada de agregado nenhum; a escrita e a leitura dela seguem `backend/persistence.md` e `backend/reading.md`.
 
 **Proibido.** Entidade artificial criada só para uma tabela técnica caber num agregado.
@@ -71,6 +75,8 @@ Tabela sem representação no modelo de domínio (estado técnico de persistênc
 Quando uma invariante de domínio precisa ser preservada atomicamente pelo próprio modelo durante uma mudança: **Obrigatório.** Os elementos responsáveis por ela pertencem à mesma fronteira de agregado, a raiz (`AggregateRoot`, de `@metri/core/entities`) e os filhos dela.
 
 A regra não põe toda consistência do sistema, nem toda operação transacional, dentro de um agregado só: operação que envolve mais de uma fronteira é coordenada por `backend/transactions.md`, com transação entre agregados ou consistência eventual pela árvore de `backend/operation-routing.md`, e a leitura de exibição atravessa agregados sem redesenhá-los (`backend/reading.md`).
+
+**Obrigatório.** O agregado é a unidade de detecção de concorrência: raiz com escrita concorrente tem coluna `version` (`backend/transactions.md`, "Concorrência e locking").
 
 **Obrigatório.** Coleção interna do agregado preserva as invariantes por método de domínio: item entra e sai por método de intenção da entidade (`addItem()`), que aplica a regra antes de tocar a coleção.
 

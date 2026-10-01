@@ -1,18 +1,20 @@
 ---
 id: backend/testing
-description: "a pirâmide de teste do backend — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber e e2e por controller contra banco Postgres isolado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis."
+description: "a pirâmide de teste do backend — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber, e2e por controller contra banco Postgres isolado e o spec de concorrência real que prova regra de negócio sobre agregado disputado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis."
 use_when:
   - "escrever spec de entidade, value object, caso de uso ou subscriber do backend"
   - "escrever e2e de controller, que prova o fluxo HTTP completo com tradução de erro e persistência real"
+  - "provar regra de negócio sobre agregado com coluna version, disputado por escrita concorrente"
   - "criar factory de teste ou repositório em memória de um agregado"
   - "decidir se um comportamento do backend precisa de dublê novo ou reusa um existente"
 applies_to:
   - "apps/app-api/src/**/*.spec.ts"
   - "apps/app-api/src/**/*.e2e-spec.ts"
   - "apps/app-api/test/**"
-keywords: [spec, e2e, e2e-spec, pirâmide, factory de teste, "make<Agregado>", makePrisma, repositório em memória, InMemoryRepositoryImpl, makeInMemoryRepositories, dublê, Vitest, setup-e2e.ts, "@faker-js/faker", instanceof, waitFor, supertest, overrideProvider, setGlobalPrefix, OnDatabase, payload, Arrange, Act]
+keywords: [spec, e2e, e2e-spec, pirâmide, factory de teste, "make<Agregado>", makePrisma, repositório em memória, InMemoryRepositoryImpl, makeInMemoryRepositories, dublê, Vitest, setup-e2e.ts, "@faker-js/faker", instanceof, waitFor, supertest, overrideProvider, setGlobalPrefix, OnDatabase, payload, Arrange, Act, concurrency, deadlock, version]
 not_covered:
   - "o teste do frontend, com pirâmide própria → frontend/testing"
+enforced_by: [concurrency]
 examples: [backend/testing.examples.md, starter/apps/app-api/test/setup-e2e.ts, starter/apps/app-api/vitest.config.e2e.ts, starter/apps/app-api/src/infra/common/errors/error-envelope.e2e-spec.ts]
 status: active
 ---
@@ -29,6 +31,7 @@ Três níveis, do mais barato ao mais caro:
 1. **Spec de entidade e value object**: puro, sem I/O, sem Nest. Prova invariante de criação e transição de estado direto na classe de domínio.
 2. **Spec de caso de uso**: injeta os repositórios em memória de `test/repositories/`, sem Nest e sem banco. Prova a orquestração (leitura, regra, gravação) com dublês.
 3. **E2e por controller**: app Nest inteiro, banco Postgres isolado por arquivo. Prova o fluxo HTTP completo, incluindo tradução de erro e persistência real.
+4. **Spec de concorrência**: variante do e2e para agregado com coluna `version`. Mesmo app e banco real do nível 3, mas dispara requisições simultâneas em vez de uma de cada vez, e prova o estado final do banco, não a resposta ("Teste de concorrência real", abaixo).
 
 Cada nível prova uma camada diferente da mesma operação; o mesmo caso de uso tem spec unitário cobrindo a regra de negócio e pode aparecer num e2e cobrindo o fluxo HTTP em volta dela, sem repetir a mesma variação de regra nos dois lugares.
 
@@ -40,10 +43,11 @@ Cada nível prova uma camada diferente da mesma operação; o mesmo caso de uso 
 | Spec de subscriber | `src/infra/events/on-<evento>.subscriber.spec.ts` |
 | Spec de função ou filtro de infra transversal | `src/infra/<caminho>/<nome>.spec.ts`, ao lado do arquivo que prova |
 | E2e de controller | `src/infra/http/controllers/<módulo>/<ação>.e2e-spec.ts` |
+| Spec de concorrência | `src/infra/persistence/prisma/<agregado>.concurrency.e2e-spec.ts` |
 | E2e de provider global | `src/infra/common/<fronteira>/<nome>.e2e-spec.ts`, ao lado do provider |
 | Factory de teste | `test/factories/make-<agregado>.factory.ts` |
 | Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` |
-| Dublê de transação | `test/transactions/<fluxo>.in-memory-transaction.impl.ts` |
+| Dublê da unidade de trabalho | `test/transactions/in-memory-unit-of-work.ts` |
 | Registro de repositórios em memória | `test/factories/make-in-memory-repositories.factory.ts` |
 | Dublê de contrato de service ou fila | `test/services/<capacidade>/fake-<contrato>.impl.ts`, `test/queues/<fluxo>.in-memory-queue.impl.ts` |
 | Setup do banco isolado de e2e | `test/setup-e2e.ts` |
@@ -146,6 +150,20 @@ it('envia a confirmação quando o pedido é confirmado', async () => {
 
 Exemplo completo: testing.examples.md#confirm-ordere2e-spects
 
+## Teste de concorrência real (`infra/persistence/prisma/<agregado>.concurrency.e2e-spec.ts`)
+
+Um e2e de controller prova um request de cada vez; a invariante de um agregado disputado (o estoque não fica negativo, só uma tentativa correta de PIN confirma, a última vaga não sai para dois pedidos) só aparece sob escrita concorrente de verdade.
+
+**Obrigatório.** Agregado com coluna `version` (`backend/transactions.md`, "Concorrência e locking") tem um `*.concurrency.e2e-spec.ts`, nomeado por ele em kebab-case, para o fluxo que mais disputa esse agregado. (check: concurrency)
+
+**Obrigatório.** O spec dispara N requisições simultâneas (`Promise.all` de chamadas HTTP, pelo app e banco reais do e2e de controller) contra o mesmo agregado, e repete o cenário inteiro — agregado novo, nova rodada de N requisições — pelo menos 5 vezes seguidas.
+
+**Obrigatório.** A asserção central lê o estado final do agregado direto no banco (sufixo `OnDatabase`, "Como escrever um e2e-spec de controller"), em cada uma das 5 rodadas: a invariante de negócio vale sempre, mesmo quando o número de respostas de sucesso varia por retentativa.
+
+**Obrigatório.** O spec conta erro de deadlock do Postgres (`40P01`) nas respostas de cada rodada; deadlock numa rodada derruba o teste, a não ser que `backend/transactions.md`, "Concorrência e locking" tenha aceitado esse risco para o fluxo.
+
+> **Por quê.** Resposta HTTP individual prova que um request terminou certo; só o estado final sob N requisições de verdade prova que a regra resiste a concorrência, que é o requisito.
+
 ## E2e de provider global (`infra/common/<fronteira>/<nome>.e2e-spec.ts`)
 
 Pipe, filtro, guard, throttler e serializer globais são provados por um controller de prova declarado no próprio arquivo e registrado ao lado do `AppModule` (`Test.createTestingModule({ imports: [AppModule], controllers: [ProbeController] })`), com o menor DTO que exercita o provider. A montagem do app é a de "Como escrever um e2e-spec de controller".
@@ -160,7 +178,7 @@ Pipe, filtro, guard, throttler e serializer globais são provados por um control
 - **Contrato e implementação de query de leitura de exibição**: sem spec unitário nem dublê em memória; o contrato não contém comportamento e o e2e do controller é a prova da implementação contra o banco real (`backend/reading.md`). Specification compartilhada pela query mantém seu spec unitário (`domain/specification.md`).
 - **Worker de job**: sem spec unitário próprio, passthrough coberto pelos specs do caso de uso que ele dispara; o ciclo completo com fila real é assunto de e2e, formato em aberto até o primeiro job real do produto (`backend/async-jobs.md`).
 - **Classe de infra que fala com o vendor** (`PrismaService`, o client da fila, o client do storage): nunca tem dublê em `test/`; dublê é sempre por contrato de fluxo, e a única substituição é o stub local ao spec da impl que compõe (`infrastructure/services.md`).
-- **Contrato de transação**: dublê recebe no construtor os repositórios em memória dos agregados envolvidos e escreve nos `items` deles, para o spec observar o estado nos mesmos lugares de sempre (`backend/transactions.md`).
+- **Unidade de trabalho**: um dublê só, que roda o trabalho direto e despacha os eventos no `success`, sem regra de domínio; o estado fica nos repositórios em memória de sempre (`backend/transactions.md`).
 
 ## Verificação rápida
 
@@ -178,3 +196,4 @@ Pipe, filtro, guard, throttler e serializer globais são provados por um control
 - E2e de rota protegida: a credencial veio da factory, sem o provedor externo, e o dado com dono tem o A/B?
 - Provider global provado por um controller de prova local ao arquivo, sem cobaia de negócio?
 - O que não tem spec próprio (query, worker, classe de infra) segue o documento da área certa, sem dublê inventado aqui?
+- Agregado com `version` tem spec de concorrência, com N requisições simultâneas, 5 rodadas, asserção no estado final do banco e contagem de deadlock? (check: concurrency)
