@@ -1,8 +1,8 @@
 # Consistência e concorrência: exemplos
 
-## ConfirmOrderUseCase
+## UnitOfWork
 
-Confirmar um pedido emite a fatura; o pedido tem edição concorrente, protegida por `version`.
+Didático: domínio de pedidos, nomes genéricos, para ilustrar o padrão. O contrato, `TransactionContext` e `PrismaUnitOfWork` são código real do starter — `backend/transactions.md`, "Aplicação".
 
 ```ts
 // domain/application/transactions/unit-of-work.contract.ts
@@ -39,39 +39,4 @@ async execute({ orderId }: ConfirmOrderInput): Promise<ConfirmOrderOutput> {
 }
 ```
 
-## PrismaUnitOfWork
-
-```ts
-@Injectable()
-export class PrismaUnitOfWork implements UnitOfWork {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly context: TransactionContext,
-  ) {}
-
-  async run<L, R>(work: () => Promise<Either<L, R>>): Promise<Either<L, R>> {
-    const rollback = Symbol('rollback');
-    let result: Either<L, R> | undefined;
-
-    try {
-      await this.prisma.client.$transaction(async (tx) => {
-        result = await this.context.runWith(tx, work);
-        if (result.isFailure()) {
-          throw rollback;
-        }
-      });
-    } catch (error) {
-      this.context.discardEvents();
-      if (error !== rollback) {
-        throw error;
-      }
-      return result as Either<L, R>;
-    }
-
-    this.context.dispatchEvents();
-    return result as Either<L, R>;
-  }
-}
-```
-
-Leitura do repositório usa `this.context.client()`, que devolve o `tx` do escopo aberto ou o client comum fora dele. Escrita usa `this.context.requireTx()`, que devolve o mesmo `tx` ou lança quando não há escopo aberto (`backend/persistence.md`, "Repositório"); as duas registram no contexto os agregados gravados, para o despacho depois do commit. O dublê em memória roda `work` direto e despacha os eventos quando o resultado é `success`.
+Leitura do repositório usa `context.client()`; escrita usa `context.requireTx()`, que lança fora de um escopo aberto (`backend/persistence.md`, "Repositório"). `orderRepository.save()` confere a `version` esperada no `where` e devolve `'conflict'` quando ela não bate, sem nenhuma outra condição de negócio junto (`backend/persistence.md`, "Escrita canônica do agregado").

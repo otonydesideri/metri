@@ -5,3 +5,9 @@ desktop.ini
 *:Zone.Identifier
 
 node_modules/
+.turbo/
+dist/
+
+# the starter is a template a project installs fresh from; its own lockfile and generated client never ship here
+/starter/pnpm-lock.yaml
+/starter/packages/db/src/generated/

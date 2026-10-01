@@ -59,19 +59,18 @@ export class OrderPrismaMapper {
 
 ```ts
 import { Injectable } from '@nestjs/common';
-import { DomainEvents } from '@metri/core/events';
 import { OrderRepository } from '../../../../domain/application/repositories/order-repository.contract';
 import type { Order } from '../../../../domain/enterprise/order.entity';
 import { OrderItemPrismaMapper } from '../mappers/order-item.prisma-mapper';
 import { OrderPrismaMapper } from '../mappers/order.prisma-mapper';
-import { PrismaService } from '../prisma.service';
+import { TransactionContext } from '../transactions/transaction-context';
 
 @Injectable()
 export class OrderPrismaRepositoryImpl implements OrderRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly context: TransactionContext) {}
 
   async findById(id: string): Promise<Order | null> {
-    const data = await this.prisma.client.order.findUnique({
+    const data = await this.context.client().order.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -90,7 +89,7 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
       return [];
     }
 
-    const rows = await this.prisma.client.order.findMany({
+    const rows = await this.context.client().order.findMany({
       where: { id: { in: ids } },
       include: { items: true },
     });
@@ -101,31 +100,32 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
   }
 
   async save(order: Order): Promise<void> {
+    // no condition besides `version` rides on the `where`: the decision already happened in the domain, before
+    // this call (backend/persistence, "Repositório")
     const data = OrderPrismaMapper.toPrisma(order);
     const newItems = order.items.getNewItems();
     const removedItems = order.items.getRemovedItems();
+    const tx = this.context.requireTx();
 
-    await this.prisma.client.$transaction(async (tx) => {
-      await tx.order.upsert({
-        where: { id: data.id },
-        create: data,
-        update: { status: data.status, updatedAt: data.updatedAt },
-      });
-
-      if (newItems.length > 0) {
-        await tx.orderItem.createMany({
-          data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-        });
-      }
-
-      if (removedItems.length > 0) {
-        await tx.orderItem.deleteMany({
-          where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
-        });
-      }
+    await tx.order.upsert({
+      where: { id: data.id },
+      create: data,
+      update: { status: data.status, updatedAt: data.updatedAt },
     });
 
-    DomainEvents.dispatchEventsForAggregate(order.id);
+    if (newItems.length > 0) {
+      await tx.orderItem.createMany({
+        data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
+      });
+    }
+
+    if (removedItems.length > 0) {
+      await tx.orderItem.deleteMany({
+        where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
+      });
+    }
+
+    this.context.track(order.id);
   }
 }
 ```

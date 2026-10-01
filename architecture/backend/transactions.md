@@ -13,7 +13,8 @@ applies_to:
 keywords: [transação, unidade de trabalho, UnitOfWork, run, $transaction, AsyncLocalStorage, atomicidade, concorrência, locking otimista, version, conflict, retentativa, FOR UPDATE, FOR SHARE, READ COMMITTED, deadlock, ordem de trava, pai que fecha, unicidade, unique index, sistema externo, risco aceito]
 not_covered:
   - "a decisão de que a reação é atômica, em linha, evento ou job → backend/operation-routing"
-examples: [backend/transactions.examples.md]
+adr: [metri:ADR-0004]
+examples: [backend/transactions.examples.md, starter/apps/app-api/src/domain/application/transactions/unit-of-work.contract.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/transaction-context.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/unit-of-work.e2e-spec.ts]
 status: active
 ---
 # Consistência e concorrência
@@ -81,6 +82,17 @@ Quando a decisão depende desse trabalho: **Obrigatório.** Ele roda antes, fora
 ## Escrita de sistema externo fica fora do alcance
 
 Quando a gravação é executada por um sistema externo (o adapter de uma biblioteca que traz o próprio schema, uma API de terceiro): **Proibido.** Meia-escrita nossa em volta dela para completar uma atomicidade que ela não oferece. A lacuna residual é avaliada como risco, como em "Concorrência e locking".
+
+## Aplicação
+
+A infraestrutura é código real do starter, sem domínio nenhum nela — o `UnitOfWork` não sabe o que um projeto grava dentro dele:
+
+- O contrato: `starter/apps/app-api/src/domain/application/transactions/unit-of-work.contract.ts`.
+- `TransactionContext`, que publica o `tx` por `AsyncLocalStorage`: `client()` para leitura (o `tx` aberto, ou o client comum fora de escopo) e `requireTx()` para escrita (o mesmo `tx`, ou lança), em `starter/apps/app-api/src/infra/persistence/prisma/transactions/transaction-context.ts`.
+- `PrismaUnitOfWork.run()`, com o despacho ou o descarte dos eventos depois do `$transaction`: `starter/apps/app-api/src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts`.
+- A prova, contra uma tabela que o próprio teste cria e derruba (sem model no schema): `starter/apps/app-api/src/infra/persistence/prisma/transactions/unit-of-work.e2e-spec.ts` — rollback, descarte de evento, recusa de escrita fora do escopo e, com N escritas simultâneas no mesmo registro, que `version` não perde nenhuma atualização.
+
+O caso de uso com agregado versionado, `Order` confirmado e `Invoice` emitida no mesmo escopo, é exemplo didático, não código do starter: transactions.examples.md#unitofwork.
 
 ## Verificação
 
