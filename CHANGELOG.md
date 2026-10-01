@@ -2,7 +2,7 @@
 
 ## v1.5.0 (2026-10-01)
 
-Transação no escopo do caso de uso: o contrato de transação vira `UnitOfWork`, `version` passa a ser o padrão de proteção de concorrência, e "policy" vira "domain service" em toda a Source. Decisão e evidência em `adr/0004-transaction-in-use-case-scope.md`.
+Transação no escopo do caso de uso: o contrato de transação vira `UnitOfWork`, `version` passa a ser o padrão de proteção de concorrência, e "policy" vira "domain service" em toda a Source.
 
 ### O que muda
 

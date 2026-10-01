@@ -13,7 +13,6 @@ applies_to:
 keywords: [transação, unidade de trabalho, UnitOfWork, run, $transaction, AsyncLocalStorage, atomicidade, concorrência, locking otimista, version, conflict, retentativa, FOR UPDATE, FOR SHARE, READ COMMITTED, deadlock, ordem de trava, pai que fecha, unicidade, unique index, sistema externo, risco aceito]
 not_covered:
   - "a decisão de que a reação é atômica, em linha, evento ou job → backend/operation-routing"
-adr: [metri:ADR-0004]
 examples: [backend/transactions.examples.md, starter/apps/app-api/src/domain/application/transactions/unit-of-work.contract.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/transaction-context.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/unit-of-work.e2e-spec.ts]
 status: active
 ---
