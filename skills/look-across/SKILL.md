@@ -20,13 +20,13 @@ When `.metri/ARCHITECTURE.md` has the line `mapeamento: pendente` (an existing p
 
 ### 1. Gather context
 
-Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, `.metri/ARCHITECTURE.md`, all of `.metri/MATRIX.md` (Features, Slices, Gaps and Pattern proposals), every draft UC's ticket file in `.metri/tickets/`, the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` and the area indexes (`node_modules/metri/architecture/<área>/INDEX.md`, `.metri/rules/<área>/INDEX.md`). Grep the code for what already exists.
+Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, `.metri/ARCHITECTURE.md`, all of `.metri/MATRIX.md` (Slices, Gaps and Pattern proposals), every feature's spec in `.metri/specs/`, every draft UC's ticket file in `.metri/tickets/`, the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` and the area indexes (`node_modules/metri/architecture/<área>/INDEX.md`, `.metri/rules/<área>/INDEX.md`). Grep the code for what already exists.
 
 Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill tool with "domain-language" when a term is new or fuzzy, and with "grilling" when a decision branch is open.
 
 ### 2. Features → use cases
 
-Keep the `horizon` and the `milestone` the direction gate confirmed for each feature. Give each `now` feature its UCs: its id in the feature's `ucs`, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files").
+Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files").
 
 ### 3. Look across
 
@@ -63,7 +63,11 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 **Wide refactors are the exception to tracer bullets.** A **wide refactor** is one mechanical change (rename a column, retype a shared symbol) whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no tracer bullet can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**, in `task` tickets. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket; green is promised only there.
 
-### 7. Slice 0
+### 7. Spec decisions
+
+For each `now` feature, fill its spec's Decisões de implementação (the modules, interfaces, schema changes, API contract and interactions its slices' `contract` and the UCs' BRs settle, citing them by id, never a file path) and Decisões de teste (the seam, as high as possible and ideally one, preferring the slice contract's `interface` or a UC's `checks` over a new one; `node_modules/metri/skills/tdd/SKILL.md`, "Seams: where tests go"). A `planned`, `fog` or `out` feature's spec stays `draft`, since its UCs do too ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Matrix rules").
+
+### 8. Slice 0
 
 - **New project**: `metri init` delivered the starter, the monorepo of `general/code-placement` with `pnpm verify` green. The foundation slice, `S0`, is what is left after it:
   - with a database, the development database: the delegation "Banco de desenvolvimento" of [ACTIVATION.md](ACTIVATION.md), an open question of the plan gate, done when `pnpm dev` boots app-api and `/api/health` answers `database: up`;
@@ -72,9 +76,9 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 - **New project without the starter** (`metri init --no-starter`): `S0` also builds the monorepo, by the rules the starter follows.
 - **Existing project**: the mapping of step 0.
 
-### 8. Quiz the user
+### 9. Quiz the user
 
-For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md` and the matrix, and reports features without a slice, forgotten consumers and UCs without a criterion.
+For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md` and the specs, and reports features without a slice, forgotten consumers and UCs without a criterion.
 
 Present the proposed plan as a numbered list: each slice with its contract, then each UC and each T:
 
@@ -82,17 +86,18 @@ Present the proposed plan as a numbered list: each slice with its contract, then
 - **Blocked by**: which UCs, T tickets or slices (if any) must complete first
 - **What it delivers**: the end-to-end behaviour the UC makes work, or the T's `what`
 
-Then call the Skill tool with "grilling" and show the plan gate in its three blocks. Inferred: the capabilities activated from the UCs and BRs, the contracts, the order, the granularity, the blocking edges, and each ticket's `sensitive` and `mode`, each with its reason. Open questions: the PROJECT_SPECIFIC values a UC needs, and any merge or split you can't settle.
+Then call the Skill tool with "grilling" and show the plan gate in its three blocks. Inferred: the capabilities activated from the UCs and BRs, the contracts, the seams of each spec's Decisões de teste, the order, the granularity, the blocking edges, and each ticket's `sensitive` and `mode`, each with its reason. Open questions: the PROJECT_SPECIFIC values a UC needs, and any merge or split you can't settle.
 
 Iterate until the user approves the plan.
 
-### 9. Write the matrix
+### 10. Write the matrix
 
-Write the approved plan to `.metri/MATRIX.md` (features, slices, Fog, Gaps and Pattern proposals) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md` and hard decisions to ADRs (domain-language). The human commits the result: the agent never commits on main.
+Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste, `status: planned`) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md` and hard decisions to ADRs (domain-language). The human commits the result: the agent never commits on main.
 
 Done when:
 
-- every `now` UC is `open`, with `slice`, `mode` and `checks`, and its id in its feature's `ucs`;
+- every `now` UC is `open`, with `slice`, `mode` and `checks`, and its id listed in its feature's spec, Casos de uso;
+- every `now` feature's spec is `planned`, with Decisões de implementação and Decisões de teste;
 - every T has `type`, "O que entrega" and "Critérios";
 - every `now` slice has the rules it needs, or a `pattern` T that writes them;
 - nothing is orphan;

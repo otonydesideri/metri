@@ -288,7 +288,7 @@ Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/
 ### Portões humanos
 
 1. **Direção:** `skills/shape/SKILL.md`, "5. Direction gate".
-2. **Plano:** `skills/look-across/SKILL.md`, "8. Quiz the user".
+2. **Plano:** `skills/look-across/SKILL.md`, "9. Quiz the user".
 3. **Padrões e partes sensíveis:** `skills/build/TICKET-TYPES.md`, "pattern", e `skills/accept/SKILL.md`, "5. Human gate".
 4. **Aceite:** `skills/accept/SKILL.md`, "5. Human gate" e "6. Knowledge gate".
 5. **Release:** `skills/build/TICKET-TYPES.md`, "release".

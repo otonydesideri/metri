@@ -1,23 +1,16 @@
 # MATRIX.md Format
 
-`.metri/MATRIX.md` is the project's single plan: features, slices and their contracts, Fog, Gaps and Pattern
-proposals. Each ticket, a UC or a T, lives in its own file, `.metri/tickets/<id>.md` ("Ticket files", below); the
-MATRIX is not the source of the ticket's content, only of the plan around it. Keys, values and section titles are
-fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; the prose is in Portuguese. `pnpm docs-lint`
-checks the format.
+`.metri/MATRIX.md` is the project's single plan: slices and their contracts, Fog, Gaps and Pattern proposals. A
+feature lives in its own file, `.metri/specs/<F-id>.md` (`node_modules/metri/skills/shape/SPEC-FORMAT.md`); the
+MATRIX cites it only by id. Each ticket, a UC or a T, lives in its own file, `.metri/tickets/<id>.md` ("Ticket
+files", below); the MATRIX is not the source of the ticket's content, only of the plan around it. Keys, values and
+section titles are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; the prose is in
+Portuguese. `pnpm docs-lint` checks the format.
 
 ## Skeleton
 
 ````markdown
 # MATRIX
-
-## Features
-
-### F<n> · <feature>
-
-horizon: now | planned | fog | out · slices: [S<n>]
-outcome: <resultado de valor para o usuário>
-ucs: [UC<f>.<n>]
 
 ## Slices
 
@@ -48,14 +41,12 @@ status: done · sot: [<símbolo dono>]
 - PP-<n> · de <UC<f>.<n> ou T<s>.<n>> · <o que a regra não cobre> → próximo look across
 ````
 
-Ids are numbered across the whole plan (MATRIX.md and the ticket files), except that a UC carries its feature's
-number and a T its slice's (`UC<f>.<n>`, `T<s>.<n>`): the next BR, GAP or PP takes the highest number in the plan
-plus one. An id (F, UC, BR, S, T, GAP, PP) is never renumbered or reused; a split UC keeps its id on one part and
-the others take the next free numbers. A key without a value is not written. The reserved field `milestone` is
-optional on a feature and appears only with a value; a value never holds ` · `, the field separator. The MATRIX and
-the ticket files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` path.
+Ids are numbered across the whole plan (MATRIX.md, the specs and the ticket files), except that a UC carries its
+feature's number and a T its slice's (`UC<f>.<n>`, `T<s>.<n>`): the next BR, GAP or PP takes the highest number in
+the plan plus one. An id (F, UC, BR, S, T, GAP, PP) is never renumbered or reused; a split UC keeps its id on one
+part and the others take the next free numbers. A key without a value is not written. The MATRIX and the ticket
+files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` path.
 
-- `ucs`: the ids of the feature's UCs, draft included; every UC outside `draft` appears here.
 - `sensitive: true` when the ticket touches money, access (authentication, authorization, data scope), personal
   data, deletion (a destructive migration included) or a sensitive BR; its diff gets the human's review in /accept.
 - The foundation slice, `S0`, has no contract and no `sot`: only `horizon`, or `status: done` once accepted.
@@ -185,19 +176,6 @@ metrics: { rules: <n>, tokens: <n> }
 ```markdown
 # MATRIX
 
-## Features
-
-### F1 · Formulários no site
-
-horizon: now · milestone: v1 · slices: [S2, S3]
-outcome: O editor publica formulários em páginas do site e recebe respostas.
-ucs: [UC1.1, UC1.2]
-
-### F2 · Enquetes no site
-
-horizon: planned · milestone: v2
-ucs: [UC2.1]
-
 ## Slices
 
 ### S2 · Montagem de componentes
@@ -222,6 +200,10 @@ contract:
 
 - PP-1 · de UC1.1 · o endpoint de upload precisa de streaming; backend/http-api não cobre → próximo look across
 ```
+
+`F1` and `F2` are the specs `.metri/specs/F1.md` and `.metri/specs/F2.md` (format and example:
+`node_modules/metri/skills/shape/SPEC-FORMAT.md`), which the slice's `consumers` cites by id; the MATRIX never
+repeats their content.
 
 `.metri/tickets/UC1.1.md`:
 
@@ -332,10 +314,9 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 
 ## Matrix rules
 
-1. **Nothing orphan:** every UC outside `draft` has a `slice` and appears in its feature's `ucs`; every T has a
-   `slice`.
-2. **Every `now` slice serves at least one `now` feature:** the feature lists it in `slices`, or one of its
-   tickets has it in `slice`.
+1. **Nothing orphan:** every UC outside `draft` has a `slice` and appears in its feature's spec, Casos de uso
+   (`node_modules/metri/skills/shape/SPEC-FORMAT.md`); every T has a `slice`.
+2. **Every `now` slice serves at least one ticket:** one of its UCs or Ts has it in `slice`.
 3. **`blocked_by` points to a UC, a T or a slice;** a ticket is unblocked when each of them is done, and a slice counts
    as done once /accept merged it into main.
 4. **Every ticket serves the now.** The slice grows on demand; nothing is built for a `planned` feature, whose UCs
@@ -350,9 +331,9 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
    that own it (`status: done · sot: [<símbolo>]`), and its contract leaves the MATRIX ("Contrato de slice",
    below). A done slice that takes a new or reopened UC, or a new T, goes back to `horizon: now` with its `sot`,
    and with a `contract` block when the ticket changes what the slice guarantees, until it collapses again. A
-   ticket file is never collapsed: it stays `status: done` in its own file, and its id stays in its feature's
-   `ucs`; its evidence folder (`.metri/tickets/<id>/`) leaves the tree. Git keeps the history. The MATRIX stays
-   small.
+   ticket file is never collapsed: it stays `status: done` in its own file, and its id stays listed in its
+   feature's spec, Casos de uso; its evidence folder (`.metri/tickets/<id>/`) leaves the tree. Git keeps the
+   history. The MATRIX stays small.
 
 ## Contrato de slice
 

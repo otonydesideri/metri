@@ -21,7 +21,9 @@ See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking g
 
 A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
 
-**Test only at pre-agreed seams.** In a ticket, the seams are the slice contract's `interface` and the `checks` of the ticket's file, agreed at the plan gate of /look-across. Before writing a test at any other seam, write it down and confirm it with the user. No test is written at an unconfirmed seam. You can't test everything, so agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
+**Test only at pre-agreed seams.** In a UC, the seam is named in its feature's spec, Decisões de teste
+(`node_modules/metri/skills/shape/SPEC-FORMAT.md`), agreed at the plan gate of /look-across; a T, which has no
+spec, uses the `checks` of its own ticket file. Before writing a test at any other seam, write it down and confirm it with the user. No test is written at an unconfirmed seam. You can't test everything, so agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
 
 Outside a ticket, ask: "What's the public interface, and which seams should we test?"
 

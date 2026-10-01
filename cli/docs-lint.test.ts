@@ -67,7 +67,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     edit(dir, 'skills/tdd/SKILL.md', (source) => `${source}\nSee \`README.md\`.\n`);
     const { status, lines } = lint(dir);
     expect(status).toBe(1);
-    expect(lines).toContain('skills/tdd/SKILL.md:42: citação: regra e skill não citam o README.md, que é para humano (cite o dono)');
+    expect(lines).toContain('skills/tdd/SKILL.md:44: citação: regra e skill não citam o README.md, que é para humano (cite o dono)');
   });
 
   it('árvore fechada de docs/: arquivo fora da lista é erro', () => {

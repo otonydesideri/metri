@@ -52,7 +52,7 @@ Present the reports in the chat under `## Contract` and `## Patterns` (and `## E
 Call the Skill tool with "grilling" and walk the human through the gate in its three blocks:
 
 - the slice's linear path, "show me the flow and the sources of truth": the "Caminho linear" of `.metri/ARCHITECTURE.md` with the slice's new owners in their places, each step as `arquivo:símbolo` with its `SOURCE OF TRUTH:` header;
-- for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when this is the feature's last slice (every other slice in the feature's `slices` is done), whether the feature delivers its `outcome` across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
+- for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when every UC listed in a feature's spec is now `done` (this is that feature's last slice), whether its Solução holds across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
 - the diff of every ticket with `sensitive: true` or `type: pattern`;
 - each finding, with its group and the reviewer's recommendation; the user decides each one.
 
@@ -68,7 +68,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n`, repeated fixes and the 
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Set `status: done` on the spec of each feature whose last slice this was (step 5); a `done` spec is history, unread by /build's context chain and never written again. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

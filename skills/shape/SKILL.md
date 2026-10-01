@@ -1,6 +1,6 @@
 ---
 name: shape
-description: Shape an idea before planning it. A relentless interview that sharpens the problem, the outcome and the domain language, then writes PRODUCT.md, CONTEXT.md, DESIGN.md, ADRs and the draft features and UCs of the matrix.
+description: Shape an idea before planning it. A relentless interview that sharpens the problem, the outcome and the domain language, then writes PRODUCT.md, CONTEXT.md, DESIGN.md, ADRs and a spec with its draft UCs per candidate feature.
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,8 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
-Before writing the prose of `docs/PRODUCT.md` or `docs/DESIGN.md`, call the Skill tool with "humanizer" on it.
+Before writing the prose of `docs/PRODUCT.md`, `docs/DESIGN.md` or a spec's Problema and Solução, call the Skill
+tool with "humanizer" on it.
 
 Understand the problem, the outcome and the limits, and align the language; slices, contracts and tickets belong to /look-across.
 
@@ -16,7 +17,7 @@ Understand the problem, the outcome and the limits, and align the language; slic
 
 ### 1. Read
 
-`docs/PRODUCT.md`, `docs/CONTEXT.md`, `docs/DESIGN.md` when it exists, and the Features section of `.metri/MATRIX.md`.
+`docs/PRODUCT.md`, `docs/CONTEXT.md`, `docs/DESIGN.md` when it exists, and every spec in `.metri/specs/`.
 
 ### 2. Interview
 
@@ -36,10 +37,16 @@ Write what the interview settled:
 
 - `docs/PRODUCT.md`, in the format of [PRODUCT-FORMAT.md](PRODUCT-FORMAT.md);
 - an ADR for each hard decision already taken (domain-language, which also kept `docs/CONTEXT.md` current during the interview);
-- the candidate features in the Features section of `.metri/MATRIX.md`, each with `outcome`, `ucs` (the ids of its UCs), `horizon` and, when it makes sense, `milestone`, inferred: `now` for the minimum that delivers the expected outcome of `docs/PRODUCT.md`, `planned`, `fog` or `out` for the rest; each UC of a candidate feature as its own file, `.metri/tickets/UC<f>.<n>.md`, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its BRs and its criteria. /look-across plans it and opens it.
+- one spec per candidate feature, `.metri/specs/F<n>.md`, in the format of [SPEC-FORMAT.md](SPEC-FORMAT.md):
+  `status: draft`, `horizon` inferred (`now` for the minimum that delivers the expected solution of
+  `docs/PRODUCT.md`, `planned`, `fog` or `out` for the rest) and, when it makes sense, `milestone`; its Problema
+  and Solução from the interview, its Casos de uso (each UC's id and title, draft included) and Fora de escopo.
+  Each UC of a candidate feature also gets its own file, `.metri/tickets/UC<f>.<n>.md`, in the format of
+  `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its
+  BRs and its criteria. /look-across plans it and opens it.
 
 ### 5. Direction gate
 
-Show the user the direction (the product, the terms, the features and UCs) in the three blocks of the grilling skill, with each feature's proposed `horizon` and `milestone` among the Inferred, and iterate until they approve it. The human commits the result: the agent never commits on main.
+Show the user the direction (the product, the terms, the specs and UCs) in the three blocks of the grilling skill, with each feature's proposed `horizon` and `milestone` among the Inferred, and iterate until they approve it. The human commits the result: the agent never commits on main.
 
-Done when the direction is approved, every term has its English identifier in `docs/CONTEXT.md`, the candidate features are in the matrix with each draft UC in its own ticket file, and `pnpm docs-lint` is green. Recommend /look-across next, in the same session.
+Done when the direction is approved, every term has its English identifier in `docs/CONTEXT.md`, every candidate feature has its spec in `.metri/specs/` with each draft UC in its own ticket file, and `pnpm docs-lint` is green. Recommend /look-across next, in the same session.
