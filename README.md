@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.5.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.6.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -34,7 +34,8 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `docs/adr/`              | Decisões, trade-offs e exceções                                        |
 | `.metri/ARCHITECTURE.md` | Estado do projeto: o caminho linear, desvios, capacidades ativas, delegações, exceções |
 | `.metri/rules/`          | Regras só deste projeto, por área                                      |
-| `.metri/MATRIX.md`       | Plano: features, slices e contratos, Fog, Gaps, Pattern proposals      |
+| `.metri/specs/<F-id>.md` | Uma spec por feature: problema, solução, casos de uso e decisões de implementação e de teste          |
+| `.metri/MATRIX.md`       | Plano: slices e contratos, Fog, Gaps, Pattern proposals                |
 | `.metri/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas; a evidência dos critérios `Tela:` ao lado, em `<id>/` |
 | `node_modules/metri/`    | O pacote do método: regras globais, skills, agents e a CLI; somente leitura, só em desenvolvimento |
 | Código                   | Padrões, o cabeçalho `SOURCE OF TRUTH` de cada dono (onde fica a slice construída), tokens e checks |
@@ -47,7 +48,7 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.5.0                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.6.0                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
@@ -122,7 +123,8 @@ docs/
 .metri/
   ARCHITECTURE.md             desvios de stack, caminho linear, capacidades ativas, delegações, caminhos do projeto, exceções, áreas ativas
   rules/<área>/*.md           regras só do projeto          (+ INDEX.md gerado)
-  MATRIX.md                   plano vivo: features, slices e contratos, Fog, Gaps, Pattern proposals
+  specs/F<n>.md               uma spec por feature: problema, solução, casos de uso, decisões de implementação e de teste
+  MATRIX.md                   plano vivo: slices e contratos, Fog, Gaps, Pattern proposals
   tickets/<id>.md             um arquivo por ticket (UC ou T): frontmatter, critérios e notas
   tickets/<id>/*.png          evidência dos critérios `Tela:` do ticket, até a poda da slice
 apps/  packages/              código: no projeto novo, nasce do starter do metri init, com o compose.yaml e o .env.example
@@ -165,7 +167,8 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 | Linguagem            | `docs/CONTEXT.md`       | Termos do domínio, PT ↔ EN                                       | Moldar, Look across                     | Ao nomear qualquer coisa               |
 | Produto              | `docs/PRODUCT.md`       | Intenção e escopo                                                | Moldar                                  | Ao discutir requisitos                 |
 | Design               | `docs/DESIGN.md`        | Identidade visual, uso de componentes                            | Moldar (triagem de design), Aprender    | Via ponteiro em regras de `frontend/`  |
-| Plano                | `.metri/MATRIX.md`   | Features, slices e contratos, Fog, Gaps, Pattern proposals       | Moldar, Look across                     | Ao planejar                            |
+| Spec                 | `.metri/specs/<F-id>.md` | Problema, solução, casos de uso e decisões de implementação e de teste da feature | Moldar (draft), Look across (planned)   | Construir, na cadeia de contexto do ticket |
+| Plano                | `.metri/MATRIX.md`   | Slices e contratos, Fog, Gaps, Pattern proposals                  | Look across                             | Ao planejar                            |
 | Ticket                | `.metri/tickets/<id>.md` | Um UC ou um T: frontmatter, BRs ou "O que entrega", critérios e notas | Moldar (draft), Look across, Construir (status) | Só o arquivo do ticket em trabalho |
 | Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | `metri init`, Aprender                  | Sempre (~20 linhas)                    |
 | Código               | `apps/`, `packages/`    | Padrões, cabeçalhos `SOURCE OF TRUTH`, tokens, checks            | Construir                               | Grep do `SOURCE OF TRUTH`, caminho linear, exemplo canônico |
@@ -223,7 +226,8 @@ A área `domain/` (global e do projeto) define como modelamos domínio no códig
 | Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend (metri:ADR-0002) |
 | Evidência de um critério `Tela:`               | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, gravados com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`); depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
-| Features, slices e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles | chat, handoff                                  |
+| Problema, solução, casos de uso e decisões de implementação e de teste de uma feature | `.metri/specs/<F-id>.md` | chat, `PRODUCT.md`, `MATRIX.md`                |
+| Slices, contratos e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX, as specs e os tickets pelo formato estrito deles | chat, handoff                                  |
 | Cada UC ou T: BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
 | Comportamento já construído                    | testes + código                           | matriz (a slice colapsa numa linha com os donos, `sot:`; o arquivo do ticket fica, com `status: done`) |
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
@@ -336,6 +340,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | Revisão em dois eixos por subagentes isolados                                                                                                                                         | Matt Pocock                              |
 | HITL/AFK, tipo de ticket `task`, contexto limpo por tarefa, filas em vez de loops, protótipo descartável                                                                              | Matt Pocock                              |
 | Variantes radicalmente diferentes de uma tela nova na mesma rota (`?variant=`); a escolhida vira tela canônica | Matt Pocock (`prototype`) |
+| Spec por feature: problema e solução do ponto de vista de quem usa, casos de uso, decisões de implementação e de teste | Matt Pocock (`to-spec`) |
 | Forma das skills: pequenas, divididas entre invocadas pelo usuário e pelo modelo, ponteiros, critérios de conclusão, palavras-guia                                                    | Matt Pocock (`writing-for-agents`)       |
 | Architecture Source global + Project Architecture por áreas + ADRs                                                                                                                    | Seu modelo                               |
 | Caso de uso como unidade de definição, ligando planejamento e código                                                                                                                  | DDD                                      |
@@ -345,7 +350,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 
 Referências:
 
-- Matt Pocock, repositório de skills: https://github.com/mattpocock/skills (em especial `to-tickets`, `wayfinder`, `code-review`, `domain-modeling`, `writing-for-agents`); as skills adaptadas e a licença: `skills/THIRD-PARTY-LICENSES.md`.
+- Matt Pocock, repositório de skills: https://github.com/mattpocock/skills (em especial `to-tickets`, `wayfinder`, `code-review`, `domain-modeling`, `writing-for-agents`, `to-spec`); as skills adaptadas e a licença: `skills/THIRD-PARTY-LICENSES.md`.
 - WebProdigios, curso _Advanced Claude Code for Web Developers_: https://www.youtube.com/watch?v=GCz83HTg2vI
 - WebProdigios, vídeo de construção do Flute com Morphite (Vertical Slice Matrix).
 - getdesign.md, coleção de arquivos `DESIGN.md` para agentes: https://getdesign.md/
@@ -355,7 +360,6 @@ Referências:
 
 | Prática comum                       | Decisão            | Motivo                                                                                                                                                                |
 | ----------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PRD / spec por feature              | Fora               | A intenção fica no `PRODUCT.md`, a decisão no ADR, o comportamento nos UCs. Uma spec separada duplicaria os três e desatualizaria                                     |
 | Lista longa de user stories         | Fora               | O UC com critérios diz o mesmo de forma verificável, com menos tokens                                                                                                 |
 | Plano por fases                     | Fora               | É planejamento horizontal: gera mini-apps isolados. A matriz substitui                                                                                                |
 | Design técnico por feature, sempre  | Fora na v1         | O agente planeja no próprio contexto; padrão novo vira ticket `pattern`; decisão difícil vira ADR. Technical design para features complexas fica para "Evolução futura" |

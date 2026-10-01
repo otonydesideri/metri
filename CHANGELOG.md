@@ -1,5 +1,43 @@
 # Changelog
 
+## v1.6.0 (2026-10-01)
+
+Spec por feature, adaptada do `to-spec` de mattpocock/skills: a seção de uma feature na MATRIX vira o arquivo
+`.metri/specs/<F-id>.md`, com o problema e a solução do ponto de vista de quem usa, os casos de uso, as decisões
+de implementação e de teste, e o que fica fora de escopo.
+
+### O que muda
+
+- **`.metri/specs/<F-id>.md`.** Uma spec por feature (formato: `shape/SPEC-FORMAT.md`): Problema e Solução (prosa
+  humanizada), Casos de uso (só ids e títulos; o ticket continua a fonte única das BRs e dos critérios), Decisões
+  de implementação (módulos, interfaces, schema, contrato de API; cita o contrato de slice e o ADR pelo id, sem
+  caminho de arquivo nem código, exceto um trecho de protótipo marcado como tal), Decisões de teste (o seam, o
+  mais alto possível), Fora de escopo e Notas.
+- **A feature sai do fluxo em três passos.** O /shape escreve a spec em `draft`, com Problema, Solução, Casos de
+  uso (UCs em draft) e Fora de escopo. O /look-across preenche as Decisões de implementação e de teste de cada
+  feature `now`, com o seam confirmado no portão do plano (blocos Definido/Inferido/Perguntas), e marca `planned`.
+  O /accept marca `done` quando a última slice da feature é aceita; uma spec `done` é histórico, fora da cadeia
+  de contexto do /build.
+- **A seção Features sai do MATRIX-FORMAT.** A MATRIX fica só com slices, contratos, Fog, Gaps e Pattern
+  proposals; a feature é citada pelo id, e as chaves `outcome` e `ucs` saem do VOCABULARY.
+- **TDD no seam da spec.** `/build` lê, na cadeia de contexto do ticket, as Decisões de implementação e de teste
+  da spec da feature do UC; a TDD testa no seam que ela nomeia.
+- **`docs-lint` valida a spec.** Frontmatter e seções fixas; toda `feature:` de ticket aponta para uma spec que
+  existe; todo UC listado em Casos de uso existe, e todo UC fora de draft da feature está listado; caminho de
+  arquivo citado na spec é aviso, não erro.
+
+### Migrar de v1.5.0
+
+1. `pnpm add -D github:otonydesideri/metri#v1.6.0`.
+2. Para cada feature da seção `## Features` do `.metri/MATRIX.md`, crie `.metri/specs/<F-id>.md`
+   (`shape/SPEC-FORMAT.md`): `title`, `horizon` e `milestone` do bloco; `status: planned` se a feature já tem UC
+   fora de `draft`, senão `draft`; Problema e Solução reescritos do `outcome`, do ponto de vista de quem usa
+   (passe pela humanizer); Casos de uso com os ids e títulos de `ucs`; Decisões de implementação e de teste
+   quando a feature já estiver planejada; Fora de escopo e Notas, se houver.
+3. Apague a seção `## Features` do `.metri/MATRIX.md`: os blocos de `Slices` continuam como estão, com
+   `consumers` citando a feature pelo id, sem o bloco dela.
+4. `pnpm docs-lint` verde, incluindo o formato das specs novas.
+
 ## v1.5.0 (2026-10-01)
 
 Transação no escopo do caso de uso: o contrato de transação vira `UnitOfWork`, `version` passa a ser o padrão de proteção de concorrência, e "policy" vira "domain service" em toda a Source.
