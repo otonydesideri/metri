@@ -1,18 +1,5 @@
 # MATRIX
 
-## Features
-
-### F1 · Pedidos no painel
-
-horizon: now · slices: [S1, S2]
-outcome: O operador acompanha os pedidos da organização.
-ucs: [UC1.1, UC1.2]
-
-### F2 · Relatórios
-
-horizon: planned
-ucs: [UC2.1]
-
 ## Slices
 
 ### S1 · Lista de pedidos

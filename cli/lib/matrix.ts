@@ -1,9 +1,9 @@
-// Reading of .metri/MATRIX.md: titles, blocks (feature, slice) and list items (Fog, Gaps, Pattern proposals).
-// Each ticket's content (UC or T) lives in its own file, .metri/tickets/<id>.md (ticket-lint.ts).
-// It only reads; docs-lint decides what is valid. An unreadable line goes into problems.
+// Reading of .metri/MATRIX.md: titles, slice blocks and list items (Fog, Gaps, Pattern proposals). A feature lives
+// in its own file, .metri/specs/<id>.md (spec-lint.ts); a ticket (UC or T), in .metri/tickets/<id>.md
+// (ticket-lint.ts). It only reads; docs-lint decides what is valid. An unreadable line goes into problems.
 
 export type Field = { key: string; value: string; line: number };
-export type Kind = 'feature' | 'slice';
+export type Kind = 'slice';
 export type Block = {
   kind: Kind;
   id: string;
@@ -20,11 +20,7 @@ export type Matrix = {
   problems: { line: number; message: string }[];
 };
 
-// A field whose value is prose: the whole line, not split by " · ".
-const PROSE_KEYS = ['outcome'];
-
 const HEADING_IDS: Record<string, { kind: Kind; pattern: RegExp; section: string }> = {
-  '###:Features': { kind: 'feature', pattern: /^(F\d+) · \S/, section: 'Features' },
   '###:Slices': { kind: 'slice', pattern: /^(S\d+) · \S/, section: 'Slices' },
 };
 
@@ -98,10 +94,6 @@ export function parseMatrix(source: string): Matrix {
 }
 
 function fieldsOf(text: string, line: number): Field[] | undefined {
-  const prose = /^([a-z_]+): (.*)$/.exec(text);
-  if (prose && PROSE_KEYS.includes(prose[1])) {
-    return [{ key: prose[1], value: prose[2].trim(), line }];
-  }
   const fields: Field[] = [];
   for (const part of text.split(' · ')) {
     const match = /^([a-z_]+):(?: (.*))?$/.exec(part);

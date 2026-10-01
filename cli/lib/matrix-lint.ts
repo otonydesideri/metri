@@ -1,19 +1,12 @@
-// Checks of .metri/MATRIX.md in docs-lint's project mode: only the plan (features, slices, Fog, Gaps,
-// Pattern proposals). What validates each ticket (UC or T), in .metri/tickets/<id>.md, is in ticket-lint.ts.
-// docs-lint --help has the list.
-import { type Block, fieldOf, type Kind, listOf, parseMatrix } from './matrix.ts';
+// Checks of .metri/MATRIX.md in docs-lint's project mode: only the plan (slices, Fog, Gaps, Pattern proposals). A
+// feature lives in its own file, .metri/specs/<id>.md (spec-lint.ts); what validates each ticket (UC or T), in
+// .metri/tickets/<id>.md, is in ticket-lint.ts. docs-lint --help has the list.
+import { type Block, fieldOf, listOf, parseMatrix } from './matrix.ts';
 
 export type MatrixProblem = { line: number; message: string };
 
-const SECTIONS = ['Features', 'Slices', 'Fog', 'Gaps', 'Pattern proposals'];
-const KEYS: Record<Kind, string[]> = {
-  feature: ['horizon', 'slices', 'outcome', 'ucs', 'milestone'],
-  slice: ['horizon', 'blocked_by', 'contract', 'sot', 'status'],
-};
-const REQUIRED: Record<Kind, string[]> = {
-  feature: ['horizon'],
-  slice: [],
-};
+const SECTIONS = ['Slices', 'Fog', 'Gaps', 'Pattern proposals'];
+const SLICE_KEYS = ['horizon', 'blocked_by', 'contract', 'sot', 'status'];
 const CONTRACT_KEYS = ['responsibility', 'interface', 'invariants', 'consumers', 'planned'];
 const FOUNDATION = 'S0';
 const CONTRACT_REQUIRED = ['responsibility', 'interface', 'invariants', 'consumers'];
@@ -21,7 +14,7 @@ const VALUES: Record<string, string[]> = {
   horizon: ['now', 'planned', 'fog', 'out'],
   status: ['done'],
 };
-const LISTS = ['slices', 'blocked_by', 'ucs', 'consumers', 'sot'];
+const LISTS = ['blocked_by', 'consumers', 'sot'];
 const TICKET_ID = '(?:UC|T)\\d+\\.\\d+';
 const ITEMS: Record<string, RegExp | undefined> = {
   Fog: undefined,
@@ -79,8 +72,8 @@ function lintFields(
 ): void {
   const seen = new Set<string>();
   for (const field of block.fields) {
-    if (!KEYS[block.kind].includes(field.key)) {
-      report(field.line, `chave ${field.key} fora do VOCABULARY para ${block.kind} (${KEYS[block.kind].join(', ')})`);
+    if (!SLICE_KEYS.includes(field.key)) {
+      report(field.line, `chave ${field.key} fora do VOCABULARY para ${block.kind} (${SLICE_KEYS.join(', ')})`);
       continue;
     }
     if (seen.has(field.key)) {
@@ -92,14 +85,7 @@ function lintFields(
     }
     lintValue(block, field.key, field.value, field.line, ids, report);
   }
-  for (const key of REQUIRED[block.kind]) {
-    if (!seen.has(key)) {
-      report(block.line, `${block.id}: falta a chave ${key}`);
-    }
-  }
-  if (block.kind === 'slice') {
-    lintSlice(block, seen, ids, report);
-  }
+  lintSlice(block, seen, ids, report);
 }
 
 function lintValue(
@@ -138,12 +124,7 @@ function lintReference(
   ids: Map<string, Block>,
   report: (line: number, message: string) => void,
 ): void {
-  const kinds: Record<string, Kind[]> = { slices: ['slice'], blocked_by: ['slice'] };
-  const expected = kinds[key];
-  if (!expected) {
-    return;
-  }
-  if (!expected.includes(ids.get(target)?.kind as Kind)) {
+  if (key === 'blocked_by' && ids.get(target)?.kind !== 'slice') {
     report(line, `${key} de ${block.id}: ${target} não existe na matriz`);
   }
 }

@@ -11,16 +11,20 @@ import {
   frontmatterOf,
   layoutOf,
   MATRIX,
+  MD_PATH,
+  proseLines,
   PROJECT_INDEX,
   PROJECT_RULES,
   projectFiles,
   ruleFiles,
   sectionItems,
+  SPECS_DIR,
   takeOption,
   TICKETS_DIR,
 } from './lib/layout.ts';
-import { fieldOf, listOf, parseMatrix } from './lib/matrix.ts';
+import { fieldOf, parseMatrix } from './lib/matrix.ts';
 import { matrixProblems } from './lib/matrix-lint.ts';
+import { specProblems } from './lib/spec-lint.ts';
 import { ticketProblems } from './lib/ticket-lint.ts';
 
 const HELP = `docs-lint: lint estrutural. Roda na raiz (ou em --root <dir>) e detecta o modo:
@@ -65,7 +69,7 @@ Só no projeto:
   - Árvores fechadas (qualquer outro arquivo nelas é erro):
     - docs/: PRODUCT.md, CONTEXT.md, DESIGN.md e adr/NNNN-<slug>.md;
     - .metri/: ARCHITECTURE.md, rules/<área>/<tema>.md (com frontmatter), rules/<área>/<tema>.examples.md,
-      rules/<área>/INDEX.md (gerado), MATRIX.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
+      rules/<área>/INDEX.md (gerado), MATRIX.md, specs/F<n>.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
   - Links: .claude/skills/<nome> para cada skill do pacote, e .claude/agents/<nome>.md para cada agent, apontando
     para node_modules/metri/skills/<nome> e node_modules/metri/agents/<nome>.md (metri init cria).
   - AGENTS.md com mais de 30 linhas: aviso.
@@ -76,29 +80,36 @@ Só no projeto:
     GAP-<n> ou PP-<n> dentro de um cabeçalho SOURCE OF TRUTH é aviso (o cabeçalho descreve, sem id transitório).
   - applies_to sem casamento: glob de regra do projeto ou de "Caminhos do projeto" que não casa com nenhum
     arquivo gera aviso, não erro; a regra é candidata a poda.
-  - Tickets e MATRIX citam só ids (UC, T, S, F, ADR-NNNN, id de regra): caminho de arquivo .md neles é erro.
-  - MATRIX.md, só o plano:
-    - títulos: "# MATRIX" e, nessa ordem, ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
-    - ids: ### F<n> em Features, ### S<n> em Slices, GAP-<n> e PP-<n> nas listas; sem id repetido;
-    - chaves de VOCABULARY.md por bloco (feature: horizon, slices, outcome, ucs, milestone;
-      slice: horizon, blocked_by, contract, sot, status), sem chave repetida; valores de horizon dentro do
-      permitido; listas em [a, b]; nenhuma chave vazia;
-    - obrigatória: horizon na feature;
-    - slice now serve a uma feature now (a feature a lista em slices) ou um ticket com ela em slice;
-    - slices e blocked_by (da slice) apontam para uma slice que existe na matriz;
+  - Tickets, specs e MATRIX citam só ids (UC, T, S, F, ADR-NNNN, id de regra): caminho de arquivo .md neles é erro.
+  - MATRIX.md, só o plano (a feature mora na sua spec, abaixo):
+    - títulos: "# MATRIX" e, nessa ordem, ## Slices, ## Fog, ## Gaps, ## Pattern proposals;
+    - ids: ### S<n> em Slices, GAP-<n> e PP-<n> nas listas; sem id repetido;
+    - chaves de VOCABULARY.md do bloco de slice (horizon, blocked_by, contract, sot, status), sem chave repetida;
+      valores de horizon dentro do permitido; listas em [a, b]; nenhuma chave vazia;
+    - slice now que algum ticket (UC ou T) usa em slice;
+    - blocked_by (da slice) aponta para uma slice que existe na matriz;
     - slice: contract (responsibility, interface, invariants, consumers; planned opcional) ou sot; a de
       fundação, S0, não precisa de nenhum dos dois. O que sot aponta e a slice done: metri sot --help;
     - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
+  - Specs (.metri/specs/F<n>.md, uma por feature; formato: skills/shape/SPEC-FORMAT.md):
+    - o nome do arquivo é F<n>.md, e o frontmatter id é igual a ele;
+    - frontmatter válido: id, title, status (draft, planned ou done) e horizon sempre, milestone opcional, sem
+      chave fora delas nem vazia;
+    - seções, nessa ordem: Problema, Solução, Casos de uso, Decisões de implementação, Decisões de teste, Fora
+      de escopo, Notas;
+    - Casos de uso: cada item "- UC<f>.<n> · <título>", com o número depois da letra batendo com o da feature,
+      e o UC existindo em .metri/tickets/;
+    - caminho de arquivo citado na spec é aviso, não erro (a spec aponta para ids).
   - Tickets (.metri/tickets/<id>.md, um UC ou um T; formato: skills/look-across/MATRIX-FORMAT.md,
     "Ticket files"):
     - o nome do arquivo é UC<f>.<n>.md ou T<s>.<n>.md, e o frontmatter id é igual a ele;
     - frontmatter válido: as chaves de VOCABULARY.md (id, title, status e, no UC, feature; no T, slice, type,
       mode e checks sempre; no UC, slice, mode e checks fora de draft), sem chave fora dela nem vazia; status,
       mode, type e sensitive dentro do permitido (status draft só no UC);
-    - feature (UC) e slice (T sempre; UC fora de draft) apontam para algo que existe na matriz, com o número
-      depois da letra do id batendo com o da feature ou da slice;
+    - feature (UC) aponta para uma spec que existe em .metri/specs/; slice (T sempre; UC fora de draft) aponta
+      para algo que existe na matriz; o número depois da letra do id bate com o da feature ou da slice;
     - blocked_by aponta para um ticket ou uma slice que existe;
-    - todo UC fora de draft aparece em ucs da feature dele, em MATRIX.md;
+    - todo UC fora de draft aparece em Casos de uso da spec da feature dele;
     - T: seção "O que entrega" (1 a 3 linhas) e "Critérios" (ao menos um item "- [ ]");
     - metrics, quando existe: { rules: <n>, tokens: <n> }, com rules sempre e números inteiros;
     - "Notas" com no máximo 10 linhas;
@@ -159,8 +170,6 @@ const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DE
 const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md'];
 const METRI_FILES = [PROJECT_INDEX, MATRIX];
 const EVIDENCE_DEVICES = ['desktop', 'mobile'];
-// Path of a .md file: tickets and the MATRIX cite only ids.
-const MD_PATH = /(?<![\w/.-])[\w./-]*[\w-]\.md(?![\w-])/g;
 const AGENTS_MAX_LINES = 30;
 const TICKET_ID_IN_TEXT = /\b(?:UC|T)\d+\.\d+\b/g;
 // Project code where GAP-n and PP-n are checked, and the folders left out.
@@ -210,27 +219,6 @@ function listMarkdown(dir: string): string[] {
 function isRuleFile(path: string): boolean {
   const name = path.split('/').at(-1) ?? '';
   return name !== 'INDEX.md' && !name.endsWith('.examples.md');
-}
-
-// Lines outside the frontmatter and fenced code blocks, each with its number.
-function proseLines(source: string): { text: string; line: number }[] {
-  const lines = source.split('\n');
-  const result: { text: string; line: number }[] = [];
-  const frontmatterEnd = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
-  let isFenced = false;
-  lines.forEach((text, index) => {
-    if (index <= frontmatterEnd) {
-      return;
-    }
-    if (/^\s*(```|~~~)/.test(text)) {
-      isFenced = !isFenced;
-      return;
-    }
-    if (!isFenced) {
-      result.push({ text, line: index + 1 });
-    }
-  });
-  return result;
 }
 
 function slugOf(text: string): string {
@@ -624,6 +612,8 @@ function lintMetriTree(): void {
       continue; // checked in lintTickets, which also checks the file name.
     } else if (/^\.metri\/tickets\/(?:UC|T)\d+\.\d+\/[^/]+\.png$/.test(path)) {
       continue;
+    } else if (/^\.metri\/specs\/F\d+\.md$/.test(path)) {
+      continue; // checked in lintSpecs, which also checks the file name.
     } else {
       report(path, 1, 'árvore de .metri/: arquivo fora da lista fechada (docs-lint --help)');
     }
@@ -653,29 +643,53 @@ function lintIdsOnly(path: string): void {
     });
 }
 
-// Feature (F<n>) and slice (S<n>) ids present in the matrix, and the "ucs" value of each feature.
-function matrixIds(matrixSource: string): {
-  featureIds: Set<string>;
-  sliceIds: Set<string>;
-  featureUcs: Map<string, string[]>;
-  featureSlices: Map<string, string[]>;
-} {
-  const matrix = parseMatrix(matrixSource);
-  const featureIds = new Set(matrix.blocks.filter((block) => block.kind === 'feature').map((block) => block.id));
-  const sliceIds = new Set(matrix.blocks.filter((block) => block.kind === 'slice').map((block) => block.id));
-  const featureUcs = new Map<string, string[]>();
-  const featureSlices = new Map<string, string[]>();
-  for (const block of matrix.blocks.filter((block) => block.kind === 'feature')) {
-    featureUcs.set(block.id, listOf(fieldOf(block, 'ucs')?.value ?? '') ?? []);
-    featureSlices.set(block.id, listOf(fieldOf(block, 'slices')?.value ?? '') ?? []);
-  }
-  return { featureIds, sliceIds, featureUcs, featureSlices };
+// Slice (S<n>) ids present in the matrix.
+function sliceIdsOf(matrixSource: string): Set<string> {
+  return new Set(parseMatrix(matrixSource).blocks.filter((block) => block.kind === 'slice').map((block) => block.id));
 }
 
-// Tickets (.metri/tickets/<id>.md): frontmatter, body and references to the MATRIX.
+// Feature (F<n>) ids, one per .metri/specs/<id>.md, and the UC ids listed in each one's "Casos de uso".
+function specIds(): { featureIds: Set<string>; featureUcs: Map<string, string[]> } {
+  const files = existsSync(SPECS_DIR) ? readdirSync(SPECS_DIR).filter((name) => name.endsWith('.md')).sort() : [];
+  const featureIds = new Set(files.map((name) => name.replace(/\.md$/, '')));
+  const featureUcs = new Map<string, string[]>();
+  for (const name of files) {
+    const source = readFileSync(join(SPECS_DIR, name), 'utf8');
+    const ucs = sectionItems(source, 'Casos de uso')
+      .map(({ text }) => /^(UC\d+\.\d+) /.exec(text)?.[1])
+      .filter((id): id is string => id !== undefined);
+    featureUcs.set(name.replace(/\.md$/, ''), ucs);
+  }
+  return { featureIds, featureUcs };
+}
+
+// Specs (.metri/specs/<F-id>.md): frontmatter, sections and the Casos de uso list.
+function lintSpecs(): void {
+  const ticketIds = new Set(
+    existsSync(TICKETS_DIR)
+      ? readdirSync(TICKETS_DIR)
+          .filter((name) => name.endsWith('.md'))
+          .map((name) => name.replace(/\.md$/, ''))
+      : [],
+  );
+  for (const name of existsSync(SPECS_DIR) ? readdirSync(SPECS_DIR).filter((name) => name.endsWith('.md')).sort() : []) {
+    const path = join(SPECS_DIR, name);
+    const expectedId = name.replace(/\.md$/, '');
+    for (const { line, message, isWarning } of specProblems(readFileSync(path, 'utf8'), expectedId, { ticketIds })) {
+      if (isWarning) {
+        warn(path, line, message);
+      } else {
+        report(path, line, message);
+      }
+    }
+  }
+}
+
+// Tickets (.metri/tickets/<id>.md): frontmatter, body and references to the MATRIX and the specs.
 function lintTickets(): void {
   const matrixSource = existsSync(MATRIX) ? readFileSync(MATRIX, 'utf8') : '';
-  const { featureIds, sliceIds, featureUcs, featureSlices } = matrixIds(matrixSource);
+  const sliceIds = sliceIdsOf(matrixSource);
+  const { featureIds, featureUcs } = specIds();
   const files = existsSync(TICKETS_DIR)
     ? readdirSync(TICKETS_DIR)
         .filter((name) => name.endsWith('.md'))
@@ -687,7 +701,7 @@ function lintTickets(): void {
       .blocks.filter((block) => block.kind === 'slice' && fieldOf(block, 'status')?.value === 'done')
       .map((block) => block.id),
   );
-  const servedSlices = new Set([...featureSlices.values()].flat());
+  const servedSlices = new Set<string>();
   for (const name of files) {
     const path = join(TICKETS_DIR, name);
     const expectedId = name.replace(/\.md$/, '');
@@ -714,7 +728,7 @@ function lintTickets(): void {
   const matrix = parseMatrix(matrixSource);
   for (const block of matrix.blocks) {
     if (block.kind === 'slice' && fieldOf(block, 'horizon')?.value === 'now' && !servedSlices.has(block.id)) {
-      report(MATRIX, block.line, `${block.id}: slice now que nenhuma feature now serve (slices da feature ou slice de um ticket)`);
+      report(MATRIX, block.line, `${block.id}: slice now que nenhum ticket usa (slice de um UC ou de um T)`);
     }
   }
 }
@@ -907,6 +921,7 @@ function lintProject(): void {
   lintLinks();
   lintAgents();
   lintMatrix();
+  lintSpecs();
   lintTickets();
   lintAppliesTo();
   lintRuleTicketIds();

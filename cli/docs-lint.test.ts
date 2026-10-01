@@ -7,6 +7,7 @@ afterAll(removeCopies);
 
 const MATRIX = '.metri/MATRIX.md';
 const TICKETS = '.metri/tickets';
+const SPECS = '.metri/specs';
 
 function lint(dir: string): { status: number | null; lines: string[] } {
   return run('docs-lint', ['--root', dir]);
@@ -26,6 +27,10 @@ function inMatrix(from: string, to: string): (dir: string) => void {
 
 function inTicket(id: string, from: string, to: string): (dir: string) => void {
   return (dir) => edit(dir, `${TICKETS}/${id}.md`, (source) => source.replace(from, to));
+}
+
+function inSpec(id: string, from: string, to: string): (dir: string) => void {
+  return (dir) => edit(dir, `${SPECS}/${id}.md`, (source) => source.replace(from, to));
 }
 
 describe('docs-lint', { timeout: 60_000 }, () => {
@@ -159,34 +164,32 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   it('MATRIX: títulos de seção fixos', () => {
     const { status, output } = lintChanged(inMatrix('## Fog', '## Névoa'));
     expect(status).toBe(1);
-    expect(output).toContain('seções: ## Features, ## Slices, ## Fog, ## Gaps, ## Pattern proposals, nessa ordem');
+    expect(output).toContain('seções: ## Slices, ## Fog, ## Gaps, ## Pattern proposals, nessa ordem');
   });
 
   it('MATRIX: ids no formato', () => {
-    expect(lintChanged(inMatrix('### F2 · Relatórios', '### Feature 2 · Relatórios')).output).toContain(
-      'título fora do formato: ### Feature 2 · Relatórios',
+    expect(lintChanged(inMatrix('### S2 · Avisos de pedido', '### Slice 2 · Avisos de pedido')).output).toContain(
+      'título fora do formato: ### Slice 2 · Avisos de pedido',
     );
     expect(lintChanged(inMatrix('- GAP-1 · filtro', '- GAP · filtro')).output).toContain('Gaps: "GAP · filtro');
   });
 
   it('MATRIX: chaves e valores do VOCABULARY', () => {
-    expect(lintChanged(inMatrix('horizon: planned', 'horizon: later')).output).toContain(
+    expect(lintChanged(inMatrix('horizon: now · sot: [OrdersPage]', 'horizon: later · sot: [OrdersPage]')).output).toContain(
       'horizon: later fora de now | planned | fog | out',
     );
-    expect(lintChanged(inMatrix('ucs: [UC1.1, UC1.2]', 'featured: [UC1.1, UC1.2]')).output).toContain(
-      'chave featured fora do VOCABULARY para feature',
+    expect(lintChanged(inMatrix('sot: [OrdersPage]', 'donos: [OrdersPage]')).output).toContain(
+      'chave donos fora do VOCABULARY para slice',
     );
   });
 
-  it('MATRIX: slice now serve a uma feature now (slices da feature ou slice de um ticket)', () => {
-    expect(lintChanged(inMatrix('horizon: now · slices: [S1, S2]', 'horizon: now · slices: [S1]')).status).toBe(0);
+  it('MATRIX: slice now que algum ticket usa (um UC ou um T com ela em slice)', () => {
     const unserved = lintChanged((dir) => {
-      inMatrix('horizon: now · slices: [S1, S2]', 'horizon: now · slices: [S1]')(dir);
       inTicket('UC1.2', 'slice: S2', 'slice: S1')(dir);
       inTicket('T2.1', 'slice: S2', 'slice: S1')(dir);
     });
     expect(unserved.status).toBe(1);
-    expect(unserved.output).toContain('S2: slice now que nenhuma feature now serve');
+    expect(unserved.output).toContain('S2: slice now que nenhum ticket usa');
   });
 
   it('MATRIX: slice de plano com contract ou sot; o contrato com as chaves obrigatórias', () => {
@@ -275,7 +278,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   });
 
   it('Tickets: feature (UC) e slice (T) apontam para algo que existe, com o número certo', () => {
-    expect(lintChanged(inTicket('UC1.1', 'feature: F1', 'feature: F9')).output).toContain('feature: F9 não existe na matriz');
+    expect(lintChanged(inTicket('UC1.1', 'feature: F1', 'feature: F9')).output).toContain('feature: F9 não tem spec em .metri/specs/');
     expect(lintChanged(inTicket('UC1.1', 'feature: F1', 'feature: F2')).output).toContain(
       'UC1.1: feature F2 diferente de F1; o número depois da letra no id é o de feature',
     );
@@ -292,12 +295,12 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     expect(lintChanged(inTicket('UC1.2', 'blocked_by: [UC1.1, T2.1]', 'blocked_by: [UC1.1, T2.1, S1]')).status).toBe(0);
   });
 
-  it('Tickets: todo UC fora de draft aparece em ucs da feature dele', () => {
-    const { status, output } = lintChanged(inMatrix('ucs: [UC1.1, UC1.2]', 'ucs: [UC1.2]'));
+  it('Tickets: todo UC fora de draft aparece em Casos de uso da spec da feature dele', () => {
+    const { status, output } = lintChanged(inSpec('F1', '- UC1.1 · Listar pedidos\n', ''));
     expect(status).toBe(1);
-    expect(output).toContain('UC1.1: fora da lista ucs da feature F1 em .metri/MATRIX.md');
-    // A draft need not appear in ucs (nor must the key exist).
-    expect(lintChanged(inMatrix('ucs: [UC2.1]\n', '')).status).toBe(0);
+    expect(output).toContain('UC1.1: fora de Casos de uso da spec F1 (.metri/specs/F1.md)');
+    // A draft need not appear in Casos de uso.
+    expect(lintChanged(inSpec('F2', '- UC2.1 · Ver pedidos por período\n', '')).status).toBe(0);
   });
 
   it('Tickets: T tem "O que entrega" (1 a 3 linhas) e "Critérios" (com item)', () => {
@@ -311,6 +314,51 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     );
     const items = '- [ ] O domínio de envio está verificado no provedor.\n- [ ] A chave de API existe no env de desenvolvimento do app-api.\n';
     expect(lintChanged(inTicket('T2.1', items, '')).output).toContain('T2.1: "Critérios" sem item');
+  });
+
+  it('Specs: o nome do arquivo é F<n>.md, e o frontmatter id bate com ele', () => {
+    const { status, output } = lintChanged((dir) => write(dir, `${SPECS}/notes.md`, '---\nid: notes\n---\n# Notas\n'));
+    expect(status).toBe(1);
+    expect(output).toContain('nome de arquivo: notes.md fora do formato F<n>.md');
+    const idMismatch = lintChanged(inSpec('F1', 'id: F1', 'id: F2'));
+    expect(idMismatch.output).toContain('frontmatter: id F2 diferente do nome do arquivo F1.md');
+  });
+
+  it('Specs: frontmatter válido (chave obrigatória, chave fora de VOCABULARY, chave vazia, status e horizon)', () => {
+    expect(lintChanged(inSpec('F1', 'status: planned\n', '')).output).toContain('frontmatter: falta a chave obrigatória status');
+    expect(lintChanged(inSpec('F1', 'title: Pedidos no painel', 'nome: Pedidos no painel\ntitle: Pedidos no painel')).output).toContain(
+      'frontmatter: chave nome fora de VOCABULARY.md para spec',
+    );
+    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon:')).output).toContain('frontmatter: chave horizon vazia');
+    expect(lintChanged(inSpec('F1', 'status: planned', 'status: open')).output).toContain('status: open fora de draft | planned | done');
+    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: later')).output).toContain('horizon: later fora de now | planned | fog | out');
+    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: now\nmilestone: v1')).status).toBe(0); // milestone is a known, optional key
+  });
+
+  it('Specs: seções fixas, nessa ordem', () => {
+    const { status, output } = lintChanged(inSpec('F1', '## Fora de escopo', '## Escopo negativo'));
+    expect(status).toBe(1);
+    expect(output).toContain(
+      'seções: Problema, Solução, Casos de uso, Decisões de implementação, Decisões de teste, Fora de escopo, Notas, nessa ordem',
+    );
+  });
+
+  it('Specs: Casos de uso só com UCs que existem, do formato certo e com o número da feature certo', () => {
+    expect(lintChanged(inSpec('F1', '- UC1.2 · Avisar pedido confirmado', '- UC1.2 avisar pedido confirmado')).output).toContain(
+      'Casos de uso de F1: "UC1.2 avisar pedido confirmado" fora do formato UC<f>.<n> · <título>',
+    );
+    expect(lintChanged(inSpec('F1', '- UC1.2 · Avisar pedido confirmado', '- UC2.1 · Ver pedidos por período')).output).toContain(
+      'Casos de uso de F1: UC2.1 é de outra feature; o número depois da letra no id é o da feature',
+    );
+    expect(lintChanged(inSpec('F1', '- UC1.2 · Avisar pedido confirmado', '- UC1.9 · Pedido inexistente')).output).toContain(
+      'Casos de uso de F1: UC1.9 não existe em .metri/tickets/',
+    );
+  });
+
+  it('Specs: caminho de arquivo citado é aviso, não erro', () => {
+    const { status, output } = lintChanged(inSpec('F1', '## Fora de escopo', '## Fora de escopo\n\nVer docs/DESIGN.md.'));
+    expect(status).toBe(0);
+    expect(output).toContain('aviso: F1: cita docs/DESIGN.md, caminho de arquivo; a spec aponta para ids (UC, T, S, ADR-NNNN), não para arquivos');
   });
 
   it('ADR: status permitido e as seções do formato', () => {

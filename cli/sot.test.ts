@@ -82,7 +82,7 @@ describe('sot', { timeout: 60_000 }, () => {
   it('sot: cada símbolo está declarado e tem o cabeçalho que o nomeia', () => {
     const noHeader = sotChanged((dir) => edit(dir, MATRIX, (source) => source.replace('sot: [OrdersPage]', 'sot: [OrdersPage, OrderList]')));
     expect(noHeader.status).toBe(1);
-    expect(noHeader.output).toContain('.metri/MATRIX.md:20: sot de S1: nenhum cabeçalho SOURCE OF TRUTH nomeia OrderList');
+    expect(noHeader.output).toContain('.metri/MATRIX.md:7: sot de S1: nenhum cabeçalho SOURCE OF TRUTH nomeia OrderList');
     const undeclared = sotChanged((dir) => {
       edit(dir, MATRIX, (source) => source.replace('sot: [OrdersPage]', 'sot: [OrdersPage, OrderList]'));
       edit(dir, PAGE, (source) => source.replace('SOURCE OF TRUTH: OrdersPage.', 'SOURCE OF TRUTH: OrdersPage, OrderList.'));
@@ -106,7 +106,7 @@ describe('sot', { timeout: 60_000 }, () => {
       edit(dir, ARCHITECTURE, (source) => source.replace(/1\. `apps\/app-web[^\n]*\n/, ''));
     });
     expect(offPath.status).toBe(1);
-    expect(offPath.output).toContain('.metri/MATRIX.md:20: sot de S1: OrdersPage não está no Caminho linear do .metri/ARCHITECTURE.md');
+    expect(offPath.output).toContain('.metri/MATRIX.md:7: sot de S1: OrdersPage não está no Caminho linear do .metri/ARCHITECTURE.md');
     const planned = sotChanged((dir) => edit(dir, ARCHITECTURE, (source) => source.replace(/1\. `apps\/app-web[^\n]*\n/, '')));
     expect(planned).toEqual({ status: 0, output: '' });
   });

@@ -26,6 +26,10 @@ export const PROJECT_INDEX = '.metri/ARCHITECTURE.md';
 export const PROJECT_RULES = '.metri/rules';
 export const MATRIX = '.metri/MATRIX.md';
 export const TICKETS_DIR = '.metri/tickets';
+export const SPECS_DIR = '.metri/specs';
+
+// Path of a .md file: tickets, specs and the MATRIX cite only ids.
+export const MD_PATH = /(?<![\w/.-])[\w./-]*[\w-]\.md(?![\w-])/g;
 
 // Folders the project file walk skips.
 const SKIPPED_DIRS = ['node_modules', '.git'];
@@ -134,6 +138,27 @@ export function sectionLines(source: string, title: string): { text: string; lin
     }
   }
   return items;
+}
+
+// Lines outside the frontmatter and fenced code blocks, each with its number.
+export function proseLines(source: string): { text: string; line: number }[] {
+  const lines = source.split('\n');
+  const result: { text: string; line: number }[] = [];
+  const frontmatterEnd = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
+  let isFenced = false;
+  lines.forEach((text, index) => {
+    if (index <= frontmatterEnd) {
+      return;
+    }
+    if (/^\s*(```|~~~)/.test(text)) {
+      isFenced = !isFenced;
+      return;
+    }
+    if (!isFenced) {
+      result.push({ text, line: index + 1 });
+    }
+  });
+  return result;
 }
 
 // All files under the root, as relative paths, outside node_modules and .git.

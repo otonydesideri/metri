@@ -31,8 +31,8 @@ Cria o que falta:
   - no package.json, os scripts verify, docs-lint, rules-for, rules-index, rules-index:check, design-tokens e
     sot (metri <comando>).
 
-Termina rodando metri verify e sai com o código dele. PRODUCT.md, CONTEXT.md, DESIGN.md e MATRIX.md nascem no
-/shape.
+Termina rodando metri verify e sai com o código dele. PRODUCT.md, CONTEXT.md, DESIGN.md, MATRIX.md e as specs em
+.metri/specs/ nascem no /shape.
 `;
 
 const TEMPLATES = join(PACKAGE_ROOT, 'cli/templates');

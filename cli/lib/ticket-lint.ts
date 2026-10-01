@@ -1,5 +1,6 @@
 // Checks of one ticket (.metri/tickets/<id>.md): frontmatter, body (the T's O que entrega / Critérios) and
-// cross-references to the MATRIX (feature, slice, blocked_by). Called by docs-lint, one file at a time.
+// cross-references to the specs (feature) and the MATRIX (slice, blocked_by). Called by docs-lint, one file at a
+// time.
 import { parse } from 'yaml';
 import { sectionItems, sectionLines } from './layout.ts';
 
@@ -140,7 +141,11 @@ export function ticketProblems(path: string, source: string, expectedId: string,
   if (typeof featureOrSlice === 'string' && featureOrSlice !== '') {
     const validOwners = kind === 'uc' ? ctx.featureIds : ctx.sliceIds;
     if (!validOwners.has(featureOrSlice)) {
-      report(keyLine(lines, kind === 'uc' ? 'feature' : 'slice'), `${kind === 'uc' ? 'feature' : 'slice'}: ${featureOrSlice} não existe na matriz`);
+      const message =
+        kind === 'uc'
+          ? `feature: ${featureOrSlice} não tem spec em .metri/specs/`
+          : `slice: ${featureOrSlice} não existe na matriz`;
+      report(keyLine(lines, kind === 'uc' ? 'feature' : 'slice'), message);
     } else if (featureOrSlice !== owner) {
       report(
         keyLine(lines, kind === 'uc' ? 'feature' : 'slice'),
@@ -160,7 +165,7 @@ export function ticketProblems(path: string, source: string, expectedId: string,
   if (kind === 'uc' && !isDraft) {
     const ucs = ctx.featureUcs.get(String(frontmatter.feature)) ?? [];
     if (!ucs.includes(expectedId)) {
-      report(1, `${expectedId}: fora da lista ucs da feature ${String(frontmatter.feature)} em .metri/MATRIX.md`);
+      report(1, `${expectedId}: fora de Casos de uso da spec ${String(frontmatter.feature)} (.metri/specs/${String(frontmatter.feature)}.md)`);
     }
   }
 
