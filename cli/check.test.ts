@@ -102,6 +102,19 @@ describe('check', { timeout: 30_000 }, () => {
     });
   });
 
+  it('boundaries: entidade importando domain service, sem acusar domain service importando outro', () => {
+    const dir = project();
+    write(dir, 'apps/app-api/src/domain/enterprise/order.entity.ts', "import { calculateLoyaltyDiscount } from './domain-services/calculate-loyalty-discount';\n");
+    write(dir, 'apps/app-api/src/domain/enterprise/domain-services/calculate-loyalty-discount.ts', "import { roundMoney } from '../domain-services/round-money';\n");
+    expect(check(dir, 'boundaries')).toEqual({
+      status: 1,
+      lines: [
+        'falha boundaries: entidade importando domain service',
+        '  apps/app-api/src/domain/enterprise/order.entity.ts: ./domain-services/calculate-loyalty-discount',
+      ],
+    });
+  });
+
   it('concurrency: model com version sem *.concurrency.e2e-spec.ts nomeado pelo model', () => {
     const dir = project();
     write(dir, 'packages/db/prisma/models/order.prisma', 'model Order {\n  id      String @id\n  version Int    @default(1)\n}\n');

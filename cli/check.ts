@@ -113,6 +113,13 @@ const boundaries: Check = ({ domainPackages }) => {
       items: importing(tsFiles(`${API_SRC}/infra`), (s) => /(^|\/)domain\/enterprise\/domain-services\//.test(s)),
     },
     {
+      label: 'entidade importando domain service',
+      items: importing(
+        tsFiles(`${DOMAIN}/enterprise`).filter((path) => !path.includes(`${DOMAIN}/enterprise/domain-services/`)),
+        (s) => /(^|\/)domain-services\//.test(s),
+      ),
+    },
+    {
       label: 'domain usando de @nestjs/common algo além de Injectable',
       items: domain.flatMap((path) =>
         [...readFileSync(path, 'utf8').matchAll(/import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]@nestjs\/common['"]/g)]

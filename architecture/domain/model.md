@@ -76,7 +76,7 @@ Quando uma invariante de domínio precisa ser preservada atomicamente pelo próp
 
 A regra não põe toda consistência do sistema, nem toda operação transacional, dentro de um agregado só: operação que envolve mais de uma fronteira é coordenada por `backend/transactions.md`, com transação entre agregados ou consistência eventual pela árvore de `backend/operation-routing.md`, e a leitura de exibição atravessa agregados sem redesenhá-los (`backend/reading.md`).
 
-**Obrigatório.** O agregado é a unidade de detecção de concorrência: raiz com escrita concorrente tem coluna `version` (`backend/transactions.md`, "Concorrência e locking").
+O agregado é também a unidade de concorrência: a regra de quando a raiz ganha coluna `version` e como ela protege a escrita mora em `backend/transactions.md`, "Concorrência e locking".
 
 **Obrigatório.** Coleção interna do agregado preserva as invariantes por método de domínio: item entra e sai por método de intenção da entidade (`addItem()`), que aplica a regra antes de tocar a coleção.
 
