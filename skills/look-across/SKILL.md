@@ -57,7 +57,7 @@ Each `now` UC is a **tracer bullet** ticket.
 
 </tracer-bullet-rules>
 
-A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel.
+A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel. A UC born from a split, with no draft to inherit from, gets its own story ("Como <ator>, quero <ação>, para <benefício>."), humanizer revised.
 
 A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket, except the urgent fix of /diagnose.
 
@@ -78,7 +78,7 @@ For each `now` feature, fill its spec's Decisões de implementação (the module
 
 ### 9. Quiz the user
 
-For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md` and the specs, and reports features without a slice, forgotten consumers and UCs without a criterion.
+For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion and UCs with a repeated criterion.
 
 Present the proposed plan as a numbered list: each slice with its contract, then each UC and each T:
 

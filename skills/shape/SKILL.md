@@ -8,8 +8,8 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
-Before writing the prose of `docs/PRODUCT.md`, `docs/DESIGN.md` or a spec's Problema and Solução, call the Skill
-tool with "humanizer" on it.
+Before writing the prose of `docs/PRODUCT.md`, `docs/DESIGN.md`, a spec's Problema and Solução, or a UC's story,
+call the Skill tool with "humanizer" on it.
 
 Understand the problem, the outcome and the limits, and align the language; slices, contracts and tickets belong to /look-across.
 
@@ -43,7 +43,8 @@ Write what the interview settled:
   and Solução from the interview, its Casos de uso (each UC's id and title, draft included) and Fora de escopo.
   Each UC of a candidate feature also gets its own file, `.metri/tickets/UC<f>.<n>.md`, in the format of
   `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` ("UC block"): `feature`, `actor`, `status: draft`, its
-  BRs and its criteria. /look-across plans it and opens it.
+  story ("Como <ator>, quero <ação>, para <benefício>."), its BRs and its criteria. /look-across plans it and
+  opens it.
 
 ### 5. Direction gate
 

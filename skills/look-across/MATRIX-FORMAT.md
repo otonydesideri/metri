@@ -67,6 +67,9 @@ when missing or empty, the rest are written only with a value.
   its own (`T2.0` → `slice: S2`); a UC's slice is free, its main slice (the other slices it crosses go in `areas`
   and `touches`).
 - `actor` (UC only): who runs the use case.
+- Story (UC only, body, outside `done`): the line right below the title, `Como <ator>, quero <ação>, para
+  <benefício>.`, with `<ator>` the same as the `actor` key; written by /shape when drafting the UC, humanizer
+  revised. A `done` UC is history, not checked. A T never has one.
 - `type` (T only): `pattern`, `task` or `release`; the tracer is the UC and never takes `type`.
 - `status`: `draft` (UC only, written by /shape until /look-across plans it) `| open | in_progress | blocked |
   done`. A UC in `draft` is never built.
@@ -79,7 +82,8 @@ when missing or empty, the rest are written only with a value.
   (`` "`pnpm test order-confirmation`" ``).
 - `metrics`: `{ rules: <n>, tokens: <n> }`, whole numbers, written at `done`: `rules` always, the count of rules
   `pnpm rules-for --ticket <id>` lists; `tokens` only when the tool reports them.
-- "Critérios": a criterion judged on the screen starts with `Tela:`
+- "Critérios": a criterion is verifiable and says what happens; a scope sentence (`não depende de X na v1`) goes
+  to the feature's spec, Fora de escopo, not here. A criterion judged on the screen starts with `Tela:`
   (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
   `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
 - "Notas": written only when there's something to say, and only what the code, the tests and git don't show, in
@@ -91,8 +95,8 @@ and its body, with `status: done`, in its own file.
 
 ### UC block
 
-The UC is the tracer ticket: its title, BRs and criteria are its what and its done. Its id is the ticket's id:
-branch `ticket/UC1.1`, commit `UC1.1 …`.
+The UC is the tracer ticket: its title, story, BRs and criteria are its what and its done. Its id is the ticket's
+id: branch `ticket/UC1.1`, commit `UC1.1 …`.
 
 ```markdown
 ---
@@ -113,6 +117,8 @@ metrics: { rules: <n>, tokens: <n> }
 ---
 
 # UC<f>.<n> · <caso de uso>
+
+Como <ator>, quero <ação>, para <benefício>.
 
 ## Regras de negócio
 
@@ -226,6 +232,8 @@ subtasks: [registro no mounter, renderização no site]
 
 # UC1.1 · Publicar formulário numa página
 
+Como editor, quero publicar um formulário numa página do site, para receber respostas dos visitantes.
+
 ## Regras de negócio
 
 - BR1 (sensitive): Um formulário só é exibido se estiver publicado.
@@ -238,7 +246,7 @@ subtasks: [registro no mounter, renderização no site]
 ## Notas
 ```
 
-`.metri/tickets/UC1.2.md`, done:
+`.metri/tickets/UC1.2.md`, done (history: no story expected, even if it predates one)
 
 ```markdown
 ---

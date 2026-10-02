@@ -14,6 +14,8 @@ checks: ["`pnpm verify`", "`pnpm test orders-page`"]
 
 # UC1.1 · Listar pedidos
 
+Como operador, quero ver a lista de pedidos da organização, para acompanhar o que está em aberto.
+
 ## Regras de negócio
 
 - BR1: Só aparecem pedidos da organização do operador.

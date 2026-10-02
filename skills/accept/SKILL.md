@@ -41,7 +41,7 @@ Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what 
 - `reviewer-contract`: the diff command, the commit list, the check results, and the Contract inputs, pasted in full.
 - `reviewer-patterns`: the diff command, the commit list, the check results, and the Patterns items, pasted with their rule id.
 - `reviewer-ux`, when the slice has a `Tela:` criterion: the Experience inputs.
-- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only the UC's goal and the URL of the app this session serves once for it, with the development seed, on its own port (`frontend/testing`, "E2e de critério de UI"), stopped when the tester reports.
+- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only its story and the URL of the app this session serves once for it, with the development seed, on its own port (`frontend/testing`, "E2e de critério de UI"), stopped when the tester reports.
 
 ### 4. Aggregate
 
@@ -64,13 +64,13 @@ What each decision does (the formats: `node_modules/metri/skills/look-across/MAT
 
 ### 6. Knowledge gate
 
-Collect the proposed lessons: findings, `PP-n`, `GAP-n`, repeated fixes and the decisions written in the Notas of the slice's tickets, each with its evidence; an approved decision leaves the Notas. When the slice hurt (many findings, proposals or fixes), an architecture survey in a sub-agent brings back only its conclusion, as one more lesson. Call the Skill tool with "guardrail" and put each lesson through its knowledge gate. The human approves the destination of each; write the approved ones in their destination, on `slice/<id>`. A lesson for the Source goes as a PR to the Source's repository: `node_modules/metri/` is read-only.
+Collect the proposed lessons: findings, `PP-n`, `GAP-n`, repeated fixes and the decisions written in the Notas of the slice's tickets and, on a feature's last slice, in its spec's Decisões de implementação, each with its evidence; an approved decision leaves the Notas. When the slice hurt (many findings, proposals or fixes), an architecture survey in a sub-agent brings back only its conclusion, as one more lesson. Call the Skill tool with "guardrail" and put each lesson through its knowledge gate. The human approves the destination of each; write the approved ones in their destination, on `slice/<id>`. A lesson for the Source goes as a PR to the Source's repository: `node_modules/metri/` is read-only.
 
 ### 7. Prune and merge
 
 On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Set `status: done` on the spec of each feature whose last slice this was (step 5); a `done` spec is history, unread by /build's context chain and never written again. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
-Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its done UCs are collapsed; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
+Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its slice is collapsed in the MATRIX; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
 ## Why separate axes
 

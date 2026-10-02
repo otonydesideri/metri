@@ -16,6 +16,29 @@
 Nenhuma mudança obrigatória: domain service existente como função pura continua válido. A classe é só uma segunda
 forma, para quando a regra já tiver mais de uma operação coesa.
 
+## v1.6.2 (2026-10-02)
+
+UC abre com uma história, e critério deixa de carregar frase de escopo.
+
+### O que muda
+
+- **História no UC.** Todo UC abre com uma linha logo abaixo do título, `Como <ator>, quero <ação>, para
+  <benefício>.`, com o ator igual à chave `actor`; exigida só fora de `done` (UC done é histórico). T (pattern,
+  task, release) nunca tem história. O /shape escreve a história ao rascunhar o UC, humanizer revisada; um UC
+  nascido de split no /look-across, sem draft para herdar, ganha a sua.
+- **Critério diz o que acontece.** Uma frase de escopo (`não depende de X na v1`) sai do critério e vai para a
+  spec da feature, Fora de escopo; o /build passa a ler essa seção também. O crítico sem contexto do /look-across
+  passa a procurar também critério repetido dentro do mesmo UC.
+
+### Migrar de v1.6.0
+
+1. `pnpm add -D github:otonydesideri/metri#v1.6.2`.
+2. Todo UC aberto (fora de `draft` e de `done`) ganha a história, logo abaixo do título: `Como <ator>, quero
+   <ação>, para <benefício>.`, com o ator igual à chave `actor` do ticket.
+3. Releia os critérios dos UCs abertos: uma frase de escopo que estiver lá migra para a spec da feature, Fora de
+   escopo.
+4. `pnpm docs-lint` verde, incluindo a história dos UCs.
+
 ## v1.6.0 (2026-10-01)
 
 Spec por feature, adaptada do `to-spec` de mattpocock/skills: a seção de uma feature na MATRIX vira o arquivo

@@ -15,6 +15,8 @@ checks: ["`pnpm verify`", "`pnpm test order-confirmation`"]
 
 # UC1.2 · Avisar pedido confirmado
 
+Como cliente, quero ser avisado quando meu pedido for confirmado, para saber que ele está a caminho.
+
 ## Regras de negócio
 
 ## Critérios

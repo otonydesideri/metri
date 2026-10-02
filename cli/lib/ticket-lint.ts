@@ -27,6 +27,7 @@ const LIST_KEYS = ['blocked_by', 'areas', 'touches', 'checks', 'subtasks'];
 const WHAT_MAX_LINES = 3;
 const NOTES_MAX_LINES = 10;
 const METRICS_KEYS = ['rules', 'tokens'];
+const STORY = /^Como (.+?), quero (.+?), para (.+)\.$/;
 
 function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) {
@@ -41,6 +42,18 @@ function isEmpty(value: unknown): boolean {
 function keyLine(lines: string[], key: string): number {
   const index = lines.findIndex((text) => text.startsWith(`${key}:`));
   return index === -1 ? 1 : index + 1;
+}
+
+// The line right below the title ("# <id> · <título>"), before any "## " section: the UC's story, if it wrote one.
+function storyOf(source: string): { text: string; line: number } | undefined {
+  const lines = source.split('\n');
+  const title = lines.findIndex((text) => text.startsWith('# '));
+  for (let index = title + 1; title !== -1 && index < lines.length && !lines[index].startsWith('## '); index++) {
+    if (lines[index].trim() !== '') {
+      return { text: lines[index].trim(), line: index + 1 };
+    }
+  }
+  return undefined;
 }
 
 // UC<f>.<n> or T<s>.<n>: the id, the feature/slice number in the id, and the kind.
@@ -176,10 +189,24 @@ export function ticketProblems(path: string, source: string, expectedId: string,
     } else if (what.length > WHAT_MAX_LINES) {
       report(what[0].line, `"O que entrega" de ${expectedId}: ${what.length} linhas, mais de ${WHAT_MAX_LINES}`);
     }
-    const criteria = sectionItems(source, 'Critérios');
-    if (criteria.length === 0) {
-      report(1, `${expectedId}: "Critérios" sem item`);
+  }
+
+  if (kind === 'uc' && status !== 'done') {
+    const story = storyOf(source);
+    if (!story) {
+      report(1, `${expectedId}: falta a história ("Como <ator>, quero <ação>, para <benefício>.") logo abaixo do título`);
+    } else {
+      const storyMatch = STORY.exec(story.text);
+      if (!storyMatch) {
+        report(story.line, `${expectedId}: história "${story.text}" fora do formato "Como <ator>, quero <ação>, para <benefício>."`);
+      } else if (typeof frontmatter.actor === 'string' && storyMatch[1] !== frontmatter.actor) {
+        report(story.line, `${expectedId}: história com ator "${storyMatch[1]}", diferente da chave actor: ${frontmatter.actor}`);
+      }
     }
+  }
+
+  if (!isDraft && sectionItems(source, 'Critérios').length === 0) {
+    report(1, `${expectedId}: "Critérios" sem item`);
   }
 
   if ('metrics' in frontmatter && !isEmpty(frontmatter.metrics)) {

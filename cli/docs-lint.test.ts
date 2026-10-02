@@ -316,6 +316,31 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     expect(lintChanged(inTicket('T2.1', items, '')).output).toContain('T2.1: "Critérios" sem item');
   });
 
+  it('Tickets: UC fora de draft tem "Critérios" com item', () => {
+    const item = '- [ ] A lista mostra os pedidos mais recentes primeiro.\n';
+    expect(lintChanged(inTicket('UC1.1', item, '')).output).toContain('UC1.1: "Critérios" sem item');
+    expect(lintChanged(inTicket('UC2.1', '- [ ] O operador vê o total de pedidos de cada mês.\n', '')).status).toBe(0);
+  });
+
+  it('Tickets: UC que não está done abre com a história ("Como <ator>, quero <ação>, para <benefício>.")', () => {
+    const story = 'Como operador, quero ver a lista de pedidos da organização, para acompanhar o que está em aberto.';
+    expect(lintChanged(inTicket('UC1.1', `${story}\n\n`, '')).output).toContain(
+      'UC1.1: falta a história ("Como <ator>, quero <ação>, para <benefício>.") logo abaixo do título',
+    );
+    expect(lintChanged(inTicket('UC1.1', story, 'Como operador quer ver os pedidos.')).output).toContain(
+      'UC1.1: história "Como operador quer ver os pedidos." fora do formato "Como <ator>, quero <ação>, para <benefício>."',
+    );
+    expect(lintChanged(inTicket('UC1.1', 'Como operador,', 'Como cliente,')).output).toContain(
+      'UC1.1: história com ator "cliente", diferente da chave actor: operador',
+    );
+    // a done UC is history: the check is skipped even without a story
+    const doneNoStory = lintChanged((dir) => {
+      inTicket('UC1.1', 'status: in_progress', 'status: done')(dir);
+      inTicket('UC1.1', `${story}\n\n`, '')(dir);
+    });
+    expect(doneNoStory.output).not.toContain('falta a história');
+  });
+
   it('Specs: o nome do arquivo é F<n>.md, e o frontmatter id bate com ele', () => {
     const { status, output } = lintChanged((dir) => write(dir, `${SPECS}/notes.md`, '---\nid: notes\n---\n# Notas\n'));
     expect(status).toBe(1);

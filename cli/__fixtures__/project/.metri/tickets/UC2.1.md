@@ -8,6 +8,8 @@ status: draft
 
 # UC2.1 · Ver pedidos por período
 
+Como operador, quero ver o total de pedidos de cada mês, para entender o volume por período.
+
 ## Regras de negócio
 
 ## Critérios

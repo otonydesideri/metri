@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.6.0.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.6.2.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -48,7 +48,7 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.6.0                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.6.2                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
@@ -167,10 +167,10 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 | Linguagem            | `docs/CONTEXT.md`       | Termos do domínio, PT ↔ EN                                       | Moldar, Look across                     | Ao nomear qualquer coisa               |
 | Produto              | `docs/PRODUCT.md`       | Intenção e escopo                                                | Moldar                                  | Ao discutir requisitos                 |
 | Design               | `docs/DESIGN.md`        | Identidade visual, uso de componentes                            | Moldar (triagem de design), Aprender    | Via ponteiro em regras de `frontend/`  |
-| Spec                 | `.metri/specs/<F-id>.md` | Problema, solução, casos de uso e decisões de implementação e de teste da feature | Moldar (draft), Look across (planned)   | Construir, na cadeia de contexto do ticket |
+| Spec                 | `.metri/specs/<F-id>.md` | Problema, solução, casos de uso e decisões de implementação e de teste da feature | Moldar (draft), Look across (planned), Aceitar (done) | Construir, na cadeia de contexto do ticket |
 | Plano                | `.metri/MATRIX.md`   | Slices e contratos, Fog, Gaps, Pattern proposals                  | Look across                             | Ao planejar                            |
 | Ticket                | `.metri/tickets/<id>.md` | Um UC ou um T: frontmatter, BRs ou "O que entrega", critérios e notas | Moldar (draft), Look across, Construir (status) | Só o arquivo do ticket em trabalho |
-| Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | `metri init`, Aprender                  | Sempre (~20 linhas)                    |
+| Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | `metri init`                            | Sempre (~20 linhas)                    |
 | Código               | `apps/`, `packages/`    | Padrões, cabeçalhos `SOURCE OF TRUTH`, tokens, checks            | Construir                               | Grep do `SOURCE OF TRUTH`, caminho linear, exemplo canônico |
 
 ### Architecture Source (global)
@@ -360,7 +360,7 @@ Referências:
 
 | Prática comum                       | Decisão            | Motivo                                                                                                                                                                |
 | ----------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lista longa de user stories         | Fora               | O UC com critérios diz o mesmo de forma verificável, com menos tokens                                                                                                 |
+| Lista longa de user stories         | Fora               | O UC abre com uma história (`Como <ator>, quero <ação>, para <benefício>.`); o resto, BRs e critérios, diz o mesmo de forma verificável, com menos tokens              |
 | Plano por fases                     | Fora               | É planejamento horizontal: gera mini-apps isolados. A matriz substitui                                                                                                |
 | Design técnico por feature, sempre  | Fora na v1         | O agente planeja no próprio contexto; padrão novo vira ticket `pattern`; decisão difícil vira ADR. Technical design para features complexas fica para "Evolução futura" |
 | Etapa própria de UI/UX              | Fora               | A camada de UI/UX atravessa as etapas ("Interface e Design System"): triagem, telas canônicas, `frontend/experience`, evidência por critério e `reviewer-ux` |
