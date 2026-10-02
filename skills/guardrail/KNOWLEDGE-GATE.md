@@ -48,7 +48,7 @@ For a lesson that passed the gate:
 
 ## Promotion to the Source
 
-A lesson becomes global only when all three hold: it depends on no technology or project decision (unless it is a `default`, with a global ADR); it was used unchanged in at least one project; it holds for the next projects. It enters by a PR to the Source repository, with a new version and an entry in its `CHANGELOG.md`.
+A lesson becomes global only when all three hold: it depends on no technology or project decision (unless it is a `default`); it was used unchanged in at least one project; it holds for the next projects. It enters by a PR to the Source repository, with a new version and an entry in its `CHANGELOG.md`.
 
 ## Pruning
 

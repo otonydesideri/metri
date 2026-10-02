@@ -20,7 +20,6 @@ not_covered:
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
 examples: [starter/packages/ui/components.json, starter/packages/ui/src/styles/globals.css, starter/packages/ui/src/lib/utils.ts]
-adr: [metri:ADR-0003]
 enforced_by: [design-tokens, sot, lint]
 status: active
 ---
@@ -28,7 +27,7 @@ status: active
 
 ## Kit
 
-- shadcn/ui, instalado dentro do `@metri/ui` pelo caminho manual da documentação de monorepo (https://ui.shadcn.com/docs/monorepo), no layout de "O pacote" (metri:ADR-0003), também em monorepo novo. O `shadcn init --monorepo` não serve: cria o pacote `@workspace/ui`, grava um estilo de preset no lugar do `new-york` (o estilo não muda depois do init) e põe os arquivos da CLI direto em `src/components/`.
+- shadcn/ui, instalado dentro do `@metri/ui` pelo caminho manual da documentação de monorepo (https://ui.shadcn.com/docs/monorepo), no layout de "O pacote", também em monorepo novo. O `shadcn init --monorepo` não serve: cria o pacote `@workspace/ui`, grava um estilo de preset no lugar do `new-york` (o estilo não muda depois do init) e põe os arquivos da CLI direto em `src/components/`.
   - `packages/ui/components.json` com o `style`, o `baseColor` e os aliases de "O pacote", e `"tailwind": { "config": "", "css": "src/styles/globals.css" }` (Tailwind v4);
   - o `app-web` depende do `@metri/ui` (`workspace:*`) e importa `@metri/ui/styles/globals.css` na entrada.
 - O `globals.css` abre com `@import "tailwindcss"`, `@import "tw-animate-css"` (as animações das classes que os arquivos da CLI usam, dependência do `@metri/ui`) e dois `@source`, relativos a ele: um para os arquivos de `apps/` e outro para os do próprio pacote.

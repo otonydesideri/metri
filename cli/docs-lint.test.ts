@@ -402,18 +402,19 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     ).toContain('ADR: seções Contexto, Decisão, Alternativas consideradas, Consequências, Imposto por, nessa ordem');
   });
 
-  it('adr: metri:ADR-NNNN é global e ADR-NNNN é do projeto, sem cair de um no outro', () => {
-    // The fixture has docs/adr/0001; the package has the global 0001 and 0002.
+  it('adr: só a regra do projeto cita ADR, e o id existe em docs/adr/', () => {
+    // The fixture has docs/adr/0001; the source has no ADR.
     const rule = '.metri/rules/frontend/order-list.md';
     const { output } = lintChanged((dir) =>
-      edit(dir, rule, (source) => source.replace('adr: [ADR-0001]', 'adr: [ADR-0001, metri:ADR-0001, ADR-0002]')),
+      edit(dir, rule, (source) => source.replace('adr: [ADR-0001]', 'adr: [ADR-0001, metri:ADR-0003, ADR-0002]')),
     );
     expect(output.split('\n').filter((line) => line.includes(': adr: '))).toEqual([
+      `${rule}:9: adr: metri:ADR-0003 não existe em docs/adr/; o source não tem ADR, cite o id da regra dona no texto`,
       `${rule}:9: adr: ADR-0002 não existe em docs/adr/`,
     ]);
     const source = copySource();
-    edit(source, 'architecture/defaults/ui.md', (text) => text.replace('adr: [metri:ADR-0003]', 'adr: [ADR-0003]'));
-    expect(lint(source).lines).toContain('architecture/defaults/ui.md:23: adr: ADR-0003 não existe em docs/adr/');
+    edit(source, 'architecture/defaults/ui.md', (text) => text.replace('status: active\n---', 'adr: [ADR-0001]\nstatus: active\n---'));
+    expect(lint(source).lines).toContain('architecture/defaults/ui.md:24: frontmatter: chave adr só em regra do projeto; o source não tem ADR');
   });
 
   it('evidência: critério Tela: de ticket done tem desktop e mobile, até a poda da slice', () => {

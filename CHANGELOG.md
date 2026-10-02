@@ -1,5 +1,35 @@
 # Changelog
 
+## v1.7.0 (2026-10-02)
+
+O source deixa de ter ADR: a decisão mora na regra dona, e o porquê para humano, numa tabela do README.
+
+### O que muda
+
+- **Sem ADR global.** Saem a pasta `adr/` do pacote, o prefixo `metri:ADR-NNNN` (docs-lint, VOCABULARY, formatos e
+  skills) e a chave `adr:` das regras globais. A decisão de cada ADR já estava na regra ou no default dono dela; o
+  porquê para humano e a alternativa descartada vão para "Decisões do método", no README, com a evidência do teste
+  de transações numa linha. A regra mantém só o porquê que muda o comportamento do agente: o gerador do contrato
+  roda do build e não pelo `tsx`, e o client gerado não valida a resposta em runtime.
+- **`adr:` só na regra do projeto.** O projeto continua com `docs/adr/`, o ADR-FORMAT e a chave `adr:` nas regras
+  dele. No docs-lint, `adr:` em regra global é erro, e `adr: [metri:ADR-NNNN]` em regra do projeto também.
+
+### Migrar de v1.6.3
+
+1. `pnpm add -D github:otonydesideri/metri#v1.7.0`.
+2. Troque cada `metri:ADR-NNNN` pelo id da regra dona da decisão (`grep -rn "metri:ADR-" docs .metri AGENTS.md`):
+
+   | Antes | Depois |
+   | --- | --- |
+   | `metri:ADR-0001` (biblioteca de UI padrão, superado pelo 0003) | `defaults/ui` |
+   | `metri:ADR-0002` (o backend é a fonte do contrato de API) | `backend/http-api` |
+   | `metri:ADR-0003` (biblioteca de UI padrão no layout do shadcn) | `defaults/ui` |
+
+   No texto (ADR, regra, `.metri/ARCHITECTURE.md`, `docs/DESIGN.md`), escreva o id da regra no lugar do ADR. Em
+   `adr:` de regra do projeto, tire o item: o campo guarda só ADR do projeto; se a regra precisa que a dona seja
+   lida antes, ponha o id dela em `read_first`.
+3. `pnpm docs-lint` verde.
+
 ## v1.6.3 (2026-10-02)
 
 Validação da árvore de documentos: cada artefato no seu nível, com quem o escreve e quem o lê, citado pelo id e sem

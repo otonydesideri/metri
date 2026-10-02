@@ -8,15 +8,14 @@ import { parse } from 'yaml';
 
 export type Layout = {
   isProject: boolean;
-  // Global rules and ADRs, as a readable path from the root.
+  // Global rules, as a readable path from the root.
   globalDir: string;
-  globalAdrDir: string;
   // Project rules and the file that holds the rules-index marker.
   projectDir?: string;
   rootIndex: string;
 };
 
-// The metri package folder: where the global rules, ADRs, skills and agents come from.
+// The metri package folder: where the global rules, skills and agents come from.
 export const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const PACKAGE_NAME = 'metri';
 // The package bin: commands that call other commands run through it.
@@ -58,12 +57,11 @@ export function packagePath(root: string, path: string): string {
 
 export function layoutOf(root = '.'): Layout {
   if (isSource(root)) {
-    return { isProject: false, globalDir: 'architecture', globalAdrDir: 'adr', rootIndex: 'architecture/INDEX.md' };
+    return { isProject: false, globalDir: 'architecture', rootIndex: 'architecture/INDEX.md' };
   }
   return {
     isProject: true,
     globalDir: packagePath(root, 'architecture'),
-    globalAdrDir: packagePath(root, 'adr'),
     projectDir: PROJECT_RULES,
     rootIndex: PROJECT_INDEX,
   };

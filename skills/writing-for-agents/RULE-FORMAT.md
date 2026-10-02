@@ -19,7 +19,7 @@ read_first: [<ids>]                    # opcional
 not_covered: ["<tema> → <id>"]         # opcional
 enforced_by: [<ids dos checks>]        # opcional
 examples: [<arquivos>]                 # opcional
-adr: [<ids>]                           # opcional
+adr: [<ids>]                           # opcional, só na regra do projeto
 status: active
 ---
 # <Tema>

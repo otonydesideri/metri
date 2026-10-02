@@ -40,8 +40,8 @@ Nos dois modos:
     - id igual ao caminho <área>/<tema>;
     - os ids de read_first e not_covered existem ou são destinos project: da lista fechada de
       VOCABULARY.md, e a seção que not_covered cita existe na regra;
-    - os arquivos citados em examples existem, e os ids de adr existem: metri:ADR-NNNN nos ADRs globais do pacote,
-      ADR-NNNN em docs/adr/ do projeto.
+    - os arquivos citados em examples existem; no projeto, os ids de adr existem em docs/adr/ (ADR-NNNN), e a
+      regra global não tem a chave adr (o source não tem ADR).
     Arquivos *.examples.md não têm frontmatter e ficam fora dessa checagem. O lint não confere seções do corpo
     nem número de linhas.
   - Gerados: INDEX.md atualizados; o rules-index --check sai com código 1 se algum estiver desatualizado.
@@ -50,7 +50,7 @@ Só no source:
   - README: regra (architecture/), skill (skills/, com os formatos de cada uma), agent (agents/) e template
     (cli/templates/) não citam o README.md, que é para humano, nem em frontmatter nem em bloco de código; citação a ele é erro, e o
     texto cita o dono.
-  - Citações (em architecture/, adr/, skills/, agents/, cli/templates/, VOCABULARY.md e README.md, fora de
+  - Citações (em architecture/, skills/, agents/, cli/templates/, VOCABULARY.md e README.md, fora de
     bloco de código): todo caminho .md citado existe;
     quando o caminho entre crases vem seguido de uma seção entre aspas (\`<arquivo>.md\`, "Seção" ou
     \`<arquivo>.md\` ("Seção")), o arquivo tem esse título, inteiro, até os dois-pontos ou sem o parêntese final;
@@ -137,7 +137,7 @@ const layout = layoutOf();
 // Rule folders where an id is looked up: the project first, then the package's global one.
 const RULE_DIRS = layout.isProject ? [PROJECT_RULES, layout.globalDir] : ['architecture'];
 const ARCHITECTURE = 'architecture';
-const CITATION_ROOTS = ['architecture', 'adr', 'skills', 'agents', 'cli/templates', 'VOCABULARY.md', 'README.md'];
+const CITATION_ROOTS = ['architecture', 'skills', 'agents', 'cli/templates', 'VOCABULARY.md', 'README.md'];
 // Where the README is not cited: the rules, the skills (with each one's formats), the agents and the templates.
 const NO_README_ROOTS = ['architecture', 'skills', 'agents', 'cli/templates'];
 // Prefix of a package file cited from the project; in the source, the path goes without it.
@@ -157,9 +157,10 @@ const KNOWN_KEYS = [
   'enforced_by',
   'keywords',
   'examples',
-  'adr',
   'activation',
 ];
+// Keys only the project's rules carry: the source has no ADR to cite.
+const PROJECT_ONLY_KEYS = ['adr'];
 const STATUSES = ['active', 'draft', 'deprecated'];
 const PROJECT_TARGETS = [
   'project:AGENTS',
@@ -180,6 +181,7 @@ const CODE_DIRS = ['apps', 'packages'];
 const CODE_FILE = /\.[cm]?[jt]sx?$/;
 const CODE_SKIPPED = ['node_modules', 'dist', 'build', 'coverage', '.turbo', 'generated'];
 const SOT_HEADER = /\/\*\*\s*(?:\*\s*)?SOURCE OF TRUTH:[\s\S]*?\*\//g;
+const ADR_DIR = 'docs/adr';
 const ADR_STATUS = /^(accepted|superseded by (ADR-\d{4}))$/;
 const ADR_KINDS = ['decision', 'exception', 'default-change'];
 const ADR_SECTIONS = ['Contexto', 'Decisão', 'Alternativas consideradas', 'Consequências', 'Imposto por'];
@@ -360,19 +362,14 @@ function rulePath(id: string): string | undefined {
   return RULE_DIRS.map((dir) => join(dir, `${id}.md`)).find((path) => existsSync(path) && isRuleFile(path));
 }
 
-// Folder of an ADR id, with no fallback between them: metri:ADR-NNNN is global (the package's adr/), ADR-NNNN is the project's.
-function adrDir(id: string): string {
-  return id.startsWith('metri:') ? layout.globalAdrDir : 'docs/adr';
-}
-
+// Path of the project's ADR with this id (ADR-NNNN), in docs/adr/.
 function adrPath(id: string): string | undefined {
-  const number = /^(?:metri:)?ADR-(\d{4})$/.exec(id)?.[1];
-  const dir = adrDir(id);
-  if (number === undefined || !existsSync(dir)) {
+  const number = /^ADR-(\d{4})$/.exec(id)?.[1];
+  if (number === undefined || !existsSync(ADR_DIR)) {
     return undefined;
   }
-  const name = readdirSync(dir).find((candidate) => candidate.startsWith(`${number}-`));
-  return name ? join(dir, name) : undefined;
+  const name = readdirSync(ADR_DIR).find((candidate) => candidate.startsWith(`${number}-`));
+  return name ? join(ADR_DIR, name) : undefined;
 }
 
 // Target of read_first and not_covered: a rule id or a project: target from the closed list.
@@ -416,7 +413,9 @@ function lintFrontmatter(path: string, dir: string): void {
   }
   for (const [key, value] of Object.entries(frontmatter)) {
     const line = keyLine(lines, key);
-    if (!KNOWN_KEYS.includes(key)) {
+    if (PROJECT_ONLY_KEYS.includes(key) && !layout.isProject) {
+      report(path, line, `frontmatter: chave ${key} só em regra do projeto; o source não tem ADR`);
+    } else if (!KNOWN_KEYS.includes(key) && !PROJECT_ONLY_KEYS.includes(key)) {
       report(path, line, `frontmatter: chave ${key} fora de VOCABULARY.md`);
     }
     if (isEmpty(value)) {
@@ -452,9 +451,10 @@ function lintFrontmatter(path: string, dir: string): void {
       report(path, keyLine(lines, 'examples'), `examples: ${example} não existe`);
     }
   }
-  for (const id of asList(frontmatter.adr)) {
+  for (const id of layout.isProject ? asList(frontmatter.adr) : []) {
     if (!adrPath(id)) {
-      report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em ${adrDir(id)}/`);
+      const hint = id.startsWith('metri:') ? '; o source não tem ADR, cite o id da regra dona no texto' : '';
+      report(path, keyLine(lines, 'adr'), `adr: ${id} não existe em ${ADR_DIR}/${hint}`);
     }
   }
   if ('activation' in frontmatter && typeof frontmatter.activation !== 'string') {
@@ -818,7 +818,7 @@ function lintAdr(path: string): void {
   if (!status || !statusMatch) {
     report(path, status?.line ?? 1, 'ADR: status accepted ou superseded by ADR-NNNN');
   } else if (statusMatch[2] && !adrPath(statusMatch[2])) {
-    report(path, status.line, `ADR: ${statusMatch[2]} não existe em ${adrDir(statusMatch[2])}/`);
+    report(path, status.line, `ADR: ${statusMatch[2]} não existe em ${ADR_DIR}/`);
   }
   if (!field('area')) {
     report(path, 1, 'ADR: falta area');

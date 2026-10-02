@@ -9,7 +9,6 @@
   },
   "files": [
     "architecture/",
-    "adr/",
     "skills/",
     "agents/",
     "cli/",

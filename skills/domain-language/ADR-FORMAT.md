@@ -1,6 +1,6 @@
 # ADR Format
 
-ADRs live in `docs/adr/` (the project's decisions, cited `ADR-NNNN`) and in `node_modules/metri/adr/` (the Source's global decisions, cited `metri:ADR-NNNN`), each with its own sequential numbering: `0001-<slug>.md`, `0002-<slug>.md`, etc.
+ADRs live in `docs/adr/`, the project's decisions, cited `ADR-NNNN` and numbered sequentially: `0001-<slug>.md`, `0002-<slug>.md`, etc. The Source has no ADR: a global decision lives in its owner rule.
 
 Create the `docs/adr/` directory lazily: only when the first ADR is needed.
 

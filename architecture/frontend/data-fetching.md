@@ -101,7 +101,7 @@ Só a mensagem sai daqui. O título da notificação é a ação que falhou, e q
 
 ## Funções de API
 
-As funções de `api/` são geradas pelo Orval a partir do `openapi.json` do app-api (`backend/http-api.md`, "Contrato de API: o backend é a fonte"): uma função por endpoint em `api/<módulo>.ts`, e os schemas Zod, os tipos e as constantes de limite em `api/model.zod.ts`. Elas chamam o `httpClient`, não têm lógica de UI e não conhecem React Query. A pasta inteira é do gerador: muda por `pnpm api:generate`.
+As funções de `api/` são geradas pelo Orval a partir do `openapi.json` do app-api (`backend/http-api.md`, "Contrato de API: o backend é a fonte"): uma função por endpoint em `api/<módulo>.ts`, e os schemas Zod, os tipos e as constantes de limite em `api/model.zod.ts`. Elas chamam o `httpClient`, não têm lógica de UI e não conhecem React Query, e não validam a resposta em runtime: quem garante a forma é o `@ZodResponse` do servidor. A pasta inteira é do gerador: muda por `pnpm api:generate`.
 
 Exemplo completo: `starter/apps/app-web/orval.config.ts`.
 

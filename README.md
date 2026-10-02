@@ -143,7 +143,6 @@ architecture/
   INDEX.md                      parte escrita à mão + gerado abaixo de <!-- rules-index -->: área → INDEX.md da área e a tabela "Capacidades condicionais"
   general/  backend/  domain/  frontend/  infrastructure/  ...   regras de padronização por área (+ <tema>.examples.md, INDEX.md gerado)
   defaults/                     escolhas padrão quando o projeto não decide (ex.: stack.md, ui.md → shadcn/ui) (+ INDEX.md gerado)
-adr/                            decisões globais (inclusive as que sustentam os defaults)
 agents/                         os subagentes por função, no formato do Claude Code ("Agentes")
 skills/                         as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e a base que a skill adapta no projeto (<ARQUIVO>-TEMPLATE.md)
 cli/                            a CLI metri (TypeScript com tsx, sem build) e, em cli/templates/, o que o metri init copia
@@ -175,7 +174,7 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 
 ### Architecture Source (global)
 
-**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é sustentada por ADR global (metri:ADR-0003), e a stack tem o `architecture/defaults/stack.md` como registro.
+**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é `architecture/defaults/ui.md`, e a stack tem o `architecture/defaults/stack.md` como registro. O porquê de cada decisão global está em "Decisões do método", e a regra dona guarda só o que muda o comportamento do agente.
 
 **Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (`architecture/defaults/ui.md`): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
 
@@ -223,7 +222,7 @@ A área `domain/` (global e do projeto) define como modelamos domínio no códig
 | Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | `DESIGN.md`; o tema segue ele (`metri design-tokens`) | valor solto no código |
-| Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend (metri:ADR-0002) |
+| Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend |
 | Evidência de um critério `Tela:`               | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, gravados com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`); depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
 | Problema, solução, casos de uso e decisões de implementação e de teste de uma feature | `.metri/specs/<F-id>.md` | chat, `PRODUCT.md`, `MATRIX.md`                |
@@ -242,7 +241,7 @@ Não é uma etapa própria do fluxo; é uma camada que atravessa as etapas:
 - **Moldar:** a triagem de design procura o DS já dado, pergunta só o que falta e propõe os princípios de experiência (`skills/shape/DESIGN-TRIAGE.md`); os tokens do `DESIGN.md` são a fonte do tema.
 - **Look across:** critérios de UI por UC, e o que se julga na tela começa com `Tela:`; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 leva os tokens do `DESIGN.md` ao tema e ao shell do starter, com aprovação visual.
 - **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério `Tela:`, com autocrítica de até 2 rodadas; os textos da interface passam pela skill `humanizer`.
-- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md`, o shadcn/ui dentro do `@metri/ui`, com os arquivos da CLI em `components/ui/` e o primitivo importado pelo nome (metri:ADR-0003).
+- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md`, o shadcn/ui dentro do `@metri/ui`, com os arquivos da CLI em `components/ui/` e o primitivo importado pelo nome.
 
 ### O fluxo
 
@@ -320,6 +319,17 @@ Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o mot
 Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents` e `humanizer`, que tira do texto lido por humano (a prosa de `docs/` e dos ADRs, a interface, os portões e os relatórios) os sinais de texto gerado. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
 **A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init` (com o starter num projeto novo), `verify`, `check` (fronteiras, acesso e datas, no `lint` do projeto), `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas) e `prune` (tira a evidência da slice na poda do `/accept`). Cada comando explica o que faz em `--help`.
+
+## Decisões do método
+
+O porquê das decisões globais, para humano. A regra dona, entre parênteses, guarda só o que muda o comportamento do agente.
+
+| Decisão (regra dona) | Por quê | Alternativa descartada |
+| --- | --- | --- |
+| shadcn/ui como kit de UI padrão, dentro do `@metri/ui`, estilizado pelos tokens do `DESIGN.md` (`defaults/ui`) | A CLI do shadcn atualiza o arquivo que gerou, e o visual vem de tokens, não de componente recriado | AlignUI como base (o kit global divergiria do default); os dois kits juntos (dois vocabulários de componente e de token na mesma tela) |
+| Layout de monorepo do shadcn, com os arquivos da CLI em `components/ui/`, aliases pelo nome do pacote e primitivo importado pelo nome (`defaults/ui`, `frontend/components`) | Um arquivo por componente, o que a documentação do shadcn mostra, e o `cn` do kit, que conhece os níveis de texto do tema, no lugar do `cn` do npm que a CLI grava | Re-export em compound por primitivo (um arquivo a mais por componente e alias `#` que a CLI resolve mal); `#` no `imports` do pacote (a documentação do shadcn recomenda o nome do pacote para o que outro workspace importa) |
+| O backend é a fonte do contrato de API: os DTOs Zod geram o OpenAPI, e o app-web gera o client dele (`backend/http-api`) | O contrato é o que o servidor valida e serializa de fato; o client desatualizado quebra o `verify`, não a produção, e o OpenAPI serve também a documentação | Pacote de contrato compartilhado (URL, método e resposta à mão, sem tipo que acuse a deriva); tRPC (sem adaptador oficial para o NestJS, chamada RPC e OpenAPI ainda alfa); ts-rest (contrato próprio no lugar dos DTOs do `nestjs-zod`, ignora o prefixo global do Nest e o estável pede Zod 3) |
+| Transação no escopo do caso de uso: `UnitOfWork` genérico e `version` (lock otimista) como padrão (`backend/transactions`) | Decidir sobre o estado lido sob trava exige ler, decidir e gravar no mesmo escopo, e o contrato de transação por fluxo, invisível ao caso de uso, empurra a decisão para o SQL da infra. Teste às cegas, cinco cenários de concorrência, nota de 27: contrato por fluxo 18,2; o mesmo com correções pontuais 22,7; `UnitOfWork` com regras enxutas 22,4, adotado por empatar com 8% menos texto | Contrato de transação por fluxo (a regra de negócio vazou para a infra); o mesmo contrato com correções pontuais (cresce em texto e ainda deixou regra vazar para o caso de uso) |
 
 ## Referências e origem de cada peça
 

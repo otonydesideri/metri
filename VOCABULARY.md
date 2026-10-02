@@ -44,7 +44,7 @@ Estes termos são usados literalmente nas skills, na matriz e nos frontmatters. 
 | não cobre                                 | `not_covered`                                    | Tema vizinho e o id da regra dona dele (`<tema> → <id>`; com seção, `<tema> ("<Seção>") → <id>`) |
 | donos da slice                            | `sot`                                            | Os símbolos que possuem uma slice construída, na linha dela na matriz (`status: done · sot: [..]`); cada um tem o cabeçalho `SOURCE OF TRUTH` |
 | id da regra                               | `id`                                             | Caminho da regra sem extensão (`<área>/<tema>`)                                               |
-| ADRs citados                              | `adr`                                            | Ids dos ADRs que a regra cita: `ADR-NNNN` do projeto, `metri:ADR-NNNN` global                 |
+| ADRs citados                              | `adr`                                            | Só na regra do projeto: os ids dos ADRs do projeto que ela cita (`ADR-NNNN`); a regra global não tem ADR |
 | status da regra                           | `status: active \| draft \| deprecated`          | Estado de uma regra                                                                           |
 | marca de check                            | `(check: <id>)`                                  | Opcional, no item de verificação automatizado por um check; o id vai em `enforced_by`         |
 | tracer                                    | `tracer`                                         | O UC: o ticket que corta um caminho fino e completo, demonstrável                             |
