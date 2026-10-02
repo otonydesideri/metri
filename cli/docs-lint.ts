@@ -94,8 +94,8 @@ Só no projeto:
     - Gaps: "- GAP-<n> · <texto> → <UC ou T>"; Pattern proposals: "- PP-<n> · de <UC ou T> · <texto> → <destino>".
   - Specs (.metri/specs/F<n>.md, uma por feature; formato: skills/shape/SPEC-FORMAT.md):
     - o nome do arquivo é F<n>.md, e o frontmatter id é igual a ele;
-    - frontmatter válido: id, title, status (draft, planned ou done) e horizon sempre, milestone opcional, sem
-      chave fora delas nem vazia;
+    - frontmatter válido: id, title e horizon (now, planned ou fog) sempre, milestone opcional, sem chave fora
+      delas nem vazia; a spec não guarda estado (draft, planned, done), que se deduz do status dos UCs;
     - seções, nessa ordem: Problema, Solução, Casos de uso, Decisões de implementação, Decisões de teste, Fora
       de escopo, Notas;
     - Casos de uso: cada item "- UC<f>.<n> · <título>", com o número depois da letra batendo com o da feature,

@@ -310,7 +310,7 @@ A regra de montagem pelo registry, com o exemplo canônico e o check que barra c
 | `now` | Will be built |
 | `planned` | The architecture accommodates it (it is in a contract), but it isn't built |
 | `fog` | Sensed, not yet specifiable |
-| `out` | Out of scope; doesn't come back without a new decision |
+| `out` | Slice only: out of scope; doesn't come back without a new decision. A feature has no `out`: a discarded feature is a line in "Fora de escopo" of `docs/PRODUCT.md`, with no spec |
 
 ## Ticket types
 

@@ -94,12 +94,12 @@ Iterate until the user approves the plan.
 
 ### 10. Write the matrix
 
-Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste, `status: planned`) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md`, hard decisions to ADRs (domain-language), and the activated capabilities and resolved delegations to `.metri/ARCHITECTURE.md` ([ACTIVATION.md](ACTIVATION.md), "Record"). The human commits the result: the agent never commits on main.
+Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md`, hard decisions to ADRs (domain-language), and the activated capabilities and resolved delegations to `.metri/ARCHITECTURE.md` ([ACTIVATION.md](ACTIVATION.md), "Record"). The human commits the result: the agent never commits on main.
 
 Done when:
 
 - every `now` UC is `open`, with `slice`, `mode` and `checks`, and its id listed in its feature's spec, Casos de uso;
-- every `now` feature's spec is `planned`, with Decisões de implementação and Decisões de teste;
+- every `now` feature's spec has its Decisões de implementação and Decisões de teste;
 - every T has `type`, "O que entrega" and "Critérios";
 - every `now` slice has the rules it needs, or a `pattern` T that writes them;
 - nothing is orphan;

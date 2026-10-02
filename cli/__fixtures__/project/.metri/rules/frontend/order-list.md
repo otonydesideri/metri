@@ -1,6 +1,6 @@
 ---
 id: frontend/order-list
-description: "a lista de pedidos do painel — paginação no servidor e filtros na URL."
+description: "a lista de pedidos do painel — o estado vazio sem a ação de criar pedido."
 use_when:
   - "mexer na lista de pedidos do painel"
 applies_to:
@@ -11,4 +11,4 @@ status: active
 ---
 # Lista de pedidos
 
-**Obrigatório.** A página pedida e os filtros ficam na URL, e a query da lista leva os dois ao servidor.
+**Obrigatório.** Sem filtro ativo na URL, o estado vazio da lista oferece atualizar a lista e não oferece criar pedido (ADR-0001).

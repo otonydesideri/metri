@@ -136,7 +136,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   it('gerados: INDEX do projeto desatualizado é erro', () => {
     const { status, output } = lintChanged((dir) =>
       edit(dir, '.metri/rules/frontend/order-list.md', (source) =>
-        source.replace('paginação no servidor e filtros na URL.', 'paginação no servidor.'),
+        source.replace('o estado vazio sem a ação de criar pedido.', 'o estado vazio.'),
       ),
     );
     expect(status).toBe(1);
@@ -355,14 +355,17 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     expect(idMismatch.output).toContain('frontmatter: id F2 diferente do nome do arquivo F1.md');
   });
 
-  it('Specs: frontmatter válido (chave obrigatória, chave fora de VOCABULARY, chave vazia, status e horizon)', () => {
-    expect(lintChanged(inSpec('F1', 'status: planned\n', '')).output).toContain('frontmatter: falta a chave obrigatória status');
+  it('Specs: frontmatter válido (chave obrigatória, chave fora de VOCABULARY, chave vazia e horizon); a spec não guarda status', () => {
+    expect(lintChanged(inSpec('F1', 'horizon: now\n', '')).output).toContain('frontmatter: falta a chave obrigatória horizon');
     expect(lintChanged(inSpec('F1', 'title: Pedidos no painel', 'nome: Pedidos no painel\ntitle: Pedidos no painel')).output).toContain(
       'frontmatter: chave nome fora de VOCABULARY.md para spec',
     );
     expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon:')).output).toContain('frontmatter: chave horizon vazia');
-    expect(lintChanged(inSpec('F1', 'status: planned', 'status: open')).output).toContain('status: open fora de draft | planned | done');
-    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: later')).output).toContain('horizon: later fora de now | planned | fog | out');
+    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: now\nstatus: planned')).output).toContain(
+      'frontmatter: chave status fora de VOCABULARY.md para spec; o estado da feature se deduz do status dos UCs',
+    );
+    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: later')).output).toContain('horizon: later fora de now | planned | fog');
+    expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: out')).output).toContain('horizon: out fora de now | planned | fog');
     expect(lintChanged(inSpec('F1', 'horizon: now', 'horizon: now\nmilestone: v1')).status).toBe(0); // milestone is a known, optional key
   });
 
@@ -393,7 +396,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   });
 
   it('ADR: status permitido e as seções do formato', () => {
-    const adr = 'docs/adr/0001-orders-server-pagination.md';
+    const adr = 'docs/adr/0001-orders-empty-state.md';
     expect(lintChanged((dir) => edit(dir, adr, (source) => source.replace('accepted', 'proposed'))).output).toContain(
       'ADR: status accepted ou superseded by ADR-NNNN',
     );

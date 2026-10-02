@@ -17,10 +17,10 @@ describe('rules-for', { timeout: 30_000 }, () => {
     expect(status).toBe(0);
     expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/experience', 'frontend/state']);
     expect(lines[0]).toBe(
-      'frontend/order-list — a lista de pedidos do painel — paginação no servidor e filtros na URL. (.metri/rules/frontend/order-list.md)',
+      'frontend/order-list — a lista de pedidos do painel — o estado vazio sem a ação de criar pedido. (.metri/rules/frontend/order-list.md)',
     );
     expect(lines).toContain(
-      'exceção: `frontend/components`, "Estados de leitura": a lista de pedidos pagina no servidor → ADR-0001',
+      'exceção: `frontend/components`, "Estados de leitura": o vazio da lista de pedidos não convida a criar → ADR-0001',
     );
     expect(lines.join('\n')).not.toContain('Obrigatório');
   });

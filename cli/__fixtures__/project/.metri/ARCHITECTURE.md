@@ -25,7 +25,7 @@
 
 ## Exceções e defaults trocados
 
-- `frontend/components`, "Estados de leitura": a lista de pedidos pagina no servidor → ADR-0001
+- `frontend/components`, "Estados de leitura": o vazio da lista de pedidos não convida a criar → ADR-0001
 
 ## Áreas ativas
 

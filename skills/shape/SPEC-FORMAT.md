@@ -11,8 +11,7 @@ section titles are fixed, in Portuguese, as in the Skeleton; the prose is in Por
 ---
 id: F<n>
 title: <feature>
-status: draft | planned | done
-horizon: now | planned | fog | out
+horizon: now | planned | fog
 milestone: <marco>
 ---
 
@@ -51,15 +50,17 @@ torna um bom teste aqui; os testes que já servem de modelo>
 
 `milestone` is a reserved field: optional, and written only with a value.
 
-## Status
+## State
 
-- `draft`: written by /shape, with Problema, Solução, Casos de uso (its UCs in `draft`) and Fora de escopo. Every
-  candidate feature of the direction gate gets one, whatever its `horizon`.
-- `planned`: /look-across fills Decisões de implementação and Decisões de teste, only for a `now` feature (a
-  `planned`, `fog` or `out` feature's UCs stay `draft`, so its spec stays `draft` too, by "Matrix rules" in
+The spec holds no state: the feature's state is the `status` of its UCs, in `.metri/tickets/`.
+
+- Every UC `draft`: the feature is only shaped, with Problema, Solução, Casos de uso and Fora de escopo, written by
+  /shape. Every candidate feature of the direction gate has its spec, whatever its `horizon`.
+- A UC outside `draft`: /look-across planned it and filled Decisões de implementação and Decisões de teste, only
+  for a `now` feature (the UCs of a `planned` or `fog` feature stay `draft`, by "Matrix rules" in
   `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`).
-- `done`: /accept sets it when the feature's last slice is accepted (every UC in "Casos de uso" is `done`). A
-  `done` spec is history: /build's context chain doesn't read it, and nothing writes it again.
+- Every UC `done`: the feature is done, and its spec is history that /build's context chain doesn't read.
+- A feature the user discards has no spec: it is a line in "Fora de escopo" of `docs/PRODUCT.md`.
 
 ## Seções
 
@@ -94,7 +95,6 @@ A spec aponta para os outros arquivos, sem repeti-los:
 ---
 id: F1
 title: Pedidos no painel
-status: planned
 horizon: now
 ---
 

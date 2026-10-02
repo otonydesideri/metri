@@ -28,6 +28,11 @@ tabela do README, e todo texto diz a regra no presente.
   `GAP-<n>` com número e id de ticket (`UC<f>.<n>`, `T<s>.<n>` com número). Só roda no source, nunca no projeto; os
   exemplos de projeto de amostra de `MATRIX-FORMAT.md` e `SPEC-FORMAT.md` ficam fora dos ids.
 - **Humanizer.** A atribuição fica com autor, URL e licença, sem a tag da versão adaptada.
+- **Feature descartada não ganha spec.** Ela vira uma linha em "Fora de escopo" do `docs/PRODUCT.md`, e `horizon:
+  out` sai da spec (docs-lint: erro). A slice continua com `out`.
+- **A spec não guarda estado.** `status` (draft, planned, done) sai do frontmatter da spec (docs-lint: erro): o
+  estado da feature se deduz do `status` dos UCs. O /shape, o /look-across e a SPEC-FORMAT deixam de marcá-lo; o
+  `horizon` fica, porque é a decisão do portão de direção, e não se deduz dos UCs.
 
 ### Migrar de v1.6.3
 
@@ -45,7 +50,10 @@ tabela do README, e todo texto diz a regra no presente.
    lida antes, ponha o id dela em `read_first`.
 3. Regra do projeto com seção "Em aberto": o ponto que muda o que o agente faz vira uma linha em "Delegado ao
    projeto"; o que é trabalho futuro sai.
-4. `pnpm docs-lint` verde.
+4. Em cada `.metri/specs/F<n>.md`, apague a linha `status:`. Spec com `horizon: out`: apague a spec e os arquivos
+   dos UCs `draft` dela em `.metri/tickets/`, e registre a feature numa linha de "Fora de escopo" do
+   `docs/PRODUCT.md`.
+5. `pnpm docs-lint` verde.
 
 ## v1.6.3 (2026-10-02)
 

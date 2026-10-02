@@ -7,10 +7,10 @@ import { MD_PATH, proseLines, sectionItems } from './layout.ts';
 export type SpecProblem = { line: number; message: string; isWarning?: boolean };
 export type SpecContext = { ticketIds: Set<string> };
 
-const KNOWN_KEYS = ['id', 'title', 'status', 'horizon', 'milestone'];
-const REQUIRED_KEYS = ['id', 'title', 'status', 'horizon'];
-const STATUSES = ['draft', 'planned', 'done'];
-const HORIZONS = ['now', 'planned', 'fog', 'out'];
+// The spec holds no state of its own (draft, planned, done): that is read from the status of its UCs.
+const KNOWN_KEYS = ['id', 'title', 'horizon', 'milestone'];
+const REQUIRED_KEYS = ['id', 'title', 'horizon'];
+const HORIZONS = ['now', 'planned', 'fog'];
 const SECTIONS = ['Problema', 'Solução', 'Casos de uso', 'Decisões de implementação', 'Decisões de teste', 'Fora de escopo', 'Notas'];
 const UC_ITEM = /^(UC(\d+)\.\d+) · \S/;
 
@@ -61,7 +61,8 @@ export function specProblems(source: string, expectedId: string, ctx: SpecContex
   for (const [key, value] of Object.entries(frontmatter)) {
     const line = keyLine(lines, key);
     if (!KNOWN_KEYS.includes(key)) {
-      report(line, `frontmatter: chave ${key} fora de VOCABULARY.md para spec`);
+      const hint = key === 'status' ? '; o estado da feature se deduz do status dos UCs' : '';
+      report(line, `frontmatter: chave ${key} fora de VOCABULARY.md para spec${hint}`);
       continue;
     }
     if (isEmpty(value)) {
@@ -70,9 +71,6 @@ export function specProblems(source: string, expectedId: string, ctx: SpecContex
   }
   if (frontmatter.id !== expectedId) {
     report(keyLine(lines, 'id'), `frontmatter: id ${String(frontmatter.id)} diferente do nome do arquivo ${expectedId}.md`);
-  }
-  if (typeof frontmatter.status === 'string' && !STATUSES.includes(frontmatter.status)) {
-    report(keyLine(lines, 'status'), `status: ${frontmatter.status} fora de ${STATUSES.join(' | ')}`);
   }
   if (typeof frontmatter.horizon === 'string' && !HORIZONS.includes(frontmatter.horizon)) {
     report(keyLine(lines, 'horizon'), `horizon: ${frontmatter.horizon} fora de ${HORIZONS.join(' | ')}`);
