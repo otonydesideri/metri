@@ -30,7 +30,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 
 ### 2. Gather the inputs
 
-- **Contract**: the slice's `contract` block in `.metri/MATRIX.md`, which /accept prunes only in step 7 (`S0` has none); in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its Critérios and the text of its BRs (UC) or its O que entrega (T).
+- **Contract**: the slice's `contract` block in `.metri/MATRIX.md`, which /accept prunes only in step 7 (`S0` has none); in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its story, Critérios and the text of its BRs (UC) or its O que entrega (T); and the Fora de escopo of each UC's feature spec.
 - **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, leaving out the `citada:` lines and `frontend/experience` (whose items go to the Experience reviewer), the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns reviewer and say so.
 - **Experience**, when a ticket of the slice has a `Tela:` criterion: the evidence paths of each `Tela:` criterion, `docs/DESIGN.md`, the UCs, and the verification items of `frontend/experience` without a `(check: <id>)` mark.
 
@@ -41,11 +41,11 @@ Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what 
 - `reviewer-contract`: the diff command, the commit list, the check results, and the Contract inputs, pasted in full.
 - `reviewer-patterns`: the diff command, the commit list, the check results, and the Patterns items, pasted with their rule id.
 - `reviewer-ux`, when the slice has a `Tela:` criterion: the Experience inputs.
-- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only its story and the URL of the app this session serves once for it, with the development seed, on its own port (`frontend/testing`, "E2e de critério de UI"), stopped when the tester reports.
+- `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only its story (its title, for a done UC without one) and the URL of the app this session serves once for it, with the development seed, on its own port (`frontend/testing`, "E2e de critério de UI"), stopped when the tester reports.
 
 ### 4. Aggregate
 
-Present the reports in the chat under `## Contract` and `## Patterns` (and `## Experience`, `## Consumer`), verbatim or lightly cleaned, each axis with its findings in the reviewer's three groups. Keep the axes apart (see _Why separate axes_).
+Present the reports in the chat under `## Contract` and `## Patterns` (and `## Experience`, `## Consumer`), findings unchanged, their prose through the humanizer, each axis with its findings in the reviewer's three groups. Keep the axes apart (see _Why separate axes_).
 
 ### 5. Human gate
 
@@ -68,9 +68,9 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n`, repeated fixes and the 
 
 ### 7. Prune and merge
 
-On `slice/<id>`, prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Set `status: done` on the spec of each feature whose last slice this was (step 5); a `done` spec is history, unread by /build's context chain and never written again. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, once each owner's `SOURCE OF TRUTH` header carries the slice's `contract` (`node_modules/metri/skills/guardrail/SKILL.md`, "While writing code", step 5), prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Set `status: done` on the spec of each feature whose last slice this was (step 5). Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
-Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; its slice is collapsed in the MATRIX; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
+Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; once merged, its slice is collapsed in the MATRIX; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 
 ## Why separate axes
 

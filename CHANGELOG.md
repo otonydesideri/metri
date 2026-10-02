@@ -1,20 +1,49 @@
 # Changelog
 
-## Unreleased
+## v1.6.3 (2026-10-02)
+
+Validação da árvore de documentos: cada artefato no seu nível, com quem o escreve e quem o lê, citado pelo id e sem
+repetir o vizinho.
 
 ### O que muda
 
-- **Domain service pode ser classe.** Quando a regra tem mais de uma operação que só faz sentido junta (duas faces
-  da mesma decisão, como calcular e reverter), é permitida uma classe sem estado com um método por operação, no
-  lugar da função única; `abstract class`, token de injeção e registro no container continuam proibidos
-  (`domain/domain-services.md`).
-- **`Either` na regra que recusa.** Domain service que pode recusar devolve `Either` com a classe de erro do
-  módulo, como entidade e value object (`domain/domain-services.md`, `backend/errors.md`).
+- **AGENTS.md aponta para a spec.** O template ganha a linha de `.metri/specs/<F-id>.md`, e a linha da MATRIX
+  deixa de citar features. A rota direta diz quem escreve o ticket: o formato de "Ticket files", e o UC entra nos
+  Casos de uso da spec.
+- **História em todo UC que nasce ou reabre.** O /look-across escreve a história de todo UC que cria, pela
+  humanizer; quem reabre um UC sem história (/diagnose, /accept, /build) a escreve. `actor` passa a ser
+  obrigatório fora de `done`, com o nome em português de um termo do CONTEXT, em minúscula. O /build e o revisor
+  de contrato leem a história, e o revisor recebe também o Fora de escopo da spec.
+- **Contrato migra para o cabeçalho.** O dono de uma slice leva o contrato no cabeçalho `SOURCE OF TRUTH`
+  (`interface` na primeira linha, `responsibility` em WHAT, quem chama em WHERE, uma linha por invariante), e o
+  /accept só poda a slice quando os cabeçalhos o carregam. Na última slice de uma feature, as Decisões de
+  implementação da spec passam pelo portão de conhecimento.
+- **Exceção nomeia a regra.** A linha de "Exceções e defaults trocados" nomeia o id da regra e termina no ADR (só
+  assim o `rules-for` a entrega como `exceção:`); o ADR de `exception` ou `default-change` abre a Decisão com a
+  regra ou o default que troca. A capacidade e a delegação entram no ARCHITECTURE.md quando o plano as ativa, e o
+  /look-across escreve essa linha. Capacidade sem valor do projeto: `- <id>: —`.
+- **Sem repetição entre níveis.** A spec cita o contrato pelo id, sem listar as slices; o critério de ADR mora só
+  no ADR-FORMAT, e as outras skills apontam para ele; o template do DESIGN deixa de repetir valores do
+  frontmatter; o DESIGN-FORMAT diz o que o `design-tokens` confere; o protótipo do /shape vai para as Notas da
+  spec, e o /look-across o transforma em ticket de padrão.
+- **Quem escreve.** O ticket de padrão é o único que escreve em `.metri/rules/`, `docs/adr/`, `docs/CONTEXT.md`
+  e `docs/DESIGN.md`, fora do portão de conhecimento; a regra de release vem de um ticket de padrão antes do
+  primeiro `release`.
+- **Id com nome.** Num portão, o id vem com o nome; a tela canônica cita o princípio pelo nome; o PP-n que o
+  /build relata vem com o que a regra não cobre.
+- **docs-lint.** T com história é erro; UC fora de `done` sem `actor` é erro.
 
-### Migrar de v1.6.0
+### Migrar de v1.6.2
 
-Nenhuma mudança obrigatória: domain service existente como função pura continua válido. A classe é só uma segunda
-forma, para quando a regra já tiver mais de uma operação coesa.
+1. `pnpm add -D github:otonydesideri/metri#v1.6.3`.
+2. No `AGENTS.md`, troque a linha da MATRIX pelas duas do template novo (spec e plano) e acrescente à rota direta
+   o trecho de quem escreve o ticket.
+3. Todo UC fora de `done` tem `actor`, o nome em português de um termo do `docs/CONTEXT.md`, em minúscula.
+4. Em `.metri/ARCHITECTURE.md`, "Exceções e defaults trocados": cada linha nomeia o id da regra e termina no ADR.
+   Toda capacidade que um ticket aberto usa em `areas` está em "Capacidades ativas".
+5. Todo ADR de `exception` ou `default-change` abre a Decisão com a regra (e a seção) ou o default que troca, e o
+   escopo em que vale.
+6. `pnpm docs-lint` verde.
 
 ## v1.6.2 (2026-10-02)
 
@@ -29,15 +58,24 @@ UC abre com uma história, e critério deixa de carregar frase de escopo.
 - **Critério diz o que acontece.** Uma frase de escopo (`não depende de X na v1`) sai do critério e vai para a
   spec da feature, Fora de escopo; o /build passa a ler essa seção também. O crítico sem contexto do /look-across
   passa a procurar também critério repetido dentro do mesmo UC.
+- **UC sem critério é erro.** `docs-lint` exige ao menos um item em Critérios em todo UC fora de `draft`, como
+  já exigia no T.
+- **Domain service pode ser classe.** Quando a regra tem mais de uma operação que só faz sentido junta (duas faces
+  da mesma decisão, como calcular e reverter), é permitida uma classe sem estado com um método por operação, no
+  lugar da função única; `abstract class`, token de injeção e registro no container continuam proibidos
+  (`domain/domain-services.md`).
+- **`Either` na regra que recusa.** Domain service que pode recusar devolve `Either` com a classe de erro do
+  módulo, como entidade e value object (`domain/domain-services.md`, `backend/errors.md`).
 
 ### Migrar de v1.6.0
 
 1. `pnpm add -D github:otonydesideri/metri#v1.6.2`.
-2. Todo UC aberto (fora de `draft` e de `done`) ganha a história, logo abaixo do título: `Como <ator>, quero
+2. Todo UC fora de `done`, o `draft` inclusive, ganha a história, logo abaixo do título: `Como <ator>, quero
    <ação>, para <benefício>.`, com o ator igual à chave `actor` do ticket.
 3. Releia os critérios dos UCs abertos: uma frase de escopo que estiver lá migra para a spec da feature, Fora de
-   escopo.
-4. `pnpm docs-lint` verde, incluindo a história dos UCs.
+   escopo. Todo UC fora de `draft` tem ao menos um critério.
+4. Domain service existente como função pura continua válido; a classe é só uma segunda forma.
+5. `pnpm docs-lint` verde, incluindo a história dos UCs.
 
 ## v1.6.0 (2026-10-01)
 

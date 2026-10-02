@@ -10,7 +10,7 @@ kind: exception
 
 ## Decisão
 
-- A lista de pedidos pagina no servidor.
+- Exceção a `frontend/components`, "Estados de leitura", só na lista de pedidos: ela pagina no servidor.
 
 ## Alternativas consideradas
 

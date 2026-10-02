@@ -14,6 +14,6 @@ Como operador, quero ver o total de pedidos de cada mês, para entender o volume
 
 ## Critérios
 
-- [ ] O operador vê o total de pedidos de cada mês.
+- [ ] Mês sem pedidos aparece com total zero.
 
 ## Notas

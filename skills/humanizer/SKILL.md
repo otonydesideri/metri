@@ -1,6 +1,6 @@
 ---
 name: humanizer
-description: "Reescreve texto que soa como IA para que soe como quem escreve, sem mudar o que ele diz. Use ao escrever ou revisar texto que um humano lê: a prosa de docs/ e dos ADRs, os textos da interface, as mensagens de portão e os relatórios ao usuário, o README e o CHANGELOG."
+description: "Reescreve texto que soa como IA para que soe como quem escreve, sem mudar o que ele diz. Use ao escrever ou revisar texto que um humano lê: a prosa de docs/, dos ADRs e das specs, a história do UC, os textos da interface, as mensagens de portão e os relatórios ao usuário, o README e o CHANGELOG."
 ---
 
 Adapted from blader/humanizer@v3.1.0 (MIT)
@@ -56,7 +56,7 @@ Antes: "- **Desempenho:** a tela carrega em metade do tempo." Depois: "A tela ca
 
 **10. Embrulho de chat.** "Claro!", "Ótima pergunta!", "Com certeza!", "Espero ter ajudado", "Se quiser, posso...", "Fico à disposição", "Qualquer dúvida, é só chamar". Tire o embrulho e fique com o conteúdo.
 
-**11. Jargão interno.** Id ou termo do método sem nome para quem não o conhece: "T4.1", "PP-3", "a S2", "o UC". Na primeira vez, o id vem com o nome que tem no plano ("T4.1, a agenda do dia"); para quem não usa o método, fica só o nome. Quem trabalha no plano, num portão, lê o id sem explicação. Na interface, a linguagem de construção também é jargão: "layout público", "(S4)", "mock", "placeholder", "em breve na próxima slice". Quem usa o produto vê a coisa pelo nome que ela tem para ele, ou não vê nada.
+**11. Jargão interno.** Id ou termo do método sem nome para quem não o conhece: "T4.1", "PP-3", "a S2", "o UC". Na primeira vez, o id vem com o nome que tem no plano ("T4.1, a agenda do dia"); para quem não usa o método, fica só o nome. Num portão, o id vem com o nome ("UC1.1 · Listar pedidos"). Na interface, a linguagem de construção também é jargão: "layout público", "(S4)", "mock", "placeholder", "em breve na próxima slice". Quem usa o produto vê a coisa pelo nome que ela tem para ele, ou não vê nada.
 
 **12. Leitor errado.** A resposta a quem já tem o contexto reconstrói o problema, o diagnóstico e as provas antes de chegar à decisão, que fica na última linha. Comece pela decisão e fique só com o fato que o leitor não tem e o que ele precisa para agir.
 

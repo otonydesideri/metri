@@ -10,7 +10,7 @@
 ## Termos
 
 **Pedido** · `Order`
-Solicitação de compra confirmada pelo cliente.
+Solicitação de compra feita pelo cliente.
 _Evitar:_ Encomenda, Purchase, Request
 
 ## Relações

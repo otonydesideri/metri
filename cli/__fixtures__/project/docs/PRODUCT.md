@@ -2,7 +2,7 @@
 
 ## Para quem e qual problema
 
-Operador de uma organização que acompanha pedidos.
+Operador de uma organização que acompanha pedidos, e o cliente que os faz.
 
 ## Resultado esperado
 

@@ -192,6 +192,9 @@ export function ticketProblems(path: string, source: string, expectedId: string,
   }
 
   if (kind === 'uc' && status !== 'done') {
+    if (typeof frontmatter.actor !== 'string') {
+      report(1, `${expectedId}: falta a chave actor (UC fora de done; a história cita o ator)`);
+    }
     const story = storyOf(source);
     if (!story) {
       report(1, `${expectedId}: falta a história ("Como <ator>, quero <ação>, para <benefício>.") logo abaixo do título`);
@@ -202,6 +205,13 @@ export function ticketProblems(path: string, source: string, expectedId: string,
       } else if (typeof frontmatter.actor === 'string' && storyMatch[1] !== frontmatter.actor) {
         report(story.line, `${expectedId}: história com ator "${storyMatch[1]}", diferente da chave actor: ${frontmatter.actor}`);
       }
+    }
+  }
+
+  if (kind === 't') {
+    const story = storyOf(source);
+    if (story && STORY.test(story.text)) {
+      report(story.line, `${expectedId}: T não tem história`);
     }
   }
 

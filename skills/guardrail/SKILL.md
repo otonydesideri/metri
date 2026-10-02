@@ -23,6 +23,7 @@ description: "Keep code findable and guarded while writing it: find before you c
    - One header per canonical owner: a file with two owners has two headers.
    - The first line is the SOT keyword: a grep for `SOURCE OF TRUTH:` and the symbol finds the owner.
    - The whole header is in English, labels and text. WHY cites by id the ADR or BR it follows: stable ids only.
+   - The owner of a slice's `contract` carries it, since /accept prunes the contract from the MATRIX: `interface` is the `SOURCE OF TRUTH` line, `responsibility` goes in WHAT, the calling owners of `consumers` in WHERE, one line per item of `invariants`; `planned` leaves with the contract (git keeps it).
    - Without a header: generated files, the UI kit's vendor code (`packages/ui/src/components/ui/`), barrels, specs, e2e and their support, type declarations, and a file that exports nothing (an entry such as `main.ts`, a script); `metri sot --help` has the exact list. When the linear path names a symbol of a file that exports nothing, its header sits above that top-level declaration.
    - `pnpm sot` checks the headers, the `sot:` of the done slices and the linear path (`metri sot --help`).
 6. **Flag the gaps.** What you leave for later is a `GAP-n` comment at the spot plus its line in the Gaps section of `.metri/MATRIX.md`: nothing stays incomplete in silence.

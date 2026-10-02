@@ -118,7 +118,7 @@ Tool preference:
 
 Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
 
-- A bug that breaks a criterion of a UC reopens that UC in its own ticket file: `status: in_progress`, what broke in "Notas"; its `slice`, `mode`, `areas`, `touches` and `sensitive` stay from before, since the file was never pruned or collapsed.
+- A bug that breaks a criterion of a UC reopens that UC in its own ticket file: `status: in_progress`, what broke in "Notas"; its `slice`, `mode`, `areas`, `touches` and `sensitive` stay from before, since the file was never pruned or collapsed; a UC without a story gets one (MATRIX-FORMAT.md, "Ticket files").
 - Any other bug becomes a T, its own new file in the slice whose code the fix changes, with the next free id of that slice: `type: task`, `mode: afk`, `status: in_progress`, "O que entrega" and "Critérios" for the fix, the `areas` and `touches` of that code, and `sensitive` by the criterion of MATRIX-FORMAT.md.
 - Their `checks` get the regression check: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
 

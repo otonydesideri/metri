@@ -319,7 +319,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   it('Tickets: UC fora de draft tem "Critérios" com item', () => {
     const item = '- [ ] A lista mostra os pedidos mais recentes primeiro.\n';
     expect(lintChanged(inTicket('UC1.1', item, '')).output).toContain('UC1.1: "Critérios" sem item');
-    expect(lintChanged(inTicket('UC2.1', '- [ ] O operador vê o total de pedidos de cada mês.\n', '')).status).toBe(0);
+    expect(lintChanged(inTicket('UC2.1', '- [ ] Mês sem pedidos aparece com total zero.\n', '')).status).toBe(0);
   });
 
   it('Tickets: UC que não está done abre com a história ("Como <ator>, quero <ação>, para <benefício>.")', () => {
@@ -339,6 +339,12 @@ describe('docs-lint', { timeout: 60_000 }, () => {
       inTicket('UC1.1', `${story}\n\n`, '')(dir);
     });
     expect(doneNoStory.output).not.toContain('falta a história');
+    expect(lintChanged(inTicket('UC1.1', 'actor: operador\n', '')).output).toContain(
+      'UC1.1: falta a chave actor (UC fora de done; a história cita o ator)',
+    );
+    expect(lintChanged(inTicket('T2.1', '## O que entrega', `${story}\n\n## O que entrega`)).output).toContain(
+      'T2.1: T não tem história',
+    );
   });
 
   it('Specs: o nome do arquivo é F<n>.md, e o frontmatter id bate com ele', () => {

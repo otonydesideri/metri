@@ -111,8 +111,8 @@ Só no projeto:
       para algo que existe na matriz; o número depois da letra do id bate com o da feature ou da slice;
     - blocked_by aponta para um ticket ou uma slice que existe;
     - todo UC fora de draft aparece em Casos de uso da spec da feature dele;
-    - UC que não está done tem a história "Como <ator>, quero <ação>, para <benefício>." logo abaixo do
-      título, com o ator da frase igual à chave actor; T nunca tem história;
+    - UC que não está done tem a chave actor e a história "Como <ator>, quero <ação>, para <benefício>." logo
+      abaixo do título, com o ator da frase igual à chave actor; T nunca tem história;
     - T: seção "O que entrega" (1 a 3 linhas); T, e UC fora de draft: "Critérios" com ao menos um item "- [ ]";
     - metrics, quando existe: { rules: <n>, tokens: <n> }, com rules sempre e números inteiros;
     - "Notas" com no máximo 10 linhas;

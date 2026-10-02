@@ -6,7 +6,7 @@ slice: S1
 actor: operador
 status: in_progress
 mode: afk
-sensitive: false
+sensitive: true
 areas: [frontend/components, frontend/data-fetching, frontend/order-list]
 touches: [router:orders]
 checks: ["`pnpm verify`", "`pnpm test orders-page`"]
@@ -18,7 +18,7 @@ Como operador, quero ver a lista de pedidos da organização, para acompanhar o 
 
 ## Regras de negócio
 
-- BR1: Só aparecem pedidos da organização do operador.
+- BR1 (sensitive): Só aparecem pedidos da organização do operador.
 
 ## Critérios
 

@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.6.2.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> **Versão 1.6.3.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -48,7 +48,7 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.6.2                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#v1.6.3                  # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
@@ -73,7 +73,7 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 
 - Arquivo só existe se tiver conteúdo que nenhum outro pode carregar.
 - ADR só com decisão tomada, difícil de reverter, surpreendente e com trade-off real.
-- O `docs/` do projeto tem só `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md` e `adr/`; o `.metri/`, só `ARCHITECTURE.md`, `rules/` (quando houver caso real), `MATRIX.md` e `tickets/`. O `docs-lint` barra o resto.
+- O `docs/` do projeto tem só `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md` e `adr/`; o `.metri/`, só `ARCHITECTURE.md`, `rules/` (quando houver caso real), `MATRIX.md`, `specs/` e `tickets/`. O `docs-lint` barra o resto.
 - Regra nunca é pré-carregada: cerca de 5 por ticket, pelo `rules-for`, e encolhe quando um check ou o código assume o que ela diz.
 - O agente lê `AGENTS.md`, skills e regras; este README é para humano.
 - Skill: adaptar do Matt; skill nova só para método nosso.
@@ -85,7 +85,7 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 | Código, comentários (o cabeçalho `SOURCE OF TRUTH` inclusive), identificadores, nomes de arquivos de código | Inglês (`architecture/defaults/stack.md`, "Stack") |
 | Chaves de frontmatter, campos da matriz, ids, status, tipos                                         | Inglês, fixos, validados por lint |
 | Skills e `AGENTS.md`                                                                                | Inglês (a `humanizer`, que trata texto em português, é em português) |
-| `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz, mensagens de erro | Português                         |
+| `PRODUCT.md`, `CONTEXT.md` (definições), `DESIGN.md` (prosa), regras (prosa), ADRs, prosa da matriz, das specs e dos tickets, mensagens de erro | Português                         |
 | Conversa com o agente                                                                               | Português                         |
 
 A regra que evita deriva: **a conversa pode ser em português, mas toda chave, campo, id e identificador tem uma forma canônica em inglês.** Dois agentes nunca traduzem o mesmo conceito de formas diferentes, porque a tradução já está fixada e o lint rejeita qualquer outra.
@@ -169,7 +169,7 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 | Design               | `docs/DESIGN.md`        | Identidade visual, uso de componentes                            | Moldar (triagem de design), Aprender    | Via ponteiro em regras de `frontend/`  |
 | Spec                 | `.metri/specs/<F-id>.md` | Problema, solução, casos de uso e decisões de implementação e de teste da feature | Moldar (draft), Look across (planned), Aceitar (done) | Construir, na cadeia de contexto do ticket |
 | Plano                | `.metri/MATRIX.md`   | Slices e contratos, Fog, Gaps, Pattern proposals                  | Look across                             | Ao planejar                            |
-| Ticket                | `.metri/tickets/<id>.md` | Um UC ou um T: frontmatter, BRs ou "O que entrega", critérios e notas | Moldar (draft), Look across, Construir (status) | Só o arquivo do ticket em trabalho |
+| Ticket                | `.metri/tickets/<id>.md` | Um UC ou um T: frontmatter, história e BRs (UC) ou "O que entrega" (T), critérios e notas | Moldar (draft), Look across, Construir (status), Aceitar e Diagnosticar (reabrir, T novo) | Só o arquivo do ticket em trabalho |
 | Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | `metri init`                            | Sempre (~20 linhas)                    |
 | Código               | `apps/`, `packages/`    | Padrões, cabeçalhos `SOURCE OF TRUTH`, tokens, checks            | Construir                               | Grep do `SOURCE OF TRUTH`, caminho linear, exemplo canônico |
 
@@ -228,7 +228,7 @@ A área `domain/` (global e do projeto) define como modelamos domínio no códig
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
 | Problema, solução, casos de uso e decisões de implementação e de teste de uma feature | `.metri/specs/<F-id>.md` | chat, `PRODUCT.md`, `MATRIX.md`                |
 | Slices, contratos e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX, as specs e os tickets pelo formato estrito deles | chat, handoff                                  |
-| Cada UC ou T: BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
+| Cada UC ou T: história e BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
 | Comportamento já construído                    | testes + código                           | matriz (a slice colapsa numa linha com os donos, `sot:`; o arquivo do ticket fica, com `status: done`) |
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
 | Procedimentos do agente                        | `AGENTS.md` + skills                      | regras de arquitetura                          |

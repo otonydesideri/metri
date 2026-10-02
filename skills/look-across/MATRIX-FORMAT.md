@@ -3,9 +3,9 @@
 `.metri/MATRIX.md` is the project's single plan: slices and their contracts, Fog, Gaps and Pattern proposals. A
 feature lives in its own file, `.metri/specs/<F-id>.md` (`node_modules/metri/skills/shape/SPEC-FORMAT.md`); the
 MATRIX cites it only by id. Each ticket, a UC or a T, lives in its own file, `.metri/tickets/<id>.md` ("Ticket
-files", below); the MATRIX is not the source of the ticket's content, only of the plan around it. Keys, values and
-section titles are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; the prose is in
-Portuguese. `pnpm docs-lint` checks the format.
+files", below); the MATRIX is not the source of the ticket's content, only of the plan around it. Keys and enumerated
+values are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; section titles are fixed as in the
+blocks below, in English in the MATRIX and in Portuguese in a ticket; the prose is in Portuguese. `pnpm docs-lint` checks the format.
 
 ## Skeleton
 
@@ -66,10 +66,11 @@ when missing or empty, the rest are written only with a value.
 - `slice` (T always; UC required outside `draft`): the slice it belongs to. A T's number after the letter matches
   its own (`T2.0` → `slice: S2`); a UC's slice is free, its main slice (the other slices it crosses go in `areas`
   and `touches`).
-- `actor` (UC only): who runs the use case.
-- Story (UC only, body, outside `done`): the line right below the title, `Como <ator>, quero <ação>, para
-  <benefício>.`, with `<ator>` the same as the `actor` key; written by /shape when drafting the UC, humanizer
-  revised. A `done` UC is history, not checked. A T never has one.
+- `actor` (UC only, required outside `done`): who runs the use case, the Portuguese name of a `docs/CONTEXT.md`
+  term, in lower case.
+- Story (UC only, body, required outside `done`): the line right below the title, `Como <ator>, quero <ação>,
+  para <benefício>.`, with `<ator>` the same as the `actor` key; whoever writes the UC's file writes it, through
+  the humanizer skill, and whoever reopens a UC without one writes it then. A T never has one.
 - `type` (T only): `pattern`, `task` or `release`; the tracer is the UC and never takes `type`.
 - `status`: `draft` (UC only, written by /shape until /look-across plans it) `| open | in_progress | blocked |
   done`. A UC in `draft` is never built.
@@ -91,7 +92,8 @@ when missing or empty, the rest are written only with a value.
   header, at the knowledge gate of /accept.
 
 A ticket file is never pruned or collapsed, because the board reads it: done, it keeps its title, its frontmatter
-and its body, with `status: done`, in its own file.
+and its body, with `status: done`, in its own file. Done, the tests its `checks` run
+are the source of its criteria; the file changes again only when the ticket reopens.
 
 ### UC block
 
@@ -246,7 +248,7 @@ Como editor, quero publicar um formulário numa página do site, para receber re
 ## Notas
 ```
 
-`.metri/tickets/UC1.2.md`, done (history: no story expected, even if it predates one)
+`.metri/tickets/UC1.2.md`, done (the lint doesn't check its story):
 
 ```markdown
 ---
@@ -266,7 +268,7 @@ metrics: { rules: 2 }
 
 ## Critérios
 
-- [ ] tests/forms/submit.spec.ts prova os critérios.
+- [ ] A resposta enviada fica registrada no formulário.
 
 ## Notas
 ```
@@ -316,9 +318,9 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 
 | `type` | When | Particularity |
 | --- | --- | --- |
-| `pattern` | The first instance of a new pattern, or an update of the Source version | The only case where the builder writes in `.metri/rules/`. **Mandatory human review** before the tickets it blocks are released |
+| `pattern` | The first instance of a new pattern, or an update of the Source version | The only ticket that writes in `.metri/rules/`, `docs/adr/`, `docs/CONTEXT.md` or `docs/DESIGN.md`. **Mandatory human review** before the tickets it blocks are released |
 | `task` | Work that delivers no UC but unblocks others (create an account, a credential, a third-party panel, prepare data), and each batch of an expand–contract | With `mode: afk`, the agent does it alone. With `mode: hitl`, the agent prepares a step-by-step script and the ticket closes on the human's confirmation |
-| `release` | Take deliveries to production | Follows `.metri/rules/infrastructure/release.md` |
+| `release` | Take deliveries to production | Follows `.metri/rules/infrastructure/release.md`, which a `pattern` T writes before the first `release` |
 
 ## Matrix rules
 

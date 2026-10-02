@@ -244,7 +244,7 @@ Quando a regra não é checável mecanicamente: **Padrão.** Verificação por c
 
 Pergunta em aberto fica na regra, na seção "Em aberto", um item por pergunta: `- **<título>.** <texto>`; nunca vira ADR.
 
-ADR só registra decisão tomada, difícil de reverter, surpreendente e com trade-off real.
+ADR só registra decisão tomada, pelo critério de `node_modules/metri/skills/domain-language/ADR-FORMAT.md`, "When to offer an ADR".
 
 #### Regra de transição
 
@@ -301,13 +301,13 @@ O índice de cada área é gerado do frontmatter (`pnpm rules-index`).
 | Casa | Guarda |
 | --- | --- |
 | Architecture Source (`architecture/`, em `node_modules/metri/` no projeto) | Decisão global e reutilizável |
-| ADR (`docs/adr/`) | Decisão específica do projeto que é estrutural, significativa, com trade-off, difícil de reverter e cujo rationale precisa ser preservado, incluindo a exceção deliberada a uma regra da Source |
+| ADR (`docs/adr/`) | Decisão específica do projeto pelo critério do ADR-FORMAT, incluindo a exceção deliberada a uma regra da Source |
 | Project Architecture (`.metri/ARCHITECTURE.md` e, quando houver caso real, regra em `.metri/rules/<área>/`) | Estado e configuração vigentes do projeto: módulos existentes, owner/tenant escolhido, apps e packages além do padrão de `general/code-placement.md`, ativações, decisões operacionais vigentes; o `.metri/ARCHITECTURE.md` aponta para o ADR de cada uma |
 | `AGENTS.md`, `CLAUDE.md` e instruções locais | Ponteiros para a Source, o ADR e o `.metri/ARCHITECTURE.md`, e orientação operacional local: armadilha viva, contrato entre partes que envelhecem separadas |
 
 **Obrigatório.** Decisão global e reutilizável fica na Architecture Source.
 
-Quando a decisão específica do projeto é estrutural, significativa, tem trade-off, é difícil de reverter e o rationale precisa ser preservado: **Obrigatório.** Registrá-la como ADR em `docs/adr/`.
+Quando a decisão específica do projeto passa no critério de `node_modules/metri/skills/domain-language/ADR-FORMAT.md`, "When to offer an ADR": **Obrigatório.** Registrá-la como ADR em `docs/adr/`.
 
 Quando um projeto precisa divergir deliberadamente de uma regra da Source: **Obrigatório.** A exceção é explícita e registrada em ADR, com a regra da Source que ela excepciona, o escopo em que vale e o rationale.
 

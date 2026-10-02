@@ -2,8 +2,8 @@
 
 `.metri/specs/<F-id>.md` is the feature's single file: the problem and the solution the user lives, its use cases,
 the implementation and testing decisions, and what is out of scope. Adapted from the `to-spec` skill of
-mattpocock/skills, MIT. Keys and section titles are fixed, in English, as `node_modules/metri/VOCABULARY.md`
-defines them; the prose is in Portuguese. `pnpm docs-lint` checks the format.
+mattpocock/skills, MIT. Keys are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them;
+section titles are fixed, in Portuguese, as in the Skeleton; the prose is in Portuguese. `pnpm docs-lint` checks the format.
 
 ## Skeleton
 
@@ -63,10 +63,9 @@ torna um bom teste aqui; os testes que já servem de modelo>
 
 ## Seções
 
-- **Casos de uso**: only the id and the title of each UC of the feature, one per line (`- UC<f>.<n> · <título>`),
-  in the format of a MATRIX list item (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`, "Skeleton").
-  Every UC outside `draft` whose `feature` is this spec's id appears here, draft included when the feature itself
-  is still `draft`. The UC's own file, `.metri/tickets/UC<f>.<n>.md`, is the single source of its BRs and
+- **Casos de uso**: only the id and the title of each UC of the feature, one per line (`- UC<f>.<n> · <título>`).
+  Every UC whose `feature` is this spec's id appears here, `draft` included (`pnpm docs-lint` checks the ones
+  outside `draft`). The UC's own file, `.metri/tickets/UC<f>.<n>.md`, is the single source of its BRs and
   criteria: the spec never repeats them.
 - **Decisões de implementação**: no file path and no code, except a prototype snippet that encodes a decision
   better than prose (a state machine, a reducer, a schema, a type shape); mark it as coming from a prototype, and
@@ -75,7 +74,7 @@ torna um bom teste aqui; os testes que já servem de modelo>
 - **Decisões de teste**: the seams where the feature is tested (`node_modules/metri/skills/tdd/SKILL.md`, "Seams:
   where tests go"), what makes a good test here (external behaviour, not implementation;
   `node_modules/metri/skills/tdd/SKILL.md`, "What a good test is"), and the tests that already model it.
-- The feature's slices are never written on the spec: they are the `slice` of each UC in "Casos de uso", found in
+- The feature's slices are never listed on the spec (a decision that rests on a contract cites it by id): they are the `slice` of each UC in "Casos de uso", found in
   the UC's own ticket file. Writing them here would duplicate what the ticket already declares.
 
 ## Onde cada coisa mora
@@ -85,7 +84,7 @@ A spec aponta para os outros arquivos, sem repeti-los:
 | O quê | Mora em |
 | --- | --- |
 | Critério e regra de negócio | O ticket (`.metri/tickets/<id>.md`) |
-| Contrato de slice | `.metri/MATRIX.md` |
+| Contrato de slice | `.metri/MATRIX.md`; construída a slice, o cabeçalho `SOURCE OF TRUTH` dos donos |
 | Decisão difícil de reverter | ADR |
 | Padrão que vale para mais de uma feature | Regra |
 
@@ -118,8 +117,7 @@ quando o pedido é confirmado.
 
 ## Decisões de implementação
 
-A lista usa o contrato de S1; o aviso de confirmação, o de S2 (`OrderConfirmationSender.send(order)`), ambos em
-`.metri/MATRIX.md`. Sem mudança de schema.
+O aviso de confirmação nasce do evento de pedido confirmado, sem módulo novo. Sem mudança de schema.
 
 ## Decisões de teste
 

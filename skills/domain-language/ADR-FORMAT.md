@@ -28,7 +28,7 @@ kind: decision | exception | default-change
 (Check ou lint que garante a decisão, ou "não imposto".)
 ```
 
-- `kind`: `exception` for an exception to a global rule, `default-change` for a swapped global default, `decision` for the rest.
+- `kind`: `exception` for an exception to a global rule, `default-change` for a swapped global default, `decision` for the rest. With `exception` or `default-change`, "Decisão" opens with the rule id (and section) or the default it replaces, and the scope where it holds.
 - `status`: `accepted`, or `superseded by ADR-NNNN` once a later ADR replaces it. An ADR is never deleted.
 - What the decision explicitly is not goes under "Alternativas consideradas".
 

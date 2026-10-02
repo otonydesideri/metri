@@ -8,7 +8,7 @@ kind: decision
 
 - O kit padrão da metodologia é o shadcn/ui (ADR-0001), instalado e estilizado por tokens de tema conforme o `DESIGN.md` (`architecture/defaults/ui.md`).
 - Na versão 1.2, o `@metri/ui` guardava o arquivo da CLI em `src/shadcn/`, resolvia os imports internos pelo campo `imports` (`#`) e expunha cada primitivo em compound, por um arquivo de re-export, consumido com `import * as`.
-- No piloto 2, a CLI gravou o `cn` do pacote npm homônimo no lugar do `cn` do kit, que conhece os níveis de texto do tema (PP-3): desde 03/09/2026 o registry do shadcn importa o `cn` desse pacote, com qualquer alias `utils`; o re-export dobrava o número de arquivos por componente e afastava o código do que a documentação do shadcn mostra.
+- No piloto 2, a CLI gravou o `cn` do pacote npm homônimo no lugar do `cn` do kit, que conhece os níveis de texto do tema: desde 03/09/2026 o registry do shadcn importa o `cn` desse pacote, com qualquer alias `utils`; o re-export dobrava o número de arquivos por componente e afastava o código do que a documentação do shadcn mostra.
 
 ## Decisão
 

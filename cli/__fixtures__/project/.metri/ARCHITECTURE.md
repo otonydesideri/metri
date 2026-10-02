@@ -11,7 +11,8 @@
 
 ## Capacidades ativas
 
-- defaults/ui: shadcn/ui, sem troca
+- defaults/ui: —
+- infrastructure/mail: Resend
 - infrastructure/storage: Cloudflare R2, bucket `orders-attachments`
 
 ## Delegações

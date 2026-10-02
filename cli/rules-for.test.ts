@@ -5,6 +5,7 @@ afterAll(removeCopies);
 
 const PAGE = 'apps/app-web/src/pages/orders/orders-page.tsx';
 const MAIL = 'apps/app-api/src/infra/services/mail/resend-mail.service.ts';
+const CACHE = 'apps/app-api/src/infra/services/cache/cache-provider.service.ts';
 
 function ids(lines: string[]): string[] {
   return lines.filter((line) => line.includes(' — ') && !line.startsWith('citada: ')).map((line) => line.split(' — ')[0]);
@@ -52,7 +53,7 @@ describe('rules-for', { timeout: 30_000 }, () => {
   it('ticket T: usa os ids de areas do bloco do T', () => {
     const { status, lines } = run('rules-for', ['--root', FIXTURE, '--ticket', 'T2.1']);
     expect(status).toBe(0);
-    expect(ids(lines)).toEqual(['infrastructure/runtime']);
+    expect(ids(lines)).toEqual(['infrastructure/mail', 'infrastructure/runtime']);
   });
 
   it('ticket inexistente é erro', () => {
@@ -62,11 +63,11 @@ describe('rules-for', { timeout: 30_000 }, () => {
   });
 
   it('capacidade inativa: fica de fora, com aviso', () => {
-    const { status, lines } = run('rules-for', ['--root', FIXTURE, MAIL]);
+    const { status, lines } = run('rules-for', ['--root', FIXTURE, CACHE]);
     expect(status).toBe(0);
-    expect(ids(lines)).not.toContain('infrastructure/mail');
+    expect(ids(lines)).not.toContain('infrastructure/cache');
     expect(lines).toContain(
-      'aviso: capacidade condicional fora de "Capacidades ativas" do .metri/ARCHITECTURE.md, não entra: infrastructure/mail',
+      'aviso: capacidade condicional fora de "Capacidades ativas" do .metri/ARCHITECTURE.md, não entra: infrastructure/cache',
     );
   });
 
@@ -79,8 +80,8 @@ describe('rules-for', { timeout: 30_000 }, () => {
   it('orçamento: mais de 5 regras gera aviso, sem erro', () => {
     const { status, lines } = run('rules-for', ['--root', FIXTURE, '--ticket', 'UC1.2']);
     expect(status).toBe(0);
-    expect(ids(lines)).toHaveLength(6);
-    expect(lines).toContain('aviso: 6 regras, mais de 5: ticket grande demais ou applies_to largo');
+    expect(ids(lines)).toHaveLength(7);
+    expect(lines).toContain('aviso: 7 regras, mais de 5: ticket grande demais ou applies_to largo');
     expect(run('rules-for', ['--root', FIXTURE, PAGE]).lines.join('\n')).not.toContain('mais de 5');
   });
 
@@ -132,7 +133,7 @@ describe('rules-for', { timeout: 30_000 }, () => {
     const dir = copyFixture();
     edit(dir, '.metri/tickets/T2.1.md', (source) => source.replace('type: task', 'type: pattern'));
     expect(run('rules-for', ['--root', dir, '--ticket', 'UC1.2']).lines).toContain(
-      'aviso: 6 regras, mais de 5: exceção esperada, primeiro ticket depois do pattern T2.1',
+      'aviso: 7 regras, mais de 5: exceção esperada, primeiro ticket depois do pattern T2.1',
     );
   });
 

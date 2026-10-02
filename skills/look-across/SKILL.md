@@ -1,6 +1,6 @@
 ---
 name: look-across
-description: Plan by looking across every feature. Turns the draft UCs into tracer tickets, with capabilities, slices with contracts, architectural coverage and the tickets without a UC, in .metri/MATRIX.md.
+description: Plan by looking across every feature. Turns the draft UCs into tracer tickets, with capabilities, slices with contracts, architectural coverage and the tickets without a UC, in .metri/MATRIX.md and .metri/tickets/.
 disable-model-invocation: true
 ---
 
@@ -8,9 +8,11 @@ Adapted from mattpocock/skills@c55ee46073ed923f86ce59a5eb3b6d895095d1b7 (MIT)
 
 Ask and report in the user's language set in AGENTS.md (pt-BR by default).
 
+Before writing a UC's story, call the Skill tool with "humanizer" on it.
+
 # Look Across
 
-Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`); a ticket `T` exists only for work without a UC. Everything goes to `.metri/MATRIX.md`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md).
+Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`); a ticket `T` exists only for work without a UC. The plan goes to `.metri/MATRIX.md` and each ticket to its own file in `.metri/tickets/`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md).
 
 ## Process
 
@@ -20,13 +22,13 @@ When `.metri/ARCHITECTURE.md` has the line `mapeamento: pendente` (an existing p
 
 ### 1. Gather context
 
-Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, `.metri/ARCHITECTURE.md`, all of `.metri/MATRIX.md` (Slices, Gaps and Pattern proposals), every feature's spec in `.metri/specs/`, every draft UC's ticket file in `.metri/tickets/`, the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` and the area indexes (`node_modules/metri/architecture/<área>/INDEX.md`, `.metri/rules/<área>/INDEX.md`). Grep the code for what already exists.
+Read `docs/PRODUCT.md`, `docs/CONTEXT.md`, `.metri/ARCHITECTURE.md`, all of `.metri/MATRIX.md` (Slices, Fog, Gaps and Pattern proposals), every feature's spec in `.metri/specs/`, every draft UC's ticket file in `.metri/tickets/`, the "Capacidades condicionais" table of `node_modules/metri/architecture/INDEX.md` and the area indexes (`node_modules/metri/architecture/<área>/INDEX.md`, `.metri/rules/<área>/INDEX.md`). Grep the code for what already exists.
 
 Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill tool with "domain-language" when a term is new or fuzzy, and with "grilling" when a decision branch is open.
 
 ### 2. Features → use cases
 
-Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files").
+Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with its `actor`, its story, verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files").
 
 ### 3. Look across
 
@@ -42,7 +44,7 @@ Give each new or changed slice its `contract` block, designed to accommodate wha
 
 ### 5. Architectural coverage
 
-For each slice, name the areas and rules it needs (the area indexes, `pnpm rules-for <paths>`). A missing rule is a `type: pattern` ticket, the first of its slice. A screen of a new type, with no canonical screen in `docs/DESIGN.md`, gets before its UC a `pattern` T, "Padrão de tela: <tipo>" (`node_modules/metri/skills/build/TICKET-TYPES.md`, "pattern"). Each `PP-n` bound for the next look across becomes a `pattern` ticket or a change to the plan, or is dropped with the user; its line leaves Pattern proposals. Each `GAP-n` whose arrow points to a done ticket gets the ticket (UC or T) that closes it, and its arrow points there.
+For each slice, name the areas and rules it needs (the area indexes, `pnpm rules-for <paths>`). A missing rule is a `type: pattern` ticket, the first of its slice; so is a behaviour a /shape prototype settled in a spec's Notas, and its line leaves the Notas. A screen of a new type, with no canonical screen in `docs/DESIGN.md`, gets before its UC a `pattern` T, "Padrão de tela: <tipo>" (`node_modules/metri/skills/build/TICKET-TYPES.md`, "pattern"). Each `PP-n` bound for the next look across becomes a `pattern` ticket or a change to the plan, or is dropped with the user; its line leaves Pattern proposals. Each `GAP-n` whose arrow points to a done ticket gets the ticket (UC or T) that closes it, and its arrow points there.
 
 ### 6. Draft tickets
 
@@ -57,7 +59,7 @@ Each `now` UC is a **tracer bullet** ticket.
 
 </tracer-bullet-rules>
 
-A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel. A UC born from a split, with no draft to inherit from, gets its own story ("Como <ator>, quero <ação>, para <benefício>."), humanizer revised.
+A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel.
 
 A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket, except the urgent fix of /diagnose.
 
@@ -78,7 +80,7 @@ For each `now` feature, fill its spec's Decisões de implementação (the module
 
 ### 9. Quiz the user
 
-For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion and UCs with a repeated criterion.
+For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion and UCs that repeat a criterion of their own.
 
 Present the proposed plan as a numbered list: each slice with its contract, then each UC and each T:
 
@@ -92,7 +94,7 @@ Iterate until the user approves the plan.
 
 ### 10. Write the matrix
 
-Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste, `status: planned`) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md` and hard decisions to ADRs (domain-language). The human commits the result: the agent never commits on main.
+Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste, `status: planned`) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md`, hard decisions to ADRs (domain-language), and the activated capabilities and resolved delegations to `.metri/ARCHITECTURE.md` ([ACTIVATION.md](ACTIVATION.md), "Record"). The human commits the result: the agent never commits on main.
 
 Done when:
 

@@ -298,17 +298,17 @@ Pares de superfície e texto: o token base é a cor da superfície, e o `-foregr
 
 Geist no texto e Geist Mono no código, da análise da Vercel, nas versões variáveis (`Geist Variable` e `Geist Mono Variable`), servidas pelo projeto (`node_modules/metri/architecture/defaults/ui.md`, "Tipografia e espaçamento"). A documentação do shadcn/ui não define escala tipográfica.
 
-- **Display (`xl`, `lg`, `md`, `sm`):** títulos, peso 600, tracking negativo.
-- **Body (`lg`, `md`, `sm`):** texto corrido, peso 400; a variante `-strong` tem peso 500.
-- **Caption:** legenda e metadado, 12px.
+- **Display (`xl`, `lg`, `md`, `sm`):** títulos, tracking negativo.
+- **Body (`lg`, `md`, `sm`):** texto corrido; a variante `-strong` é mais pesada.
+- **Caption:** legenda e metadado.
 - **Code, caption-mono:** código e rótulo técnico, em Geist Mono.
-- **Button (`md`, `lg`):** rótulo de botão, peso 500; `button-md` (14px) é o do botão padrão.
+- **Button (`md`, `lg`):** rótulo de botão; `button-md` é o do botão padrão.
 
 ## Layout
 
-A escala `spacing` vai de 4px a 64px, da análise da Vercel. Ela coincide com a escala padrão do Tailwind, em múltiplos de 4px: `xxs` = `1`, `xs` = `2`, `sm` = `3`, `md` = `4`, `lg` = `6`, `xl` = `8`, `2xl` = `10`, `3xl` = `12` e `4xl` = `16` (`p-4` = 16px). O `@metri/ui` não declara espaçamento próprio (`node_modules/metri/architecture/defaults/ui.md`, "Tipografia e espaçamento").
+A escala `spacing` vem da análise da Vercel. Ela coincide com a escala padrão do Tailwind, em múltiplos de 4px: `xxs` = `1`, `xs` = `2`, `sm` = `3`, `md` = `4`, `lg` = `6`, `xl` = `8`, `2xl` = `10`, `3xl` = `12` e `4xl` = `16`. O `@metri/ui` não declara espaçamento próprio (`node_modules/metri/architecture/defaults/ui.md`, "Tipografia e espaçamento").
 
-A densidade é a dos componentes do shadcn/ui: botão e campo com 36px de altura, cartão e dialog com 24px de padding.
+A densidade é a dos componentes do shadcn/ui, com a altura e o padding de `components`.
 
 ## Elevation & Depth
 
@@ -321,7 +321,7 @@ A hierarquia vem da borda (`border`) e de sombras curtas, as do Tailwind que os 
 
 ## Shapes
 
-O raio base é o `--radius` do shadcn/ui, 0.625rem (`rounded.lg`). Os demais são múltiplos dele: `sm` 0,6×, `md` 0,8×, `xl` 1,4×, `2xl` 1,8×, `3xl` 2,2× e `4xl` 2,6×.
+O raio base é o `--radius` do shadcn/ui (`rounded.lg`). Os demais são múltiplos dele: `sm` 0,6×, `md` 0,8×, `xl` 1,4×, `2xl` 1,8×, `3xl` 2,2× e `4xl` 2,6×.
 
 - `md`: botão, campo, popover, menu e tooltip.
 - `lg`: dialog.
@@ -332,7 +332,7 @@ O raio base é o `--radius` do shadcn/ui, 0.625rem (`rounded.lg`). Os demais sã
 
 Os primitivos são os do shadcn/ui, no estilo new-york, expostos pelo `@metri/ui` (`node_modules/metri/architecture/defaults/ui.md`).
 
-- **Button:** `variant` `default`, `secondary`, `outline`, `ghost`, `destructive` e `link`; `size` `default` (36px), `xs` (24px), `sm` (32px), `lg` (40px), `icon`, `icon-xs`, `icon-sm` e `icon-lg`.
+- **Button:** `variant` `default`, `secondary`, `outline`, `ghost`, `destructive` e `link`; `size` `default`, `xs`, `sm`, `lg`, `icon`, `icon-xs`, `icon-sm` e `icon-lg`.
 - **Badge:** `variant` `default`, `secondary`, `destructive`, `outline`, `ghost` e `link`; 12px, peso 500, raio `full`.
 - **Card:** partes `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent` e `CardFooter`.
 - **Campos:** Input, Textarea, Input Group, Select, Checkbox, Switch e Label; Field agrupa rótulo, controle, descrição e erro.

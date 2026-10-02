@@ -11,4 +11,4 @@ status: active
 ---
 # Lista de pedidos
 
-**Obrigatório.** A lista pagina no servidor (ADR-0001).
+**Obrigatório.** A página pedida e os filtros ficam na URL, e a query da lista leva os dois ao servidor.
