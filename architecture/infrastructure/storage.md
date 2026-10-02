@@ -26,7 +26,7 @@ status: active
 
 O storage de objetos: dois buckets, um público, servido por domínio customizado atrás de CDN, e um privado, acessado só por URL assinada (na implementação de referência, contra o endpoint S3 nativo). O backend é o único trust boundary do storage: gera as chaves, assina as URLs e é quem decide o que cada chamador pode alcançar. Quem escolhe por onde o binário de usuário sobe é tamanho e volume: arquivo pequeno e de baixa frequência passa pelo backend, que recebe o corpo e grava ele mesmo; arquivo grande ou de alto volume sobe direto pro storage por URL assinada de escrita, e o backend só emite a permissão (seção "Quando o binário do usuário passa pelo backend").
 
-Os exemplos usam o Cloudflare R2 como implementação de referência, não como vendor obrigatório: a decisão dos dois buckets nasce de uma restrição real dele, e argumentar isso no abstrato esconderia o motivo. O que é padrão aqui é a forma — dois buckets por visibilidade, chave canônica, contrato por asset, registro pendente —, não o nome do vendor: as regras deste documento independem do vendor, salvo onde o texto marca um detalhe como da implementação de referência. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático", com o agregado `Product` e a coleção de fotos dele de `domain/watched-list.md`.
+Os exemplos usam o Cloudflare R2 como implementação de referência, não como vendor obrigatório: a decisão dos dois buckets nasce de uma restrição real dele. O que é padrão aqui é a forma — dois buckets por visibilidade, chave canônica, contrato por asset, registro pendente —, não o nome do vendor: as regras deste documento independem do vendor, salvo onde o texto marca um detalhe como da implementação de referência. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático", com o agregado `Product` e a coleção de fotos dele de `domain/watched-list.md`.
 
 ## Por que dois buckets
 
@@ -200,7 +200,7 @@ Quando um registro referencia um arquivo em storage (a foto de um produto), o ar
 2. A mutação do domínio e a escrita (`replacePhotos()` e `save()`, no exemplo de `domain/watched-list.md`).
 3. Remoção física dos arquivos dos itens removidos depois da escrita.
 
-A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada foi persistido e nenhuma referência quebrada existe no banco; o resíduo possível é um arquivo órfão no storage, invisível para o produto e coberto pela limpeza agendada da seção anterior. Se a remoção física falha depois da escrita, a operação continua concluída: o registro é a fonte de verdade, e a falha não desfaz a escrita. O binário que sobra fica órfão, e a limpeza agendada não o alcança, porque ela só varre registros pendentes: na arquitetura atual, esse órfão é risco operacional aceito, que uma reconciliação pode eliminar, na forma de `infrastructure/observability.md`, "Reconciliação"; o job concreto é delegação de projeto (`.metri/ARCHITECTURE.md`). A ordem inversa produziria o dano real: remover o arquivo antes da escrita que falha deixa um registro apontando para um arquivo que não existe.
+A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada foi persistido e nenhuma referência quebrada existe no banco; o resíduo possível é um arquivo órfão no storage, invisível para o produto e coberto pela limpeza agendada da seção anterior. Se a remoção física falha depois da escrita, a operação continua concluída: o registro é a fonte de verdade, e a falha não desfaz a escrita. O binário que sobra fica órfão, e a limpeza agendada não o alcança, porque ela só varre registros pendentes: esse órfão é risco operacional aceito, que uma reconciliação pode eliminar, na forma de `infrastructure/observability.md`, "Reconciliação"; o job concreto é delegação de projeto (`.metri/ARCHITECTURE.md`). A ordem inversa produziria o dano real: remover o arquivo antes da escrita que falha deixa um registro apontando para um arquivo que não existe.
 
 ## Quando o binário do usuário passa pelo backend
 
@@ -262,7 +262,6 @@ O e2e de asset que passa pelo backend monta o adapter HTTP com o mesmo limite de
 - Nenhum TTL, bucket ou convenção de chave vazou pra contrato ou caso de uso?
 - Dublê por contrato de asset, com `stat` configurável, sem dublê da classe de infra?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Cron de limpeza de uploads órfãos.** O detalhamento do cron de limpeza de uploads órfãos (fila, periodicidade) fecha com o primeiro asset de upload direto, seguindo `backend/async-jobs.md`.
-- **Limite de taxa de `requestUpload`.** O endpoint de `requestUpload` emite permissão de escrita no storage e pode pedir um limite de taxa mais restrito que o do throttler global. O resto do que este item juntava já está decidido no texto: a URL assinada fica fora de log manual e o `location` da resposta entra no `redact` (`infrastructure/logging.md`, "Redação de campo sensível"); o bucket privado e a leitura por URL assinada estão em `infrastructure/storage.md`, "Por que dois buckets" e "Contrato por asset: dois eixos".
+- **Limite de taxa de `requestUpload`.** O projeto decide se o endpoint de `requestUpload`, que emite permissão de escrita no storage, leva um limite de taxa mais restrito que o do throttler global.

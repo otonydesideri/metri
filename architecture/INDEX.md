@@ -39,7 +39,7 @@ Em divergência entre um documento daqui e o código, o documento vale: o desenh
 
 ## Autoria
 
-Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, pontos em aberto, regra de transição, organização física e casa das decisões específicas de projeto — está em `skills/writing-for-agents/RULE-FORMAT.md`. Ler antes de criar ou editar qualquer documento daqui.
+Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, o que a Source delega ao projeto, forma escrita sem instância, organização física e casa das decisões específicas de projeto — está em `skills/writing-for-agents/RULE-FORMAT.md`. Ler antes de criar ou editar qualquer documento daqui.
 
 ## Ativação
 

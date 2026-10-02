@@ -48,7 +48,7 @@ If a decision is easy to reverse, skip it: you'll just reverse it. If it's not s
 
 Always an ADR, on top of the three: every exception to a global rule and every swap of a global default.
 
-Never an ADR: an open question. It stays in the owner rule, in "Em aberto" (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Ponto em aberto").
+Never an ADR: a point the Source delegates to the project. It is a line in the owner rule, in "Delegado ao projeto" (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Delegado ao projeto").
 
 ### What qualifies
 

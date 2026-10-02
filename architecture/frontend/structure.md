@@ -114,7 +114,7 @@ A pasta do dono é a unidade que se lê, refatora e apaga inteira, e a fronteira
 
 Cada casa tem um propósito único e não abraça o mundo. Quando um código não encaixa em nenhuma casa existente, a resposta é **abrir uma casa nova**, com propósito próprio, não alargar uma casa existente pra caber. Cada abertura de casa é uma decisão registrada, não um reflexo.
 
-A casa é o propósito, não a pasta: ela pode estar declarada aqui sem ter caso real ainda. `shared/contexts/` (estado de uma árvore, propósito definido em `frontend/state.md`) tem o propósito fechado antes do primeiro arquivo, que entra sem decidir nada de novo.
+A casa é o propósito, não a pasta: ela pode estar declarada aqui sem ter caso real. `shared/contexts/` (estado de uma árvore, propósito definido em `frontend/state.md`) tem o propósito fechado antes do primeiro arquivo, que entra sem decidir nada de novo.
 
 `shared/mocks/` guarda o dado que monta uma tela enquanto a integração com o backend não existe: a lista que o switcher apresenta, o conteúdo do painel de notificações. Ele existe pra ser apagado inteiro quando a leitura real entrar, e é isso que o separa de `shared/constants/`, onde mora valor fixo que o app mantém. Tipo que só descreve a forma desse dado mora no mesmo arquivo, não em `shared/types/`, pelo mesmo motivo: ele some junto. Mock com data se ancora no dia real (`hoje + 2 dias`), nunca numa data fixa, para a tela não envelhecer e cair no estado vazio sem ninguém mexer.
 
@@ -133,6 +133,6 @@ A colocação entre app e pacote segue `general/code-placement.md`, "Código pod
 - Código que não encaixa em nenhuma casa abriu casa nova, com decisão registrada, em vez de inchar uma existente?
 - A escolha entre app e pacote seguiu a colocação de `general/code-placement.md`, sem pacote catch-all?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Taxonomia de `shared/components/`.** A taxonomia de `shared/components/` ainda não está decidida; até fechar, vale a decisão de projeto do app. A primeira pasta de papel já existe: `shared/components/inputs/`, com o critério de pertença escrito em `frontend/forms.md`, "Campo montado no app". A fronteira dela contra o modelo de dono já está fechada ("A pasta do dono"): o que segue aberto é a divisão interna, não quem entra. A direção é uma mistura do modelo (pastas por papel: `forms/`, `cards/`, `modals/`, ...) e demanda, crescendo a partir da raiz e de `icons/`. A taxonomia final não é decidida agora; cada pasta de papel nasce com o critério de pertença escrito quando o primeiro componente dela aparecer.
+- **Taxonomia de `shared/components/`.** O projeto decide a divisão interna de `shared/components/` em pastas de papel, além de `inputs/` (`frontend/forms.md`, "Campo montado no app").

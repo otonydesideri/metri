@@ -116,7 +116,7 @@ export function formatBRL(amountInCents: number): string {
 
 **O dia de calendário local sai dos componentes locais da data** (`getFullYear()`, `getMonth() + 1`, `getDate()`), no fuso de quem olha, nunca de `toISOString().slice(0, 10)`: esse devolve o dia em UTC e erra o "hoje" à noite, em fuso negativo.
 
-A pasta do app é plana, pela nomeação de `frontend/structure.md`: `shared/utils/<categoria>.util.ts`, não `shared/utils/format/<categoria>.util.ts`. O mesmo critério vale para `shared/schemas/<módulo>.schema.ts` e `shared/constants/<módulo>.constant.ts`: um arquivo por categoria ou módulo, sem subpasta. Subpasta por categoria só entra se um dia a lista crescer a ponto de justificar, decidido quando o caso real aparecer.
+A pasta do app é plana, pela nomeação de `frontend/structure.md`: `shared/utils/<categoria>.util.ts`, não `shared/utils/format/<categoria>.util.ts`. O mesmo critério vale para `shared/schemas/<módulo>.schema.ts` e `shared/constants/<módulo>.constant.ts`: um arquivo por categoria ou módulo, sem subpasta. Subpasta por categoria só entra se a lista crescer a ponto de justificar.
 
 ## Consultar antes de criar
 

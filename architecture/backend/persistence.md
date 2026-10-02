@@ -200,9 +200,9 @@ O outcome de persistência chega ao caso de uso como valor comum. Dentro de uma 
 - A condição de `version` no `where` é só a comparação mecânica, sem critério de negócio junto?
 - A implementação recusa escrita fora de um escopo de `UnitOfWork` ativo, com leitura livre para acontecer fora?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Migrações de banco.** A Source não tem regra de migração de banco: como a migração é gerada, revisada, aplicada e revertida, e como sai uma migração destrutiva. Até ter, schema e migrações seguem as instruções de projeto de `packages/db` (`backend/layers.md`, "Onde cada arquivo mora").
+- **Migrações de banco.** O projeto decide como a migração é gerada, revisada, aplicada e revertida, e como sai uma migração destrutiva, nas instruções de projeto de `packages/db`.
 
 ## Referências
 

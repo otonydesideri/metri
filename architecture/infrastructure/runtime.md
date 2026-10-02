@@ -137,9 +137,9 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - Com o banco fora do ar, o app-api falha no boot em segundos, dizendo o que fazer?
 - Com Docker, há um `compose.yaml` só, com o nome do projeto, e o `pnpm db:down` remove o container? Com o Postgres que já roda, o `compose.yaml` e os scripts `db:up` e `db:down` saíram?
 
-## Em aberto
+## Delegado ao projeto
 
-- **CI e deploy.** A Source não tem regra de pipeline de CI nem de deploy. A topologia de deploy é delegação de projeto (`.metri/ARCHITECTURE.md`, "Delegações"), e a entrega em produção segue a regra de release do projeto (`.metri/rules/infrastructure/release.md`).
+- **CI e deploy.** O projeto decide o pipeline de CI e o deploy: a topologia de deploy em `.metri/ARCHITECTURE.md`, "Delegações", e a entrega em produção pela regra de release do projeto (`.metri/rules/infrastructure/release.md`).
 
 ## Referências
 

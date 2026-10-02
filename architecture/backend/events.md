@@ -98,7 +98,7 @@ Pontos-chave:
 - Registrar não é despachar. Entre `addDomainEvent()` e o despacho, o evento só existe dentro do agregado; se o caso de uso retornar `failure(...)` antes de gravar, nenhum subscriber fica sabendo de nada.
 - Dentro de um escopo de `UnitOfWork` (`backend/transactions.md`), o repositório registra o agregado no contexto em vez de despachar, e a unidade de trabalho despacha os eventos de cada agregado gravado depois do commit; num escopo desfeito, descarta-os. Cada agregado carrega os próprios eventos e cada um pode interessar a subscribers diferentes.
 - O dublê em memória espelha o real também nisso: cada método de escrita de `test/repositories/` termina com o mesmo `dispatchEventsForAggregate(...)`. Sem isso, o spec unitário de subscriber não tem como provar a reação.
-- Falha técnica entre o registro e o despacho (a escrita lança e a request morre em 500) deixa o agregado retido na lista estática de marcados. O desenho aceita esse resíduo: o gatilho é raro e o processo é reciclado em deploy. Se um dia virar problema de memória real, a revisita é aqui.
+- Falha técnica entre o registro e o despacho (a escrita lança e a request morre em 500) deixa o agregado retido na lista estática de marcados. O desenho aceita esse resíduo: o gatilho é raro e o processo é reciclado em deploy.
 
 **Agregado cuja tabela é escrita por um sistema externo não emite evento nas escritas dele.** Escrita que não passa por repositório nosso não tem ponto de despacho, e nenhum mecanismo do domínio a observa (`domain/model.md`, "Propriedade do agregado: quem escreve a tabela"). A reação a esses fatos entra pela porta que aquele sistema oferecer — um webhook, um hook do próprio adapter — chamando um caso de uso: é o papel de subscriber, com outro registro. Domain event nesses agregados só nasce das escritas nossas, que têm despacho normal.
 
@@ -124,7 +124,7 @@ O despacho do core é síncrono: `dispatchEventsForAggregate` percorre os handle
 
 A regra: **handler nunca deixa erro escapar**. O `handle()` do subscriber envolve tudo em `try/catch`, loga e engole, como no exemplo acima. `failure` esperado do caso de uso e exceção técnica recebem o mesmo destino: log e fim. Assim a falha de um subscriber não afeta o emissor nem os outros subscribers, por construção.
 
-Engolir com log é a estratégia para efeito em que a perda é tolerável e visível. O destino do efeito que não tolera essa perda (o job enfileirado pelo subscriber) e a compensação enquanto a fila não existe são decisão de `backend/operation-routing.md`, seções "Job" e "Compensação".
+Engolir com log é a estratégia para efeito em que a perda é tolerável e visível. O destino do efeito que não tolera essa perda (o job enfileirado pelo subscriber) e a compensação do efeito pós-commit que falha são decisão de `backend/operation-routing.md`, "Efeito pós-commit que falha".
 
 ## O bus é in-process, preparado para deixar de ser
 
@@ -149,7 +149,3 @@ O formato do spec de subscriber (dublês, `waitFor`, limpeza de handlers no `bef
 - O subscriber é fino, registrado em `events.module.ts`, e o `handle()` não deixa erro escapar?
 - Fato que acontece dentro de um sistema externo entrou pela porta dele chamando um caso de uso, não por evento?
 - O spec de subscriber limpa os handlers no `beforeEach` e usa `waitFor`?
-
-## Em aberto
-
-- **Bus distribuído.** Bus distribuído não tem gatilho concreto; a decisão de transporte acontece quando a necessidade aparecer.

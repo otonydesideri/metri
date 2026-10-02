@@ -70,7 +70,7 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 
 - O cliente da venda (endereço de entrega, histórico de pedidos) e o cliente do faturamento (dados fiscais, condição de pagamento) são o sinal clássico: o mesmo termo, dois modelos. Com dois contextos, cada um tem o próprio `Customer`, e o faturamento reage ao `OrderConfirmedEvent` da venda, que carrega ids, montando a própria visão pelo próprio modelo.
 - Dentro de um contexto, módulos se comunicam pelas regras de `backend/modules.md`, "Comunicação entre módulos"; as proibições desta seção valem entre contextos.
-- Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, ponto em aberto de `backend/modules.md`: pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`, nenhum mecanismo próprio nasce antes da decisão.
+- Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, delegada ao projeto (`backend/modules.md`, "Delegado ao projeto"): nenhum mecanismo próprio nasce sem a decisão do projeto (`skills/writing-for-agents/RULE-FORMAT.md`, "Delegado ao projeto").
 - Leitura entre contextos segue a regra de join de `backend/reading.md`, "Regras absolutas da query".
 - A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Unidade de trabalho que grava agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos": o caso de uso carregaria as entidades dos dois lados (`backend/transactions.md`).
 - A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é decisão de projeto: o gatilho é a `activation` desta regra, e o registro, a linha dela em `.metri/ARCHITECTURE.md`, "Capacidades ativas".
@@ -85,11 +85,11 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 
 ## Referências
 
-- `backend/modules.md`: módulo, comunicação entre módulos e o ponto em aberto de integração.
+- `backend/modules.md`: módulo, comunicação entre módulos e a integração delegada ao projeto.
 - `domain/model.md`: agregado e fronteira de consistência.
 - `backend/events.md`: o fato publicado entre contextos.
 - `backend/reading.md`: leitura e join entre contextos.
 - `backend/operation-routing.md`: o mecanismo de uma reação.
 - `backend/layers.md`, `general/code-placement.md`: estrutura layer-first e colocação entre app e pacote.
-- `skills/writing-for-agents/RULE-FORMAT.md`: regra de transição.
+- `skills/writing-for-agents/RULE-FORMAT.md`: o ponto delegado ao projeto.
 - `.metri/ARCHITECTURE.md`: a divisão concreta como decisão de projeto.

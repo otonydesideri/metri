@@ -12,7 +12,7 @@ The Source decides how the system is built; the project decides what only it kno
 
 - The stack is GLOBAL (`node_modules/metri/architecture/defaults/stack.md`): ask only when the product doesn't fit it, and a swap is an ADR.
 - GLOBAL_CONDITIONAL without the need stays inactive, with nothing of it asked.
-- An activated GLOBAL_CONDITIONAL capability follows its global owner, by the transition rule (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Regra de transição"); activation resolves only its PROJECT_SPECIFIC values.
+- An activated GLOBAL_CONDITIONAL capability follows the form its global owner writes (`node_modules/metri/skills/writing-for-agents/RULE-FORMAT.md`, "Forma escrita sem instância"); activation resolves only its PROJECT_SPECIFIC values.
 - A PROJECT_SPECIFIC value is resolved before the first point of the project that depends on it, and never with a choice the Source did not declare as its default.
 
 ## Order
@@ -68,7 +68,7 @@ The Subject is the label of the line in "Delegações".
 
 - A project that sends a confirmation e-mail, stores product photos and has no expensive read activates mail and storage and resolves vendor, provider and buckets; cache and observability raise no question, and bounded contexts stay at the default of one context.
 - The first job shows up months later: the /look-across that plans it activates `backend/async-jobs`, and resolves its worker process, by steps 3 to 6 of "Order".
-- Requiring workers in their own app is a need without coverage, because that design is open in `backend/async-jobs.md`: activation stops at ARCHITECTURE DECISION REQUIRED.
+- Requiring workers in their own app is a need without coverage, because no global rule covers that design (`backend/async-jobs.md` leaves the worker's process to the project): activation stops at ARCHITECTURE DECISION REQUIRED.
 
 ## Check
 

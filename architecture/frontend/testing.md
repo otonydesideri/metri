@@ -79,7 +79,7 @@ test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo
   await page.goto('/orders/1042');
   await page.getByRole('button', { name: 'Confirmar pedido' }).click();
   await expect(page.getByText('Pedido confirmado')).toBeVisible();
-  await saveEvidence(page, 'UC1.2', 1, testInfo);
+  await saveEvidence(page, 'UC<f>.<n>', 1, testInfo);
 });
 ```
 

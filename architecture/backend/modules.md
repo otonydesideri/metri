@@ -53,7 +53,7 @@ Teste mora ao lado do que ele prova: spec unitário junto do arquivo testado (`<
 
 ## Comunicação entre módulos
 
-- Contrato é do app: qualquer caso de uso injeta qualquer contrato, inclusive de agregado de outro módulo do mesmo bounded context, pelo mecanismo de `backend/application.md`, "Contratos são `abstract class`". Não existe mecanismo de integração além disso; ver "Pontos em aberto".
+- Contrato é do app: qualquer caso de uso injeta qualquer contrato, inclusive de agregado de outro módulo do mesmo bounded context, pelo mecanismo de `backend/application.md`, "Contratos são `abstract class`". Não existe mecanismo de integração além disso; ver "Delegado ao projeto".
 - Entre bounded contexts diferentes valem as proibições de `domain/bounded-contexts.md`, "Interação entre contextos".
 - A pasta de contratos é única e do app. A fronteira que protege o sistema é a de camada (`backend/boundaries.md`), não a de módulo.
 - Leitura de N registros de outro módulo é em lote, com `Map` no consumo (`backend/persistence.md`, "Leitura em lote").
@@ -81,8 +81,6 @@ Todo comportamento exposto por um módulo entra por uma porta: a HTTP, um contro
 - O módulo aparece só como subpasta nas camadas que usa, sem módulo Nest próprio, registrado nas listas centrais?
 - Outro módulo é usado pelo contrato compartilhado, com leitura em lote, e reação ou atomicidade pelo mecanismo de `backend/operation-routing.md`?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Integração entre módulos além do contrato compartilhado.** Integração entre módulos além do contrato compartilhado (capacidade exposta dedicada, comando de um módulo sobre outro) não tem desenho fechado; até essa decisão, módulo novo não introduz mecanismo próprio de integração.
-  - Capacidade exposta dedicada
-  - Comando de um módulo sobre outro
+- **Integração entre módulos além do contrato compartilhado.** O projeto decide a integração entre módulos além do contrato compartilhado (capacidade exposta dedicada, comando de um módulo sobre outro).

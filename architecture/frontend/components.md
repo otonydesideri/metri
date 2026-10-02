@@ -79,7 +79,7 @@ O compound é a exceção, e não contraria o parágrafo acima: as partes de um 
 
 ## Composição e o que sobe pro pacote
 
-O primitivo (`Tabs`, `TabsList`, `FieldLabel`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra que já existe, não por uma regra nova daqui: `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
+O primitivo (`Tabs`, `TabsList`, `FieldLabel`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
 
 **Obrigatório.** Primitivo do `@metri/ui` entra por import nomeado, como na documentação do shadcn: `import { Tabs, TabsList, TabsTrigger } from '@metri/ui/components/ui/tabs'` (`defaults/ui.md`, "Componente novo").
 
@@ -105,7 +105,3 @@ O erro de leitura não apaga a tela inteira: o chrome que não depende do dado q
 - Nenhum componente existe só pra repassar prop pro primitivo do pacote, e peça compartilhada de anatomia variável é compound consumido via `import * as`?
 - Peça mais global subiu pro pacote pela regra de colocação, sem redefinir o primitivo do `@metri/ui`?
 - Todo primitivo do `@metri/ui` entra por import nomeado, de `@metri/ui/components/ui/<componente>`?
-
-## Em aberto
-
-- **Acessibilidade.** A Source não tem regra geral de acessibilidade (teclado, foco, contraste, leitor de tela); o que existe é pontual: o nome acessível do controle em `frontend/forms.md`, "Rótulo, descrição e o nome acessível do controle".

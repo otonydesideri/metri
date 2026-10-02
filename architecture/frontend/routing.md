@@ -135,9 +135,9 @@ O modal de tarefa montado por estado na página que o dispara:
 - Drill-down por estado só onde cada item grava ao salvar, com a ação "Voltar" para a lista?
 - Segmento de rota está em inglês e kebab-case, com recurso identificado por id?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Error boundary.** A Source não tem regra de error boundary: onde fica o limite que pega erro de render ou de carregamento de página, fora dos estados de leitura (`frontend/components.md`, "Estados de leitura: loading, vazio e erro"), e o que ele mostra.
+- **Error boundary.** O projeto decide onde fica o limite que pega erro de render ou de carregamento de página, fora dos estados de leitura (`frontend/components.md`, "Estados de leitura: loading, vazio e erro"), e o que ele mostra.
 
 ## Referências
 

@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-`humanizer/SKILL.md`, which opens with "Adapted from blader/humanizer@v3.1.0 (MIT)", adapts https://github.com/blader/humanizer at tag `v3.1.0`, under this license:
+`humanizer/SKILL.md`, which opens with "Adapted from blader/humanizer (MIT)", adapts https://github.com/blader/humanizer, under this license:
 
 ```text
 MIT License

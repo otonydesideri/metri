@@ -2,7 +2,8 @@
 
 ## v1.7.0 (2026-10-02)
 
-O source deixa de ter ADR: a decisão mora na regra dona, e o porquê para humano, numa tabela do README.
+O source deixa de ter ADR e de contar a própria história: a decisão mora na regra dona, o porquê para humano numa
+tabela do README, e todo texto diz a regra no presente.
 
 ### O que muda
 
@@ -13,6 +14,20 @@ O source deixa de ter ADR: a decisão mora na regra dona, e o porquê para human
   roda do build e não pelo `tsx`, e o client gerado não valida a resposta em runtime.
 - **`adr:` só na regra do projeto.** O projeto continua com `docs/adr/`, o ADR-FORMAT e a chave `adr:` nas regras
   dele. No docs-lint, `adr:` em regra global é erro, e `adr: [metri:ADR-NNNN]` em regra do projeto também.
+- **Texto no presente.** `architecture/`, `skills/`, `agents/`, `starter/`, `cli/templates/` e o README deixam de
+  contar história: saem as menções a piloto, os números de versão, `PP-<n>` e `GAP-<n>` com número, ids de ticket de
+  projeto, "antes era", "passou a", "desde <data>" e "decisão deste ticket". Os exemplos usam `UC<f>.<n>`,
+  `T<s>.<n>` e `<id>`. A seção "Validação e melhoria (piloto)" do README sai, e "Evolução futura" fica em uma tabela
+  curta (item, ponto de extensão, evolução).
+- **"Em aberto" vira "Delegado ao projeto".** A seção só fica quando o ponto muda o que o agente faz, e então é uma
+  linha por ponto, `- **<título>.** O projeto decide <o quê>.`; o ponto que é trabalho futuro sai. A "Regra de
+  transição" do RULE-FORMAT vira "Forma escrita sem instância", e "Ponto em aberto" vira "Delegado ao projeto"
+  (`skills/writing-for-agents/RULE-FORMAT.md`). "Refinar uma regra existente" vira "Escrita da regra", sem o roteiro
+  de migração.
+- **`verify` do source: `transient-text`.** Barra, nessas pastas, `pilot` e `piloto`, `v<n>.<n>`, `PP-<n>` e
+  `GAP-<n>` com número e id de ticket (`UC<f>.<n>`, `T<s>.<n>` com número). Só roda no source, nunca no projeto; os
+  exemplos de projeto de amostra de `MATRIX-FORMAT.md` e `SPEC-FORMAT.md` ficam fora dos ids.
+- **Humanizer.** A atribuição fica com autor, URL e licença, sem a tag da versão adaptada.
 
 ### Migrar de v1.6.3
 
@@ -28,7 +43,9 @@ O source deixa de ter ADR: a decisão mora na regra dona, e o porquê para human
    No texto (ADR, regra, `.metri/ARCHITECTURE.md`, `docs/DESIGN.md`), escreva o id da regra no lugar do ADR. Em
    `adr:` de regra do projeto, tire o item: o campo guarda só ADR do projeto; se a regra precisa que a dona seja
    lida antes, ponha o id dela em `read_first`.
-3. `pnpm docs-lint` verde.
+3. Regra do projeto com seção "Em aberto": o ponto que muda o que o agente faz vira uma linha em "Delegado ao
+   projeto"; o que é trabalho futuro sai.
+4. `pnpm docs-lint` verde.
 
 ## v1.6.3 (2026-10-02)
 

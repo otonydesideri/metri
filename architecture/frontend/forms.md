@@ -153,7 +153,7 @@ Quando um botão se repete em várias linhas da mesma lista: **Obrigatório.** E
 
 ## Aplicação
 
-- Base UI e MUI resolvem a ligação de descrição com uma raiz de campo; o `Field` do shadcn não faz essa ligação, e é essa peça que ainda falta no `@metri/ui`.
+- Base UI e MUI resolvem a ligação de descrição com uma raiz de campo; o `Field` do shadcn não faz essa ligação, e é essa peça que falta no `@metri/ui`.
 - O estado em voo do submit é o `formState.isSubmitting`, e erro de campo continua no `FieldError` do campo, não vira toast (`frontend/data-fetching.md`, "Erro e sucesso").
 - O layout do formulário (seções, campo, par Cancelar/submissão) é o do vocabulário visual (`docs/DESIGN.md`).
 - O tipo de cada schema vem do `z.infer`, nunca redeclarado à mão (`frontend/helpers.md`, "Zod schema vs. type plain"), e o tipo de valores do form (`<Nome>Values`) fica no próprio arquivo de schema (`frontend/helpers.md`, "Tipos compartilhados").

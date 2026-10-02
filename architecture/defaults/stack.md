@@ -25,7 +25,7 @@ Backend:
 - Rate limit: `@nestjs/throttler`, guard global, pelo IP do cliente atrás dos `TRUST_PROXY` saltos de proxy (infrastructure/runtime, backend/errors).
 - Data e fuso: `date-fns` + `@date-fns/tz`, no domínio (general/date-time).
 - Fila: pg-boss (backend/async-jobs).
-- E-mail: Resend, com o template em React Email (`@react-email/render`) (infrastructure/mail, em aberto).
+- E-mail: Resend, com o template em React Email (`@react-email/render`) (infrastructure/mail, vendor delegado ao projeto).
 - Storage: Cloudflare R2 pelo `@aws-sdk/client-s3`, implementação de referência (infrastructure/storage).
 
 Frontend (`app-web`):
@@ -38,7 +38,7 @@ Frontend (`app-web`):
 - UI: consome `@metri/ui` (kit de componentes shadcn/ui com `tw-animate-css`, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
 - Tema: `next-themes`, o provider de tema do `@metri/ui` (frontend/theming, defaults/ui).
 - Notificação: `sonner`, com o `Toaster` do `@metri/ui` e o `toast` da lib (defaults/ui, frontend/data-fetching).
-- Estado global cliente: Zustand (frontend/state, em aberto).
+- Estado global cliente: Zustand (frontend/state).
 
 Testes:
 

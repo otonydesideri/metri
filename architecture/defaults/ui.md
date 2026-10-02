@@ -61,7 +61,7 @@ Exemplo completo: `starter/packages/ui/components.json`, `starter/packages/ui/ts
 ## Componente novo
 
 - Entra pela CLI do shadcn (`shadcn@latest add <componente>`), rodada no `@metri/ui`, nunca copiado à mão; a CLI o grava em `src/components/ui/`.
-- O componente usa o `cn` do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"` e instala o pacote `cn` do npm no `@metri/ui` (desde 03/09/2026 o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`); o `noRestrictedImports` do Biome falha no `lint` até o import passar ao do kit (`defaults/stack.md`, "Configuração de referência"), e o `metri design-tokens` falha até a dependência sair do `package.json`.
+- O componente usa o `cn` do kit (`import { cn } from '@metri/ui/lib/utils'`), que conhece os níveis de texto do tema. A CLI grava `import { cn } from "cn"` e instala o pacote `cn` do npm no `@metri/ui` (o registry do shadcn importa o `cn` dele, e o alias `utils` só troca o `@/lib/utils`); o `noRestrictedImports` do Biome falha no `lint` até o import passar ao do kit (`defaults/stack.md`, "Configuração de referência"), e o `metri design-tokens` falha até a dependência sair do `package.json`.
 - O app importa o componente pelos exports nomeados que a CLI escreveu, como `Tabs` e `TabsList` (`frontend/components.md`, "Composição e o que sobe pro pacote").
 - O `toast` vem da lib `sonner`, como na documentação do shadcn: o `app-web` depende do `sonner` na mesma versão do `@metri/ui`, porque duas cópias da lib não se falam e o toast não chega ao `Toaster`.
 

@@ -13,7 +13,7 @@ id: F<n>
 title: <feature>
 status: draft | planned | done
 horizon: now | planned | fog | out
-milestone: <v1>
+milestone: <marco>
 ---
 
 # F<n> · <feature>

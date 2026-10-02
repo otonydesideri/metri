@@ -100,6 +100,6 @@ Pontos-chave:
 - A falha que o SDK devolve como valor, em vez de lançar, está checada inline em cada sender?
 - Registro e dublê seguem `infrastructure/services.md` (sender no `ServicesModule`, fake por contrato, sem dublê da classe de infra)?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Vendor de e-mail.** O vendor de e-mail segue aberto como delegação de projeto (`.metri/ARCHITECTURE.md`, "Capacidades ativas"), resolvida com o primeiro fluxo real; até lá, `ResendMailService` e a checagem do campo `error` valem como ilustração da forma. Quando o vendor escolhido pede forma que este documento não tem, a forma entra aqui antes do código.
+- **Vendor de e-mail.** O projeto decide o vendor de e-mail (`.metri/ARCHITECTURE.md`, "Capacidades ativas").

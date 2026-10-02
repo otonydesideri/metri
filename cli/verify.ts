@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { BIN, layoutOf, takeOption } from './lib/layout.ts';
+import { transientProblems } from './lib/transient-lint.ts';
 
 const HELP = `verify: roda os checks e soma o resultado.
 
@@ -14,10 +15,14 @@ Ordem (todos rodam, mesmo depois de uma falha):
   2. rules-index:check (rules-index --check);
   3. design-tokens, só no projeto: o tema do código segue os tokens do docs/DESIGN.md; sem os dois, fica pendente;
   4. sot, só no projeto: os cabeçalhos SOURCE OF TRUTH e o registro das slices construídas (metri sot --help);
-  5. api:drift, com o script api:generate no package.json da raiz: roda o gerador do contrato de API
+  5. transient-text, só no source: architecture/, skills/, agents/, starter/, cli/templates/ e o README.md dizem a
+     regra no presente, sem a história do método; barra "piloto" ou "pilot", número de versão (v1.2), PP-<n> e
+     GAP-<n> com número e id de ticket (UC1.1, T2.0). Os exemplos de MATRIX-FORMAT.md e SPEC-FORMAT.md, que mostram
+     um projeto de amostra, ficam fora dos três últimos;
+  6. api:drift, com o script api:generate no package.json da raiz: roda o gerador do contrato de API
      (backend/http-api) e falha se ele mudar algum arquivo; precisa de git. Sem o script, com apps/app-api e
      apps/app-web, fica pendente;
-  6. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
+  7. typecheck, lint e test: os scripts com esses nomes no package.json da raiz, só os que existirem
      (pnpm run <nome>).
 
 Saída: uma linha por check, "ok <nome>", "pendente <nome>: <motivo>" ou "falha <nome>"; a saída do check que
@@ -91,6 +96,13 @@ function apiDrift(): Result {
   return { status: 1, output: [...lines, `o contrato gerado estava desatualizado; revise e comite o que o ${GENERATE_SCRIPT} gerou`].join('\n') };
 }
 
+// transient-text: the source's text tells the rule in the present, not its history.
+function transientText(): Result {
+  const problems = transientProblems('.');
+  const lines = problems.map(({ file, line, pattern, excerpt }) => `${file}:${line}: ${pattern}: ${excerpt}`);
+  return { status: problems.length === 0 ? 0 : 1, output: lines.join('\n') };
+}
+
 const scripts: Record<string, string> = existsSync('package.json')
   ? (JSON.parse(readFileSync('package.json', 'utf8')).scripts ?? {})
   : {};
@@ -100,6 +112,8 @@ const checks: Check[] = [
 ];
 if (layoutOf().isProject) {
   checks.push({ name: 'design-tokens', run: metri('design-tokens') }, { name: 'sot', run: metri('sot') });
+} else {
+  checks.push({ name: 'transient-text', run: transientText });
 }
 if (GENERATE_SCRIPT in scripts) {
   checks.push({ name: 'api:drift', run: apiDrift });

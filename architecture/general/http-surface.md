@@ -22,6 +22,6 @@ Quando um valor escolhido pelo usuário vira o primeiro segmento de uma URL na r
 - O endpoint novo entrou sob `/api`, com DTO Zod na fronteira e tradução de erro pela tabela de `backend/errors.md`?
 - Endereço do usuário na raiz recusa `api` e o primeiro segmento de cada rota da SPA?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Segurança HTTP.** A Source não tem regra de segurança HTTP além do same-origin desta regra e do throttler global (`infrastructure/runtime.md`): headers de segurança (CSP, HSTS) e proteção de CSRF além do `SameSite` seguem sem desenho.
+- **Segurança HTTP.** O projeto decide os headers de segurança (CSP, HSTS) e a proteção de CSRF além do `SameSite`; o same-origin desta regra e o throttler global (`infrastructure/runtime.md`) são o que a Source fixa.

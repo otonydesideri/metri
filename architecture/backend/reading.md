@@ -127,7 +127,7 @@ Pontos-chave:
 
 O contrato `<Ação>Query` é o query service da aplicação. Ele nomeia uma capacidade de leitura e devolve um DTO; não é domain service nem repositório. Projeção é a seleção e transformação que a implementação faz para produzir esse DTO, seja por `select`, SQL, view ou outra fonte. Read model é o modelo conceitual otimizado para leitura: pode ser o próprio DTO montado a cada execução ou uma estrutura persistida e desnormalizada.
 
-Separar essa query do caminho de escrita já é segregação entre comando e consulta, mas não exige banco separado, eventos ou consistência eventual. Read store próprio entra quando escala, custo da consulta, autonomia de bounded context ou disponibilidade justificarem sincronização e operação adicionais. Até lá, contrato de aplicação com implementação sobre o mesmo Postgres preserva a separação sem adotar o custo inteiro de CQRS.
+Separar essa query do caminho de escrita já é segregação entre comando e consulta, mas não exige banco separado, eventos ou consistência eventual. Read store próprio entra quando escala, custo da consulta, autonomia de bounded context ou disponibilidade justificarem sincronização e operação adicionais. Sem essa justificativa, contrato de aplicação com implementação sobre o mesmo Postgres preserva a separação sem adotar o custo inteiro de CQRS.
 
 ## O não-encontrado do detalhe
 

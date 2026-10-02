@@ -2,7 +2,7 @@
 
 **Metodologia de desenvolvimento de software com IA**
 
-> **Versão 1.6.3.** Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
+> Este repositório é o Architecture Source da metodologia, instalado nos projetos como o pacote `metri`. O agente trabalha pelas skills (`skills/`), pelos agents (`agents/`), pelas regras (`architecture/`) e pelo `VOCABULARY.md`; este README é para humano.
 
 ## Em uma página
 
@@ -48,7 +48,7 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#v1.6.3                  # ou link:<caminho do source>, para evoluir o método
+pnpm add -D github:otonydesideri/metri#<tag>                   # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 
@@ -226,7 +226,7 @@ A área `domain/` (global e do projeto) define como modelamos domínio no códig
 | Evidência de um critério `Tela:`               | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, gravados com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`); depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
 | Problema, solução, casos de uso e decisões de implementação e de teste de uma feature | `.metri/specs/<F-id>.md` | chat, `PRODUCT.md`, `MATRIX.md`                |
-| Slices, contratos e o plano ao redor dos tickets | `MATRIX.md`; um board próprio, no futuro, é uma visão que lê e escreve a MATRIX, as specs e os tickets pelo formato estrito deles | chat, handoff                                  |
+| Slices, contratos e o plano ao redor dos tickets | `MATRIX.md` | chat, handoff                                  |
 | Cada UC ou T: história e BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
 | Comportamento já construído                    | testes + código                           | matriz (a slice colapsa numa linha com os donos, `sot:`; o arquivo do ticket fica, com `status: done`) |
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
@@ -356,7 +356,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | Caso de uso como unidade de definição, ligando planejamento e código                                                                                                                  | DDD                                      |
 | `DESIGN.md` como referência de design para agentes                                                                                                                                    | Formato do getdesign.md (spec do Google) |
 | Skill `humanizer`: os sinais de texto gerado por IA e como reescrever sem inventar fato                                                                                               | blader/humanizer (a partir do "Signs of AI writing" da Wikipedia) |
-| Starter: o código da fundação que o `metri init` copia num projeto novo                                                                                                                  | Piloto 2 (a agenda), fundação aceita no `/accept` |
+| Starter: o código da fundação que o `metri init` copia num projeto novo                                                                                                                  | Fundação aceita no `/accept` de um projeto |
 
 Referências:
 
@@ -372,7 +372,7 @@ Referências:
 | ----------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Lista longa de user stories         | Fora               | O UC abre com uma história (`Como <ator>, quero <ação>, para <benefício>.`); o resto, BRs e critérios, diz o mesmo de forma verificável, com menos tokens              |
 | Plano por fases                     | Fora               | É planejamento horizontal: gera mini-apps isolados. A matriz substitui                                                                                                |
-| Design técnico por feature, sempre  | Fora na v1         | O agente planeja no próprio contexto; padrão novo vira ticket `pattern`; decisão difícil vira ADR. Technical design para features complexas fica para "Evolução futura" |
+| Design técnico por feature, sempre  | Fora               | O agente planeja no próprio contexto; padrão novo vira ticket `pattern`; decisão difícil vira ADR. Technical design para features complexas fica para "Evolução futura" |
 | Etapa própria de UI/UX              | Fora               | A camada de UI/UX atravessa as etapas ("Interface e Design System"): triagem, telas canônicas, `frontend/experience`, evidência por critério e `reviewer-ux` |
 | Pasta de documentação livre         | Fora               | Desatualiza. Regras com escopo e enforcement + cabeçalhos inline                                                                                                      |
 | Review por ticket                   | Fora               | O portão do ticket são os checks. Julgamento por slice; exceção: tickets sensíveis e de padrão                                                                        |
@@ -382,40 +382,19 @@ Referências:
 | Wayfinder como processo separado    | Fundido            | Vira a seção Fog da matriz                                                                                                                                            |
 | Standup, relatório de status, retro | Fora               | A matriz é o status; o aprendizado é disparado por evento e passa por portão                                                                                          |
 | Estimativas                         | Fora               | O tamanho já é limitado: um ticket cabe num contexto limpo e em ~5 regras                                                                                             |
-| Times de agentes com papéis         | Fora na v1         | Passar trabalho entre agentes perde contexto ("Evolução futura")                                                                                            |
+| Times de agentes com papéis         | Fora               | Passar trabalho entre agentes perde contexto ("Evolução futura")                                                                                            |
 | Documento de handoff                | Só se interrompido | O ticket já é autocontido                                                                                                                                             |
 | Arquivo de lições aprendidas        | Fora               | A lição vira check, regra, ADR, contexto, design, ou nada                                                                                                             |
 
 ## Evolução futura
 
-Estes itens ainda estão fora do método e são a direção declarada dele. O modelo atual foi desenhado para não bloqueá-los: cada um tem um ponto de extensão preparado (campo opcional ou convenção), e nada do que existe muda de forma quando eles chegarem.
+Itens fora do método, cada um com o ponto de extensão pronto (campo opcional ou convenção): nada do que existe muda de forma quando eles chegam.
 
-| Item                                            | Já preparado na v1                                                                                                                                                                                         | Evolução                                                                                           |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| **Plano incremental do produto (V1 → Vn)**      | Campo `milestone` nas features; horizontes `now / planned / fog / out`; releases por milestone                                                                                                             | Visão de roadmap gerada a partir da matriz; skill de planejamento de versões                       |
-| **Technical Design para features complexas**    | Ciclo de vida definido: **documento temporário**, cujas decisões migram para ADRs, regras e contratos no aceite, e então ele é removido | Casa, template, critério de quando é obrigatório, skill própria |
-| **Board próprio**                               | Formato estrito, legível por máquina, com ids estáveis e chaves em inglês, validado por lint; a MATRIX e os tickets são a fonte única | Um board próprio, sem ferramenta externa: uma visão que lê e escreve a MATRIX e os tickets pelo formato estrito deles |
-| **Comunicação entre agentes**                   | Comunicação por artefatos (status, `PP`, `GAP`, `notes`), mediada pelo coordenador                                                                                                                         | Canais ou "rooms"; troca de informação entre workers (nunca repasse de trabalho)                   |
-| **Acompanhamento de consumo de tokens**         | Campo `metrics` no ticket, `{ rules, tokens }`, preenchido pelo `/build` no `done`: as regras sempre, os tokens quando a ferramenta expõe o dado | Painel de consumo, orçamentos por agente e por slice                                               |
-| **Times de agentes coordenados**                | Papéis de coordenador e worker; matriz como grafo de dependências (`blocked_by`, `touches`); convenção de branches `slice/<id>` e `ticket/<id>`; worktrees                                                 | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações                 |
-
-### Validação e melhoria (piloto)
-
-O piloto é interativo: o usuário responde às perguntas dos portões, numa iniciativa real de 2–3 slices, num repositório novo:
-
-1. "Começar um projeto" e `metri init`.
-2. `/shape`, com a triagem de design, e `/look-across`.
-3. Slice 0: o que falta depois do starter, o banco de desenvolvimento e, com interface, o tema e o shell.
-4. 2–3 slices até o `/accept` e um release.
-
-Anotar:
-
-- regras por ticket, pelo `pnpm rules-for --ticket <id>` (meta ≤ 5);
-- tokens por ticket, quando a ferramenta mostrar (`metrics` do ticket);
-- retrabalho no `/accept`: achados que reabrem UC ou viram T, e os de padrão que um lint teria pego;
-- propostas de padrão na construção, contexto buscado fora da cadeia de ponteiros e lições aprovadas por slice;
-- os três gatilhos do board próprio: conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, e linhas ativas da MATRIX depois da poda (o board começa acima de ~300);
-- nas perguntas: pergunta sobre algo já definido, inferência errada e pergunta que faltou;
-- na interface: a distância entre a tela e o DS.
-
-Os resultados alimentam a próxima versão desta metodologia; o que passar no portão de conhecimento vai ao source (template de código, capacidades condicionais, agents, regras e checks, estes a partir dos itens de "Verificação" sem `(check: <id>)`).
+| Item | Ponto de extensão | Evolução |
+| --- | --- | --- |
+| **Plano incremental do produto** | `milestone` na spec; horizontes `now / planned / fog`; releases por marco | Visão de roadmap gerada da matriz; skill de planejamento de marcos |
+| **Technical Design para features complexas** | Documento temporário: as decisões migram para ADRs, regras e contratos no aceite, e ele é removido | Casa, template, critério de quando é obrigatório, skill própria |
+| **Board próprio** | MATRIX, specs e tickets em formato estrito, com ids estáveis, chaves em inglês e lint | Uma visão que lê e escreve neles, quando houver conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, ou mais de ~300 linhas ativas na MATRIX depois da poda |
+| **Comunicação entre agentes** | Artefatos (status, `PP`, `GAP`, Notas), mediados pelo coordenador | Canais ou "rooms"; troca de informação entre workers, nunca repasse de trabalho |
+| **Acompanhamento de consumo de tokens** | `metrics` no ticket, `{ rules, tokens }`, preenchido pelo `/build` no `done` | Painel de consumo, orçamentos por agente e por slice |
+| **Times de agentes coordenados** | Coordenador e worker; `blocked_by` e `touches`; branches `slice/<id>` e `ticket/<id>`; worktrees | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações |

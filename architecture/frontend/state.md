@@ -11,7 +11,7 @@ applies_to:
   - "apps/app-web/src/shared/stores/**"
   - "apps/app-web/src/shared/contexts/**"
   - "apps/app-web/src/pages/**/use-*-params.ts"
-keywords: [estado cliente, estado servidor, URL state, useSearchParams, search params, "use-<tela>-params.ts", useState, useBoolean, Context, createContext, Provider, Zustand, useShallow, selector, persist, localStorage, useLocalStorage, troca de dono, queryClient.clear, nuqs, Jotai, tema]
+keywords: [estado cliente, estado servidor, URL state, useSearchParams, search params, "use-<tela>-params.ts", useState, useBoolean, Context, createContext, Provider, Zustand, useShallow, selector, persist, localStorage, useLocalStorage, troca de dono, queryClient.clear, tema]
 not_covered:
   - "o estado servidor, dado que vem ou vai para a API, que fica em React Query → frontend/data-fetching"
 examples: [frontend/state.examples.md]
@@ -80,7 +80,7 @@ export function OrderListPage() {
 }
 ```
 
-O `useSearchParams` do react-router entrega tudo como `string`: a conversão pra número, boolean ou enum fica no ponto de leitura. Quando um filtro cresce em número de chaves tipadas e essa conversão vira repetição, a biblioteca `nuqs` entra como próximo degrau, ver Pontos em aberto.
+O `useSearchParams` do react-router entrega tudo como `string`: a conversão pra número, boolean ou enum fica no ponto de leitura.
 
 ### O hook de params da tela
 
@@ -129,7 +129,7 @@ Um cuidado com Context: quando o valor do Provider muda, todo componente que cha
 
 ## Zustand: estado transversal a várias telas
 
-Use Zustand quando o estado é compartilhado entre telas diferentes (um carrinho que aparece no header e na página de checkout, um filtro global aplicado em várias listas) ou quando o custo de re-render do Context seria alto e você precisa de subscrição granular. Zustand é a biblioteca de estado global cliente desta Source; a decisão e o gatilho de revisão estão em Pontos em aberto.
+Use Zustand quando o estado é compartilhado entre telas diferentes (um carrinho que aparece no header e na página de checkout, um filtro global aplicado em várias listas) ou quando o custo de re-render do Context seria alto e você precisa de subscrição granular. Zustand é a biblioteca de estado global cliente desta Source.
 
 O store mora na casa `shared/stores/`, por módulo (`shared/stores/cart.ts`), com `create<T>()` tipado. Não há Provider: o store é um hook global, e é essa a diferença prática pro Context. Estado e ações moram no mesmo `create`.
 
@@ -160,7 +160,7 @@ export function CartActions() {
 
 **Persistência é decisão por store, não default.** Um store que precisa sobreviver a refresh (um carrinho, por exemplo) usa o middleware `persist` sobre `localStorage`. Store que não precisa não persiste. Dado de um dono específico num store persistido vaza para o próximo usuário do mesmo navegador se ninguém o limpar, e a limpeza segue a seção "Troca de dono: o estado que depende do dono é limpo", adiante.
 
-Um store nasce coeso num arquivo. Quando ele cresce a ponto de misturar fatias sem relação, o padrão de slices do Zustand (compor vários slice creators num `create`) divide sem quebrar o hook; isso é resposta a um store grande demais, não estrutura antecipada. Ver Pontos em aberto.
+Um store nasce coeso num arquivo. Quando ele cresce a ponto de misturar fatias sem relação, o padrão de slices do Zustand (compor vários slice creators num `create`) divide sem quebrar o hook; isso é resposta a um store grande demais, não estrutura antecipada.
 
 ## Troca de dono: o estado que depende do dono é limpo
 
@@ -217,12 +217,6 @@ function OrderWelcomeBanner() {
 - O evento que troca de dono limpa os stores persistidos e o cache de servidor, sem nada do cache persistido em storage?
 - Não há duplicação entre fontes (URL + local, Context + Zustand)?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Biblioteca de estado global.** A biblioteca de estado global é Zustand, escolhida por ser o default de menor atrito da comunidade para um app que já tem o estado servidor em React Query, com revisão em aberto: se o formato do estado pedir muitos valores independentes e derivados, com reatividade fina átomo a átomo, reavaliar Jotai (modelo de átomos) contra Zustand (store central) antes de multiplicar stores.
-  - Zustand (store central)
-  - Jotai (modelo de átomos)
-- **Leitura de search params.** A leitura de search params usa `useSearchParams` do react-router enquanto for pontual; `nuqs` (adapter de react-router, parsers tipados) entra quando a conversão manual de número, boolean ou enum virar repetição, ou quando um filtro composto precisar de atualização em lote da URL.
-  - `useSearchParams` do react-router
-  - `nuqs` (adapter de react-router, parsers tipados)
-- **Slices e `persist` do Zustand.** Slices e o middleware `persist` do Zustand nascem com a necessidade real: o primeiro store persistido define o formato de limpeza; o primeiro store grande demais define o corte em slices.
+- **Limpeza de store persistido.** O projeto decide o formato da limpeza do store persistido na troca de dono ("Troca de dono: o estado que depende do dono é limpo").

@@ -90,8 +90,6 @@ Specs (`*.spec.ts`, `*.e2e-spec.ts`) dentro de `src/` importam factories e dubl�
 
 ## Verificação
 
+O `boundaries` é um check do `metri check`, uma lista de fronteiras por import: a fronteira nova entra nele, na Source.
+
 - Nenhum import atravessa o grafo permitido, com os specs e o setup do e2e fora da conta? (check: boundaries)
-
-## Em aberto
-
-- **Ferramenta do check.** O `boundaries` é um check do `metri check`, uma lista de fronteiras por import: a fronteira nova entra nele, na Source, e o pacote que um ADR do projeto libera no domínio, no `package.json`. A troca por uma regra de lint de imports restritos ou por uma ferramenta de grafo de dependência não tem desenho fechado.

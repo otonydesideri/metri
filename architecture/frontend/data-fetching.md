@@ -75,7 +75,7 @@ Exemplo completo: `starter/apps/app-web/src/lib/http/client.ts`.
 
 Como a chamada sai na própria origem, o browser envia o cookie sem configuração cross-origin, e não existe env de URL da API no frontend — trocar de ambiente não troca nada no bundle.
 
-Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy usa a forma objeto, aponta para a porta do app-api, mantém `changeOrigin: false` e não reescreve domínio de cookie (`starter/apps/app-web/vite.config.ts`, provado pelo `dev-server-proxy.spec.ts` ao lado). Assim o backend recebe o `Host` da página, não o host interno do target. Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao futuro IaC, não ao bundle do frontend.
+Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy usa a forma objeto, aponta para a porta do app-api, mantém `changeOrigin: false` e não reescreve domínio de cookie (`starter/apps/app-web/vite.config.ts`, provado pelo `dev-server-proxy.spec.ts` ao lado). Assim o backend recebe o `Host` da página, não o host interno do target. Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao IaC, não ao bundle do frontend.
 
 A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro"); este arquivo não redefine o formato, lê ele.
 
@@ -301,7 +301,7 @@ O `@tanstack/react-query-devtools` entra só em desenvolvimento, montado como ir
 
 ## Padrões de referência
 
-Sem instância no produto ainda; a primeira de cada segue este documento, pela regra de transição de `skills/writing-for-agents/RULE-FORMAT.md`. Ficam aqui pra que a primeira implementação não reinvente o padrão.
+A primeira instância de cada um segue este documento (`skills/writing-for-agents/RULE-FORMAT.md`, "Forma escrita sem instância"). Ficam aqui pra que a primeira implementação não reinvente o padrão.
 
 ### Optimistic update
 
@@ -350,7 +350,3 @@ export function useOrderProcessing(id: string) {
 - A freshness de cada query é decisão do hook pela volatilidade (padrão/estável/realtime/verificação pontual), sem `staleTime` global?
 - O `QueryClient` é o singleton de `app/providers/query-client.ts`, montado no provider de `app/index.tsx`?
 - Todo evento que troca o dono do dado chama `queryClient.clear()`, e nada do cache é persistido em storage?
-
-## Em aberto
-
-- **`refetchOnWindowFocus` no backoffice.** O `refetchOnWindowFocus: true` é escolha de UX de backoffice; segue sem revisão até uma tela concreta mostrar que é chatty demais.

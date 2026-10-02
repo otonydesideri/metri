@@ -5,7 +5,7 @@ O formato de uma regra, global (`node_modules/metri/architecture/`) ou do projet
 ## Formato
 
 - Toda regra começa com frontmatter, com as chaves de `node_modules/metri/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
-- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades ("Modalidades", abaixo), blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida"). Os dois formatos atuais continuam válidos.
+- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades ("Modalidades", abaixo), blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida").
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
 ````markdown
@@ -53,26 +53,18 @@ Chave marcada `# opcional` só é escrita quando tem valor (`node_modules/metri/
 
 `(check: <id>)` é opcional: só entra quando um check automatiza o item, e o id dele está em `enforced_by`. Item sem ele é candidato a check.
 
-## Refinar uma regra existente (sem reescrever)
+## Escrita da regra
 
-Numa regra existente, muda só isto:
-
-1. Entra o frontmatter no topo. "Dono de", "Consultar antes de" e "Não cobre" passam para `description`, `use_when` e `not_covered` e saem do corpo. "Consultar antes de" é o gatilho do próprio arquivo, não uma lista de pré-requisitos: vai para `use_when` sem alteração, uma entrada por situação, e não para `read_first`.
-2. Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, idêntico, com um ponteiro no texto. Trecho curto que ilustra uma regra fica onde está.
-3. Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
-4. A cópia da regra de escape sai (ela vive no `AGENTS.md`, "How to work here").
-5. "Pontos em aberto" fica na regra, na seção "Em aberto" ("Ponto em aberto", abaixo).
-6. Citação que não se sustenta, em que o arquivo e a seção citados não dizem o que foi citado: a frase vai para o arquivo dono, usando um texto que já existe em outro arquivo. Se esse texto não existe em lugar nenhum, vira dúvida.
-
-Todo o resto fica como está: texto, ordem das seções, diagramas e tabelas.
-
-## Regra nova
-
-Segue o mesmo formato. O texto novo segue a skill `writing-for-agents`.
+- `description` é o "Dono de" da regra; `use_when`, o gatilho do próprio arquivo ("Consultar antes de"), uma entrada por situação, e nunca uma lista de pré-requisitos, que é `read_first`; `not_covered`, o "Não cobre".
+- Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, com um ponteiro no texto; trecho curto que ilustra uma regra fica onde está.
+- Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
+- A regra de escape vive no `AGENTS.md`, "How to work here", e não é copiada.
+- Citação cujo arquivo e seção não dizem o que foi citado: a frase vai para o arquivo dono, com um texto que já existe em outro arquivo; sem esse texto, vira dúvida.
+- O texto segue a skill `writing-for-agents`.
 
 ## Autoria da Architecture Source
 
-Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, pontos em aberto, regra de transição, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
+Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, o que a Source delega ao projeto, forma escrita sem instância, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
 
 Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
@@ -84,11 +76,11 @@ Este documento é o contrato de escrita da Source: onde cada decisão mora, que 
 
 #### Alcance
 
-**Obrigatório.** Documento novo, e texto novo ou refatorado em documento existente, segue este contrato.
+**Obrigatório.** Documento novo, e texto novo ou editado em documento existente, segue este contrato.
 
-**Permitido.** Texto escrito antes deste contrato continuar na forma anterior até ser refatorado, valendo como está escrito.
+**Permitido.** Trecho que ninguém editou continua na forma em que está, valendo como está escrito.
 
-> **Por quê.** A forma nova entra pelo trecho que já está sendo mudado, sem reescrever a Source inteira de uma vez.
+> **Por quê.** A forma entra pelo trecho que está sendo mudado, sem reescrever a Source inteira de uma vez.
 
 #### Ownership de decisão
 
@@ -128,7 +120,7 @@ O formato do arquivo de regra está em "Formato", acima: frontmatter em `node_mo
 | `**Recomendado.**` | RECOMMENDED |
 | `**Permitido.**` | PERMITTED |
 
-**Obrigatório.** Toda norma nova é marcada pela modalidade, com um dos marcadores da tabela, dentro de `## Regras` ou da seção temática em que está; os dois formatos valem ("Formato", acima).
+**Obrigatório.** Toda norma nova é marcada pela modalidade, com um dos marcadores da tabela, dentro de `## Regras` ou da seção temática em que está.
 
 **Obrigatório.** Uma regra tem uma modalidade e um assunto.
 
@@ -136,7 +128,7 @@ Quando a regra é condicionada: **Obrigatório.** A condição vem antes da moda
 
 **Proibido.** Regra escondida em rationale ou exemplo.
 
-Em texto novo ou refatorado: **Proibido.** Inferir obrigação de trecho sem modalidade.
+Em texto novo ou editado: **Proibido.** Inferir obrigação de trecho sem modalidade.
 
 #### Exceções
 
@@ -240,23 +232,25 @@ Quando a regra é checável mecanicamente: **Padrão.** Verificação por um che
 
 Quando a regra não é checável mecanicamente: **Padrão.** Verificação por checklist de perguntas de sim/não.
 
-#### Ponto em aberto
+#### Delegado ao projeto
 
-Pergunta em aberto fica na regra, na seção "Em aberto", um item por pergunta: `- **<título>.** <texto>`; nunca vira ADR.
+A Source decide a forma; o que só o projeto sabe, o projeto decide.
 
-ADR só registra decisão tomada, pelo critério de `node_modules/metri/skills/domain-language/ADR-FORMAT.md`, "When to offer an ADR".
+Quando a Source não decide um ponto e o agente agiria diferente por causa disso: **Obrigatório.** Uma linha na seção "Delegado ao projeto" da regra dona, `- **<título>.** O projeto decide <o quê>.`.
 
-#### Regra de transição
+**Proibido.** Escrever na regra um ponto que não muda o que o agente faz.
 
-É o regime que vale enquanto um ponto em aberto não fecha, e é o que os documentos citam como "a regra de transição".
+**Proibido.** Código introduzir mecanismo próprio para contornar um ponto delegado: a necessidade vira ARCHITECTURE DECISION REQUIRED (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Need without coverage").
 
-Quando existe forma arquitetural escrita para uma capacidade ainda sem instância no código: **Obrigatório.** A primeira implementação segue essa forma até a Source ser alterada.
+A decisão que o projeto toma segue o critério de `node_modules/metri/skills/domain-language/ADR-FORMAT.md`, "When to offer an ADR".
 
-**Proibido.** Tratar ferramenta ilustrativa como decisão por causa da regra de transição: a forma está decidida, a ferramenta não.
+#### Forma escrita sem instância
 
-Enquanto um ponto está aberto: **Proibido.** Código introduzir mecanismo próprio para contorná-lo.
+Quando existe forma arquitetural escrita para uma capacidade sem instância no código: **Obrigatório.** A primeira implementação segue essa forma.
 
-> **Por quê.** O documento já é a decisão da forma, mesmo quando a ferramenta ainda é ilustração; o que falta decidir fica nomeado como ponto em aberto.
+**Proibido.** Tratar ferramenta ilustrativa como decisão: a forma está decidida, a ferramenta não.
+
+> **Por quê.** O documento é a decisão da forma, mesmo quando a ferramenta é ilustração; o que o projeto decide fica nomeado em "Delegado ao projeto".
 
 #### Emendar ou criar
 

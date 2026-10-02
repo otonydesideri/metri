@@ -140,7 +140,7 @@ Pontos-chave:
 
 ## Lógica comum entre variações: Template Method
 
-Quando duas ou mais variações duplicam a mesma preparação (validar o payload, registrar o resultado), a base deixa de ser só contrato: o método público concreto orquestra o passo comum e delega às variações apenas o passo que de fato varia, agora `protected` e abstrato. Vale para as duas casas, a família pura de `enterprise/` e o contrato de integração; o exemplo abaixo evolui o segundo.
+Quando duas ou mais variações duplicam a mesma preparação (validar o payload, registrar o resultado), a base não é só contrato: o método público concreto orquestra o passo comum e delega às variações apenas o passo que de fato varia, `protected` e abstrato. Vale para as duas casas, a família pura de `enterprise/` e o contrato de integração; o exemplo abaixo evolui o segundo.
 
 ```ts
 // domain/application/services/notification/order-notifier.contract.ts

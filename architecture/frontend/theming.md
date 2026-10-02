@@ -52,7 +52,7 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 
 **Obrigatório.** O tema tem dois valores; a preferência do sistema operacional não entra: sem `system` (`enableSystem={false}`), e a `prefers-color-scheme` não decide o tema nem no provider nem no script inline.
 
-> **Por quê.** Sem `system`, `theme` é sempre o que está na tela, então todo controle lê o mesmo valor e não existe diferença entre o que o usuário pediu e o que está pintado. Trazer `system` de volta reabre essa diferença e exige um segundo valor no contrato do provider, porque um switch claro/escuro não tem como se desenhar a partir de uma escolha de três estados.
+> **Por quê.** Sem `system`, `theme` é sempre o que está na tela, então todo controle lê o mesmo valor e não existe diferença entre o que o usuário pediu e o que está pintado. Incluir `system` reabre essa diferença e exige um segundo valor no contrato do provider, porque um switch claro/escuro não tem como se desenhar a partir de uma escolha de três estados.
 
 **Obrigatório.** O valor para quem nunca escolheu é `light`.
 

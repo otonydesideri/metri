@@ -86,7 +86,7 @@ Pontos-chave:
 - A specification nunca carrega dado: não injeta repositório, não consulta nada. Para regra multi-agregado sem entidade dona, `isSatisfiedBy(order, customer)` recebe os agregados que o caso de uso já carregou.
 - Entidade dona que já tinha o método delega para a specification quando o segundo consumidor aparecer, nunca duplica.
 - O escopo de acesso não entra na specification: organização, usuário ou outro vínculo continua obrigação do `where` da query (`backend/access-scope.md`), fora do `toWhere()` da regra.
-- Composição (`and`/`or`/`not` como objetos) fica fora: duas regras combinadas num consumidor são `&&` no código. Infraestrutura de composição só se composição dinâmica virar requisito real (ver "Pontos em aberto").
+- Composição (`and`/`or`/`not` como objetos) fica fora: duas regras combinadas num consumidor são `&&` no código. Infraestrutura de composição só se composição dinâmica (segmentação montada pelo usuário, por exemplo) virar requisito real.
 
 ## Verificação rápida
 
@@ -98,7 +98,3 @@ Pontos-chave:
 - Método de entidade preexistente delega, nunca duplica?
 - O escopo de acesso continua no `where` da query, fora do `toWhere()`?
 - Nenhuma infraestrutura de composição sem requisito real de composição dinâmica?
-
-## Em aberto
-
-- **Composição de specifications.** Composição de specifications (`and`/`or`/`not` como objetos combináveis) fica fora do desenho até composição dinâmica de regra ser requisito real do produto (segmentação montada pelo usuário, por exemplo).

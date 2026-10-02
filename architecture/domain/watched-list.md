@@ -80,7 +80,7 @@ As restrições de uso que a assinatura não mostra:
 
 Cada coleção tem a própria subclasse em arquivo próprio na raiz de `enterprise/`, ao lado da entidade dona, implementando só `compareItems`. Para item com conteúdo próprio, a identidade é o `equals` da entidade filha, mesmo formato da `OrderItemList` de `domain/model.md`; coleção de vínculo puro nem tem entidade filha, a lista guarda os próprios ids referenciados (seção "Coleção de vínculo"). A entidade guarda a subclasse nas props, o getter expõe a lista porque o repositório lê o delta dela, e mutação de fora sempre passa por método de domínio, nunca por `product.photos.add()` direto (`domain/model.md`, "Agregado e mutação interna").
 
-O que `domain/model.md` ainda não mostra é o método de substituição completa. Ele aplica a invariante antes de tocar a lista e delega o diff ao `update()`:
+O que `domain/model.md` não mostra é o método de substituição completa. Ele aplica a invariante antes de tocar a lista e delega o diff ao `update()`:
 
 Exemplo completo: watched-list.examples.md#productphotolist
 

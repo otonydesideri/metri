@@ -55,16 +55,16 @@ files cite only ids (F, UC, S, T, ADR-NNNN, rule id), never a `.md` path.
 
 ## Ticket files
 
-Every ticket, a UC (the tracer) or a T, is its own file at `.metri/tickets/<id>.md` (`UC1.1`, `T2.0`): the
+Every ticket, a UC (the tracer) or a T, is its own file at `.metri/tickets/<id>.md` (`UC<f>.<n>`, `T<s>.<n>`): the
 filename, without the extension, is the ticket's id, and must match the `id` key of its frontmatter. `metrics` is
 the only reserved field of a ticket; `notes` is a body section, not a frontmatter key. The frontmatter is YAML, in the format of a rule's frontmatter (`VOCABULARY.md`): required keys always error
 when missing or empty, the rest are written only with a value.
 
 - `id` and `title`: the ticket's id and its name, in Portuguese.
 - `feature` (UC only, always): the feature it belongs to; its number after the letter matches the UC's own
-  (`UC1.1` → `feature: F1`).
+  (`UC<f>.<n>` → `feature: F<f>`).
 - `slice` (T always; UC required outside `draft`): the slice it belongs to. A T's number after the letter matches
-  its own (`T2.0` → `slice: S2`); a UC's slice is free, its main slice (the other slices it crosses go in `areas`
+  its own (`T<s>.<n>` → `slice: S<s>`); a UC's slice is free, its main slice (the other slices it crosses go in `areas`
   and `touches`).
 - `actor` (UC only, required outside `done`): who runs the use case, the Portuguese name of a `docs/CONTEXT.md`
   term, in lower case.
@@ -83,7 +83,7 @@ when missing or empty, the rest are written only with a value.
   (`` "`pnpm test order-confirmation`" ``).
 - `metrics`: `{ rules: <n>, tokens: <n> }`, whole numbers, written at `done`: `rules` always, the count of rules
   `pnpm rules-for --ticket <id>` lists; `tokens` only when the tool reports them.
-- "Critérios": a criterion is verifiable and says what happens; a scope sentence (`não depende de X na v1`) goes
+- "Critérios": a criterion is verifiable and says what happens; a scope sentence (`não depende de X`) goes
   to the feature's spec, Fora de escopo, not here. A criterion judged on the screen starts with `Tela:`
   (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
   `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
@@ -98,7 +98,7 @@ are the source of its criteria; the file changes again only when the ticket reop
 ### UC block
 
 The UC is the tracer ticket: its title, story, BRs and criteria are its what and its done. Its id is the ticket's
-id: branch `ticket/UC1.1`, commit `UC1.1 …`.
+id: branch `ticket/UC<f>.<n>`, commit `UC<f>.<n> …`.
 
 ```markdown
 ---

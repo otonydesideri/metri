@@ -189,7 +189,7 @@ Erro inesperado não passa pela tabela de tradução acima: não é um `DomainEr
 
 Exemplo completo: `starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts`, registrado no `starter/apps/app-api/src/app.module.ts`.
 
-`FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O projeto já decidiu Fastify como única plataforma HTTP (`defaults/stack.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
+`FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O Fastify é a única plataforma HTTP (`defaults/stack.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
 
 O filtro não recebe logger nenhum e não loga por conta própria: log é assunto de `infrastructure/logging.md`, não deste documento.
 

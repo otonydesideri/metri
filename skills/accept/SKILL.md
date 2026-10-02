@@ -52,7 +52,7 @@ Present the reports in the chat under `## Contract` and `## Patterns` (and `## E
 Call the Skill tool with "grilling" and walk the human through the gate in its three blocks:
 
 - the slice's linear path, "show me the flow and the sources of truth": the "Caminho linear" of `.metri/ARCHITECTURE.md` with the slice's new owners in their places, each step as `arquivo:símbolo` with its `SOURCE OF TRUTH:` header;
-- for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when every UC listed in a feature's spec is now `done` (this is that feature's last slice), whether its Solução holds across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
+- for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when every UC listed in a feature's spec is `done` (this is that feature's last slice), whether its Solução holds across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
 - the diff of every ticket with `sensitive: true` or `type: pattern`;
 - each finding, with its group and the reviewer's recommendation; the user decides each one.
 

@@ -202,7 +202,7 @@ it('enfileira o relatório quando o pedido é confirmado', async () => {
 
 Para caso de uso que enfileira, a asserção nos `items` entra no spec unitário comum, sem `waitFor`.
 
-**O worker não tem spec unitário próprio**: é passthrough, como o controller, e a regra que ele dispara já está coberta pelos specs do caso de uso. O ciclo completo com fila real é assunto de e2e, e o formato (pg-boss no banco de teste, polling, `waitFor` sobre o efeito) fecha com o primeiro job real do produto.
+**O worker não tem spec unitário próprio**: é passthrough, como o controller, e a regra que ele dispara já está coberta pelos specs do caso de uso. O ciclo completo com fila real é assunto de e2e (pg-boss no banco de teste, polling, `waitFor` sobre o efeito), com o formato delegado ao projeto.
 
 ## Verificação rápida
 
@@ -215,11 +215,6 @@ Para caso de uso que enfileira, a asserção nos `items` entra no spec unitário
 - Quem enfileira tem spec assertando o dublê da fila?
 - Webhook ou consumo de fila externa grava o payload bruto antes de chamar um caso de uso, com o id de evento do remetente como constraint de unicidade quando ele existe?
 
-## Em aberto
+## Delegado ao projeto
 
-- **Formato do e2e com fila real.** Fecha na primeira implementação com o pg-boss.
-- **`failure` esperado que exige intervenção humana.** `failure` esperado que exija intervenção humana (log e conclui) ganha desenho se um caso real precisar ir para a dead letter em vez do log.
-- **Forma do enfileiramento transacional.** O enfileiramento transacional depende da família da ferramenta: no Postgres é o adapter `executeSql`, cujo detalhe fecha na primeira implementação; fora dele, vira desenho de outbox.
-  - Adapter `executeSql`, no Postgres
-  - Outbox, fora do Postgres
-- **App de worker dedicado.** App de worker dedicado (processo separado do HTTP) não tem gatilho concreto.
+- **Formato do e2e com fila real.** O projeto decide o formato do e2e do ciclo completo com fila real.
