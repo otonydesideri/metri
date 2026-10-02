@@ -2,7 +2,7 @@
 
 A Architecture Source: a arquitetura do sistema, em documentos por área — o que cada área deve ser, as fronteiras entre camadas e as regras que valem para qualquer módulo ou aplicação do monorepo.
 
-Estes documentos são a referência de construção do projeto. Lidos em ordem, ensinam a base inteira; consultados por área, respondem "como se faz isso aqui". Caso real que não se encaixa em nenhuma regra escrita segue a regra de escape do `AGENTS.md`.
+Caso real que não se encaixa em nenhuma regra escrita segue a regra de escape do `AGENTS.md`.
 
 ## Visão geral
 
@@ -31,7 +31,7 @@ Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 
 ## O que mora aqui, o que mora em outro lugar
 
-- Aqui: a referência completa de arquitetura. O quê, o porquê, os limites e os padrões de construção de cada área, com exemplos de código.
+- Aqui: a referência completa de arquitetura.
 - Instruções de projeto de cada pacote: o que `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto", admite nelas, mais uma referência para o `.metri/rules/` certo.
 - Precedência: ADR > regra do projeto > regra global > default global.
 
@@ -39,7 +39,7 @@ Em divergência entre um documento daqui e o código, o documento vale: o desenh
 
 ## Autoria
 
-Como a Source é escrita e mantida — owner de cada decisão, anatomia de documento, modalidades normativas, exemplos, verificação, o que a Source delega ao projeto, forma escrita sem instância, organização física e casa das decisões específicas de projeto — está em `skills/writing-for-agents/RULE-FORMAT.md`. Ler antes de criar ou editar qualquer documento daqui.
+Como a Source é escrita e mantida está em `skills/writing-for-agents/RULE-FORMAT.md`. Ler antes de criar ou editar qualquer documento daqui.
 
 ## Ativação
 
@@ -47,7 +47,7 @@ A pergunta de ativação de cada capacidade condicional é a chave `activation` 
 
 ## Decisões transversais
 
-Resumo das decisões que valem em todo documento e em todo app; cada uma é definida no owner indicado. Um exemplo que contradiz uma delas é bug de documentação, não estilo alternativo.
+Resumo das decisões que valem em todo documento e em todo app; cada uma é definida no owner indicado. Um exemplo que contradiz uma delas é bug de documentação.
 
 | Tema | Decisão |
 | --- | --- |

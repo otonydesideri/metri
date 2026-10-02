@@ -19,7 +19,7 @@ status: active
 ---
 # Bounded context
 
-Bounded context é a fronteira dentro da qual os termos do domínio têm um significado só, o modelo é coerente, a propriedade das regras é clara e as invariantes pertencem àquele modelo. É capacidade condicional: um projeto começa com um contexto só, e muitos continuam assim; este documento fixa quando a divisão é necessária e o que muda quando ela existe. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`, `customer`).
+Bounded context é a fronteira dentro da qual os termos do domínio têm um significado só, o modelo é coerente, a propriedade das regras é clara e as invariantes pertencem àquele modelo. É capacidade condicional. Os exemplos usam o domínio didático de pedidos (`order`, `invoice`, `customer`).
 
 ## Regras
 
@@ -69,7 +69,7 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 ## Aplicação
 
 - O cliente da venda (endereço de entrega, histórico de pedidos) e o cliente do faturamento (dados fiscais, condição de pagamento) são o sinal clássico: o mesmo termo, dois modelos. Com dois contextos, cada um tem o próprio `Customer`, e o faturamento reage ao `OrderConfirmedEvent` da venda, que carrega ids, montando a própria visão pelo próprio modelo.
-- Dentro de um contexto, módulos se comunicam pelas regras de `backend/modules.md`, "Comunicação entre módulos"; as proibições desta seção valem entre contextos.
+- Dentro de um contexto, módulos se comunicam pelas regras de `backend/modules.md`, "Comunicação entre módulos"; as proibições de "Interação entre contextos" valem entre contextos.
 - Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, delegada ao projeto (`backend/modules.md`, "Delegado ao projeto"): nenhum mecanismo próprio nasce sem a decisão do projeto (`skills/writing-for-agents/RULE-FORMAT.md`, "Delegado ao projeto").
 - Leitura entre contextos segue a regra de join de `backend/reading.md`, "Regras absolutas da query".
 - A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Unidade de trabalho que grava agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos": o caso de uso carregaria as entidades dos dois lados (`backend/transactions.md`).

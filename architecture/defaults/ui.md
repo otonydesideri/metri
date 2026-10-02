@@ -37,8 +37,7 @@ Exemplo completo: `starter/packages/ui/src/styles/globals.css`.
 > **Por quê.** O Tailwind procura classes a partir da pasta de quem processa o CSS, o app. Sem o segundo `@source`, as classes dos componentes do pacote (`bg-primary`, `rounded-md`) somem do CSS final, sem erro.
 
 - O `components.json` do `@metri/ui` fixa `"style": "new-york"` e `"tailwind": { "baseColor": "neutral" }`.
-- Os componentes do shadcn são a base; nenhum componente é recriado do zero.
-- O visual vem dos tokens do `DESIGN.md` do projeto.
+- Todo componente parte do componente do shadcn.
 - Kit diferente num projeto: ADR do projeto + regra em `.metri/rules/frontend/`.
 
 ## O pacote
@@ -79,8 +78,7 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 - Valor claro em `:root`, valor escuro em `.dark`; o `@theme inline` expõe cada variável ao Tailwind (`bg-background`, `text-foreground`).
 - Cor nova entra como variável em `:root` e em `.dark` e é exposta no `@theme inline`.
 - Os valores são os do `DESIGN.md`, a fonte deles, e o `metri design-tokens` confere o tema contra ele; a base neutra é `skills/shape/DESIGN-TEMPLATE.md`.
-- O escuro liga pela classe no `documentElement`. O provider de tema do `@metri/ui` é o next-themes: o `ThemeProvider` do pacote o configura com `attribute="class"`, `themes={['light', 'dark']}` e `enableSystem={false}`, pelo contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
-- O script inline do `index.html` do `app-web` aplica a classe antes do primeiro paint e lê a mesma chave de armazenamento que o `ThemeProvider` usa (a `theme` do next-themes): `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
+- O escuro liga pela classe no `documentElement`: o `ThemeProvider` do `@metri/ui` (next-themes) e o script inline do `index.html` do `app-web` seguem o contrato de `frontend/theming.md`, "Tema: contrato de classe e provider no `@metri/ui`".
 - O `sonner.tsx` da CLI lê o tema pelo `useTheme()` do next-themes, montado dentro do `ThemeProvider`.
 
 ## Tipografia e espaçamento
@@ -95,10 +93,6 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 Exemplo completo: `starter/packages/ui/src/lib/utils.ts`, com o `@theme` de `starter/packages/ui/src/styles/globals.css`.
 
 - Espaçamento: a escala padrão do Tailwind, sem variável própria no `@theme`. Ela coincide com a `spacing` do `DESIGN.md` (`xxs` 4px = `1`, `md` 16px = `4`, `4xl` 64px = `16`).
-
-## O que é do projeto
-
-- `docs/DESIGN.md`, com os valores dos tokens que o `globals.css` do `@metri/ui` segue.
 
 ## Verificação
 

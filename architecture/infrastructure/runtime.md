@@ -121,7 +121,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - No `AppModule`, `APP_PIPE` registra o `ZodValidationPipe` composto com `toInvalidRequestException` (`backend/errors.md`), `APP_FILTER` registra o `UnexpectedErrorFilter` (`backend/errors.md`), `APP_INTERCEPTOR` registra o `ZodSerializerInterceptor` (`backend/http-api.md`) e os interceptors de log na ordem que `infrastructure/logging.md` fixa, e `APP_GUARD` registra o throttler e, depois dele, o guard de acesso (`backend/access-scope.md`, "Declaração por controller"), que valida a identidade quando o projeto tem dono; o endpoint de infra externa sai do throttler com `@SkipThrottle()` e do guard de acesso com `@Public()`.
 - O `PgBossService` (a fila padrão, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; é o caso da Source em que o runtime depende do shutdown gracioso: sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
 - A fronteira que resolve o escopo do dono é uma destas peças; o contrato do escopo está em `backend/access-scope.md`.
-- Os e2e montam o app pela forma de `backend/testing.md`, sem `main.ts`, repetindo o que o teste precisa do bootstrap (o prefixo `/api`; o limite de corpo, no e2e de asset de `infrastructure/storage.md`).
+- O que o e2e repete do bootstrap: o prefixo `/api` e, no e2e de asset de `infrastructure/storage.md`, o limite de corpo.
 - O schema de env mora em `src/infra/common/env/env.validation.ts` (`backend/layers.md`, "Onde cada arquivo mora"), um dos dois lugares de Zod de `backend/boundaries.md`.
 
 ## Verificação

@@ -30,7 +30,7 @@ Leitura de exibição não decide nada. Ela monta uma resposta: uma listagem com
 
 Por isso a leitura tem dois caminhos, e a escolha não é livre:
 
-- **Leitura que alimenta decisão** fica no caminho de domínio: contrato de repositório devolvendo entidade, caso de uso com `Either`, regra na entidade, no value object ou num domain service (`domain/domain-services.md`) quando nenhuma entidade é dona natural da decisão. O resultado pode ser um tipo de negócio próprio, não precisa ser entidade. É o mesmo desenho de `domain/model.md` e `backend/application.md`, nada muda.
+- **Leitura que alimenta decisão** fica no caminho de domínio: contrato de repositório devolvendo entidade, caso de uso com `Either`, regra na entidade, no value object ou num domain service (`domain/domain-services.md`) quando nenhuma entidade é dona natural da decisão. O resultado pode ser um tipo de negócio próprio, não precisa ser entidade.
 - **Leitura de exibição** vai por uma query quando a resposta sai de um datastore só: contrato da ação em `domain/application`, implementação em infra que fala com o banco direto e devolve um DTO plano. O controller consome o contrato sem caso de uso de repasse no meio. Se um campo da resposta precisa de outra porta, a montagem é de caso de uso mesmo sem regra nenhuma (seção "A árvore de decisão").
 
 Na escrita, a propriedade de agregados e as fronteiras de consistência são rígidas (`domain/model.md`, `backend/transactions.md`). Na leitura de exibição, uma projeção pode atravessar agregados do mesmo bounded context e do mesmo datastore: ela acopla schema e significado dos campos, mas não usa esses dados para modificar estado nem contorna invariantes. Fronteira de bounded context (`domain/bounded-contexts.md`) continua rígida também na leitura; composição entre contextos usa contrato publicado, API ou read model alimentado pelo contexto dono, nunca join direto nas tabelas internas do outro contexto.
@@ -116,12 +116,11 @@ Exemplo completo: reading.examples.md#fetchordersprismaqueryimpl
 Pontos-chave:
 
 - O contrato é a capacidade exposta pela aplicação. Não importa NestJS, Prisma, `@metri/db`, entidade ou value object; seu DTO é o modelo de leitura que o consumidor recebe.
-- A implementação injeta `PrismaService` e nada mais; a leitura cacheada injeta também o contrato de cache do próprio fluxo (`infrastructure/cache.md`, "Cache de leitura"). Por morar dentro de `infra/persistence/prisma/`, também pode tipar contra os tipos gerados de `@metri/db` quando precisar. Leitura que precisa de outra porta para montar a resposta não é query (seção "A árvore de decisão", terceira pergunta).
+- A implementação injeta `PrismaService` e nada mais; a leitura cacheada injeta também o contrato de cache do próprio fluxo (`infrastructure/cache.md`, "Cache de leitura"). Por morar dentro de `infra/persistence/prisma/`, também pode tipar contra os tipos gerados de `@metri/db` quando precisar.
 - Leitura de dado protegido segue o escopo do dono de `backend/access-scope.md`: escopo no input, filtro no `where`.
-- `include`/`select` pode atravessar agregados do mesmo bounded context e datastore, com `select` estreito dos campos usados. Não atravessa schema interno de outro bounded context.
+- `include`/`select` pode atravessar agregados do mesmo bounded context e datastore, com `select` estreito dos campos usados.
 - O DTO da query é o corpo HTTP quando essa é a única porta, sob a chave que o nomeia (`{ order: ... }`) ou dentro do envelope de paginação, que já é tipado (`{ items: [...], total, page, pageSize }`). Nomear não é transformar: não existe presenter ou mapper por cerimônia na leitura, e mapper de agregado pertence à escrita (`backend/persistence.md`). Se outra porta exigir representação diferente, cada adapter transforma o DTO ou ganha uma query própria conforme a intenção.
-- O DTO é plano e serializável: primitivos, `Date`, arrays e objetos deles. O `Date` sai no HTTP como string ISO, pelo codec do DTO de resposta (`backend/http-api.md`, "Contrato de API: o backend é a fonte"). Nunca entidade, value object ou `UniqueEntityID`.
-- O input chega resolvido: defaults e teto de paginação são da fronteira Zod (seção "Paginação"); a query não aplica `??`.
+- O DTO é plano e serializável: primitivos, `Date`, arrays e objetos deles. O `Date` sai no HTTP como string ISO, pelo codec do DTO de resposta (`backend/http-api.md`, "Contrato de API: o backend é a fonte").
 
 ## DTO, projeção, read model e CQRS
 
@@ -265,7 +264,7 @@ Contrato e implementação entram em `persistence.module.ts` com `{ provide: <A�
 
 A implementação de leitura fala com o Postgres primário sem repositório genérico, mapper de agregado ou camada de repasse. A única indireção é a fronteira real entre a operação exposta pela aplicação e o mecanismo que a executa.
 
-A evolução sob custo real (SQL cru, índice ou view materializada, cache de `infrastructure/cache.md`, read replica, até um read model desnormalizado alimentado por eventos de `backend/events.md`) troca a implementação ou a infraestrutura abaixo dela sem mudar o controller. DTO e contrato mudam somente quando a operação exposta pela aplicação muda. Cada mecanismo nasce quando o custo real aparecer; a fronteira não antecipa nenhum deles, só impede que a porta HTTP pertença ao Prisma.
+A evolução sob custo real (SQL cru, índice ou view materializada, cache de `infrastructure/cache.md`, read replica, até um read model desnormalizado alimentado por eventos de `backend/events.md`) troca a implementação ou a infraestrutura abaixo dela sem mudar o controller. DTO e contrato mudam somente quando a operação exposta pela aplicação muda. A fronteira não antecipa nenhum desses mecanismos, só impede que a porta HTTP pertença ao Prisma.
 
 ## Testes
 

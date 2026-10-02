@@ -26,7 +26,7 @@ status: active
 
 Como o frontend do produto prova comportamento: os cinco níveis da pirâmide, o que cada um prova e onde mora, o spec de estrutura que fica fora dela, o dublê de rede único e os builders de payload compartilhados.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) dos demais documentos. Regra que já tem casa num documento de área (cliente HTTP e sincronização de cache em `frontend/data-fetching.md`, rule de UI em `frontend/helpers.md`, estado de leitura em `frontend/components.md`, casa de pasta em `frontend/structure.md`, rota e guard em `frontend/routing.md`, formulário em `frontend/forms.md`, estado cliente em `frontend/state.md`, contrato com o backend em `backend/http-api.md`) é referenciada aqui, nunca duplicada.
+Os exemplos usam o domínio didático de pedidos (`order`, `customer`) dos demais documentos.
 
 ## A pirâmide
 
@@ -101,9 +101,7 @@ O config do Vitest mora no bloco `test` do `vite.config.ts` do app, não num arq
 
 O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação com máscara e reposicionamento de cursor do campo de telefone e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
 
-A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. As rotas REST saem sob `/api`, na mesma origem: o path vem do OpenAPI. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
-
-Execução por `pnpm --filter app-web test`, ou pelo `pnpm test` da raiz; o e2e de critério de UI, por `pnpm --filter app-web test:e2e`.
+A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
 ## O dublê de rede é um só: MSW no nível do fetch
 
@@ -183,7 +181,7 @@ Fica fora da pirâmide porque não prova comportamento nenhum: ele afirma a árv
 
 A mensagem de falha diz de quem é a peça e pra onde ela vai. É isso que transforma a promoção numa correção óbvia em vez de uma decisão a lembrar no meio de outra tarefa: quem consome uma peça de fora da pasta dela quebra a suíte e lê o destino junto com o erro.
 
-Regra estrutural nova entra aqui só quando a violação for silenciosa. O que lint ou type checker já acusa não vira caso neste arquivo.
+Regra estrutural nova entra aqui só quando a violação for silenciosa.
 
 ## Spec de config do dev server (`dev-server-proxy.spec.ts`)
 
@@ -228,7 +226,7 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 
 Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no DTO do backend, e o frontend importa a constante gerada. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
 
-Schema de form mais estrito que o do backend não é divergência, é decisão de produto (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes"). Nesse caso o spec do frontend leva um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
+Schema de form mais estrito que o do backend (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes") leva no spec do frontend um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
 
 ## Verificação rápida
 

@@ -175,8 +175,8 @@ Pipe, filtro, guard, throttler e serializer globais são provados por um control
 ## O que não tem spec próprio
 
 - **Tabela declarativa de tradução de erro** (`toHttpException`): sem spec unitário; a exaustividade é garantida pela anotação `Record<DomainErrorType, ...>` no compilador e o status resultante aparece nos e2e de erro (`backend/errors.md`). O critério que separa: função ou filtro de infra com ramificação própria (`UnexpectedErrorFilter`) ganha spec unitário ao lado do arquivo; tabela pura não, porque não tem branch que um teste possa errar.
-- **Contrato e implementação de query de leitura de exibição**: sem spec unitário nem dublê em memória; o contrato não contém comportamento e o e2e do controller é a prova da implementação contra o banco real (`backend/reading.md`). Specification compartilhada pela query mantém seu spec unitário (`domain/specification.md`).
-- **Worker de job**: sem spec unitário próprio, passthrough coberto pelos specs do caso de uso que ele dispara; o ciclo completo com fila real é assunto de e2e, com o formato delegado ao projeto (`backend/async-jobs.md`, "Delegado ao projeto").
+- **Contrato e implementação de query de leitura de exibição**: sem spec unitário nem dublê em memória; a prova é o e2e do controller (`backend/reading.md`, "Testes"). Specification compartilhada pela query mantém seu spec unitário (`domain/specification.md`).
+- **Worker de job**: sem spec unitário próprio; o formato do e2e com fila real é delegado ao projeto (`backend/async-jobs.md`, "Testes" e "Delegado ao projeto").
 - **Classe de infra que fala com o vendor** (`PrismaService`, o client da fila, o client do storage): nunca tem dublê em `test/`; dublê é sempre por contrato de fluxo, e a única substituição é o stub local ao spec da impl que compõe (`infrastructure/services.md`).
 - **Unidade de trabalho**: um dublê só, que roda o trabalho direto e despacha os eventos no `success`, sem regra de domínio; o estado fica nos repositórios em memória de sempre (`backend/transactions.md`).
 

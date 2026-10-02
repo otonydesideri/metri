@@ -19,8 +19,6 @@ Any "no" discards the lesson.
 - Status → the ticket file's `status`; the slice's, in `.metri/MATRIX.md`.
 - A temporary workaround → `GAP-n`.
 - A one-off preference.
-- A fact the code already shows.
-- What an existing rule or check already covers.
 - Library documentation → fetched on demand.
 - Debugging steps.
 - A session summary.

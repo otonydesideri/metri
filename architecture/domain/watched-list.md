@@ -151,7 +151,7 @@ O limite que este documento fixa: o delta rastreia pertencimento, não conteúdo
 
 ## Arquivo físico na coleção
 
-Quando o item da coleção referencia um arquivo em storage (a foto do produto), a ordem das operações em volta da escrita é a de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro": validação do upload dos itens novos antes de mutar o domínio, `replacePhotos()` e `save()`, remoção física dos arquivos dos itens removidos depois do `save()`.
+Quando o item da coleção referencia um arquivo em storage (a foto do produto), a ordem das operações em volta da escrita é a de `infrastructure/storage.md`, "Arquivo físico segue o destino do registro".
 
 No caso de uso, o exemplo anterior já resolve a chave do item novo pelo registro de upload; só o pós-`save()` muda, e o contrato de storage entra como qualquer dependência de `application/`:
 

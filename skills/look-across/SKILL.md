@@ -67,7 +67,7 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 ### 7. Spec decisions
 
-For each `now` feature, fill its spec's Decisões de implementação (the modules, interfaces, schema changes, API contract and interactions its slices' `contract` and the UCs' BRs settle, citing them by id, never a file path) and Decisões de teste (the seam, as high as possible and ideally one, preferring the slice contract's `interface` or a UC's `checks` over a new one; `node_modules/metri/skills/tdd/SKILL.md`, "Seams: where tests go"). A `planned`, `fog` or `out` feature's spec stays `draft`, since its UCs do too ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Matrix rules").
+For each `now` feature, fill its spec's Decisões de implementação (the modules, interfaces, schema changes, API contract and interactions its slices' `contract` and the UCs' BRs settle, citing them by id, never a file path) and Decisões de teste (the seam, as high as possible and ideally one, preferring the slice contract's `interface` or a UC's `checks` over a new one; `node_modules/metri/skills/tdd/SKILL.md`, "Seams: where tests go").
 
 ### 8. Slice 0
 

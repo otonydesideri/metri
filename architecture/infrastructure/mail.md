@@ -21,7 +21,7 @@ status: active
 
 O envio de e-mail: uma classe de infra que expõe o client do vendor e um contrato por fluxo real do produto (confirmação de pedido, aviso de fatura vencida), consumido por quem dispara aquele fluxo, nunca pela classe de infra direto.
 
-O vendor de e-mail é delegação de projeto (`.metri/ARCHITECTURE.md`, "Capacidades ativas"); os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
+Os exemplos usam o Resend como referência concreta, porque parte da regra (a checagem do campo `error`) só faz sentido com um SDK real na frente. O que é padrão aqui é a forma — classe de infra, contrato por fluxo, composição dentro do sender —, não o nome do vendor. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## A classe de infra
 
@@ -88,7 +88,7 @@ Todo fluxo real segue a mesma forma: um contrato e uma implementação por fluxo
 Pontos-chave:
 
 - A composição do e-mail (viewer React, assunto) mora dentro do sender, nunca em quem chama. Quem chama entrega dado de domínio (`orderId`, `customerName`); é o que torna o contrato testável por intenção, não por conteúdo de string.
-- Dado de domínio inclui link já pronto (URL de redefinição, de verificação, de convite): o sender nunca monta URL nem faz lookup pra construir um campo do e-mail, mesmo que precise de env var ou repositório pra isso. Quem dispara o fluxo entrega pronto, do mesmo jeito que entrega `orderId`/`customerName`. Isso mantém o sender com uma dependência só (a classe de infra do vendor) e evita que a infra de e-mail acumule acesso a env e persistência que já existe em quem chama.
+- Dado de domínio inclui link já pronto (URL de redefinição, de verificação, de convite): o sender nunca monta URL nem faz lookup pra construir um campo do e-mail, mesmo que precise de env var ou repositório pra isso. Isso mantém o sender com uma dependência só (a classe de infra do vendor) e evita que a infra de e-mail acumule acesso a env e persistência que já existe em quem chama.
 - Cada fluxo de e-mail tem template e campos próprios (convite não é o mesmo formato de redefinição de senha). Agrupar vários fluxos num contrato só, um método por fluxo, esconderia essa diferença atrás de um nome comum, sem eliminá-la.
 - Falha ao enviar propaga como exceção do sender. Quem chama decide o destino: um caso de uso deixa subir; um subscriber de evento engole com log, pela regra de `backend/events.md` ("Falha no handler"), porque a operação principal já commitou antes do envio e o e-mail é efeito aditivo dela.
 

@@ -61,11 +61,9 @@ the only reserved field of a ticket; `notes` is a body section, not a frontmatte
 when missing or empty, the rest are written only with a value.
 
 - `id` and `title`: the ticket's id and its name, in Portuguese.
-- `feature` (UC only, always): the feature it belongs to; its number after the letter matches the UC's own
-  (`UC<f>.<n>` → `feature: F<f>`).
-- `slice` (T always; UC required outside `draft`): the slice it belongs to. A T's number after the letter matches
-  its own (`T<s>.<n>` → `slice: S<s>`); a UC's slice is free, its main slice (the other slices it crosses go in `areas`
-  and `touches`).
+- `feature` (UC only, always): the feature it belongs to (`UC<f>.<n>` → `feature: F<f>`).
+- `slice` (T always; UC required outside `draft`): the slice it belongs to (`T<s>.<n>` → `slice: S<s>`); a UC's
+  slice is free, its main slice (the other slices it crosses go in `areas` and `touches`).
 - `actor` (UC only, required outside `done`): who runs the use case, the Portuguese name of a `docs/CONTEXT.md`
   term, in lower case.
 - Story (UC only, body, required outside `done`): the line right below the title, `Como <ator>, quero <ação>,
@@ -97,8 +95,7 @@ are the source of its criteria; the file changes again only when the ticket reop
 
 ### UC block
 
-The UC is the tracer ticket: its title, story, BRs and criteria are its what and its done. Its id is the ticket's
-id: branch `ticket/UC<f>.<n>`, commit `UC<f>.<n> …`.
+The UC is the tracer ticket: its title, story, BRs and criteria are its what and its done.
 
 ```markdown
 ---
@@ -135,9 +132,6 @@ Como <ator>, quero <ação>, para <benefício>.
 <achados do /build ou do /accept, quando houver>
 ```
 
-- A UC that doesn't fit a clean session with about 5 rules (`pnpm rules-for --ticket <id>`), or more when rules-for says
-  the excess is expected, is split into smaller UCs, each visible to the user and verifiable. A UC never has a
-  partial ticket.
 - Its BRs (`- BR<n>: ...`, with `(sensitive)` after the id when it is) go under "Regras de negócio", and its
   criteria (`- [ ] ...`) under "Critérios".
 
@@ -210,8 +204,7 @@ contract:
 ```
 
 `F1` and `F2` are the specs `.metri/specs/F1.md` and `.metri/specs/F2.md` (format and example:
-`node_modules/metri/skills/shape/SPEC-FORMAT.md`), which the slice's `consumers` cites by id; the MATRIX never
-repeats their content.
+`node_modules/metri/skills/shape/SPEC-FORMAT.md`), which the slice's `consumers` cites by id.
 
 `.metri/tickets/UC1.1.md`:
 
@@ -310,7 +303,7 @@ A regra de montagem pelo registry, com o exemplo canônico e o check que barra c
 | `now` | Will be built |
 | `planned` | The architecture accommodates it (it is in a contract), but it isn't built |
 | `fog` | Sensed, not yet specifiable |
-| `out` | Slice only: out of scope; doesn't come back without a new decision. A feature has no `out`: a discarded feature is a line in "Fora de escopo" of `docs/PRODUCT.md`, with no spec |
+| `out` | Slice only: out of scope; doesn't come back without a new decision |
 
 ## Ticket types
 
@@ -341,7 +334,7 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
    that own it (`status: done · sot: [<símbolo>]`), and its contract leaves the MATRIX ("Contrato de slice",
    below). A done slice that takes a new or reopened UC, or a new T, goes back to `horizon: now` with its `sot`,
    and with a `contract` block when the ticket changes what the slice guarantees, until it collapses again. A
-   ticket file is never collapsed: it stays `status: done` in its own file, and its id stays listed in its
+   ticket file is never collapsed ("Ticket files"): its id stays listed in its
    feature's spec, Casos de uso; its evidence folder (`.metri/tickets/<id>/`) leaves the tree. Git keeps the
    history. The MATRIX stays small.
 

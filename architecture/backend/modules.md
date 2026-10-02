@@ -35,7 +35,7 @@ Se qualquer resposta é "não", o que está prestes a nascer provavelmente é ou
 - Wrapper de client externo vai para `infra/services/<capacidade>/` (`infrastructure/services.md`).
 - Subdivisão técnica de um módulo existente fica dentro do módulo dono.
 
-A granularidade segue o domínio: um módulo gira em torno de um agregado principal e dos agregados satélites que só existem por causa dele, e conceito com ciclo de vida próprio é módulo próprio (`order` e `invoice` são dois módulos nos exemplos deste documento: a fatura nasce e fecha por regras próprias). A divisão em vigor de cada app fica registrada como decisão de projeto dele. Dois módulos existem sem agregado próprio: o módulo de tela, cujo conceito é a tela que não pertence a nenhum agregado (`backend/reading.md`, "Agregação: dashboard e relatório"), e o módulo que existe só por causa de uma capacidade externa (`infrastructure/services.md`).
+A granularidade segue o domínio: um módulo gira em torno de um agregado principal e dos agregados satélites que só existem por causa dele, e conceito com ciclo de vida próprio é módulo próprio (`order` e `invoice` são dois módulos nos exemplos deste documento: a fatura nasce e fecha por regras próprias). Dois módulos existem sem agregado próprio: o módulo de tela, cujo conceito é a tela que não pertence a nenhum agregado (`backend/reading.md`, "Agregação: dashboard e relatório"), e o módulo que existe só por causa de uma capacidade externa (`infrastructure/services.md`).
 
 ## Do que um módulo é feito
 
@@ -45,17 +45,17 @@ Um módulo é o mesmo nome repetido nas camadas que ele usa:
 - Uma porta de entrada por ação: controller + DTO (`backend/http-api.md`).
 - Factories, repositórios em memória e e2e-specs correspondentes.
 
-A estrutura é layer-first (`backend/layers.md`): módulo nunca é pasta com camadas dentro. Ele aparece como subpasta nas camadas que acumulam vários arquivos por módulo (`use-cases/<módulo>/`, `controllers/<módulo>/`, `dtos/<módulo>/`); as camadas com um arquivo por agregado ficam planas (`application/repositories/`, `persistence/prisma/repositories/`). `enterprise/` agrupa por tipo de artefato, nunca por módulo: entidade e lista rastreada de coleção filha na raiz; value objects, enums, eventos, classes de erro, famílias de regra e specifications nas subpastas `value-objects/`, `enums/`, `events/`, `errors/`, `strategies/`, `specifications/` e `domain-services/`. O caminho e o nome de cada artefato estão na tabela "Onde cada arquivo mora" do `backend/layers.md`.
+A estrutura é layer-first (`backend/layers.md`): módulo nunca é pasta com camadas dentro. Ele aparece como subpasta nas camadas que acumulam vários arquivos por módulo (`use-cases/<módulo>/`, `controllers/<módulo>/`, `dtos/<módulo>/`); as camadas com um arquivo por agregado ficam planas (`application/repositories/`, `persistence/prisma/repositories/`). `enterprise/` agrupa por tipo de artefato, nunca por módulo. O caminho e o nome de cada artefato estão na tabela "Onde cada arquivo mora" do `backend/layers.md`.
 
 Módulo de negócio não ganha módulo Nest próprio. Controller e caso de uso entram nas listas de `http.module.ts`, agrupados por um comentário de área (`// <Módulo>`); repositório concreto entra em `persistence.module.ts`. Área nova é um comentário novo nessas listas, nunca um `@Module` em `http/modules/`.
 
-Teste mora ao lado do que ele prova: spec unitário junto do arquivo testado (`<nome>.use-case.spec.ts`, `<nome>.entity.spec.ts`), e2e junto do controller (`<ação>.e2e-spec.ts`). Factories e dublês compartilhados moram em `test/`.
+Teste mora ao lado do que ele prova: spec unitário junto do arquivo testado, e2e junto do controller. Factories e dublês compartilhados moram em `test/` (caminhos em `backend/testing.md`, "A pirâmide").
 
 ## Comunicação entre módulos
 
 - Contrato é do app: qualquer caso de uso injeta qualquer contrato, inclusive de agregado de outro módulo do mesmo bounded context, pelo mecanismo de `backend/application.md`, "Contratos são `abstract class`". Não existe mecanismo de integração além disso; ver "Delegado ao projeto".
 - Entre bounded contexts diferentes valem as proibições de `domain/bounded-contexts.md`, "Interação entre contextos".
-- A pasta de contratos é única e do app. A fronteira que protege o sistema é a de camada (`backend/boundaries.md`), não a de módulo.
+- A fronteira que protege o sistema é a de camada (`backend/boundaries.md`), não a de módulo.
 - Leitura de N registros de outro módulo é em lote, com `Map` no consumo (`backend/persistence.md`, "Leitura em lote").
 - Reação a algo que outro módulo fez e operação atômica entre agregados de módulos diferentes escolhem o mecanismo pela árvore de `backend/operation-routing.md`.
 

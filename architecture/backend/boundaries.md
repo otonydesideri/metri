@@ -22,7 +22,7 @@ Quem pode importar o quê entre camadas e pacotes do backend.
 
 Cobre o backend: `apps/app-api`, `@metri/core`, `@metri/utils` e `@metri/db`.
 
-A violação típica destas regras compila sem erro e passa em type-check; o custo só aparece depois, como acoplamento que impede trocar uma implementação ou testar sem subir infraestrutura. Por isso cada regra termina em um comando de verificação, na seção "Verificação".
+A violação típica destas regras compila sem erro e passa em type-check; o custo só aparece depois, como acoplamento que impede trocar uma implementação ou testar sem subir infraestrutura. Por isso o grafo é barrado por um check, na seção "Verificação".
 
 ## O grafo permitido
 
@@ -61,7 +61,7 @@ Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client
 
 ## `packages/core` não depende de nada externo
 
-O core é o vocabulário de domínio compartilhado do monorepo; qualquer dependência externa dele vira dependência de todo consumidor. O único import não-relativo permitido é builtin do Node.
+O core é o vocabulário de domínio compartilhado do monorepo; qualquer dependência externa dele vira dependência de todo consumidor.
 
 ## `packages/utils` também não, nem do core
 

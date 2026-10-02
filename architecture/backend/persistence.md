@@ -184,7 +184,7 @@ const orderById = new Map(orders.map((order) => [order.id.toValue(), order]));
 
 Daí em diante, cada acesso é `orderById.get(...)`, sem nova consulta.
 
-O outcome de persistência chega ao caso de uso como valor comum. Dentro de uma transação, a escrita condicional aplica este outcome pela escada de `backend/transactions.md`, "Concorrência e locking"; na idempotência de job, a violação de unicidade reconhecida vira o outcome que o caso de uso trata como sucesso (`backend/async-jobs.md`, "Idempotência").
+Dentro de uma transação, a escrita condicional aplica o outcome de persistência pela escada de `backend/transactions.md`, "Concorrência e locking"; na idempotência de job, a violação de unicidade reconhecida vira o outcome que o caso de uso trata como sucesso (`backend/async-jobs.md`, "Idempotência").
 
 ## Verificação
 

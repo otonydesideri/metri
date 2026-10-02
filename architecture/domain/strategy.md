@@ -26,7 +26,7 @@ Strategy separa os dois papéis. Cada variação vira uma classe própria sob o 
 
 O padrão existe para servir esse princípio, e o mapeamento é um para um. O contrato é a interface estável em volta do ponto de variação. As variações são a parte aberta: regra nova é classe nova. O consumidor é a parte fechada: quando a família cresce, ele não é editado, e as variações existentes também não. A direção de dependência é a mesma de `backend/boundaries.md`: a variação depende do contrato, nunca o contrário. É isso que mantém o núcleo fechado enquanto a borda cresce.
 
-O princípio só paga em ponto de variação comprovado. Proteger um ponto que nunca variou desperdiça esforço e adiciona complexidade, e com ela defeito; um desenho simples, retrabalhado quando a pressão de mudança real chegar, é mais barato que a generalização especulativa que nunca é usada. Daí o gatilho da árvore: a segunda variação real, nunca "para quando precisar".
+O princípio só paga em ponto de variação comprovado: daí o gatilho da árvore, a segunda variação real, nunca "para quando precisar".
 
 ## A árvore de decisão
 

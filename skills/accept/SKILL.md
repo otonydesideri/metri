@@ -16,7 +16,7 @@ Judge what no check judges, on the diff of a slice, along separate axes:
 - **Patterns**: does the code pass the verification items of its rules that no check covers?
 - **Experience**, when the slice has a `Tela:` criterion: what does the user live on its screens?
 
-The work never judges itself: each axis is a reviewer agent that gets nothing from the builder's conversation, all run in parallel, and this skill aggregates their findings.
+The work never judges itself: each axis is a reviewer agent that gets nothing from the builder's conversation.
 
 ## Process
 
@@ -68,7 +68,7 @@ Collect the proposed lessons: findings, `PP-n`, `GAP-n`, repeated fixes and the 
 
 ### 7. Prune and merge
 
-On `slice/<id>`, once each owner's `SOURCE OF TRUTH` header carries the slice's `contract` (`node_modules/metri/skills/guardrail/SKILL.md`, "While writing code", step 5), prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Set `status: done` on the spec of each feature whose last slice this was (step 5). Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
+On `slice/<id>`, once each owner's `SOURCE OF TRUTH` header carries the slice's `contract` (`node_modules/metri/skills/guardrail/SKILL.md`, "While writing code", step 5), prune the matrix by the "Pruning" rule of "Matrix rules" in `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`; the steps the human saw in step 5 enter the "Caminho linear" of `.metri/ARCHITECTURE.md`, and `pnpm exec metri prune <slice id>` takes the evidence of its tickets out of the tree. Keep every id, commit, and run `pnpm docs-lint` and `pnpm verify`. Then, with the human's approval, fast-forward main to the slice: `git merge --ff-only slice/<id>` on main, never a commit, reset or force push there.
 
 Done when the slice is on main, or its reopened UCs and new T tickets are in their files; every finding has the user's decision; once merged, its slice is collapsed in the MATRIX; every lesson has an approved destination or is discarded; and `pnpm verify` is green.
 

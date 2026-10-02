@@ -48,7 +48,7 @@ flowchart TD
     E -- Não --> F[Reconsidere:<br/>provavelmente cabe<br/>num passo anterior]
 ```
 
-O peso da árvore é de cima pra baixo: só se sobe pra Zustand o que nenhum passo anterior cobre. Estado que poderia viver na URL ou num `useState` mas foi parar num store global é a forma mais comum de complexidade desnecessária.
+Estado que poderia viver na URL ou num `useState` mas foi parar num store global é a forma mais comum de complexidade desnecessária.
 
 ## URL state: paginação, filtros, tabs, busca, ordenação
 
@@ -164,7 +164,7 @@ Um store nasce coeso num arquivo. Quando ele cresce a ponto de misturar fatias s
 
 ## Troca de dono: o estado que depende do dono é limpo
 
-Todo evento que troca o dono do dado limpa o estado cuja validade depende do dono: os stores persistidos e o cache de servidor. Sem isso, dado do usuário anterior sobrevive — em disco no store persistido, em memória no cache até o `gcTime` expirar — e vaza em máquina compartilhada. No React Query, a limpeza é o `queryClient.clear()` na instância do `QueryClientProvider` (`frontend/data-fetching.md`, "Provider e configuração").
+Todo evento que troca o dono do dado limpa o estado cuja validade depende do dono: os stores persistidos e o cache de servidor. Sem isso, dado do usuário anterior sobrevive — em disco no store persistido, em memória no cache até o `gcTime` expirar — e vaza em máquina compartilhada. No React Query, a limpeza é o `queryClient.clear()` na instância do `QueryClientProvider`.
 
 Nada do cache de servidor vai pra disco: este app não usa `persistQueryClient`.
 
@@ -181,7 +181,7 @@ Persistência é ortogonal à árvore de decisão, não um tier novo: é o `useS
 - Estado global que sobrevive a refresh: Zustand com `persist` (ver acima), com limpeza no evento que troca o dono do dado.
 - Preferência de tema: o provider de tema (ver acima).
 - Preferência local a um componente que sobrevive a refresh (banner dispensado, "não mostrar de novo", seção recolhida lembrada localmente): o hook `useLocalStorage` do `@metri/ui`, o tier `useState` com durabilidade, serializado em JSON e seguro em SSR.
-- Dado servidor nunca vai pra `localStorage`: o cache é do React Query, e nada dele é persistido (seção "Troca de dono: o estado que depende do dono é limpo").
+- Dado servidor nunca vai pra `localStorage` (seção "Troca de dono: o estado que depende do dono é limpo").
 - **Contexto de navegação nunca é guardado.** Onde o usuário está (o recurso aberto, a seção) sai da URL, e de mais nada: sem `localStorage`, sem "último item acessado". Guardar isso faz a mesma URL produzir telas diferentes conforme o que o navegador lembra, e o link deixa de descrever o que abre. A distinção contra o item acima é o que o dado é: preferência local é como a tela se apresenta, contexto é onde o usuário está.
 
 ```tsx
@@ -200,9 +200,6 @@ function OrderWelcomeBanner() {
 
 ## Anti-padrões
 
-- **Duplicar estado servidor em estado cliente.** Dado da API mora em React Query. Copiá-lo pra `useState`, Context ou Zustand cria uma segunda fonte que desincroniza sozinha.
-- **Context (ou Zustand) pro que é local.** Se um só componente lê o estado, `useState` basta. Casa de estado compartilhado pra dado não compartilhado é complexidade sem contrapartida.
-- **Zustand pro que é de uma árvore.** Estado que vive e morre com uma subárvore é Context. Zustand é pro que atravessa telas.
 - **Mais de uma fonte de verdade.** Não duplicar o mesmo estado entre URL e `useState`, nem entre Context e Zustand. Uma fonte por dado.
 - **Persistir o mesmo dado por dois caminhos.** Um store com `persist` e um `useLocalStorage` manual na mesma chave criam duas fontes de verdade. Dado persistido tem um caminho só.
 

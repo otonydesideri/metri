@@ -44,7 +44,7 @@ O tamanho decide só o degrau mais estreito, entre continuar inline e sair pro a
 
 ## Nível 1: inline
 
-Função trivial, usada num lugar só, fica inline. Não nomear função separada pra uso único.
+Função trivial, usada num lugar só, fica inline.
 
 ```tsx
 // right — inline is the choice
@@ -116,11 +116,11 @@ export function formatBRL(amountInCents: number): string {
 
 **O dia de calendário local sai dos componentes locais da data** (`getFullYear()`, `getMonth() + 1`, `getDate()`), no fuso de quem olha, nunca de `toISOString().slice(0, 10)`: esse devolve o dia em UTC e erra o "hoje" à noite, em fuso negativo.
 
-A pasta do app é plana, pela nomeação de `frontend/structure.md`: `shared/utils/<categoria>.util.ts`, não `shared/utils/format/<categoria>.util.ts`. O mesmo critério vale para `shared/schemas/<módulo>.schema.ts` e `shared/constants/<módulo>.constant.ts`: um arquivo por categoria ou módulo, sem subpasta. Subpasta por categoria só entra se a lista crescer a ponto de justificar.
+A pasta do app é plana, pela nomeação de `frontend/structure.md`: `shared/utils/<categoria>.util.ts`, não `shared/utils/format/<categoria>.util.ts`. Subpasta por categoria só entra se a lista crescer a ponto de justificar.
 
 ## Consultar antes de criar
 
-Antes de criar um helper fora do módulo, procurar nos pacotes (`@metri/utils`, `@metri/ui`, `@metri/core`) e em `shared/utils/` por equivalente. Se já existe, usar; se cobre quase o caso, estender em vez de duplicar. Helper duplicado com nomes diferentes é o problema que essa checagem evita.
+Antes de criar um helper fora do módulo, procurar nos pacotes (`@metri/utils`, `@metri/ui`, `@metri/core`) e em `shared/utils/` por equivalente. Se já existe, usar; se cobre quase o caso, estender em vez de duplicar.
 
 A busca começa pelos pacotes de propósito: `@metri/utils` é onde o helper puro agnóstico já mora, e `@metri/ui` (`hooks/`, `lib/`) é onde mora o de UI. Reimplementar no app um que já existe no pacote é a duplicação mais fácil de cometer, porque o nome novo não colide com nada.
 
@@ -158,7 +158,7 @@ Valor usado num arquivo só fica inline nele. Só vai pra `shared/constants/<mó
 
 Limite que a API impõe não vira constante do app: vem da constante gerada em `api/model.zod.ts` (`backend/http-api.md`, "União fechada e limite do contrato").
 
-O agrupamento é por módulo, um arquivo por módulo, nunca um arquivo por constante (`shared/constants/<módulo>.constant.ts` reúne as constantes do módulo), mesmo critério de `shared/schemas/<módulo>.schema.ts`. Isso evita a proliferação de arquivo de uma linha só.
+O agrupamento é por módulo, nunca um arquivo por constante, mesmo critério de `shared/schemas/<módulo>.schema.ts`: isso evita a proliferação de arquivo de uma linha só.
 
 Valor genuinamente genérico e repetido entre módulos usa nome genérico, não um por domínio:
 
@@ -175,7 +175,7 @@ Se um módulo precisar de tamanho diferente, o override é local àquele caso.
 
 ## Tipos compartilhados
 
-Tipo do contrato de API vem do client gerado, `api/model.zod.ts` (fim desta seção). Tipo do app com pelo menos um consumidor fica em `shared/types/<módulo>.type.ts`, nomeado, e é importado de lá. O limiar é um, não dois: esperar o segundo consumidor significa que o primeiro já declarou o tipo inline, e o segundo declara outro igual em vez de achar o que existe. Antes de escrever um tipo novo, ler o arquivo do módulo em `shared/types/` e reusar o que já estiver lá.
+Tipo do app com pelo menos um consumidor fica em `shared/types/<módulo>.type.ts`, nomeado, e é importado de lá. O limiar é um, não dois: esperar o segundo consumidor significa que o primeiro já declarou o tipo inline, e o segundo declara outro igual em vez de achar o que existe. Antes de escrever um tipo novo, ler o arquivo do módulo em `shared/types/` e reusar o que já estiver lá.
 
 A exceção é o tipo de formulário (`<Nome>Values`), que continua exportado no próprio `shared/schemas/<módulo>.schema.ts`: ele é companion do schema de form (`frontend/forms.md`), nasce e morre com ele, e nenhum outro schema deriva dele. A outra exceção é o tipo que só descreve a forma de um mock, que mora no próprio arquivo de `shared/mocks/` (`frontend/structure.md`, "Casa com fronteira").
 

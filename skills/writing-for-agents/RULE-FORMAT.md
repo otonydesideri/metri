@@ -234,15 +234,11 @@ Quando a regra não é checável mecanicamente: **Padrão.** Verificação por c
 
 #### Delegado ao projeto
 
-A Source decide a forma; o que só o projeto sabe, o projeto decide.
-
 Quando a Source não decide um ponto e o agente agiria diferente por causa disso: **Obrigatório.** Uma linha na seção "Delegado ao projeto" da regra dona, `- **<título>.** O projeto decide <o quê>.`.
 
 **Proibido.** Escrever na regra um ponto que não muda o que o agente faz.
 
 **Proibido.** Código introduzir mecanismo próprio para contornar um ponto delegado: a necessidade vira ARCHITECTURE DECISION REQUIRED (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Need without coverage").
-
-A decisão que o projeto toma segue o critério de `node_modules/metri/skills/domain-language/ADR-FORMAT.md`, "When to offer an ADR".
 
 #### Forma escrita sem instância
 

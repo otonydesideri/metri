@@ -26,8 +26,7 @@ Build the ticket the user names: a UC (the tracer) or a T. With no id, take the 
 
 ## Git
 
-- Branches: `slice/<id>` and `ticket/<id>`, with the UC or T id (`slice/<slice id>`, `ticket/<id>`); the ticket branch starts from its slice branch.
-- The work is committed only on the ticket's branch or worktree, with the ticket id in the message.
+- The work is committed only on the ticket's branch or worktree.
 - Stage by path, only what the ticket changed (`git add <path>`), so nothing else lying in the tree enters the commit.
 - The ticket enters its slice branch, by a merge, only after its checks pass; when the slice moved, merge it into the ticket first and run the checks again.
 - The slice enters main only through /accept.

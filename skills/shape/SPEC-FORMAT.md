@@ -55,19 +55,17 @@ torna um bom teste aqui; os testes que já servem de modelo>
 The spec holds no state: the feature's state is the `status` of its UCs, in `.metri/tickets/`.
 
 - Every UC `draft`: the feature is only shaped, with Problema, Solução, Casos de uso and Fora de escopo, written by
-  /shape. Every candidate feature of the direction gate has its spec, whatever its `horizon`.
+  /shape.
 - A UC outside `draft`: /look-across planned it and filled Decisões de implementação and Decisões de teste, only
   for a `now` feature (the UCs of a `planned` or `fog` feature stay `draft`, by "Matrix rules" in
   `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`).
 - Every UC `done`: the feature is done, and its spec is history that /build's context chain doesn't read.
-- A feature the user discards has no spec: it is a line in "Fora de escopo" of `docs/PRODUCT.md`.
 
 ## Seções
 
 - **Casos de uso**: only the id and the title of each UC of the feature, one per line (`- UC<f>.<n> · <título>`).
   Every UC whose `feature` is this spec's id appears here, `draft` included (`pnpm docs-lint` checks the ones
-  outside `draft`). The UC's own file, `.metri/tickets/UC<f>.<n>.md`, is the single source of its BRs and
-  criteria: the spec never repeats them.
+  outside `draft`).
 - **Decisões de implementação**: no file path and no code, except a prototype snippet that encodes a decision
   better than prose (a state machine, a reducer, a schema, a type shape); mark it as coming from a prototype, and
   trim it to the decision, not a working demo. Cites the slice's `contract` and the ADR by id; doesn't repeat what
@@ -75,8 +73,8 @@ The spec holds no state: the feature's state is the `status` of its UCs, in `.me
 - **Decisões de teste**: the seams where the feature is tested (`node_modules/metri/skills/tdd/SKILL.md`, "Seams:
   where tests go"), what makes a good test here (external behaviour, not implementation;
   `node_modules/metri/skills/tdd/SKILL.md`, "What a good test is"), and the tests that already model it.
-- The feature's slices are never listed on the spec (a decision that rests on a contract cites it by id): they are the `slice` of each UC in "Casos de uso", found in
-  the UC's own ticket file. Writing them here would duplicate what the ticket already declares.
+- The feature's slices are never listed on the spec: they are the `slice` of each UC in "Casos de uso", found in
+  the UC's own ticket file.
 
 ## Onde cada coisa mora
 

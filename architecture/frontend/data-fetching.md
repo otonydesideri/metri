@@ -77,7 +77,7 @@ Como a chamada sai na própria origem, o browser envia o cookie sem configuraç�
 
 Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy usa a forma objeto, aponta para a porta do app-api, mantém `changeOrigin: false` e não reescreve domínio de cookie (`starter/apps/app-web/vite.config.ts`, provado pelo `dev-server-proxy.spec.ts` ao lado). Assim o backend recebe o `Host` da página, não o host interno do target. Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao IaC, não ao bundle do frontend.
 
-A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro"); este arquivo não redefine o formato, lê ele.
+A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro").
 
 ```ts
 // lib/http/to-user-facing-message.ts
@@ -127,7 +127,7 @@ export const orderKeys = {
 };
 ```
 
-A hierarquia é o que dá invalidação granular: `orderKeys.all` invalida tudo do módulo, `orderKeys.lists()` só as listagens, `orderKeys.detail(id)` um pedido só. Declarar a key à mão em cada hook é o que essa factory evita, porque uma key digitada errado não quebra com erro, só deixa o cache dessincronizado em silêncio. O `keys.ts` é o único arquivo não-hook dentro de `hooks/<módulo>/`; ele é companion dos hooks do módulo, mesma lógica do `<módulo>.helpers.ts` companion dos arquivos do módulo (`frontend/helpers.md`, "Nível 2: helper do módulo").
+A hierarquia é o que dá invalidação granular: `orderKeys.all` invalida tudo do módulo, `orderKeys.lists()` só as listagens, `orderKeys.detail(id)` um pedido só. Declarar a key à mão em cada hook é o que essa factory evita, porque uma key digitada errado não quebra com erro, só deixa o cache dessincronizado em silêncio. O `keys.ts` é o único arquivo não-hook dentro de `hooks/<módulo>/`: é companion dos hooks do módulo.
 
 ## Hooks de query
 
@@ -162,7 +162,7 @@ export function useOrders(filters?: FetchOrdersParams) {
 }
 ```
 
-O hook devolve o objeto do `useQuery` inteiro (`data`, `isPending`, `isError`, ...); a página consome os estados dele e monta o loading/erro com os componentes do `@metri/ui`. Hook que compõe mais de uma fonte não tem objeto pra devolver: entrega o dado com nome de domínio mais `isPending`, `hasLoadError`, `isRetrying` e `refetch`, já derivados, que é o que a tela consome (`frontend/components.md`, "Estados de leitura"). A `queryFn` fica fina: a chamada mora em `api/`, e o hook só amarra key e função e desembrulha o corpo.
+O hook devolve o objeto do `useQuery` inteiro (`data`, `isPending`, `isError`, ...); a página consome os estados dele e monta o loading/erro com os componentes do `@metri/ui`. Hook que compõe mais de uma fonte não tem objeto pra devolver: entrega o dado com nome de domínio mais `isPending`, `hasLoadError`, `isRetrying` e `refetch`, já derivados, que é o que a tela consome (`frontend/components.md`, "Estados de leitura").
 
 ## Freshness: `staleTime` é decisão do hook
 
@@ -195,7 +195,7 @@ export function useShippingMethods() {
 
 Quando a mesma config se repete entre hooks de um módulo, ela é extraída com `queryOptions` (helper do TanStack Query v5) e reusada, pra não copiar `staleTime` e tier em cada arquivo.
 
-Uma consequência de não ter `staleTime` global: query do tier padrão nasce stale, então `refetchOnWindowFocus` revalida a cada foco. Numa tela onde isso é chatty demais, o próprio hook sobe o `staleTime`, que é a mesma decisão por hook. O default nunca esconde o requisito de freshness, ele só escolhe o lado seguro.
+Uma consequência de não ter `staleTime` global: query do tier padrão nasce stale, então `refetchOnWindowFocus` revalida a cada foco. Numa tela onde isso é chatty demais, o próprio hook sobe o `staleTime`, que é a mesma decisão por hook.
 
 ## Hooks de mutation
 
@@ -242,7 +242,7 @@ O prefetch mora num `useEffect` com **dependências primitivas**, nunca com o ob
 
 Exemplo completo: data-fetching.examples.md#useorders
 
-A página e os filtros moram na URL, não em `useState`, e chegam como parâmetro do hook: mudar a URL troca a key e o React Query refetcha (`frontend/state.md`, "URL state" e "O hook de params da tela").
+A página e os filtros moram na URL e chegam como parâmetro do hook (`frontend/state.md`, "URL state" e "O hook de params da tela").
 
 ## Erro e sucesso: quem dispara a ação nomeia o resultado
 
@@ -295,13 +295,13 @@ O `QueryClient` é singleton de módulo em `app/providers/query-client.ts` (casa
 
 Exemplo completo: `starter/apps/app-web/src/app/index.tsx`.
 
-A troca de dono segue `frontend/state.md`, "Troca de dono: o estado que depende do dono é limpo": no cache, é o `queryClient.clear()` na instância do `QueryClientProvider`, e nenhum `persistQueryClient` é montado.
+A troca de dono segue `frontend/state.md`, "Troca de dono: o estado que depende do dono é limpo": no cache, é o `queryClient.clear()` na instância do `QueryClientProvider`.
 
 O `@tanstack/react-query-devtools` entra só em desenvolvimento, montado como irmão do router, quando o primeiro consumo real justificar.
 
 ## Padrões de referência
 
-A primeira instância de cada um segue este documento (`skills/writing-for-agents/RULE-FORMAT.md`, "Forma escrita sem instância"). Ficam aqui pra que a primeira implementação não reinvente o padrão.
+A primeira instância de cada um segue este documento (`skills/writing-for-agents/RULE-FORMAT.md`, "Forma escrita sem instância").
 
 ### Optimistic update
 

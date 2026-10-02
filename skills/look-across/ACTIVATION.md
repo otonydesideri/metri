@@ -1,6 +1,6 @@
 # Activation
 
-The Source decides how the system is built; the project decides what only it knows: whether it needs a capability, which provider it uses, who owns the data. This file is the contract between the two: what /look-across infers, what it asks and when, and where the answer lives.
+The Source decides how the system is built; the project decides what only it knows: whether it needs a capability, which provider it uses, who owns the data.
 
 ## Three classes of decision
 
@@ -67,8 +67,7 @@ The Subject is the label of the line in "Delegações".
 ## Examples
 
 - A project that sends a confirmation e-mail, stores product photos and has no expensive read activates mail and storage and resolves vendor, provider and buckets; cache and observability raise no question, and bounded contexts stay at the default of one context.
-- The first job shows up months later: the /look-across that plans it activates `backend/async-jobs`, and resolves its worker process, by steps 3 to 6 of "Order".
-- Requiring workers in their own app is a need without coverage, because no global rule covers that design (`backend/async-jobs.md` leaves the worker's process to the project): activation stops at ARCHITECTURE DECISION REQUIRED.
+- A command from one module over another is a need without coverage, because `backend/modules.md` delegates the integration beyond the shared contract to the project: activation stops at ARCHITECTURE DECISION REQUIRED.
 
 ## Check
 

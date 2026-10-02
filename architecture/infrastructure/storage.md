@@ -24,9 +24,9 @@ status: active
 ---
 # Storage
 
-O storage de objetos: dois buckets, um público, servido por domínio customizado atrás de CDN, e um privado, acessado só por URL assinada (na implementação de referência, contra o endpoint S3 nativo). O backend é o único trust boundary do storage: gera as chaves, assina as URLs e é quem decide o que cada chamador pode alcançar. Quem escolhe por onde o binário de usuário sobe é tamanho e volume: arquivo pequeno e de baixa frequência passa pelo backend, que recebe o corpo e grava ele mesmo; arquivo grande ou de alto volume sobe direto pro storage por URL assinada de escrita, e o backend só emite a permissão (seção "Quando o binário do usuário passa pelo backend").
+O storage de objetos: dois buckets, um público, servido por domínio customizado atrás de CDN, e um privado, acessado só por URL assinada (na implementação de referência, contra o endpoint S3 nativo). O backend é o único trust boundary do storage: gera as chaves, assina as URLs e é quem decide o que cada chamador pode alcançar. Quem escolhe por onde o binário de usuário sobe é tamanho e volume (seção "Quando o binário do usuário passa pelo backend").
 
-Os exemplos usam o Cloudflare R2 como implementação de referência, não como vendor obrigatório: a decisão dos dois buckets nasce de uma restrição real dele. O que é padrão aqui é a forma — dois buckets por visibilidade, chave canônica, contrato por asset, registro pendente —, não o nome do vendor: as regras deste documento independem do vendor, salvo onde o texto marca um detalhe como da implementação de referência. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático", com o agregado `Product` e a coleção de fotos dele de `domain/watched-list.md`.
+Os exemplos usam o Cloudflare R2 como implementação de referência, não como vendor obrigatório: a decisão dos dois buckets nasce de uma restrição real dele. O que é padrão aqui é a forma — dois buckets por visibilidade, chave canônica, contrato por asset, registro pendente —, não o nome do vendor, salvo onde o texto marca um detalhe como da implementação de referência. O resto dos exemplos segue o domínio didático de pedidos de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático", com o agregado `Product` e a coleção de fotos dele de `domain/watched-list.md`.
 
 ## Por que dois buckets
 
@@ -34,7 +34,7 @@ Restrição da implementação de referência primeiro: URL assinada do R2 só f
 
 Postura de segurança segundo, e esse argumento valeria mesmo sem a restrição: a exposição pública do R2 é do bucket inteiro. Objeto privado salvo por engano num bucket público é vazamento imediato, cacheado na CDN; com dois buckets, o mesmo engano de roteamento vira 404. A separação física transforma a classe de falha mais provável (erro de roteamento de chave na aplicação) de incidente de vazamento em bug funcional.
 
-A classificação é allowlist: todo asset é privado por default, e público é exceção declarada no contrato do asset. Nunca existe "privado por exceção".
+A classificação é allowlist: todo asset é privado por default, e público é exceção declarada no contrato do asset.
 
 ## O namespace de um asset
 

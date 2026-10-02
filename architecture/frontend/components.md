@@ -79,7 +79,7 @@ O compound é a exceção, e não contraria o parágrafo acima: as partes de um 
 
 ## Composição e o que sobe pro pacote
 
-O primitivo (`Tabs`, `TabsList`, `FieldLabel`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system. Este documento aponta pra essa regra, não a reescreve.
+O primitivo (`Tabs`, `TabsList`, `FieldLabel`) é do `@metri/ui`: o app monta a tela com essas peças, não redefine o padrão de composição. Peça de UI que passa a ser mais global sobe pro pacote pela regra de `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app", com o `@metri/ui` como dono do design system.
 
 **Obrigatório.** Primitivo do `@metri/ui` entra por import nomeado, como na documentação do shadcn: `import { Tabs, TabsList, TabsTrigger } from '@metri/ui/components/ui/tabs'` (`defaults/ui.md`, "Componente novo").
 

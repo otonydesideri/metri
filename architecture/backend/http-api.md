@@ -29,7 +29,7 @@ status: active
 ---
 # API HTTP
 
-A porta HTTP é o adaptador que o mundo mais usa: traduz request em input de caso de uso e resultado em resposta, sem decidir nada. Ela é também a fonte do contrato de API que o frontend consome. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
+A porta HTTP traduz request em input de caso de uso e resultado em resposta, sem decidir nada. Ela é também a fonte do contrato de API que o frontend consome. Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
 ## Regras
 
@@ -103,14 +103,13 @@ Quando o frontend precisa de um limite que a API impõe (comprimento, quantidade
 
 ## Aplicação
 
-- Toda resposta de erro da porta sai no envelope único de `backend/errors.md`, "O formato de resposta de erro", com o `type` no `ApiErrorType`.
+- Toda resposta de erro da porta sai no envelope único de `backend/errors.md`, "O formato de resposta de erro", com o `type` no `ApiErrorType`, que cruza a fronteira pelo `@metri/core/errors`; o frontend consome o `ApiErrorType`, não o `DomainErrorType`.
 - Controller e caso de uso entram nas listas de `http.module.ts`, agrupados por comentário de área (`backend/modules.md`).
-- O controller é o adaptador fino de `backend/application.md` para HTTP: a tradução do `failure` acontece nele, pela tabela de `backend/errors.md`.
+- O controller é o adaptador fino de `backend/application.md` para HTTP.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
-- O envelope de erro e o `ApiErrorType` cruzam a fronteira pelo `@metri/core/errors`; o frontend consome o `ApiErrorType`, não o `DomainErrorType` (`backend/errors.md`).
 - O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`); a resposta fora do DTO sai 500, `INTERNAL_ERROR` (`backend/errors.md`, "Erro inesperado: filtro global").
 - A geração: `starter/apps/app-api/src/openapi.ts`, que roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"), nunca pelo `tsx`, que descarta o metadata dos decorators. O `DocumentBuilder` fixa `.setOpenAPIVersion('3.1.0')`: o `.nullable()` do Zod 4 sai com `null` no `type` (`["string", "null"]`) ou no `anyOf`, JSON Schema que só o OpenAPI 3.1 aceita e que o Orval lê.
-- O script `api:generate` da raiz roda os dois lados, o `openapi.json` e o Orval do app-web; o `verify` o roda e falha quando ele muda algum arquivo (`api:drift`).
+- O `verify` roda o `api:generate` e falha quando ele muda algum arquivo (`api:drift`).
 - Fora de produção, o `main.ts` serve em `/api/docs` a documentação do mesmo documento (`createOpenApiDocument`).
 - O limite nasce no DTO, e o schema de form do frontend importa a constante gerada, podendo ser mais estrito que ela (`frontend/helpers.md`, "Constantes"; `frontend/forms.md`):
 
@@ -138,7 +137,7 @@ export class OrderResponseDto extends createZodDto(
 import { createOrderDtoNoteMax } from '@/api/model.zod';
 ```
 
-- Com uma fonte só, não há espelho a manter; cada lado continua provando o limite onde o consome (`frontend/testing.md`, "Limite do contrato").
+- Cada lado prova o limite onde o consome (`frontend/testing.md`, "Limite do contrato").
 
 ## Verificação
 

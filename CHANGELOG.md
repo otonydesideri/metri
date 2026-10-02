@@ -24,9 +24,9 @@ tabela do README, e todo texto diz a regra no presente.
   transição" do RULE-FORMAT vira "Forma escrita sem instância", e "Ponto em aberto" vira "Delegado ao projeto"
   (`skills/writing-for-agents/RULE-FORMAT.md`). "Refinar uma regra existente" vira "Escrita da regra", sem o roteiro
   de migração.
-- **`verify` do source: `transient-text`.** Barra, nessas pastas, `pilot` e `piloto`, `v<n>.<n>`, `PP-<n>` e
-  `GAP-<n>` com número e id de ticket (`UC<f>.<n>`, `T<s>.<n>` com número). Só roda no source, nunca no projeto; os
-  exemplos de projeto de amostra de `MATRIX-FORMAT.md` e `SPEC-FORMAT.md` ficam fora dos ids.
+- **`verify` do source: `transient-text`.** Barra, nessas pastas, `pilot` e `piloto`, número de versão (`v1.2`),
+  `PP-3` e `GAP-3` com número e id de ticket (`UC1.1`, `T2.0`). Só roda no source, nunca no projeto; o projeto de
+  amostra de `MATRIX-FORMAT.md` e de `SPEC-FORMAT.md` fica fora dos três últimos.
 - **Humanizer.** A atribuição fica com autor, URL e licença, sem a tag da versão adaptada.
 - **Feature descartada não ganha spec.** Ela vira uma linha em "Fora de escopo" do `docs/PRODUCT.md`, e `horizon:
   out` sai da spec (docs-lint: erro). A slice continua com `out`.

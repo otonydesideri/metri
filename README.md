@@ -54,7 +54,7 @@ pnpm exec metri init
 
 O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, o `.env` criado do `.env.example` e instalado pelo `pnpm install`. Termina com `metri verify` verde, com o `design-tokens` pendente. Com o banco no ar, `pnpm dev` abre a tela inicial em http://localhost:5279, com o estado da API e do banco, os próximos passos e a documentação da API. Quando o `/shape` escreve um `docs/DESIGN.md` com a marca do projeto, o `design-tokens` passa a falhar até o ticket de design system, o primeiro da slice de fundação. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
 
-A slice de fundação fica com o que o starter não tem como saber. Com banco de dados, o agente mostra o que já roda na máquina e pergunta se o projeto usa esse Postgres ou o do `compose.yaml` do starter. No Postgres que já roda, o `.env` aponta para ele, o `prisma migrate dev` cria o banco que falta, e o `compose.yaml` sai; no Docker, `pnpm db:up` sobe o Postgres e `pnpm db:down` o remove (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"). Com interface, um ticket leva os tokens do `DESIGN.md` para o tema e ajusta o shell do starter.
+A slice de fundação fica com o que o starter não tem como saber: o banco de desenvolvimento, que é o Postgres que já roda ou o do `compose.yaml` do starter (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"), e, com interface, o tema e o shell do starter, pelos tokens do `DESIGN.md`.
 
 As skills e os agents entram por link, não por plugin: o plugin pede marketplace, `enabledPlugins` e aceite de confiança, e prefixa cada skill (`/<plugin>:<skill>`).
 
@@ -73,9 +73,7 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 
 - Arquivo só existe se tiver conteúdo que nenhum outro pode carregar.
 - ADR só com decisão tomada, difícil de reverter, surpreendente e com trade-off real.
-- O `docs/` do projeto tem só `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md` e `adr/`; o `.metri/`, só `ARCHITECTURE.md`, `rules/` (quando houver caso real), `MATRIX.md`, `specs/` e `tickets/`. O `docs-lint` barra o resto.
 - Regra nunca é pré-carregada: cerca de 5 por ticket, pelo `rules-for`, e encolhe quando um check ou o código assume o que ela diz.
-- O agente lê `AGENTS.md`, skills e regras; este README é para humano.
 - Skill: adaptar do Matt; skill nova só para método nosso.
 
 ## Política de idioma
@@ -174,9 +172,9 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 
 ### Architecture Source (global)
 
-**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é `architecture/defaults/ui.md`, e a stack tem o `architecture/defaults/stack.md` como registro. O porquê de cada decisão global está em "Decisões do método", e a regra dona guarda só o que muda o comportamento do agente.
+**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é `architecture/defaults/ui.md`, e a stack tem o `architecture/defaults/stack.md` como registro. O porquê de cada decisão global: "Decisões do método".
 
-**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (`architecture/defaults/ui.md`): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto. Projeto com outra stack registra a troca em ADR e escreve uma regra de projeto para o que muda.
+**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (`architecture/defaults/ui.md`): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto.
 
 **Entrada no projeto:** o pacote `metri`, dependência de desenvolvimento numa tag, somente leitura ("Começar um projeto"). Ele fica fora do código entregue: fora de build, exportação e pacote final.
 
@@ -388,7 +386,7 @@ Referências:
 
 ## Evolução futura
 
-Itens fora do método, cada um com o ponto de extensão pronto (campo opcional ou convenção): nada do que existe muda de forma quando eles chegam.
+Itens fora do método, cada um com o ponto de extensão pronto (campo opcional ou convenção).
 
 | Item | Ponto de extensão | Evolução |
 | --- | --- | --- |

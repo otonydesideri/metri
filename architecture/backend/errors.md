@@ -46,7 +46,7 @@ Exemplo completo: `starter/packages/core/src/errors/domain-error.ts`.
 - **AUTHORIZATION**: o chamador é conhecido, mas não pode executar esta ação. Distinto de "não identificado", que a fronteira de request resolve antes de o caso de uso rodar. Usar apenas quando a existência do recurso já é conhecida do chamador (ver "Erros sensíveis").
 - **VALIDATION**: valor viola invariante de domínio. Não é validação de formato HTTP, que é papel do Zod; é regra do modelo, como "data de nascimento não pode ser futura".
 
-O enum é pequeno, fechado e cresce raro. Valor novo entra só quando nenhuma categoria existente descreve o caso; valor já usado nunca é reatribuído nem removido.
+O enum é pequeno e fechado; valor já usado nunca é reatribuído nem removido, e valor novo segue "Quando criar o quê".
 
 ### O significado de `code`
 
@@ -201,7 +201,7 @@ Pontos-chave:
 - Pedido sem identidade validada (sem sessão ou com sessão inválida) é a `UnauthorizedException` nativa do Nest, lançada pela fronteira: sai 401 no envelope, `code: 'UNAUTHORIZED'` e `type: 'REQUEST_REJECTED'`. Nunca um `DomainError`: quem pede ainda não é ninguém no domínio.
 - Exceção que não é `HttpException` é, por definição, não classificada. O cliente recebe sempre o mesmo corpo genérico com status 500; a mensagem original e o stack ficam só no log (`infrastructure/logging.md`), nunca no corpo da resposta.
 - `code: 'INTERNAL_SERVER_ERROR'` e `type: 'INTERNAL_ERROR'` reaproveitam as mesmas três chaves do formato de erro de domínio (`code`, `message`, `type`), mantendo um único formato de erro na API. `'INTERNAL_ERROR'` é valor do `ApiErrorType` e não entra em `DomainErrorType`: esse enum é reservado a categorias do vocabulário de negócio, e um erro inesperado não pronuncia vocabulário de negócio nenhum.
-- Erro do Prisma que escapa da persistência cai no mesmo filtro, sem tratamento especial por código do driver (`P2002`, `P2025`...). Condição esperada que o banco só revela na gravação (violação de unicidade, registro não encontrado) não chega aqui: a implementação do contrato de persistência reconhece o código e devolve o outcome declarado da operação, e o caso de uso é quem o traduz na classe de `DomainError` (`backend/persistence.md`, "Outcome de persistência"). Um erro de Prisma chegando aqui já é, por definição, um caso que nenhum contrato declarou, então tratá-lo como qualquer outro erro inesperado é o comportamento certo, não uma lacuna a preencher com uma tabela de status por código de driver.
+- Erro do Prisma que escapa da persistência cai no mesmo filtro, sem tratamento especial por código do driver (`P2002`, `P2025`...). Condição esperada que o banco só revela na gravação (violação de unicidade, registro não encontrado) não chega aqui: a implementação do contrato de persistência reconhece o código e devolve o outcome declarado da operação, e o caso de uso é quem o traduz na classe de `DomainError` (`backend/persistence.md`, "Outcome de persistência"). Um erro de Prisma chegando aqui já é, por definição, um caso que nenhum contrato declarou: é tratado como qualquer outro erro inesperado.
 
 ## Erros sensíveis: o que não vazar
 
@@ -215,7 +215,7 @@ Pontos-chave:
 
 ## Quando criar o quê
 
-**Classe nova**: toda falha distinta que o cliente pode observar. Regra mecânica, sem julgamento caso a caso.
+**Classe nova**: toda falha distinta que o cliente pode observar.
 
 **Reusar classe existente**: quando o fato observável é o mesmo. O mascaramento de autorização acima é o exemplo canônico; criar classe nova ali seria vazamento, não clareza.
 

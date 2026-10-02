@@ -50,7 +50,7 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 
 > **Por quê.** O `<style>` inline pinta antes de o CSS do `@metri/ui` carregar, então não lê a variável; com um valor só, quem escolheu o escuro vê o fundo claro até o tema entrar.
 
-**Obrigatório.** O tema tem dois valores; a preferência do sistema operacional não entra: sem `system` (`enableSystem={false}`), e a `prefers-color-scheme` não decide o tema nem no provider nem no script inline.
+**Obrigatório.** O tema tem dois valores, sem `system` (`enableSystem={false}`); a `prefers-color-scheme` não decide o tema nem no provider nem no script inline.
 
 > **Por quê.** Sem `system`, `theme` é sempre o que está na tela, então todo controle lê o mesmo valor e não existe diferença entre o que o usuário pediu e o que está pintado. Incluir `system` reabre essa diferença e exige um segundo valor no contrato do provider, porque um switch claro/escuro não tem como se desenhar a partir de uma escolha de três estados.
 
@@ -74,11 +74,9 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 <div className="bg-[#ffffff] text-[#0a0a0a] p-[16px] rounded-[6px]">
 ```
 
-- O `ThemeProvider` do `@metri/ui` é o do next-themes, configurado; o arquivo reexporta o `useTheme()`, que expõe `theme` e `setTheme` para o toggle do app.
+- O arquivo do `ThemeProvider` reexporta o `useTheme()`, que expõe `theme` e `setTheme` para o toggle do app.
 
 Exemplo completo: `starter/packages/ui/src/components/providers/theme-provider.tsx` e o `<head>` de `starter/apps/app-web/index.html`.
-
-- Preferência de tema não é estado de store (`frontend/state.md`, "Tema não é estado de store"): é este provider, montado em `app/`.
 
 ## Verificação
 

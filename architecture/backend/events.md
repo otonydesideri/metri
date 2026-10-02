@@ -33,7 +33,7 @@ O mecanismo é o `DomainEvents` de `@metri/core/events`, um registry estático i
 
 ## Quando usar evento
 
-A escolha entre evento, chamada direta, service dedicado, transação e job é de `backend/operation-routing.md`, pela árvore de decisão única de lá. Este documento aplica o ramo de evento: define como o evento funciona depois que a árvore chega nele.
+A escolha entre evento, chamada direta, service dedicado, transação e job é de `backend/operation-routing.md`, pela árvore de decisão única de lá.
 
 ## Evento não é comando
 
@@ -110,7 +110,7 @@ Exemplo completo: events.examples.md#onorderconfirmedsubscriber
 
 Pontos-chave:
 
-- O subscriber é o adaptador fino de `backend/application.md`: extrai do evento o input do caso de uso e chama `execute()`, e a regra da reação mora num caso de uso comum do módulo reagente.
+- O subscriber extrai do evento o input do caso de uso e chama `execute()`; a regra da reação mora num caso de uso comum do módulo reagente.
 - Vários módulos podem reagir ao mesmo evento, cada um com o próprio subscriber disparando o próprio caso de uso; nenhum sabe dos outros.
 - `setupSubscriptions()` roda no construtor: instanciou, assinou. O Nest instancia ao subir o app.
 - O registro no Nest é o `events.module.ts` central, na mesma lógica das listas de `http.module.ts` e `persistence.module.ts`: subscribers e os casos de uso que eles disparam entram como providers, agrupados por comentário de área. Módulo de negócio nunca ganha módulo Nest próprio (`backend/modules.md`).
@@ -132,7 +132,7 @@ Emissor e subscribers vivem no mesmo processo Node. Para um monólito modular, �
 
 A necessidade de um bus distribuído (Kafka, RabbitMQ, Redis) só aparece com processos separados, workers dedicados ou um segundo backend reagindo a eventos deste. A estrutura daqui já deixa essa porta aberta, e é por isso que o payload do evento é serializável por regra: na migração, a classe de evento e o subscriber permanecem, e o que muda é o transporte por trás do despacho.
 
-O que a migração traria de novo (entrega at-least-once, deduplicação, idempotência de handler) é decidido quando a necessidade real aparecer, não antes. Nenhum código antecipa o bus além da regra de payload.
+Além da regra de payload, nenhum código antecipa o bus, nem a entrega at-least-once, a deduplicação e a idempotência de handler que a migração traria.
 
 ## Testes
 

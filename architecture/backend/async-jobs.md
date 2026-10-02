@@ -34,7 +34,7 @@ Worker é adaptador de entrada fino, da mesma natureza do controller e do subscr
 
 ## Job é comando
 
-Job é um comando: descreve uma intenção no imperativo (`generate-order-report`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`; este documento define o job depois que a árvore de lá chega nele.
+Job é um comando: descreve uma intenção no imperativo (`generate-order-report`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`.
 
 ## Por que pg-boss: fila no Postgres
 
@@ -46,9 +46,9 @@ O [pg-boss](https://github.com/timgit/pg-boss): jobs são linhas em tabelas do p
 
 O custo dessa família é o teto de throughput: a fila compete com o banco por WAL e vacuum, e a conta muda na casa de milhares de jobs por minuto sustentados.
 
-**A entrega é at-least-once.** O pg-boss garante que dois workers nunca pegam o mesmo job ao mesmo tempo, mas o ciclo completo continua at-least-once: retry, expiração de job ativo e restart reexecutam o handler. Isso não é particularidade da referência; vale para qualquer fila. Todo handler é idempotente por contrato (seção "Idempotência").
+**A entrega é at-least-once.** O pg-boss garante que dois workers nunca pegam o mesmo job ao mesmo tempo, mas o ciclo completo continua at-least-once: retry, expiração de job ativo e restart reexecutam o handler. Vale para qualquer fila. Todo handler é idempotente por contrato (seção "Idempotência").
 
-**O que uma troca de ferramenta não muda.** O contrato de fila e o worker fino permanecem com qualquer ferramenta; muda o transporte por trás do `PgBossService`, ou do serviço equivalente que o substituir. Os demais candidatos e o cenário de cada um: BullMQ com milhares de jobs por minuto sustentados ou Redis já na infra por outro motivo (fila fora do banco exige outbox próprio para o enfileiramento com garantia); durable execution (Inngest, Trigger.dev, Temporal) quando o problema for workflow longo multi-etapas, com espera de dias e compensação entre passos; broker (Kafka, RabbitMQ) é transporte de eventos entre processos e pertence à decisão de bus distribuído de `backend/events.md`, não a esta.
+**Troca de ferramenta.** Muda o transporte por trás do `PgBossService`, ou do serviço equivalente que o substituir. Os demais candidatos e o cenário de cada um: BullMQ com milhares de jobs por minuto sustentados ou Redis já na infra por outro motivo; durable execution (Inngest, Trigger.dev, Temporal) quando o problema for workflow longo multi-etapas, com espera de dias e compensação entre passos; broker (Kafka, RabbitMQ) é transporte de eventos entre processos e pertence ao bus de `backend/events.md`, "O bus é in-process, preparado para deixar de ser", não a esta.
 
 ## O contrato de fila
 
@@ -86,7 +86,7 @@ Exemplo completo: async-jobs.examples.md#generateorderreportworker
 
 Pontos-chave:
 
-- O worker é o adaptador fino de `backend/application.md`: extrai do payload o input do caso de uso e chama `execute()`. É o espelho do subscriber de `backend/events.md`, com a fila no lugar do bus.
+- O worker extrai do payload o input do caso de uso e chama `execute()`, o espelho do subscriber de `backend/events.md` com a fila no lugar do bus.
 - A regra de falha é o inverso da regra do subscriber, e o motivo é a linhagem de `backend/errors.md`: `failure(...)` esperado é erro permanente, retry não transforma "pedido não existe mais" em sucesso, então o worker loga e conclui o job. Exceção técnica é falha transitória: o worker não a captura, o throw marca o job como failed e o pg-boss retenta com backoff até a dead letter.
 - `work()` do pg-boss entrega um lote de jobs; o `PgBossService` fixa lote de 1 e desembrulha, então o handler do worker recebe um input por vez.
 
@@ -107,7 +107,7 @@ await this.prisma.client.$transaction(async (tx) => {
 });
 ```
 
-`sendInTransaction` repassa o `tx` ao pg-boss pela opção `db` (um adapter `executeSql` sobre `tx.$queryRawUnsafe(text, ...values)`). É a exceção sancionada da política de SQL cru de `backend/persistence.md`: o SQL vem da biblioteca, parametrizado, sem identificador interpolado nosso. Job inserido na transação só fica visível para workers depois do commit, e some junto no rollback. Este é o caminho de exceção: a maioria dos efeitos tolera a janela mínima do subscriber, e o custo aqui é acoplar o repositório ao enfileiramento. Usar só quando a perda for inaceitável mesmo entre o commit e o enqueue. O mecanismo mostrado supõe a fila no próprio Postgres; ferramenta de outra família troca este caminho por uma tabela de outbox com processo drenador, desenhada junto com a decisão.
+`sendInTransaction` repassa o `tx` ao pg-boss pela opção `db` (um adapter `executeSql` sobre `tx.$queryRawUnsafe(text, ...values)`). É a exceção sancionada da política de SQL cru de `backend/persistence.md`. Este é o caminho de exceção: a maioria dos efeitos tolera a janela mínima do subscriber, e o custo aqui é acoplar o repositório ao enfileiramento. O mecanismo mostrado supõe a fila no próprio Postgres; ferramenta de outra família troca este caminho por uma tabela de outbox com processo drenador, desenhada junto com a decisão.
 
 ## Entrada externa: grava antes de processar
 
@@ -125,7 +125,7 @@ Tentativa esgotada do job de processamento segue "Falha, retry e dead letter" co
 
 ## Tarefas agendadas
 
-Cron é a própria fila com um agendamento: o pg-boss grava o cronograma no banco e garante um único disparo por horário entre N instâncias do app, comparando os relógios com o do banco. Não existe scheduler como artefato separado; a tarefa agendada é um worker comum cuja fila recebe jobs por tempo, registrado no mesmo `onModuleInit`:
+Cron é a própria fila com um agendamento: o pg-boss grava o cronograma no banco e garante um único disparo por horário entre N instâncias do app, comparando os relógios com o do banco. A tarefa agendada é um worker comum cuja fila recebe jobs por tempo, registrado no mesmo `onModuleInit`:
 
 ```ts
 async onModuleInit(): Promise<void> {
@@ -162,7 +162,7 @@ O ciclo de vida da falha, com os papéis de cada peça:
 - **Tentativas esgotadas**: o job vai para a dead letter da fila (`<fila>-dlq`), carregando a origem e o erro. Dead letter é instrumento de diagnóstico com dono, não lixeira: profundidade maior que zero é incidente a investigar, e o `redrive` do pg-boss devolve o job à fila de origem depois da causa corrigida. O alerta de profundidade segue `infrastructure/observability.md`, com janela, severidade e destino decididos pelo projeto (`.metri/ARCHITECTURE.md`).
 - **Job ativo que trava**: `expireInSeconds` (default de 15 minutos) devolve à fila o job cujo worker morreu sem concluir. Handler que legitimamente demora mais que isso declara o próprio limite na definição da fila.
 
-Parâmetros de retry são por fila, na constante do worker, decididos pelo custo de reexecutar aquele comando; os valores do exemplo são ponto de partida, não regra.
+Os parâmetros de retry são decididos pelo custo de reexecutar aquele comando; os valores do exemplo são ponto de partida, não regra.
 
 ## Registro e ciclo de vida
 

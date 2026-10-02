@@ -20,8 +20,6 @@ Os exemplos usam o domínio didático de pedidos de `skills/writing-for-agents/R
 
 Uma regra booleana sobre estado existente ("este pedido é reembolsável?") começa com um consumidor e ganha outros: o caso de uso decide em memória, o backoffice quer a listagem de quem satisfaz a regra, um segundo módulo quer a mesma resposta. Sem desenho, cada consumidor reescreve a regra no próprio vocabulário (um `if` no caso de uso, um `where` na query), e as cópias divergem em silêncio na primeira mudança: a janela de reembolso muda de 7 para 14 dias, alguém atualiza um lado só, e nenhum erro acusa.
 
-Specification dá casa única à regra: uma classe de domínio que sabe responder pela regra em cada contexto que a consome.
-
 ## A árvore de decisão
 
 O padrão é o último recurso da árvore, não o primeiro. O default da casa continua sendo o método de entidade.

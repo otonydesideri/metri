@@ -16,7 +16,7 @@ Os exemplos são didáticos.
 
 ## O problema que ele promete resolver
 
-Builder promete montar um objeto complexo por passos encadeados (`withCustomer().withItems().build()`): muitos campos opcionais, montagem condicional, ordem controlada. O padrão nasceu em linguagens sem parâmetro nomeado nem literal de objeto. Em TypeScript, e nesta arquitetura, cada caso que ele promete resolver já tem uma casa mais simples; este documento diz onde cada caso mora e registra os gatilhos raros em que um builder de verdade entraria.
+Builder promete montar um objeto complexo por passos encadeados (`withCustomer().withItems().build()`): muitos campos opcionais, montagem condicional, ordem controlada. O padrão nasceu em linguagens sem parâmetro nomeado nem literal de objeto. Em TypeScript, e nesta arquitetura, cada caso que ele promete resolver já tem uma casa mais simples.
 
 ## A árvore de decisão
 
@@ -37,7 +37,7 @@ flowchart TD
 
 - Entidade ou value object: `create()` com objeto de props e `Either` (`domain/model.md`). O literal de props é o parâmetro nomeado que o builder simula em Java, com uma vantagem que o padrão clássico não tem: campo obrigatório faltante é erro de compilação. O `build()` clássico que lança para campo faltando rebaixa essa checagem para runtime, e `throw` para falha esperada viola `backend/errors.md`.
 - Dado de teste: `make<Agregado>(override)` com defaults e spread (`backend/testing.md`) já é o test data builder da casa, sem chain. Builder de cenário de e2e (montar um pedido com itens e faturas numa expressão fluente) não entra: o Arrange dos e2e é deliberadamente inline (`backend/testing.md`).
-- Config de biblioteca externa: classe de config com método `build()`, montada dentro da composição de infra que consome a biblioteca (`infrastructure/logging.md`, "Log de biblioteca externa"). O nome coincide, o padrão não: é composição de configuração numa chamada única, sem passo encadeado nem estado acumulado. Não "completar o padrão" adicionando `withX()` a essas classes.
+- Config de biblioteca externa: classe de config com método `build()`, montada dentro da composição de infra que consome a biblioteca (`infrastructure/logging.md`, "Log de biblioteca externa"). O nome coincide, o padrão não: é composição de configuração numa chamada única, sem passo encadeado nem estado acumulado.
 - Objeto interno com campos opcionais: literal com spread condicional (`...(input.status ? { status: input.status } : {})`), como o `where` de `backend/reading.md`.
 
 ## Os gatilhos que fariam o padrão entrar
@@ -78,7 +78,7 @@ Pontos-chave:
 
 - `build()` é o único ponto de saída: valida a invariante da montagem (`Either`, nunca `throw`) e é onde o derivado nasce (`totalInCents`), como derivado nasce dentro do `create()` em `domain/model.md`.
 - Passo opcional ausente vira `null` explícito na estrutura, e quem renderiza decide o que fazer com a ausência; o builder não inventa default de apresentação.
-- Quando a ordem dos passos importar (terceiro gatilho), a forma evolui: cada passo devolve um tipo que só expõe o próximo passo legal (type-state), em vez de `this`. A forma acumuladora acima basta enquanto a ordem for livre.
+- Quando a ordem dos passos importar (terceiro gatilho), a forma evolui para type-state em vez de `this`. A forma acumuladora acima basta enquanto a ordem for livre.
 - A casa exata do arquivo e a separação entre receita e passos (o papel do Director no padrão clássico) se decidem com o caso real, seguindo a regra de escape do AGENTS.md; a montagem de documento tende a morar em infra, ao lado do serviço que renderiza (`infrastructure/mail.md`, "O contrato por fluxo").
 
 ## Verificação rápida

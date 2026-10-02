@@ -24,4 +24,4 @@ Quando um valor escolhido pelo usuário vira o primeiro segmento de uma URL na r
 
 ## Delegado ao projeto
 
-- **Segurança HTTP.** O projeto decide os headers de segurança (CSP, HSTS) e a proteção de CSRF além do `SameSite`; o same-origin desta regra e o throttler global (`infrastructure/runtime.md`) são o que a Source fixa.
+- **Segurança HTTP.** O projeto decide os headers de segurança (CSP, HSTS) e a proteção de CSRF além do `SameSite`.

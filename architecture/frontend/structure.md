@@ -10,7 +10,7 @@ status: active
 ---
 # Visão geral do frontend
 
-O frontend numa página: onde cada arquivo do `app-web` mora. A colocação entre app e pacote compartilhado segue `general/code-placement.md`.
+O frontend numa página: onde cada arquivo do `app-web` mora.
 
 Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
@@ -18,11 +18,9 @@ Este documento cobre a estrutura de pastas. Cliente HTTP e hooks de React Query 
 
 ## Stack
 
-A stack do `app-web` é a de `defaults/stack.md`, "Stack"; o nome de arquivo em kebab-case é regra deste documento ("Nomeação de arquivo").
+A stack do `app-web` é a de `defaults/stack.md`, "Stack".
 
 ## Estrutura de pastas
-
-A organização separa composição, fluxo de feature, integração externa e código compartilhado. Cada casa tem um propósito único; `shared/` agrupa as casas técnicas reutilizadas por mais de uma área do app, e `lib/` separa cada integração externa na própria subpasta.
 
 ```
 apps/app-web/src/
@@ -68,7 +66,7 @@ Propósito e fronteira de cada casa:
 
 `shared/` não é um catch-all: cada arquivo entra numa das casas listadas e mantém a fronteira dela. Código específico de página, hook ou facade de dependência continua na casa top-level correspondente.
 
-`lib/` é reservada ao wrapper de dependência externa, como o cliente HTTP ou o client de um serviço de terceiro. Cada integração tem uma subpasta mesmo quando começa com um arquivo, porque seus clients, adapters e tradutores evoluem juntos. Função pura vai pra `shared/utils/`; a chamada ao app-api é a função gerada em `api/` (`frontend/data-fetching.md`, "Funções de API"); validação vai pra `shared/schemas/`. Detalhe das casas auxiliares (`shared/utils`, `shared/rules`, `shared/constants`, `shared/types`) está em `frontend/helpers.md`.
+`lib/` é reservada ao wrapper de dependência externa, como o cliente HTTP ou o client de um serviço de terceiro. Cada integração tem uma subpasta mesmo quando começa com um arquivo, porque seus clients, adapters e tradutores evoluem juntos. Detalhe das casas auxiliares (`shared/utils`, `shared/rules`, `shared/constants`, `shared/types`) está em `frontend/helpers.md`.
 
 ## Nomeação de arquivo
 
@@ -102,7 +100,7 @@ A pergunta é sobre identidade, não sobre quantos consomem hoje: se o dono some
 - Some junto, porque só existe pra montar a tela dele e o nome só faz sentido perto dele (o esqueleto da lista de pedidos, as bolinhas do carrossel): pasta do dono.
 - Sobrevive, porque a identidade não vem de quem usa (um ícone, um campo de form com dependência externa, o estado de erro de leitura): casa de papel, com o critério de pertença escrito nela.
 
-Contagem de consumidor não decide. O campo de telefone tem um consumidor só e mesmo assim não é peça de ninguém, porque continuaria existindo se a tela de perfil sumisse. Um segundo consumidor de fora não é a regra, é o sintoma: quando ele aparece, quase sempre a identidade nunca foi do dono, e a peça muda de casa.
+O campo de telefone tem um consumidor só e mesmo assim não é peça de ninguém, porque continuaria existindo se a tela de perfil sumisse. Um segundo consumidor de fora não é a regra, é o sintoma: quando ele aparece, quase sempre a identidade nunca foi do dono, e a peça muda de casa.
 
 Peça com identidade própria vai pra casa mais estreita que cobre os donos dela: `pages/<módulo>/components/` quando serve páginas de um módulo só, `shared/components/` quando cruza módulos, e o pacote quando a colocação de `general/code-placement.md` o admite. `components/` do módulo nasce no primeiro caso real, não antes.
 
@@ -120,7 +118,7 @@ A casa é o propósito, não a pasta: ela pode estar declarada aqui sem ter caso
 
 ## O que sobe pro pacote
 
-A colocação entre app e pacote segue `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app". No frontend, o pacote dono é o `@metri/utils` para função pura agnóstica, o `@metri/ui` para UI compartilhável (helper, hook, componente, provider) e o `@metri/core/errors` para vocabulário de erro. `shared/utils/` do `app-web` guarda só função pura que conhece algo deste app — e por isso tende a ser pequena ou nem existir. O detalhe da escolha de casa está em `frontend/helpers.md`, "Nível 3".
+A colocação entre app e pacote segue `general/code-placement.md`, "Código pode nascer no pacote dono quando nada nele é do app". No frontend, o pacote dono é o `@metri/utils` para função pura agnóstica, o `@metri/ui` para UI compartilhável (helper, hook, componente, provider) e o `@metri/core/errors` para vocabulário de erro. O detalhe da escolha de casa está em `frontend/helpers.md`, "Nível 3".
 
 ## Verificação rápida
 
