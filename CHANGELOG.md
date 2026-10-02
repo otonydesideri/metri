@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### O que muda
+
+- **Domain service pode ser classe.** Quando a regra tem mais de uma operação que só faz sentido junta (duas faces
+  da mesma decisão, como calcular e reverter), é permitida uma classe sem estado com um método por operação, no
+  lugar da função única; `abstract class`, token de injeção e registro no container continuam proibidos
+  (`domain/domain-services.md`).
+- **`Either` na regra que recusa.** Domain service que pode recusar devolve `Either` com a classe de erro do
+  módulo, como entidade e value object (`domain/domain-services.md`, `backend/errors.md`).
+
+### Migrar de v1.6.0
+
+Nenhuma mudança obrigatória: domain service existente como função pura continua válido. A classe é só uma segunda
+forma, para quando a regra já tiver mais de uma operação coesa.
+
 ## v1.6.0 (2026-10-01)
 
 Spec por feature, adaptada do `to-spec` de mattpocock/skills: a seção de uma feature na MATRIX vira o arquivo

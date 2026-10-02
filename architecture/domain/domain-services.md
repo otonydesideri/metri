@@ -7,7 +7,7 @@ use_when:
   - "tirar da entidade uma regra que combina mais de um conceito"
 applies_to:
   - "apps/app-api/src/domain/enterprise/domain-services/**"
-keywords: [domain service, service de domínio, função pura, sem IO, enterprise/domain-services, calculateLoyaltyDiscount]
+keywords: [domain service, service de domínio, função pura, classe sem estado, sem IO, enterprise/domain-services, calculateLoyaltyDiscount, Either]
 not_covered:
   - "value object, entidade, agregado e a mutação interna → domain/model"
   - "caso de uso e orquestração → backend/application"
@@ -39,16 +39,27 @@ Não é domain service:
 
 **Obrigatório.** Recebe os fatos já carregados por argumento (o instante e o identificador também), devolve um valor e não muta nada; quem aplica a mudança é o caso de uso, pelos métodos das entidades.
 
+Quando a regra pode recusar: **Obrigatório.** Devolve `Either` com a classe de erro do módulo, como entidade e value object (`backend/errors.md`).
+
 **Proibido.** Conhecer repositório, contrato, framework ou IO, e ser chamado pela infra ou por dublê (`backend/transactions.md`).
 
-**Obrigatório.** Mora em `src/domain/enterprise/domain-services/<regra>.ts`, um arquivo por regra, como função pura; nasce com spec unitário colocado (`<regra>.spec.ts`), sem dublê.
+**Padrão.** A forma é função pura exportada, uma operação só, em `src/domain/enterprise/domain-services/<regra>.ts`.
+
+Quando a regra tem mais de uma operação que só faz sentido junta (duas faces da mesma decisão, como calcular e reverter): **Permitido.** Classe sem estado com um método por operação, no mesmo arquivo.
+
+**Proibido.** `abstract class`, token de injeção ou registro no container para domain service: nenhuma regra pura tem dependência para trocar.
+
+**Obrigatório.** Um arquivo por regra, qualquer que seja a forma; nasce com spec unitário colocado (`<regra>.spec.ts`), sem dublê.
 
 **Proibido.** Entidade importar de `domain-services/`: tipo compartilhado entre entidades é value object.
 
 Exemplo: domain-services.examples.md#calculateloyaltydiscount
 
+Exemplo com duas operações coesas: domain-services.examples.md#ordercancellationsettlementservice
+
 ## Verificação
 
 - A regra não é estado persistido sem agregado, orquestração nem valor derivado de uma entidade?
-- Recebe fatos, devolve valor, sem mutar nem fazer IO, chamada só pelo caso de uso?
-- Mora em `enterprise/domain-services/`, com spec unitário, sem entidade importando dela? (check: boundaries)
+- Recebe fatos, devolve valor (`Either` quando pode recusar), sem mutar nem fazer IO, chamada só pelo caso de uso?
+- É função pura, ou classe sem estado só quando tem mais de uma operação coesa, sem `abstract class` nem token de DI?
+- Mora em `enterprise/domain-services/`, um arquivo por regra, com spec unitário, sem entidade importando dela? (check: boundaries)

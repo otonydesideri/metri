@@ -204,6 +204,7 @@ Nomes que os exemplos da Source usam.
 | Produto | `Product`, `ProductPhoto`, `ProductTagIds` |
 | Frete | `ShippingCostCalculator`, `DeliveryMethod` |
 | Desconto | `calculateLoyaltyDiscount` |
+| Cancelamento | `OrderCancellationSettlementService` |
 | Reembolso | `RefundableOrderSpecification` |
 | Relatório de pedidos | `OrderReportStorage`, `GenerateOrderReportUseCase` |
 | Carrinho | `CartItem`, `useCartStore` |
