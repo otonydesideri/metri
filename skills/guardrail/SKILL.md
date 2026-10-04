@@ -44,7 +44,7 @@ Every rule or lesson goes down to the lowest rung that works:
 4. **Rule or ADR**: only the why, the decision tree and what can't be verified.
 5. **Product, context or design document**: only intent, language and identity.
 
-A rule violated again (a Patterns finding in /accept, a bug in /diagnose) is proposed as a check: name the check that would have caught it, as a lesson whose destination is that check.
+A rule violated again (a Patterns finding in /accept, a bug in /diagnose) and a failure that recurs (a Risk finding in /accept) are proposed as a check: name the check that would have caught it, as a lesson whose destination is that check.
 
 ## Knowledge gate
 

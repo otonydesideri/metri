@@ -15,4 +15,4 @@ You may read the repository at `slice/<id>`; the builder's conversation never re
 
 ## Report
 
-Under 400 words, per file and hunk, every verification item the diff fails: the rule id and the item, the quoted hunk, and its group, Corrigir agora, Virar T or Aceitar como está, with your recommendation.
+Under 400 words, per file and hunk, every verification item the diff fails: the rule id and the item, and the quoted hunk as its evidence, in the format of `node_modules/metri/skills/accept/FINDING-FORMAT.md`.

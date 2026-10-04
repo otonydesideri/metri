@@ -276,15 +276,15 @@ A cadeia de contexto de um ticket: `skills/build/SKILL.md`, passo 1.
 
 **Um agente separado se justifica em três casos:**
 
-1. **Julgamento, que precisa de isolamento:** revisores do aceite, teste do consumidor sem contexto, crítico da matriz.
+1. **Julgamento, que precisa de isolamento:** revisores do aceite, teste do consumidor sem contexto, críticos da direção e do plano.
 2. **Varredura da qual interessa só a conclusão:** pesquisa externa, survey de arquitetura, mapeamento de projeto existente.
 3. **Paralelismo real:** tickets ou subtarefas desbloqueados, sem `touches` em comum, em áreas diferentes.
 
 **Não usar:** personas (PM, arquiteto, QA), passagem de trabalho entre agentes, revisor por ticket, agente planejador separado do humano.
 
-**Agentes** (`agents/`, ligados em `.claude/agents/` pelo `metri init`): funções, não personas. `builder` constrói um ticket pela skill `/build`; `reviewer-contract`, `reviewer-patterns` e `reviewer-ux` são os eixos do aceite; `consumer-tester` usa a slice como consumidor de fora. Cada arquivo é o dono do seu brief e diz quais entradas o agente recebe.
+**Agentes** (`agents/`, ligados em `.claude/agents/` pelo `metri init`): funções, não personas. `builder` constrói um ticket pela skill `/build`; `reviewer-contract`, `reviewer-patterns`, `reviewer-ux` e `reviewer-risk` são os eixos do aceite, com os achados no formato de `skills/accept/FINDING-FORMAT.md`; `consumer-tester` usa a slice como consumidor de fora e depois tenta quebrá-la. Cada arquivo é o dono do seu brief e diz quais entradas o agente recebe.
 
-Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/build/SKILL.md`, "Git"; revisores isolados e teste do consumidor: `skills/accept/SKILL.md`; crítico sem contexto e mapeamento: `skills/look-across/SKILL.md`; pesquisa externa: `skills/research/SKILL.md`.
+Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/build/SKILL.md`, "Git"; revisores isolados e teste do consumidor: `skills/accept/SKILL.md`; crítico da direção: `skills/shape/SKILL.md`; crítico do plano e mapeamento: `skills/look-across/SKILL.md`; pesquisa externa: `skills/research/SKILL.md`.
 
 ### Portões humanos
 
@@ -307,7 +307,8 @@ Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o mot
 | Arquitetura → execução     | O agente lê regras demais ou de menos                 | `applies_to` + `rules-for` + orçamento de ~5 regras por ticket                        |
 | Arquitetura → execução     | O builder altera padrões em silêncio                  | O builder não edita arquitetura; proposta de padrão                                   |
 | Design → execução          | Componentes recriados ou estilos fixos                | Biblioteca base + tokens no tema + lint sem valores fixos                             |
-| Execução → verificação     | Checks afrouxados por quem constrói                   | Checks imutáveis para o `/build`; revisor de contrato confere a cobertura             |
+| Execução → verificação     | Checks afrouxados por quem constrói                   | Checks imutáveis para o `/build`, conferidos pelo `metri scope`; revisor de contrato confere a cobertura |
+| Execução → verificação     | Falha que passa nos checks, no contrato e nas regras   | Falha realista por passo no UC, no look across; eixo Risco no aceite                  |
 | Execução → execução        | Conflitos em paralelo                                 | `touches` + serialização de pontos centrais + worktrees, com uma `E2E_PORT` por worker |
 | Execução → produção        | Tarefas humanas e deploy esquecidos                   | Tickets `task` e `release`                                                            |
 | Produção → evolução        | Bug volta                                             | Diagnosticar com check vermelho + "por que o guardrail não pegou?"                    |
@@ -316,7 +317,7 @@ Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o mot
 
 Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents` e `humanizer`, que tira do texto lido por humano (a prosa de `docs/` e dos ADRs, a interface, os portões e os relatórios) os sinais de texto gerado. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
-**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init` (com o starter num projeto novo), `verify`, `check` (fronteiras, acesso e datas, no `lint` do projeto), `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas) e `prune` (tira a evidência da slice na poda do `/accept`). Cada comando explica o que faz em `--help`.
+**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init` (com o starter num projeto novo), `verify`, `check` (fronteiras, acesso e datas, no `lint` do projeto), `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas), `prune` (tira a evidência da slice na poda do `/accept`) e `scope` (a branch de um ticket muda só o que o ticket pode mudar, sem afrouxar check). Cada comando explica o que faz em `--help`.
 
 ## Decisões do método
 
@@ -327,6 +328,10 @@ O porquê das decisões globais, para humano. A regra dona, entre parênteses, g
 | shadcn/ui como kit de UI padrão, dentro do `@metri/ui`, estilizado pelos tokens do `DESIGN.md` (`defaults/ui`) | A CLI do shadcn atualiza o arquivo que gerou, e o visual vem de tokens, não de componente recriado | AlignUI como base (o kit global divergiria do default); os dois kits juntos (dois vocabulários de componente e de token na mesma tela) |
 | Layout de monorepo do shadcn, com os arquivos da CLI em `components/ui/`, aliases pelo nome do pacote e primitivo importado pelo nome (`defaults/ui`, `frontend/components`) | Um arquivo por componente, o que a documentação do shadcn mostra, e o `cn` do kit, que conhece os níveis de texto do tema, no lugar do `cn` do npm que a CLI grava | Re-export em compound por primitivo (um arquivo a mais por componente e alias `#` que a CLI resolve mal); `#` no `imports` do pacote (a documentação do shadcn recomenda o nome do pacote para o que outro workspace importa) |
 | O backend é a fonte do contrato de API: os DTOs Zod geram o OpenAPI, e o app-web gera o client dele (`backend/http-api`) | O contrato é o que o servidor valida e serializa de fato; o client desatualizado quebra o `verify`, não a produção, e o OpenAPI serve também a documentação | Pacote de contrato compartilhado (URL, método e resposta à mão, sem tipo que acuse a deriva); tRPC (sem adaptador oficial para o NestJS, chamada RPC e OpenAPI ainda alfa); ts-rest (contrato próprio no lugar dos DTOs do `nestjs-zod`, ignora o prefixo global do Nest e o estável pede Zod 3) |
+| Quatro eixos no aceite: contrato, padrões, experiência e risco (`skills/accept/SKILL.md`) | Os três primeiros julgam conformidade; uma corrida, uma falha parcial ou uma fronteira de confiança que nenhum contrato, regra ou check nomeia não tinha dono | Mais itens de verificação nas regras (só cobre o que alguém já escreveu); um revisor único com lista longa (um eixo mascara o outro) |
+| Achados com evidência citada, confiança e classe; o mecânico entra como inferido no portão (`skills/accept/FINDING-FORMAT.md`) | Achado sem linha citada é palpite, e o humano não deve decidir cada correção óbvia | Todo achado decidido pelo humano (portão pesado); correção aplicada pelo próprio revisor (o trabalho se julgaria) |
+| O processo do `/build` conferido pelo `metri scope`, não só por texto (`skills/build/SKILL.md`) | Confiar em erros vale também para as regras do método: check afrouxado e mudança fora do ticket viram falha | Hooks do Claude Code instalados pelo `metri init` (presos a uma ferramenta de agente); a regra só em texto |
+| Enquadramento desafiado, 2–3 abordagens e crítico sem contexto antes dos portões de direção e de plano (`skills/shape/SKILL.md`, `skills/look-across/SKILL.md`) | O interrogatório aprofunda o enquadramento do usuário sem questioná-lo, e uma abordagem escolhida sem comparação é uma decisão que o agente tomou | Diagnóstico de demanda no estilo YC (o método começa depois da decisão de construir); revisões de plano por persona (CEO, engenharia), cada uma com sua etapa |
 | Transação no escopo do caso de uso: `UnitOfWork` genérico e `version` (lock otimista) como padrão (`backend/transactions`) | Decidir sobre o estado lido sob trava exige ler, decidir e gravar no mesmo escopo, e o contrato de transação por fluxo, invisível ao caso de uso, empurra a decisão para o SQL da infra. Teste às cegas, cinco cenários de concorrência, nota de 27: contrato por fluxo 18,2; o mesmo com correções pontuais 22,7; `UnitOfWork` com regras enxutas 22,4, adotado por empatar com 8% menos texto | Contrato de transação por fluxo (a regra de negócio vazou para a infra); o mesmo contrato com correções pontuais (cresce em texto e ainda deixou regra vazar para o caso de uso) |
 
 ## Referências e origem de cada peça
@@ -349,6 +354,7 @@ A metodologia fica próxima das duas referências. Cada peça tem origem rastre�
 | HITL/AFK, tipo de ticket `task`, contexto limpo por tarefa, filas em vez de loops, protótipo descartável                                                                              | Matt Pocock                              |
 | Variantes radicalmente diferentes de uma tela nova na mesma rota (`?variant=`); a escolhida vira tela canônica | Matt Pocock (`prototype`) |
 | Spec por feature: problema e solução do ponto de vista de quem usa, casos de uso, decisões de implementação e de teste | Matt Pocock (`to-spec`) |
+| Eixo de risco ("o que ainda pode quebrar?"), achado com linha citada e confiança, desafio de premissas e abordagens alternativas, falha realista por caminho novo, parar depois de 3 tentativas | gstack (Garry Tan) |
 | Forma das skills: pequenas, divididas entre invocadas pelo usuário e pelo modelo, ponteiros, critérios de conclusão, palavras-guia                                                    | Matt Pocock (`writing-for-agents`)       |
 | Architecture Source global + Project Architecture por áreas + ADRs                                                                                                                    | Seu modelo                               |
 | Caso de uso como unidade de definição, ligando planejamento e código                                                                                                                  | DDD                                      |
@@ -362,6 +368,7 @@ Referências:
 - WebProdigios, curso _Advanced Claude Code for Web Developers_: https://www.youtube.com/watch?v=GCz83HTg2vI
 - WebProdigios, vídeo de construção do Flute com Morphite (Vertical Slice Matrix).
 - getdesign.md, coleção de arquivos `DESIGN.md` para agentes: https://getdesign.md/
+- gstack, skills de Garry Tan (em especial `office-hours`, `plan-eng-review`, `review`, `investigate`): https://github.com/garrytan/gstack
 - shadcn/ui (default global de componentes) e Coss UI (alternativa, design system do Cal.com): https://coss.com/ui/docs
 
 ## O que ficou de fora, e por quê
@@ -395,4 +402,6 @@ Itens fora do método, cada um com o ponto de extensão pronto (campo opcional o
 | **Board próprio** | MATRIX, specs e tickets em formato estrito, com ids estáveis, chaves em inglês e lint | Uma visão que lê e escreve neles, quando houver conflito na MATRIX com agentes em paralelo, necessidade de ver ou mostrar o andamento, ou mais de ~300 linhas ativas na MATRIX depois da poda |
 | **Comunicação entre agentes** | Artefatos (status, `PP`, `GAP`, Notas), mediados pelo coordenador | Canais ou "rooms"; troca de informação entre workers, nunca repasse de trabalho |
 | **Acompanhamento de consumo de tokens** | `metrics` no ticket, `{ rules, tokens }`, preenchido pelo `/build` no `done` | Painel de consumo, orçamentos por agente e por slice |
+| **Segunda opinião de outro modelo** | O eixo Risco e os críticos são subagentes com brief próprio, sem a conversa | O mesmo brief rodando em outro modelo, com cada achado marcado pela origem; concordância sobe a confiança, nunca decide |
+| **Evals das skills** | O projeto de amostra da CLI (`cli/__fixtures__/project`) | `/shape`, `/look-across` e `/build` rodando num projeto de amostra a cada versão, com o resultado conferido |
 | **Times de agentes coordenados** | Coordenador e worker; `blocked_by` e `touches`; branches `slice/<id>` e `ticket/<id>`; worktrees | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações |

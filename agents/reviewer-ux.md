@@ -38,9 +38,4 @@ Signs of a generic interface, each one a finding:
 
 ## Report
 
-Under 400 words. Each finding has:
-
-- the evidence: the path of the screenshot;
-- what the user lives;
-- your recommendation;
-- its group: Corrigir agora, Virar T or Aceitar como está.
+Under 400 words. Each finding says what the user lives, in the format of `node_modules/metri/skills/accept/FINDING-FORMAT.md`, with the screenshot path as its evidence.

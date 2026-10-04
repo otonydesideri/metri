@@ -1,6 +1,6 @@
 ---
 name: accept
-description: Accept a slice, and its feature when it is the last slice. Isolated reviewers on contract, patterns and experience, the consumer test, the human gate, the knowledge gate and the matrix pruning.
+description: Accept a slice, and its feature when it is the last slice. Isolated reviewers on contract, patterns, experience and risk, the consumer test, the human gate, the knowledge gate and the matrix pruning.
 disable-model-invocation: true
 ---
 
@@ -15,8 +15,9 @@ Judge what no check judges, on the diff of a slice, along separate axes:
 - **Contract**: does the code deliver the slice contract, its UCs and its T tickets?
 - **Patterns**: does the code pass the verification items of its rules that no check covers?
 - **Experience**, when the slice has a `Tela:` criterion: what does the user live on its screens?
+- **Risk**: what can still break in production that no contract, rule or check names?
 
-The work never judges itself: each axis is a reviewer agent that gets nothing from the builder's conversation.
+The work never judges itself: each axis is a reviewer agent that gets nothing from the builder's conversation. Every reviewer writes its findings in the format of [FINDING-FORMAT.md](FINDING-FORMAT.md).
 
 ## Process
 
@@ -33,6 +34,7 @@ Before going further, confirm the fixed point resolves and the diff is non-empty
 - **Contract**: the slice's `contract` block in `.metri/MATRIX.md`, which /accept prunes only in step 7 (`S0` has none); in `.metri/tickets/`, each UC and each T with `slice: S<id>`, with its story, Critérios and the text of its BRs (UC) or its O que entrega (T); and the Fora de escopo of each UC's feature spec.
 - **Patterns**: `pnpm rules-for` once, with every path of `git diff --name-only <fixed-point>...slice/<id>`; in each listed rule, leaving out the `citada:` lines and `frontend/experience` (whose items go to the Experience reviewer), the items of its verification sections ("Verificação", "Verificação rápida") without a `(check: <id>)` mark. The items with a check already passed `pnpm verify`. With no such item, skip the Patterns reviewer and say so.
 - **Experience**, when a ticket of the slice has a `Tela:` criterion: the evidence paths of each `Tela:` criterion, `docs/DESIGN.md`, the UCs, and the verification items of `frontend/experience` without a `(check: <id>)` mark.
+- **Risk**: the slice's `contract` block and the BRs of each UC with `slice: S<id>`.
 
 ### 3. Call the reviewers in parallel
 
@@ -41,11 +43,12 @@ Call each agent (`.claude/agents/<name>.md`, the owner of its brief and of what 
 - `reviewer-contract`: the diff command, the commit list, the check results, and the Contract inputs, pasted in full.
 - `reviewer-patterns`: the diff command, the commit list, the check results, and the Patterns items, pasted with their rule id.
 - `reviewer-ux`, when the slice has a `Tela:` criterion: the Experience inputs.
+- `reviewer-risk`: the diff command, the commit list, the check results, and the Risk inputs, pasted in full.
 - `consumer-tester`: the contract's `interface`, when the contract's `consumers` include an external consumer (a public API, a library, a guide for agents, a critical user flow; ask the user when unsure); and, for each UC with a `Tela:` criterion, only its story (its title, for a done UC without one) and the URL of the app this session serves once for it, with the development seed, on its own port (`frontend/testing`, "E2e de critério de UI"), stopped when the tester reports.
 
 ### 4. Aggregate
 
-Present the reports in the chat under `## Contract` and `## Patterns` (and `## Experience`, `## Consumer`), findings unchanged, their prose through the humanizer, each axis with its findings in the reviewer's three groups. Keep the axes apart (see _Why separate axes_).
+Present the reports in the chat under `## Contract`, `## Patterns` and `## Risk` (and `## Experience`, `## Consumer`), findings unchanged, their prose through the humanizer, each axis with its findings in the reviewer's three groups and its "Apêndice" collapsed into one line with its count. Keep the axes apart (see _Why separate axes_). A reviewer that failed, timed out or reported **não coberto** leaves its axis uncovered: say so under its heading, never as an axis without findings.
 
 ### 5. Human gate
 
@@ -54,7 +57,8 @@ Call the Skill tool with "grilling" and walk the human through the gate in its t
 - the slice's linear path, "show me the flow and the sources of truth": the "Caminho linear" of `.metri/ARCHITECTURE.md` with the slice's new owners in their places, each step as `arquivo:símbolo` with its `SOURCE OF TRUTH:` header;
 - for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when every UC listed in a feature's spec is `done` (this is that feature's last slice), whether its Solução holds across all its UCs. Running the app is optional: give the steps per criterion when the human wants it;
 - the diff of every ticket with `sensitive: true` or `type: pattern`;
-- each finding, with its group and the reviewer's recommendation; the user decides each one.
+- each finding, with its group and the reviewer's recommendation: a `mecânico` finding grouped Corrigir agora is Inferred, decided with its reason unless the user objects; every other finding is an open question, and the user decides it;
+- each uncovered axis: the user decides whether the slice merges without it or the axis runs again.
 
 What each decision does (the formats: `node_modules/metri/skills/look-across/MATRIX-FORMAT.md`):
 
@@ -78,6 +82,7 @@ A slice can pass one axis and fail another:
 
 - Code that follows every rule but delivers the wrong thing → **Patterns pass, Contract fail.**
 - Code that does exactly what the contract asked but breaks the rules → **Contract pass, Patterns fail.**
+- Code that delivers the contract by the rules, but loses an order when two requests race → **Contract and Patterns pass, Risk fail.**
 - Screens that deliver the UC by the rules but bury its main action → **Contract and Patterns pass, Experience fail.**
 
 Reporting them separately stops one axis from masking another.

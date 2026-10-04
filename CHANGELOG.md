@@ -1,5 +1,54 @@
 # Changelog
 
+## v1.8.0
+
+Lentes críticas: o método passa a procurar o que pode dar errado, além de conferir se o código segue o combinado. A
+comparação com o gstack (Garry Tan) mostrou três lacunas: nenhum eixo do aceite procurava falhas que não violam
+contrato, regra nem design; as regras do processo do `/build` estavam só em texto; e o `/shape` aprofundava o
+enquadramento do usuário sem questioná-lo.
+
+### O que muda
+
+- **Eixo Risco no /accept.** O agent `reviewer-risk` lê o diff da slice procurando o incidente em produção:
+  concorrência, falha parcial depois de um efeito colateral, fronteira de confiança, integridade de dados, valor
+  novo esquecido num switch fora do diff, consulta por item de lista e falha silenciosa. Roda em paralelo com os
+  outros eixos. Um achado de risco que volta vira candidato a check, no portão de conhecimento.
+- **Formato comum dos achados** (`skills/accept/FINDING-FORMAT.md`). Todo revisor dá a evidência citada, a
+  confiança (`N/10`; sem linha citada, no máximo 4), a classe (`mecânico` ou `decisão`) e o grupo. Achado abaixo de
+  5 vai para um apêndice. No portão humano, o achado `mecânico` em "Corrigir agora" entra como inferido; o humano
+  decide os demais. O revisor que não conseguiu trabalhar reporta "não coberto", e o eixo descoberto é decidido no
+  portão, nunca contado como limpo.
+- **`metri scope <id>`.** Comando novo, rodado pelo `/build` no passo 4 e pelo `/diagnose` antes de fechar: falha
+  quando a branch não é `ticket/<id>`, quando o diff muda `docs/` ou `.metri/` fora do que o ticket pode mudar e
+  quando afrouxa um check (teste apagado; `.skip(`, `.only(`, `.todo(`, `eslint-disable` acrescentados;
+  configuração de lint, teste ou tipos alterada; script de check do `package.json` alterado). O ticket `pattern`
+  fica de fora dessas duas últimas.
+- **Parar depois de 3 tentativas.** No `/build`, o mesmo check vermelho depois de 3 correções deixa o ticket
+  `blocked`, com as tentativas nas Notas. No `/diagnose`, o teste de regressão vermelho depois de 3 correções volta
+  para as hipóteses.
+- **/shape desafia o enquadramento.** O problema é questionado (é o problema certo? e se nada for feito? o que já
+  resolve parte dele?), e as respostas viram premissas confirmadas. Antes da Solução, 2 ou 3 abordagens: a mínima, a
+  que os `planned` pedem e uma lateral; a descartada fica nas Notas da spec. As specs e os UCs `draft` são
+  escritos a cada rodada. Um crítico sem contexto lê a direção antes do portão.
+- **/look-across com lente de falha.** Cada passo de um UC que grava, chama serviço de fora ou roda em segundo plano
+  ganha a falha realista e o que o usuário vê; a falha que ficaria silenciosa vira BR ou critério. O ticket que muda
+  uma slice construída nomeia o comportamento que precisa manter. Um UC que muda o status de uma entidade leva os
+  estados e as transições nas Decisões de implementação. O crítico sem contexto roda sempre, não só em iniciativa
+  grande, e confere também as falhas.
+- **Teste do consumidor tenta quebrar.** Depois da história, o `consumer-tester` envia duas vezes, volta no meio do
+  fluxo, recarrega, deixa campo vazio e entra sem a permissão; só reporta a quebra que reproduziu.
+- **Grilling.** Toda pergunta mostra o que custa errar e o quanto é difícil desfazer.
+- **Release.** O smoke test confirma que a versão que responde é a lançada, não só que o app responde.
+- **Portão de conhecimento.** Novo destino: como rodar, construir ou testar o projeto vira script do `package.json`
+  ou uma linha numa regra do projeto em `.metri/rules/infrastructure/`.
+
+### Migrar de v1.7.0
+
+1. `pnpm add -D github:otonydesideri/metri#v1.8.0`.
+2. `pnpm exec metri init`, que cria o link `.claude/agents/reviewer-risk.md` (o docs-lint acusa o link que falta).
+3. Abra uma sessão nova do Claude Code, que carrega o agent novo.
+4. Nada mais muda nos artefatos do projeto: specs, tickets e matriz continuam no mesmo formato.
+
 ## v1.7.0 (2026-10-02)
 
 O source deixa de ter ADR e de contar a própria história: a decisão mora na regra dona, o porquê para humano numa

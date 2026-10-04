@@ -22,4 +22,4 @@ Under 400 words, every finding of these kinds:
 - (c) items that look implemented but where the implementation looks wrong;
 - (d) UC criteria and BRs that no test run by the UC's `checks` proves.
 
-Each finding quotes its contract, UC or T line, and goes in one group, Corrigir agora, Virar T or Aceitar como está, with your recommendation.
+Each finding quotes its contract, UC or T line, in the format of `node_modules/metri/skills/accept/FINDING-FORMAT.md`.

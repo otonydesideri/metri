@@ -12,7 +12,7 @@ Before writing a UC's story, call the Skill tool with "humanizer" on it.
 
 # Look Across
 
-Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`); a ticket `T` exists only for work without a UC. The plan goes to `.metri/MATRIX.md` and each ticket to its own file in `.metri/tickets/`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md).
+Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`); a ticket `T` exists only for work without a UC. The plan goes to `.metri/MATRIX.md` and each ticket to its own file in `.metri/tickets/`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md). Your output is the plan, in documents; the code starts in /build.
 
 ## Process
 
@@ -28,7 +28,7 @@ Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill 
 
 ### 2. Features → use cases
 
-Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with its `actor`, its story, verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files").
+Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with its `actor`, its story, verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files"). Each **risky step** of a UC (one that writes, calls an outside service or runs in the background) gets its realistic failure (the call times out, two requests race, the job runs twice, the step after a side effect fails) and what the user sees then; a failure that would stay silent becomes a BR or a criterion.
 
 ### 3. Look across
 
@@ -59,7 +59,7 @@ Each `now` UC is a **tracer bullet** ticket.
 
 </tracer-bullet-rules>
 
-A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel.
+A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel. A ticket that changes a built slice names, among its criteria, the behaviour of that slice it must keep, and its `checks` run the tests that prove it; when no test proves it, writing one is its first criterion.
 
 A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket, except the urgent fix of /diagnose.
 
@@ -67,7 +67,7 @@ A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.
 
 ### 7. Spec decisions
 
-For each `now` feature, fill its spec's Decisões de implementação (the modules, interfaces, schema changes, API contract and interactions its slices' `contract` and the UCs' BRs settle, citing them by id, never a file path) and Decisões de teste (the seam, as high as possible and ideally one, preferring the slice contract's `interface` or a UC's `checks` over a new one; `node_modules/metri/skills/tdd/SKILL.md`, "Seams: where tests go").
+For each `now` feature, fill its spec's Decisões de implementação (the modules, interfaces, schema changes, API contract and interactions its slices' `contract` and the UCs' BRs settle, citing them by id, never a file path; when a UC moves an entity through statuses, its states and transitions, as a table) and Decisões de teste (the seam, as high as possible and ideally one, preferring the slice contract's `interface` or a UC's `checks` over a new one; `node_modules/metri/skills/tdd/SKILL.md`, "Seams: where tests go").
 
 ### 8. Slice 0
 
@@ -80,7 +80,7 @@ For each `now` feature, fill its spec's Decisões de implementação (the module
 
 ### 9. Quiz the user
 
-For a large initiative, first run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion and UCs that repeat a criterion of their own.
+First run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion, UCs that repeat a criterion of their own, risky steps with no failure in their BRs or criteria, and tickets that change a built slice without naming the behaviour they keep.
 
 Present the proposed plan as a numbered list: each slice with its contract, then each UC and each T:
 
@@ -88,7 +88,7 @@ Present the proposed plan as a numbered list: each slice with its contract, then
 - **Blocked by**: which UCs, T tickets or slices (if any) must complete first
 - **What it delivers**: the end-to-end behaviour the UC makes work, or the T's `what`
 
-Then call the Skill tool with "grilling" and show the plan gate in its three blocks. Inferred: the capabilities activated from the UCs and BRs, the contracts, the seams of each spec's Decisões de teste, the order, the granularity, the blocking edges, and each ticket's `sensitive` and `mode`, each with its reason. Open questions: the PROJECT_SPECIFIC values a UC needs, and any merge or split you can't settle.
+Then call the Skill tool with "grilling" and show the plan gate in its three blocks. Inferred: the capabilities activated from the UCs and BRs, the contracts, the seams of each spec's Decisões de teste, the order, the granularity, the blocking edges, and each ticket's `sensitive` and `mode`, each with its reason. Open questions: the PROJECT_SPECIFIC values a UC needs, any merge or split you can't settle, and the critic's findings.
 
 Iterate until the user approves the plan.
 

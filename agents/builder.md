@@ -23,7 +23,7 @@ Everything else comes from the repository, by the skill's context chain.
 
 Under 200 words:
 
-- the result: green, blocked (with the `PP-n`) or failed (with the failing check);
+- the result: green, blocked (with the `PP-n`, or with the check still red after 3 fixes and the attempts) or failed (with the failing check);
 - the commits on `ticket/<id>`;
 - each check you ran, with its result;
 - the `GAP-n` and the "Notas" you wrote;

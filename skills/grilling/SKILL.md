@@ -20,11 +20,15 @@ Format a round like so:
 
 ➡️ <your recommended answer>
 
+⚠️ <what a wrong pick costs, and how hard it is to undo>
+
 ---
 
 ❓ **Q2** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
 ➡️ <your recommended answer>
+
+⚠️ <what a wrong pick costs, and how hard it is to undo>
 ```
 
 Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.

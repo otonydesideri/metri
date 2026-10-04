@@ -138,6 +138,8 @@ If a correct seam exists:
 4. Watch it pass.
 5. Re-run the Phase 1 feedback loop against the original (un-minimised) scenario.
 
+When the regression test stays red after 3 fixes, the hypothesis is wrong: stop fixing, go back to Phase 3 with what the 3 attempts showed, and tell the user.
+
 ## Phase 6: Cleanup
 
 Required before declaring done:
@@ -147,7 +149,7 @@ Required before declaring done:
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
 - [ ] The hypothesis that turned out correct is stated in the commit message, with the ticket id, so the next debugger learns
-- [ ] The ticket's checks and `pnpm verify` are green
+- [ ] The ticket's checks, `pnpm verify` and `pnpm exec metri scope <id>` are green
 
 ## Phase 7: Why didn't the guardrail catch it?
 

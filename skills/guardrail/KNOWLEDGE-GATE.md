@@ -43,6 +43,7 @@ For a lesson that passed the gate:
 4. **Domain term?** `docs/CONTEXT.md` (call the Skill tool with "domain-language").
 5. **Visual identity or usage?** `docs/DESIGN.md`.
 6. **The why or a limit of one owner?** A line in its `SOURCE OF TRUTH` header ([SKILL.md](SKILL.md), "While writing code", step 5).
+7. **How to run, build or test this project** (a command, a flag, an environment gotcha)? A script in the root `package.json` when it can be one; otherwise a line in the project rule of `.metri/rules/infrastructure/` whose `use_when` covers running that command (call the Skill tool with "writing-for-agents").
 
 ## Promotion to the Source
 

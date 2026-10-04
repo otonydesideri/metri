@@ -23,7 +23,7 @@ Follow `.metri/rules/infrastructure/release.md`, with this checklist:
 - variables and secrets;
 - flags;
 - deploy;
-- smoke test;
+- smoke test, which confirms that the version answering is the one released (a version, a commit or a build id the app shows), not only that the app answers;
 - known rollback.
 
 The steps only the human can do become a guided script (`mode: hitl`). Done when the version is in production, with a git tag.

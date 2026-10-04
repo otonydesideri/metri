@@ -14,9 +14,10 @@ Comandos:
   design-tokens confere se o tema do código segue os tokens do docs/DESIGN.md
   sot           confere os cabeçalhos SOURCE OF TRUTH e o registro das slices construídas
   prune         tira da árvore a evidência dos tickets de uma slice, na poda do /accept
+  scope         confere se a branch de um ticket muda só o que o ticket pode mudar
 `;
 
-const COMMANDS = ['init', 'verify', 'check', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot', 'prune'];
+const COMMANDS = ['init', 'verify', 'check', 'rules-for', 'rules-index', 'docs-lint', 'design-tokens', 'sot', 'prune', 'scope'];
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === undefined || command === '--help' || command === '-h') {
