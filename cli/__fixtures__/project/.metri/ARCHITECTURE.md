@@ -12,7 +12,6 @@
 ## Capacidades ativas
 
 - defaults/ui: —
-- infrastructure/mail: Resend
 - infrastructure/storage: Cloudflare R2, bucket `orders-attachments`
 
 ## Delegações

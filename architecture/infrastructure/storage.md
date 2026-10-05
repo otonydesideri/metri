@@ -59,7 +59,7 @@ Quando um asset pertence a uma entidade que também é fronteira de acesso, ela 
 
 ## A classe de infra
 
-Na implementação de referência, `R2StorageService` guarda o client S3 do R2 (privado, ninguém fora da classe o toca) e expõe os dois nomes de bucket e as operações genéricas. Diferente do client do Resend (`infrastructure/mail.md`), o `S3Client` cru não é uma interface confortável: toda operação exige montar um `Command`, e essa montagem se repetiria idêntica em cada asset. Por isso aqui a classe de infra tem métodos, todos genéricos, sem nenhuma convenção de asset dentro:
+Na implementação de referência, `R2StorageService` guarda o client S3 do R2 (privado, ninguém fora da classe o toca) e expõe os dois nomes de bucket e as operações genéricas. Diferente do client do Resend (`infrastructure/services.md`), o `S3Client` cru não é uma interface confortável: toda operação exige montar um `Command`, e essa montagem se repetiria idêntica em cada asset. Por isso aqui a classe de infra tem métodos, todos genéricos, sem nenhuma convenção de asset dentro:
 
 Exemplo completo: storage.examples.md#r2storageservice
 
@@ -200,7 +200,7 @@ Quando um registro referencia um arquivo em storage (a foto de um produto), o ar
 2. A mutação do domínio e a escrita (`replacePhotos()` e `save()`, no exemplo de `domain/watched-list.md`).
 3. Remoção física dos arquivos dos itens removidos depois da escrita.
 
-A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada foi persistido e nenhuma referência quebrada existe no banco; o resíduo possível é um arquivo órfão no storage, invisível para o produto e coberto pela limpeza agendada da seção anterior. Se a remoção física falha depois da escrita, a operação continua concluída: o registro é a fonte de verdade, e a falha não desfaz a escrita. O binário que sobra fica órfão, e a limpeza agendada não o alcança, porque ela só varre registros pendentes: esse órfão é risco operacional aceito, que uma reconciliação pode eliminar, na forma de `infrastructure/observability.md`, "Reconciliação"; o job concreto é delegação de projeto (`.metri/ARCHITECTURE.md`). A ordem inversa produziria o dano real: remover o arquivo antes da escrita que falha deixa um registro apontando para um arquivo que não existe.
+A ordem existe pelo modo de falha de cada passo. Se a validação falha, nada foi persistido e nenhuma referência quebrada existe no banco; o resíduo possível é um arquivo órfão no storage, invisível para o produto e coberto pela limpeza agendada da seção anterior. Se a remoção física falha depois da escrita, a operação continua concluída: o registro é a fonte de verdade, e a falha não desfaz a escrita. O binário que sobra fica órfão, e a limpeza agendada não o alcança, porque ela só varre registros pendentes: esse órfão é risco operacional aceito, que uma reconciliação pode eliminar, na forma de `infrastructure/logging.md`, "Métrica, alerta e reconciliação"; o job concreto é delegação de projeto (`.metri/ARCHITECTURE.md`). A ordem inversa produziria o dano real: remover o arquivo antes da escrita que falha deixa um registro apontando para um arquivo que não existe.
 
 ## Quando o binário do usuário passa pelo backend
 

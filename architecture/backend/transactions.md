@@ -44,7 +44,7 @@ Quando uma operação precisa gravar mais de um agregado junto, ou decidir sobre
 
 **Obrigatório.** O agregado é a unidade de concorrência: raiz com escrita concorrente tem coluna `version`, conferida e incrementada no `save()` do repositório, que devolve `'saved' | 'conflict'` (`backend/persistence.md`).
 
-**Obrigatório.** Antes de proteger, avaliar o gatilho: quem provoca duas execuções concorrentes sobre o mesmo agregado, com que frequência, com que dano. Risco de gatilho improvável e dano contido é aceito e registrado como decisão de projeto do app, com racional e condição de revisita; a vigilância em produção segue `infrastructure/observability.md`.
+**Obrigatório.** Antes de proteger, avaliar o gatilho: quem provoca duas execuções concorrentes sobre o mesmo agregado, com que frequência, com que dano. Risco de gatilho improvável e dano contido é aceito e registrado como decisão de projeto do app, com racional e condição de revisita; a vigilância em produção segue `infrastructure/logging.md`, "Métrica, alerta e reconciliação".
 
 **Padrão.** `version` com retentativa. Trava pessimista (`find...ForUpdate` no repositório, chamado dentro do escopo) só para linha disputada de fato, medida; a decisão continua no caso de uso e no agregado.
 

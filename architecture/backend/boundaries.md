@@ -10,7 +10,7 @@ applies_to:
   - "apps/app-api/**"
   - "packages/core/src/**"
   - "packages/utils/src/**"
-keywords: [import, grafo de dependência, allowlist, biblioteca de cálculo puro, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", nestjs-pino, PinoLogger, PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
+keywords: [import, grafo de dependência, allowlist, biblioteca de cálculo puro, camada, domain/enterprise, domain/application, "@metri/core", "@metri/utils", "@metri/db", "@Injectable", "@nestjs/common", PrismaService, Zod, nestjs-zod, test/, setup-e2e.ts, TS6059, tsconfig.build.json]
 not_covered:
   - "as regras próprias do frontend → frontend/structure"
 enforced_by: [boundaries]
@@ -69,7 +69,7 @@ Mesma restrição de dependência externa do core, mais uma: `@metri/utils` não
 
 ## A exceção de framework no domínio é `@Injectable()`, e só ela
 
-`domain/enterprise` é TypeScript puro. `domain/application` importa `Injectable` de `@nestjs/common` porque use case participa da DI do Nest; o decorator só grava metadado, não acopla a HTTP nem a SQL. Qualquer outro símbolo de `@nestjs/common` (exceções HTTP, pipes, decorators de rota) já é vocabulário de infra e não entra no domínio. O mesmo vale para o mecanismo de log: `nestjs-pino` e `PinoLogger` não entram em `src/domain`, e o caso de uso loga por contrato (`backend/application.md`, "Log no caso de uso").
+`domain/enterprise` é TypeScript puro. `domain/application` importa `Injectable` de `@nestjs/common` porque use case participa da DI do Nest; o decorator só grava metadado, não acopla a HTTP nem a SQL. Qualquer outro símbolo de `@nestjs/common` (exceções HTTP, pipes, decorators de rota) já é vocabulário de infra e não entra no domínio. O caso de uso não loga (`infrastructure/logging.md`).
 
 ## Persistência: `@metri/db` é de `infra/persistence/prisma`; `PrismaService` circula dentro de infra
 

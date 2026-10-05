@@ -26,19 +26,16 @@ export class OrderConfirmedEvent implements DomainEvent {
 ## OnOrderConfirmedSubscriber
 
 ```ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DomainEvents, type EventHandler } from '@metri/core/events';
-import { PinoLogger } from 'nestjs-pino';
 import { SendOrderConfirmationUseCase } from '../../domain/application/use-cases/notification/send-order-confirmation.use-case';
 import { OrderConfirmedEvent } from '../../domain/enterprise/events/order-confirmed.event';
 
 @Injectable()
 export class OnOrderConfirmedSubscriber implements EventHandler {
-  constructor(
-    private readonly sendOrderConfirmationUseCase: SendOrderConfirmationUseCase,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext(OnOrderConfirmedSubscriber.name);
+  private readonly logger = new Logger(OnOrderConfirmedSubscriber.name);
+
+  constructor(private readonly sendOrderConfirmationUseCase: SendOrderConfirmationUseCase) {
     this.setupSubscriptions();
   }
 
@@ -61,16 +58,10 @@ export class OnOrderConfirmedSubscriber implements EventHandler {
       });
 
       if (result.isFailure()) {
-        this.logger.error(
-          { err: result.value, orderId: event.orderId.toValue() },
-          'OnOrderConfirmedSubscriber falhou',
-        );
+        this.logger.error(`Confirmação não enviada (orderId ${event.orderId.toValue()}): ${result.value.code}`);
       }
     } catch (error) {
-      this.logger.error(
-        { err: error, orderId: event.orderId.toValue() },
-        'OnOrderConfirmedSubscriber falhou',
-      );
+      this.logger.error(`Confirmação não enviada (orderId ${event.orderId.toValue()})`, (error as Error).stack);
     }
   }
 }

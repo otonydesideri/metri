@@ -7,7 +7,7 @@ use_when:
   - "decidir se uma decisão mora no adaptador ou no caso de uso"
 applies_to:
   - "apps/app-api/src/domain/application/**"
-keywords: [caso de uso, use case, execute(), Input, Output, abstract class, contrato, injeção de dependência, useClass, Symbol token, "@Inject", "@Injectable", método especulativo, leitura ao vivo, confirmação, contrato de log, nestjs-pino, adaptador de entrada, adaptador fino, controller, subscriber, worker, webhook, failure, Either]
+keywords: [caso de uso, use case, execute(), Input, Output, abstract class, contrato, injeção de dependência, useClass, Symbol token, "@Inject", "@Injectable", método especulativo, leitura ao vivo, confirmação, adaptador de entrada, adaptador fino, controller, subscriber, worker, webhook, failure, Either]
 not_covered:
   - "a regra de domínio que o caso de uso orquestra → domain/model"
   - "a regra de domínio que o caso de uso orquestra → domain/domain-services"
@@ -72,14 +72,6 @@ Quando a leitura é "ao vivo", disparada a cada interação (checagem de disponi
 
 **Obrigatório.** O caso de uso é agnóstico de quem o invoca: controller, subscriber, worker ou teste chamam o mesmo `execute()`, e ele não sabe a diferença.
 
-### Log no caso de uso
-
-Quando o caso de uso precisa produzir log: **Obrigatório.** Ele depende de um contrato de log neutro de framework, injetável pela regra de "Contratos são `abstract class`", e a implementação em `infra/` delega ao mecanismo de `infrastructure/logging.md`.
-
-**Proibido.** O contrato de log expor tipo do pino ou do `nestjs-pino` na assinatura.
-
-> **Por quê.** O import de `nestjs-pino` já é proibido em `domain/application` (`backend/boundaries.md`), e um tipo do pino no contrato o traria de volta pela assinatura; atrás do contrato, o caso de uso não conhece o mecanismo de log, como já não conhece o banco.
-
 ### Adaptador de entrada fino
 
 **Obrigatório.** Controller, subscriber, worker, webhook e router de biblioteca são adaptadores de entrada: escutam o mundo e disparam a aplicação.
@@ -125,7 +117,6 @@ Exemplo completo: application.examples.md#confirmorderusecase
 - A ordem é leitura, regra, gravação, com a regra na entidade ou no value object?
 - Nenhum caso de uso chama outro caso de uso?
 - Leitura ao vivo devolve entrada inválida como sucesso, e confirmação a devolve como `failure`?
-- Caso de uso que loga depende do contrato de log neutro de framework, sem importar `nestjs-pino`?
 - O adaptador é fino, sem regra de negócio, e o destino do `failure` é decidido nele?
 - A porta nova teve o desenho registrado na Source antes do código?
 
@@ -138,6 +129,6 @@ Exemplo completo: application.examples.md#confirmorderusecase
 - `backend/async-jobs.md`: o worker como adaptador da fila.
 - `backend/errors.md`: `Either`, classes de erro e a tradução na porta.
 - `backend/boundaries.md`: o que `domain/application` pode importar.
-- `infrastructure/logging.md`: o mecanismo de log que a implementação do contrato usa.
+- `infrastructure/logging.md`: quem loga; o caso de uso não loga.
 - `backend/testing.md`: o spec de caso de uso.
 - `backend/modules.md`: a pasta de contratos única e a comunicação entre módulos.

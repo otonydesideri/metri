@@ -191,7 +191,7 @@ Exemplo completo: `starter/apps/app-api/src/infra/common/errors/unexpected-error
 
 `FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O Fastify é a única plataforma HTTP (`defaults/stack.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
 
-O filtro não recebe logger nenhum e não loga por conta própria: log é assunto de `infrastructure/logging.md`, não deste documento.
+O filtro loga o 5xx com a stack, pelo `Logger` nativo (`infrastructure/logging.md`); abaixo de 500 não loga.
 
 Pontos-chave:
 
@@ -234,7 +234,7 @@ Pontos-chave:
 - Acesso negado a recurso de outro dono reusa a classe de não-encontrado?
 - Mensagem não expõe id interno, path, query ou stack?
 - Teste afirma a falha com `instanceof`, não comparando `message`?
-- Erro que chega ao `UnexpectedErrorFilter` sem ser `HttpException` vira sempre o mesmo corpo genérico e status 500, e todo status 500 ou mais sai com esse corpo, `INTERNAL_ERROR`, sem o filtro logar nada por conta própria (`infrastructure/logging.md`)?
+- Erro que chega ao `UnexpectedErrorFilter` sem ser `HttpException` vira sempre o mesmo corpo genérico e status 500, e todo status 500 ou mais sai com esse corpo, `INTERNAL_ERROR`, com a stack no log (`infrastructure/logging.md`)?
 - `HttpException` nativa do framework abaixo de 500 (rota inexistente, throttler) sai com o status dela e o corpo no envelope, `type: 'REQUEST_REJECTED'`, sem o corpo nativo?
 - Frontend tipa o `type` do envelope com o `ApiErrorType` de `@metri/core/errors`, sem redeclarar os valores à mão nem usar o `DomainErrorType` como tipo do campo?
 

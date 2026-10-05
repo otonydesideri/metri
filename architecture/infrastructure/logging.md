@@ -1,159 +1,59 @@
 ---
 id: infrastructure/logging
-description: "o log estruturado da aplicação — o mecanismo (`nestjs-pino`), o bootstrap e o nível e formato por ambiente; o contexto progressivo e o agrupamento das linhas por request; a redação de campo sensível e o que não entra em log; como um provider de `infra/` e uma biblioteca externa logam."
+description: "o log da aplicação — o `Logger` nativo do NestJS, quem loga e onde, o identificador no lugar da entidade e o que nunca entra em log; o erro inesperado logado pelo filtro global; métrica, alerta e reconciliação quando uma pergunta operacional pede."
 use_when:
   - "adicionar log a um provider, controller, subscriber, worker ou repositório"
-  - "mudar o nível, o formato ou os campos de contexto da request no log"
-  - "decidir que dado pode entrar num log e o que precisa de redação"
-  - "ligar o logger de uma biblioteca externa ao log da aplicação"
+  - "decidir que dado pode entrar num log"
   - "mandar as linhas de log para um coletor ou agregador"
+  - "criar métrica, alerta ou reconciliação"
 applies_to:
   - "apps/app-api/src/main.ts"
   - "apps/app-api/src/app.module.ts"
-keywords: [log, nestjs-pino, pino, pino-http, pino-pretty, PinoLogger, Logger, LoggerModule, forRootAsync, bufferLogs, useLogger, LoggerErrorInterceptor, RequestLogContextInterceptor, APP_INTERCEPTOR, genReqId, X-Request-Id, x-request-id, req.id, requestId, assign, assignResponse, setContext, messageFormat, LOG_LEVEL_BY_ENV, redact, censor, "[REDACTED]", audit log, auditoria, VendorLoggerConfig, disableColors, dado sensível]
+keywords: [log, Logger, "@nestjs/common", nível, dado sensível, PII, coletor, nestjs-pino, redact, métrica, alerta, reconciliação, cardinalidade, dimensão]
 not_covered:
-  - "métrica, alerta e reconciliação → infrastructure/observability"
-  - "o contrato de log do caso de uso (\"Log no caso de uso\") → backend/application"
-  - "o registro global dos interceptors de log → infrastructure/runtime"
-examples: [infrastructure/logging.examples.md, starter/apps/app-api/src/main.ts, starter/apps/app-api/src/app.module.ts]
+  - "a tradução de erro em resposta HTTP → backend/errors"
+examples: [starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts]
 status: active
 ---
 # Log
 
-Como a aplicação produz log estruturado: o mecanismo (`nestjs-pino`) e como qualquer provider loga por ele. Vale pra log de qualquer natureza, não só do caminho de erro; `backend/errors.md` cobre a tradução de erro em resposta HTTP e usa o mecanismo daqui para o detalhe de erro inesperado, sem duplicar o desenho.
+Como a aplicação loga: o `Logger` nativo do NestJS, chamado só por quem está em `infra/`, com o identificador do que aconteceu e sem dado sensível.
 
-## Por que `nestjs-pino`
+## Onde mora
 
-O Fastify já embute pino como logger nativo. `nestjs-pino` reaproveita esse mecanismo em vez de introduzir um segundo formato de log no processo: expõe a mesma instância pino tanto pro logger interno do Nest (`Logger`) quanto pra log estruturado com contexto por request (`PinoLogger`), e loga automaticamente toda request/response via `pino-http`, sem precisar de nenhum código manual por rota.
+| Quem loga | Como |
+| --- | --- |
+| Provider de `infra/`: controller, subscriber, worker, repositório, implementação de contrato | `private readonly logger = new Logger(<Classe>.name)` |
+| Erro inesperado | o `UnexpectedErrorFilter` loga o 5xx com a stack (`backend/errors.md`) |
+| Caso de uso, entidade e value object | não logam: o resultado volta pelo `Either`, e o fato que precisa ser observado vira domain event, logado pelo subscriber (`backend/events.md`) |
 
-`Logger`/`PinoLogger` é injetada direto, sem contrato, em qualquer provider de `infra/` que precise logar: é infraestrutura técnica pura, sem composição de domínio no meio, mesmo branch de decisão de `infrastructure/services.md` que já cobre `PrismaService`. `LoggerModule` é um módulo Nest próprio, configurado uma vez em `AppModule`; não entra no `ServicesModule` porque não é um client de vendor com contrato por fluxo, é o próprio mecanismo de log da aplicação. Caso de uso não recebe o `PinoLogger`: `domain/application` não importa `nestjs-pino` (`backend/boundaries.md`), e o log dele passa por um contrato neutro de framework, cuja implementação em `infra/` é um provider como os outros deste documento (`backend/application.md`, "Log no caso de uso").
+## Regras
 
-Cobre qualquer request que passa pelo pipeline do Nest, então qualquer falha que se torne exceção nesse caminho, seja do `ZodValidationPipe`, de um repositório sobre o Prisma, ou de qualquer outro ponto (ver `backend/errors.md`, "Erro inesperado: filtro global"): a linha automática de log não distingue a origem, e não precisa de configuração extra por tipo de falha. Biblioteca que registre rotas próprias direto no adapter HTTP, fora do pipeline do Nest, não ganha essa linha automática: o log interno dela é redirecionado pra mesma instância de pino pela opção de logger que a própria biblioteca oferecer, e a config disso mora junto da composição dela.
+**Obrigatório.** O log leva o identificador do que aconteceu (`orderId`), nunca a entidade inteira.
 
-## Bootstrap
+> **Por quê.** A entidade arrasta campo pessoal ou sensível para o log.
 
-Exemplo completo: `starter/apps/app-api/src/main.ts`.
+**Proibido.** Senha, token, cookie, URL assinada, body de request e dado pessoal em log.
 
-Os interceptors globais de log entram no `AppModule` via `APP_INTERCEPTOR`, pela regra de registro global de `infrastructure/runtime.md`:
+**Padrão.** `error` para a falha que pede ação, `warn` para o degradado esperado, `log` para o fato operacional e `debug` para diagnóstico.
 
-```ts
-// app.module.ts
-providers: [
-  { provide: APP_INTERCEPTOR, useClass: LoggerErrorInterceptor },
-  { provide: APP_INTERCEPTOR, useClass: RequestLogContextInterceptor },
-],
-```
+## Métrica, alerta e reconciliação
 
-Pontos-chave:
+Quando uma pergunta operacional do projeto pede métrica, alerta ou reconciliação:
 
-- `bufferLogs: true` retém as linhas de log emitidas no boot, antes de `useLogger` trocar o logger padrão do Nest pelo do `nestjs-pino`, em vez de perdê-las.
-- `app.useLogger(app.get(Logger))` faz todo `Logger`/`PinoLogger` do app sair em JSON, não só um ponto específico.
-- `LoggerErrorInterceptor` é o que expõe o erro real (stack, classe) na linha automática de log de uma request que termina em exceção. Sem ele, essa linha carrega só um `err` genérico do Nest, mesmo com `nestjs-pino` já ligado. Registrado antes do `RequestLogContextInterceptor`: interceptor global roda na ordem de registro, o primeiro fica mais externo e captura exceção de qualquer interceptor interno.
-- `FastifyAdapter` não recebe config própria de `logger` (nem `logger: true`, nem repassar essa config pro `nestjs-pino` via `useExisting: true`): isso cria duas instâncias de pino concorrentes, uma por request do Fastify e uma do `forRoot` do `nestjs-pino`, cenário que o próprio pacote desaconselha. Fonte única de configuração é o `LoggerModule` em `AppModule`, ver "Nível e formato por ambiente". `genReqId` no adapter é opção de servidor, não de logger, e não entra nessa proibição; o porquê de ele morar aí está em "Agrupamento por request".
+- **Obrigatório.** A métrica responde à pergunta, e cada dimensão tem um conjunto de valores fechado e pequeno (fila, status, template da rota), nunca um identificador.
+- **Obrigatório.** O alerta é sobre comportamento agregado numa janela (taxa, contagem, idade, profundidade) e declara a ação esperada e quem age.
+- **Obrigatório.** A reconciliação parte da fonte de verdade, é idempotente e não destrói o que o critério não distingue de um estado ainda em curso.
 
-## Nível e formato por ambiente
+A ferramenta é decisão de projeto (`.metri/ARCHITECTURE.md`).
 
-`LoggerModule` é configurado com `forRootAsync`, lendo o ambiente do `EnvService`. Nível por ambiente numa tabela declarativa: `info` em produção, `warn` em teste (erro continua visível, o `LoggerErrorInterceptor` loga em `error`, sem inundar a saída dos e2e com a linha automática de request), `debug` em `local`/`development`. Transport `pino-pretty` (devDependency) só onde um humano lê o terminal (`local`/`development`); em produção e teste a saída é o JSON do pino direto no stdout, e o destino das linhas (coletor, agregador) é decisão de projeto (`.metri/ARCHITECTURE.md`, "Delegações"), fora deste documento.
+## Sob demanda
 
-Exemplo completo: `starter/apps/app-api/src/app.module.ts`, com o `LOG_LEVEL_BY_ENV` e o `LoggerModule.forRootAsync`.
+- **Log estruturado.** Quando as linhas vão para um coletor ou agregador: `nestjs-pino` no lugar do `Logger` nativo (`defaults/stack.md`, "Quando precisar"), com `redact` de `authorization` e `cookie` da request e de `set-cookie` e `location` da response.
 
-`context` vem de `setContext` (ver "Como logar num provider") e, sem essa config, o `pino-pretty` imprime como propriedade solta numa linha abaixo da mensagem, pra qualquer log de qualquer provider que chame `setContext`. `messageFormat` funde o context na própria linha da mensagem (`[NomeDoContext] mensagem`); `ignore` tira o campo de aparecer de novo como propriedade abaixo, já que virou parte da mensagem. O `{if context}...{end}` é condicional: linha automática de request do `pino-http` não carrega `context` (não passa por `PinoLogger.call`), então cai no `{msg}` puro sem colchete vazio sobrando.
+## Verificação
 
-Com `level: 'info'`, chamada de `debug` em produção custa quase nada: o pino checa o nível antes de serializar qualquer argumento.
-
-## Agrupamento por request
-
-Toda linha logada durante uma request carrega o `req.id` dela: o `pino-http` cria um child logger por request e o `nestjs-pino` o propaga por AsyncLocalStorage, então `Logger`/`PinoLogger` em qualquer provider sai com o mesmo id, sem passar contexto na mão. Agrupar as linhas de uma request no agregador é filtrar por esse id.
-
-O id default do Fastify é "req-N", incremental por processo, ambíguo com mais de uma instância ou depois de um restart: requests distintas aparecem no agregador com o mesmo id. A troca por UUID é no `genReqId` do `FastifyAdapter`, no `main.ts` de "Bootstrap". Quem devolve o id na resposta é o primeiro hook `onRequest` da instância, escrevendo o header no response cru: assim alcança também quem responde fora do ciclo do Nest, incluindo a própria recusa de uma fronteira. O `genReqId` do `pinoHttp` não funciona neste stack e não é usado: o middie do `@nestjs/platform-fastify` copia o id do Fastify pro request cru antes de o `pino-http` rodar, e o `pino-http` só gera id quando o request ainda não carrega um.
-
-Pontos-chave:
-
-- O header `X-Request-Id` na resposta localiza no log a request exata que um cliente reportou, sem depender de timestamp.
-- `x-request-id` vindo na request é ignorado: aceitar id de cliente arbitrário permite forjar o id de correlação no log. Aceitar só passa a fazer sentido com um proxy confiável na frente assinando o header, decisão que acompanha a topologia de deploy do projeto (`.metri/ARCHITECTURE.md`).
-
-Os campos entram progressivamente, conforme cada fronteira produz o fato que ela resolve: um interceptor global (`APP_INTERCEPTOR` no `AppModule`, depois do `LoggerErrorInterceptor`, ver "Bootstrap") chama `logger.assign(...)` com o que já se sabe naquele ponto, e cada fronteira posterior acrescenta o que ela resolveu. `assignResponse: true` na config do `LoggerModule` (ao lado de `pinoHttp`, ver "Nível e formato por ambiente") estende os campos à linha automática de response.
-
-```ts
-// in the global interceptor, with what the boundary already resolved
-this.logger.assign({
-  callerId: requestScope?.callerId,
-});
-```
-
-Três regras valem para qualquer campo que entre nesse contexto:
-
-- **Um nome, um significado.** Campo que muda de sentido conforme o caminho da request torna o log impossível de agregar: quem filtra por ele passa a comparar coisas diferentes sem perceber. Quando dois momentos da request produzem fatos parecidos mas distintos (o identificador que a request afirma e o que o backend validou, por exemplo), são dois campos com nomes diferentes, nunca um campo com dois sentidos.
-- **Só identificador.** Não se anexa entidade, lista de permissões ou catálogo inteiro a toda request. O contexto automático carrega identificadores; detalhe de decisão entra no log específico que realmente precisa dele.
-- **Ausente é um valor válido.** Campo que só existe depois de uma fronteira simplesmente não aparece nas linhas anteriores a ela. Preencher com um valor sintético para "manter o formato" é pior que a ausência: transforma um fato conhecido (ainda não resolvido) num fato falso.
-
-## Redação de campo sensível
-
-A linha automática de request do `pino-http` inclui headers de request e de response por padrão. Sem redação, isso grava no log qualquer cookie e qualquer header `Authorization`. A lista de campos redigidos fica no `redact` do `pinoHttp`, na config única do `forRootAsync`:
-
-Exemplo completo: o `redact` do `starter/apps/app-api/src/app.module.ts`.
-
-Pontos-chave:
-
-- O identificador interno e opaco do dono (a "Identidade do dono" de `.metri/ARCHITECTURE.md`, um uuid) entra no contexto do log e fica fora do `redact`: é por ele que as linhas de um dono se agrupam no agregador. O que se redige é credencial e dado pessoal (nome, e-mail, telefone, documento); um identificador que é dado pessoal, como o e-mail, nunca é o id de contexto.
-- `censor: '[REDACTED]'` deixa visível no log que a redação atuou. Remover o campo silenciosamente esconderia também a evidência de que a proteção está ativa.
-- Path de `redact` é case-sensitive. Header de request chega minúsculo no Node, então os paths do `redact` do `app.module.ts` cobrem o caso real; um path novo em maiúsculo não protege o header minúsculo equivalente.
-- Body de request não está na lista porque `pino-http` não loga body. Dado sensível passado como dado estruturado num log manual é responsabilidade de quem loga; não existe redação global que cubra objeto arbitrário.
-- Senha, cookie, token de qualquer natureza, URL assinada e payload com dado pessoal não entram em log manual. O `redact` protege os headers conhecidos, não argumentos arbitrários.
-- A linha automática inclui a URL. Segredo e dado pessoal não podem ser transportados em path ou query que apareça em `req.url`; rota que fizer isso precisa mudar o transporte ou instalar um serializer de `req` que troque o valor por `[REDACTED]` no `req.url`, antes da primeira exposição externa. `res.headers.location` está no `redact` pelo mesmo motivo: um redirect pode carregar no `Location` um valor que não deveria aparecer no log.
-
-## Como logar num provider
-
-`PinoLogger` injetado no construtor, com `setContext` fixando o nome da classe; o resto é chamada direta do nível certo:
-
-```ts
-// excerpt of the subscriber from backend/events.md, a provider in infra/
-import { Injectable } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
-
-@Injectable()
-export class OnOrderConfirmedSubscriber implements EventHandler {
-  constructor(private readonly logger: PinoLogger) {
-    this.logger.setContext(OnOrderConfirmedSubscriber.name);
-  }
-
-  private async handle(event: OrderConfirmedEvent): Promise<void> {
-    this.logger.info({ orderId: event.orderId.toValue() }, 'Reagindo à confirmação do pedido');
-    // ...
-  }
-}
-```
-
-Segundo argumento é a mensagem para humano; primeiro argumento, quando presente, é dado estruturado (objeto), nunca concatenado na própria mensagem. É o que torna o campo pesquisável no agregador de log, em vez de exigir parsing de string.
-
-No dado estruturado vai identificador, não entidade: `{ orderId: order.id }`, nunca `{ order }`. Entidade inteira arrasta campo pessoal ou sensível pro log, e o `redact` global não cobre objeto arbitrário de log manual (ver "Redação de campo sensível").
-
-Log operacional do pino não é audit log imutável. Ação que precisa registrar autor, decisão e mudança por obrigação de produto, segurança ou compliance ganha auditoria persistida junto do fluxo concreto; não se resolve com efeito colateral dentro de query de exibição (`backend/reading.md`) nem com uma mensagem `info` tratada como histórico definitivo.
-
-Provider cobre qualquer classe de `infra/` no container do Nest: repositório, controller, subscriber, worker e a implementação do contrato de log que o caso de uso consome. Caso de uso loga por esse contrato (`backend/application.md`, "Log no caso de uso"), e o que ele passa ao contrato segue as mesmas regras de dado estruturado desta seção. Entidade e value object (`domain/enterprise/`, `packages/core`) não logam: fato de domínio que precisa ser observado vira domain event (ver `backend/events.md`), e o log sai do subscriber que o consome.
-
-## Log de biblioteca externa
-
-Biblioteca com logger próprio escreve, por padrão, direto no console, fora do JSON do processo: a linha dela não carrega `requestId`, não respeita o nível do ambiente e, num agregador, aparece como texto solto no meio de JSON. Quando a biblioteca aceita um logger custom, ele aponta pra mesma instância de pino, e a config disso é uma classe injetável que recebe o `PinoLogger` no construtor como qualquer provider:
-
-Exemplo completo: logging.examples.md#vendorloggerconfig
-
-Pontos-chave:
-
-- `disableColors: true` evita código ANSI de cor dentro do JSON.
-- O guard de `args.length === 0` evita logar `args: []` em toda linha: a maior parte das chamadas internas loga só mensagem, sem argumento extra, e um array sempre vazio na saída não carrega informação nenhuma, só ruído repetido.
-- O nível passado pra biblioteca é o mais permissivo, não o do ambiente. O gate dela roda antes de `log()` ser chamado, então um nível restritivo ali descarta a mensagem antes de o pino ter chance de decidir. `'debug'` deixa tudo passar, e o nível do pino por ambiente continua sendo a régua única.
-
-O logger da biblioteca não recebe o contexto progressivo do interceptor do Nest quando ela roda fora do pipeline. Fronteira que recusa uma request antes dos controllers registra, ela mesma, só `requestId` e um motivo estável; nunca ecoa header bruto, token, cookie ou body.
-
-## Verificação rápida
-
-- `Logger`/`PinoLogger` é injetado direto, sem contrato, só em provider de `infra/`, e caso de uso loga pelo contrato neutro de framework, sem importar `nestjs-pino`?
-- Dado variável vai no primeiro argumento (objeto), nunca concatenado na mensagem?
-- `FastifyAdapter` está sem config própria de `logger`?
-- `LoggerErrorInterceptor` e o interceptor de contexto estão registrados via `APP_INTERCEPTOR` no `AppModule`, nessa ordem?
-- Cada campo do contexto tem um significado só, sem valor sintético preenchendo o que ainda não foi resolvido?
-- `redact` cobre `authorization` e `cookie` da request e `set-cookie`/`location` da response?
-- Senhas, tokens, URL assinada, body e PII ficaram fora dos logs manuais e da URL registrada?
-- `genReqId` do `FastifyAdapter` gera UUID, e o primeiro hook `onRequest` devolve `X-Request-Id` no response cru?
-- Biblioteca com logger próprio aponta pro `PinoLogger`, sem cor no JSON e com o gate dela no nível mais permissivo?
+- Só `infra/` loga, com `new Logger(<Classe>.name)`; caso de uso, entidade e value object não logam?
+- O log leva identificador, e nenhuma senha, token, cookie, URL assinada, body ou dado pessoal?
+- O 5xx é logado pelo filtro global, com a stack?
+- Métrica com dimensão de valores fechados e alerta com ação e dono, quando existem?

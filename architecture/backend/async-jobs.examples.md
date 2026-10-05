@@ -26,8 +26,7 @@ export class OrderReportPgBossQueueImpl implements OrderReportQueue {
 ## GenerateOrderReportWorker
 
 ```ts
-import { Injectable, type OnModuleInit } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import type { OrderReportQueueInput } from '../../domain/application/queues/order-report-queue.contract';
 import { GenerateOrderReportUseCase } from '../../domain/application/use-cases/order/generate-order-report.use-case';
 import { PgBossService, type QueueDefinition } from './pg-boss.service';
@@ -42,13 +41,12 @@ export const GENERATE_ORDER_REPORT_QUEUE: QueueDefinition = {
 
 @Injectable()
 export class GenerateOrderReportWorker implements OnModuleInit {
+  private readonly logger = new Logger(GenerateOrderReportWorker.name);
+
   constructor(
     private readonly pgBoss: PgBossService,
     private readonly generateOrderReportUseCase: GenerateOrderReportUseCase,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext(GenerateOrderReportWorker.name);
-  }
+  ) {}
 
   async onModuleInit(): Promise<void> {
     await this.pgBoss.work<OrderReportQueueInput>(
@@ -65,10 +63,7 @@ export class GenerateOrderReportWorker implements OnModuleInit {
 
     if (result.isFailure()) {
       // an expected failure is a business result: retrying does not change the rule.
-      this.logger.error(
-        { err: result.value, orderId: input.orderId },
-        'GenerateOrderReportWorker descartou o job',
-      );
+      this.logger.error(`Job descartado (orderId ${input.orderId}): ${result.value.code}`);
     }
   }
 }

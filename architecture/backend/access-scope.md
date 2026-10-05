@@ -97,7 +97,6 @@ Quando o primeiro asset pertence a uma entidade: **Obrigatório.** O e2e prova a
 - A leitura recebe o escopo no input e o repete no `where` de cada consulta, inclusive no detalhe (`where: { id: input.orderId, customerId: input.customerId }`) e no SQL cru (`WHERE o.customer_id = ${input.customerId}`), como nos exemplos de `backend/reading.md`.
 - Na escrita, o caso de uso compara o dono do agregado com o identificador validado e devolve a classe de não-encontrado quando não coincide (`backend/application.md`, "Aplicação").
 - No storage, o bucket privado não usa o prefixo da chave como mecanismo de segurança: a segurança é este escopo, aplicado na assinatura e na recarga do registro de upload (`infrastructure/storage.md`).
-- O escopo de acesso não entra numa specification: continua no `where` da query, fora do `toWhere()` da regra (`domain/specification.md`).
 - O param decorator lê só o contexto da request; sem ele, falha fechado:
 
 ```ts
@@ -128,5 +127,4 @@ export const CurrentCustomerId = createParamDecorator((_data: unknown, context: 
 - `backend/application.md`: exemplo de escopo na escrita.
 - `infrastructure/storage.md`: assinatura, chave e registro de upload.
 - `infrastructure/runtime.md`: a fronteira de request que resolve o escopo.
-- `domain/specification.md`: escopo fora do `toWhere()`.
 - `skills/writing-for-agents/RULE-FORMAT.md`: casa da identidade concreta do dono.

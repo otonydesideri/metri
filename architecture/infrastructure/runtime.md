@@ -15,7 +15,6 @@ applies_to:
 keywords: [main.ts, app.module.ts, TRUST_PROXY, trustProxy, X-Forwarded-For, db:up, db:down, compose.yaml, docker compose, Docker, ".env", ".env.example", DATABASE_URL, "migrate dev", AppModule, APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD, useGlobalPipes, useGlobalInterceptors, useGlobalFilters, useGlobalGuards, "@SkipThrottle()", HttpModule, EnvService, getOrThrow, ConfigService, process.env, useFactory, enableShutdownHooks, shutdown gracioso, bootstrap, FastifyAdapter, fronteira de request, hook de request, guard, interceptor, filter, ZodValidationPipe, UnexpectedErrorFilter, throttler, env.validation.ts]
 not_covered:
   - "o que cada provider global faz — validação de formato e tradução de erro → backend/errors"
-  - "o que cada provider global faz — log → infrastructure/logging"
   - "a regra dos níveis de service e o `ServicesModule` → infrastructure/services"
   - "fila, worker e o ciclo de vida do `PgBossService` → backend/async-jobs"
   - "a superfície HTTP sob `/api` → general/http-surface"
@@ -117,7 +116,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 
 ## Aplicação
 
-- O bootstrap de processo que a Source descreve cria o app sobre o `FastifyAdapter` e troca o logger do Nest (`infrastructure/logging.md`, "Bootstrap"), aplica o prefixo `/api` (`general/http-surface.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
+- O bootstrap de processo que a Source descreve cria o app sobre o `FastifyAdapter`, aplica o prefixo `/api` (`general/http-surface.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
 - No `AppModule`, `APP_PIPE` registra o `ZodValidationPipe` composto com `toInvalidRequestException` (`backend/errors.md`), `APP_FILTER` registra o `UnexpectedErrorFilter` (`backend/errors.md`), `APP_INTERCEPTOR` registra o `ZodSerializerInterceptor` (`backend/http-api.md`) e os interceptors de log na ordem que `infrastructure/logging.md` fixa, e `APP_GUARD` registra o throttler e, depois dele, o guard de acesso (`backend/access-scope.md`, "Declaração por controller"), que valida a identidade quando o projeto tem dono; o endpoint de infra externa sai do throttler com `@SkipThrottle()` e do guard de acesso com `@Public()`.
 - O `PgBossService` (a fila padrão, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; é o caso da Source em que o runtime depende do shutdown gracioso: sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
 - A fronteira que resolve o escopo do dono é uma destas peças; o contrato do escopo está em `backend/access-scope.md`.
@@ -144,7 +143,6 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 ## Referências
 
 - `backend/errors.md`: o pipe de validação e o filtro de erro inesperado.
-- `infrastructure/logging.md`: o bootstrap do logger e os interceptors de log.
 - `infrastructure/services.md`: a regra dos níveis e o `ServicesModule`.
 - `backend/async-jobs.md`: o `PgBossService` e o ciclo de vida dos workers.
 - `general/http-surface.md`: a superfície HTTP.

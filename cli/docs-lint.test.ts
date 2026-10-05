@@ -304,7 +304,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
   });
 
   it('Tickets: T tem "O que entrega" (1 a 3 linhas) e "Critérios" (com item)', () => {
-    const what = 'A conta no provedor de e-mail, com o domínio de envio verificado e a chave de API no env do app-api.';
+    const what = 'O bucket no provedor de storage, com as credenciais no env do app-api.';
     expect(lintChanged(inTicket('T2.1', `## O que entrega\n\n${what}\n`, '## O que entrega\n')).output).toContain(
       'T2.1: falta a seção "O que entrega"',
     );
@@ -312,7 +312,7 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     expect(lintChanged(inTicket('T2.1', what, `${what}\nlinha 2.\nlinha 3.\nlinha 4.`)).output).toContain(
       '"O que entrega" de T2.1: 4 linhas, mais de 3',
     );
-    const items = '- [ ] O domínio de envio está verificado no provedor.\n- [ ] A chave de API existe no env de desenvolvimento do app-api.\n';
+    const items = '- [ ] O bucket existe no provedor.\n- [ ] As credenciais existem no env de desenvolvimento do app-api.\n';
     expect(lintChanged(inTicket('T2.1', items, '')).output).toContain('T2.1: "Critérios" sem item');
   });
 
