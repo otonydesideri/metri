@@ -1,6 +1,6 @@
 ---
 id: defaults/stack
-description: "a stack e o idioma do código, lista única das ferramentas que as regras exigem, com a versão de referência de cada uma: monorepo pnpm workspaces + Turborepo e Biome; no backend, NestJS sobre Fastify com Prisma/Postgres, build pelo tsdown, Zod, log, rate limit, fila e e-mail, e a autenticação padrão (sessão no servidor, same-origin); no frontend, React + Vite, roteamento, dado do servidor, cliente HTTP, formulário, UI, tema e estado global; nos testes, Vitest, supertest, dados de teste, o ambiente de interface e o e2e com Playwright."
+description: "a stack e o idioma do código, lista única das ferramentas que as regras exigem, com a versão de referência de cada uma: monorepo pnpm workspaces + Turborepo e Biome; no backend, NestJS sobre Fastify com Prisma/Postgres, build pelo tsdown, Zod e log; no frontend, React + Vite, roteamento, dado do servidor, cliente HTTP, formulário, UI, tema e estado global; nos testes, Vitest, supertest, dados de teste, o ambiente de interface e o e2e com Playwright; a escolha para o que só entra quando o projeto precisa (fila, e-mail, storage, log estruturado, rate limit, telefone, máscara); e a autenticação padrão (sessão no servidor, same-origin)."
 use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
@@ -21,12 +21,8 @@ Backend:
 - NestJS sobre Fastify, Prisma/Postgres via `@metri/db` (backend/layers, backend/persistence, infrastructure/runtime).
 - Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node --env-file-if-exists=../../.env dist/main.mjs"` no dev, com o `.env` da raiz), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
 - Validação de formato HTTP e contrato de API: Zod via `nestjs-zod` (`createZodDto`, `@ZodResponse`), pipe e serializer globais; OpenAPI pelo `@nestjs/swagger`, com o `cleanupOpenApiDoc` do nestjs-zod (backend/http-api, backend/boundaries).
-- Log: `nestjs-pino` (infrastructure/logging).
-- Rate limit: `@nestjs/throttler`, guard global, pelo IP do cliente atrás dos `TRUST_PROXY` saltos de proxy (infrastructure/runtime, backend/errors).
+- Log: o `Logger` nativo do NestJS (infrastructure/logging).
 - Data e fuso: `date-fns` + `@date-fns/tz`, no domínio (general/date-time).
-- Fila: pg-boss (backend/async-jobs).
-- E-mail: Resend, com o template em React Email (`@react-email/render`) (infrastructure/mail, vendor delegado ao projeto).
-- Storage: Cloudflare R2 pelo `@aws-sdk/client-s3`, implementação de referência (infrastructure/storage).
 
 Frontend (`app-web`):
 
@@ -34,7 +30,7 @@ Frontend (`app-web`):
 - Roteamento: react-router (frontend/routing).
 - Dado do servidor: React Query (frontend/data-fetching).
 - Cliente HTTP: as funções geradas do OpenAPI pelo Orval (`client: 'fetch'`, schemas Zod), sobre o `fetch` (frontend/data-fetching).
-- Formulários: React Hook Form + Zod; `react-phone-number-input` e `use-mask-input` (sobre o Inputmask) (frontend/forms).
+- Formulários: React Hook Form + Zod (frontend/forms).
 - UI: consome `@metri/ui` (kit de componentes shadcn/ui com `tw-animate-css`, tokens e tema), com os tokens como CSS variables de tema (defaults/ui, frontend/components, frontend/theming).
 - Tema: `next-themes`, o provider de tema do `@metri/ui` (frontend/theming, defaults/ui).
 - Notificação: `sonner`, com o `Toaster` do `@metri/ui` e o `toast` da lib (defaults/ui, frontend/data-fetching).
@@ -47,6 +43,18 @@ Testes:
 - Dados de teste: `@faker-js/faker` (backend/testing, frontend/testing).
 - Interface: jsdom, `@testing-library/react`, `@testing-library/jest-dom`, `user-event` e MSW (frontend/testing).
 - E2e de interface e evidência dos critérios de UI: Playwright, com os projetos desktop e mobile (frontend/testing, frontend/experience).
+
+## Quando precisar
+
+A escolha para a necessidade que o projeto ainda não tem. Entra quando a necessidade aparece, não no `starter/`; a forma, quando há uma, está na regra entre parênteses.
+
+- Fila e job: pg-boss (backend/async-jobs).
+- E-mail: Resend, com o template em React Email (`@react-email/render`); o vendor é delegado ao projeto.
+- Storage: Cloudflare R2 pelo `@aws-sdk/client-s3`, implementação de referência (infrastructure/storage).
+- Log estruturado: `nestjs-pino`, no lugar do `Logger` nativo, com `redact` dos headers de credencial (infrastructure/logging).
+- Rate limit: `@nestjs/throttler`, guard global.
+- Telefone: `react-phone-number-input`, com as bandeiras embutidas e a entrada `/react-hook-form`.
+- Máscara de campo: `use-mask-input`, sobre o Inputmask.
 
 ## Autenticação
 

@@ -5,7 +5,7 @@ O formato de uma regra, global (`node_modules/metri/architecture/`) ou do projet
 ## Formato
 
 - Toda regra começa com frontmatter, com as chaves de `node_modules/metri/VOCABULARY.md`. É a única parte de formato fixo e a única que os scripts leem.
-- O corpo segue o que o tema pede: seções temáticas, texto explicativo, modalidades ("Modalidades", abaixo), blocos "Por quê" e "Exceção", árvore de decisão em Mermaid, tabelas e a seção de verificação ("Verificação" ou "Verificação rápida").
+- O corpo segue, nesta ordem, o que o tema tiver: o propósito (o que se implementa), onde cada arquivo mora, a árvore de decisão, as seções temáticas com as normas, o exemplo de referência, o que entra sob demanda e a verificação. Seção sem conteúdo não nasce.
 - Não há limite de linhas. O contexto é controlado pelo `rules-for` (o agente lê só as regras do ticket) e pela extração de exemplos.
 
 ````markdown
@@ -24,15 +24,12 @@ status: active
 ---
 # <Tema>
 
-<Uma frase de propósito.>
+<Uma frase de propósito: o que se implementa.>
 
-## <Seção temática>
+## Onde mora
 
-**Obrigatório.** <Norma.>
-
-> **Por quê.** <Motivo, quando não for óbvio.>
-
-- **Exceção.** <Condição>: <efeito> (ADR-NNNN).
+| Artefato | Caminho |
+| --- | --- |
 
 ## Árvore de decisão
 
@@ -43,6 +40,22 @@ flowchart TD
   Q2 -->|sim| B[<Caminho B>]
   Q2 -->|não| C[<Caminho C>]
 ```
+
+## <Seção temática>
+
+**Obrigatório.** <Norma.>
+
+> **Por quê.** <Motivo, quando não for óbvio.>
+
+- **Exceção.** <Condição>: <efeito> (ADR-NNNN).
+
+## Exemplo de referência
+
+Exemplo completo: <tema>.examples.md#<âncora> ou `starter/<caminho>`.
+
+## Sob demanda
+
+- **<Necessidade>.** Quando <gatilho concreto>: <tema>.examples.md#<âncora>.
 
 ## Verificação
 
@@ -64,7 +77,7 @@ Chave marcada `# opcional` só é escrita quando tem valor (`node_modules/metri/
 
 ## Autoria da Architecture Source
 
-Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, o que a Source delega ao projeto, forma escrita sem instância, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
+Dono de: como a Architecture Source é escrita e mantida — ownership de decisão, anatomia de documento, modalidades normativas, exceções, rationale, exemplos, formas canônicas e implementações de referência, status de ferramenta, verificação, o que fica sob demanda, o que a Source delega ao projeto, forma escrita sem instância, emendar ou criar, organização física da Source e casa das decisões específicas de projeto.
 
 Consultar antes de: criar, editar, mover ou reorganizar qualquer documento de `architecture/`; registrar ou fechar uma decisão; decidir onde uma decisão específica de projeto é registrada.
 
@@ -117,7 +130,6 @@ O formato do arquivo de regra está em "Formato", acima: frontmatter em `node_mo
 | `**Obrigatório.**` | REQUIRED |
 | `**Proibido.**` | PROHIBITED |
 | `**Padrão.**` | DEFAULT |
-| `**Recomendado.**` | RECOMMENDED |
 | `**Permitido.**` | PERMITTED |
 
 **Obrigatório.** Toda norma nova é marcada pela modalidade, com um dos marcadores da tabela, dentro de `## Regras` ou da seção temática em que está.
@@ -206,11 +218,8 @@ Nomes que os exemplos da Source usam.
 
 | Status | Significado |
 | --- | --- |
-| DECIDIDA | Escolhida pela Source |
+| DECIDIDA | Escolhida pela Source, em `node_modules/metri/architecture/defaults/stack.md` |
 | REFERÊNCIA | Implementação de referência de uma forma neutra; não é requisito |
-| ILUSTRATIVA | Aparece para tornar o exemplo concreto; não é decisão |
-| CANDIDATA | Em avaliação, sem decisão |
-| REJEITADA | Avaliada e descartada |
 
 Quando uma ferramenta é relevante para uma decisão do próprio documento: **Obrigatório.** O status dela, um dos da tabela, aparece em `## Ferramentas`.
 
@@ -240,13 +249,27 @@ Quando a Source não decide um ponto e o agente agiria diferente por causa disso
 
 **Proibido.** Código introduzir mecanismo próprio para contornar um ponto delegado: a necessidade vira ARCHITECTURE DECISION REQUIRED (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Need without coverage").
 
+#### Sob demanda
+
+A base é o que todo projeto usa desde o primeiro dia, mais o que o método consome. Configuração que só um projeto com necessidade concreta usa (autenticação, rate limit, logger estruturado) fica fora da base: das normas e do `starter/`.
+
+Quando, sem a receita, o agente erraria algo que importa (segurança, dado perdido ou corrompido, corrida) e o jeito certo não está na documentação oficial da ferramenta: **Obrigatório.** Uma linha em `## Sob demanda` da regra dona, com o gatilho concreto e a âncora da receita no `<tema>.examples.md`.
+
+Quando a necessidade só pede escolher a biblioteca: **Obrigatório.** Uma linha em `node_modules/metri/architecture/defaults/stack.md`, "Quando precisar", sem receita.
+
+Quando a receita é um documento inteiro: **Obrigatório.** Ele é capacidade condicional, com `activation`.
+
+**Padrão.** O exemplo de referência é o que o `starter/` replica, e o `starter/` traz só o que um exemplo da base mostra.
+
+> **Por quê.** Configuração particular na base vira cópia em todo projeto novo, sem a necessidade que a justificaria.
+
 #### Forma escrita sem instância
 
 Quando existe forma arquitetural escrita para uma capacidade sem instância no código: **Obrigatório.** A primeira implementação segue essa forma.
 
-**Proibido.** Tratar ferramenta ilustrativa como decisão: a forma está decidida, a ferramenta não.
+**Proibido.** Tratar implementação de referência como decisão: a forma está decidida, a ferramenta não.
 
-> **Por quê.** O documento é a decisão da forma, mesmo quando a ferramenta é ilustração; o que o projeto decide fica nomeado em "Delegado ao projeto".
+> **Por quê.** O documento é a decisão da forma, mesmo quando a ferramenta é referência; o que o projeto decide fica nomeado em "Delegado ao projeto".
 
 #### Emendar ou criar
 
@@ -331,6 +354,7 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 - Forma canônica e implementação de referência estão declaradas como tais, e nenhum exemplo é fonte única de norma?
 - Ferramenta relevante para uma decisão do documento tem status, sustentado por decisão da Source, sem ferramenta de exemplo parecendo obrigatória?
 - A verificação só comprova regra existente, e todo comando declara o resultado esperado?
+- Configuração particular ficou fora da base: receita em `## Sob demanda` só quando o erro importa e a documentação da ferramenta não ensina; biblioteca em "Quando precisar"?
 - Caso novo editou o owner existente, e a seção nova sobreviveria sem o parágrafo acima dela? Se não sobreviveria, era emenda.
 - Nenhum changelog nem documento paralelo de decisão dentro da Source?
 - O documento está na pasta da área dona e cobre um assunto só?
