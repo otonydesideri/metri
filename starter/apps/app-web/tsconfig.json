@@ -10,7 +10,6 @@
 		"vite.config.ts",
 		"orval.config.ts",
 		"playwright.config.ts",
-		"dev-server-proxy.spec.ts",
 		"src",
 		"test",
 		"e2e"

@@ -75,7 +75,7 @@ Exemplo completo: `starter/apps/app-web/src/lib/http/client.ts`.
 
 Como a chamada sai na própria origem, o browser envia o cookie sem configuração cross-origin, e não existe env de URL da API no frontend — trocar de ambiente não troca nada no bundle.
 
-Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy usa a forma objeto, aponta para a porta do app-api, mantém `changeOrigin: false` e não reescreve domínio de cookie (`starter/apps/app-web/vite.config.ts`, provado pelo `dev-server-proxy.spec.ts` ao lado). Assim o backend recebe o `Host` da página, não o host interno do target. Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao IaC, não ao bundle do frontend.
+Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy aponta para a porta do app-api (`starter/apps/app-web/vite.config.ts`). Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao IaC, não ao bundle do frontend.
 
 A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro").
 

@@ -7,15 +7,12 @@ import {
 	EmptyTitle,
 } from '@metri/ui/components/ui/empty';
 import { Skeleton } from '@metri/ui/components/ui/skeleton';
-import { ArrowUpRight } from 'lucide-react';
 import { useHealth } from '@/hooks/health/use-health';
 import { APP_NAME } from '@/shared/constants/app.constant';
-import { API_DOCS_URL, NEXT_STEPS } from './start-content';
-import { StartFooter } from './start-footer';
 
 /** SOURCE OF TRUTH: HomeStartPage.
- * WHAT: the page of `/`, in one centered column: the project name, the next steps, the API docs as the main action, the state of app-api and of its database read by `useHealth` on the page's origin, and the metri version.
- * WHY: it proves the whole path, page to hook to generated function to `/api`, before the first UC exists, with the read states of frontend/components ("Estados de leitura"); the API off keeps the rest of the page.
+ * WHAT: the page of `/`, in one centered column: the project name and the state of app-api and of its database, read by `useHealth` on the page's origin.
+ * WHY: it proves the whole path, page to hook to generated function to `/api`, before the first UC exists, with the read states of frontend/components ("Estados de leitura").
  * WHERE: the index route of the `AppLayout` group; the first UC replaces it.
  */
 export function HomeStartPage() {
@@ -28,38 +25,11 @@ export function HomeStartPage() {
 				<div className="flex flex-col gap-3">
 					<h1 className="text-display-xl">{APP_NAME}</h1>
 					<p className="text-body-lg text-muted-foreground">
-						O projeto está rodando. Os próximos passos são no Claude Code.
+						O projeto está rodando.
 					</p>
 				</div>
 
-				<ol className="flex flex-col gap-6">
-					{NEXT_STEPS.map((step, index) => (
-						<li key={step.command} className="flex gap-4">
-							<span className="text-body-sm font-mono text-muted-foreground">
-								{index + 1}.
-							</span>
-							<div className="flex flex-col gap-1">
-								<code className="self-start rounded-md bg-muted px-2 py-0.5 font-mono text-code">
-									{step.command}
-								</code>
-								<p className="text-body-md text-muted-foreground">
-									{step.description}
-								</p>
-							</div>
-						</li>
-					))}
-				</ol>
-
 				<div className="flex flex-col gap-6">
-					{API_DOCS_URL && (
-						<Button asChild size="lg" className="self-start">
-							<a href={API_DOCS_URL}>
-								Documentação da API
-								<ArrowUpRight />
-							</a>
-						</Button>
-					)}
-
 					{isPending && (
 						<div className="flex gap-4">
 							<Skeleton className="h-5 w-36" />
@@ -103,10 +73,6 @@ export function HomeStartPage() {
 							</li>
 						</ul>
 					)}
-				</div>
-
-				<div className="mt-auto">
-					<StartFooter />
 				</div>
 			</div>
 		</div>

@@ -89,15 +89,11 @@ Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e cl
 
 > **Por quê.** Assim o layout (o header e a navegação lateral, por exemplo) continua montado quando o usuário navega entre páginas irmãs do mesmo grupo, e só a área da página troca pelo fallback.
 
-**Obrigatório.** O fallback é o `AppSplash` (`shared/components/`): overlay fixo com a marca sobre o fundo da app, o mesmo que um guard renderiza enquanto resolve o que precisa resolver.
+**Obrigatório.** O fallback é o `AppSplash` (`shared/components/`): overlay fixo no fundo da app, o mesmo que um guard renderiza enquanto resolve o que precisa resolver.
 
 **Obrigatório.** Antes de o React montar, o `index.html` pinta só o fundo, com o valor do token do canvas inline.
 
 > **Por quê.** O splash entra por cima sem trocar de cor, então as janelas do carregamento inicial (fundo estático, guards, chunk da página) não piscam entre si.
-
-**Obrigatório.** A marca dentro do splash aparece com atraso (`delay-300 fill-mode-backwards`), não junto com o fundo.
-
-> **Por quê.** Espera que termina antes disso mostra só o fundo, que já estava pintado, e nada pisca; a marca é feedback para a espera que o usuário chega a perceber.
 
 ### Segmento de rota
 

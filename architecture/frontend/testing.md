@@ -1,6 +1,6 @@
 ---
 id: frontend/testing
-description: "a pirâmide de testes do frontend — spec de função pura (rule, schema), de hook, de página e componente, de rota e guard, e de fluxo entre telas; o dublê de rede único, o MSW no nível do fetch; os builders de payload; o spec de estrutura e o de config do dev server."
+description: "a pirâmide de testes do frontend — spec de função pura (rule, schema), de hook, de página e componente, de rota e guard, e de fluxo entre telas; o dublê de rede único, o MSW no nível do fetch; os builders de payload; e o spec de estrutura."
 use_when:
   - "escrever spec de rule de UI ou de schema Zod do `app-web`"
   - "escrever spec de hook do `app-web`, com a rede pelo MSW"
@@ -11,15 +11,14 @@ applies_to:
   - "apps/app-web/src/**/*.spec.ts"
   - "apps/app-web/src/**/*.spec.tsx"
   - "apps/app-web/test/**"
-  - "apps/app-web/dev-server-proxy.spec.ts"
   - "apps/app-web/vite.config.ts"
   - "apps/app-web/playwright.config.ts"
   - "apps/app-web/e2e/**"
-keywords: [pirâmide, spec, addCookies, chromium-headless-shell, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, dev-server-proxy.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock]
+keywords: [pirâmide, spec, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 enforced_by: [boundaries]
-examples: [frontend/testing.examples.md, starter/apps/app-web/playwright.config.ts, starter/apps/app-web/e2e/evidence.ts, starter/apps/app-web/src/structure.spec.ts, starter/apps/app-web/dev-server-proxy.spec.ts]
+examples: [frontend/testing.examples.md, starter/apps/app-web/playwright.config.ts, starter/apps/app-web/e2e/evidence.ts, starter/apps/app-web/src/structure.spec.ts]
 status: active
 ---
 # Testes do frontend
@@ -61,7 +60,6 @@ O caminho feliz de cada tela isolada é o que o fluxo já atravessa; repeti-lo v
 | Spec de fluxo | `src/app/router/<módulo>-flow.spec.tsx`, ao lado de `routes.tsx` |
 | Spec de transição entre fluxos | `src/app/router/<módulo>-transitions.spec.tsx` |
 | Spec de estrutura | `src/structure.spec.ts` |
-| Spec de config do dev server | `dev-server-proxy.spec.ts`, na raiz do app |
 | E2e de critério de UI | `e2e/<módulo>/<ação>.e2e.ts`, com `e2e/evidence.ts` |
 | Setup da suíte | `test/setup.ts` |
 | Servidor MSW | `test/msw/server.ts` |
@@ -87,11 +85,7 @@ Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da f
 
 O `saveEvidence` de `e2e/evidence.ts` (`starter/apps/app-web/e2e/evidence.ts`) grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
 
-Tela atrás de login recebe a sessão pelo banco, não pela tela de login: o teste grava a sessão como a factory do backend grava (`backend/testing.md`, "Como escrever um e2e-spec de controller") e injeta o cookie `HttpOnly` com `context.addCookies` antes do primeiro `goto`. O provedor externo de login fica fora do e2e; a tela de login ganha o próprio teste, até o redirect.
-
-Controle nativo de formulário (`<input type="time">`, `<input type="date">`) sai na evidência no formato do locale do sistema do processo do browser, não do `locale` do contexto nem do `--lang`: no Linux, o Chromium do Playwright (o `chromium-headless-shell` e o canal `chromium`) o lê de `LANG`. O teste afirma o valor (`toHaveValue('14:00')`), e o `playwright.config.ts` passa o locale ao browser em `use.launchOptions.env` (`{ ...process.env, LANG: 'pt_BR.UTF-8' }`), para a evidência mostrar o controle no formato de quem usa o produto.
-
-O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção, e a raiz do app para o que prova o config dele. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`. O compilador não a guarda, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos; quem guarda é o check `boundaries` (`starter/scripts/check-boundaries.sh`).
+O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`. O compilador não a guarda, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos; quem guarda é o check `boundaries` (`metri check --help`).
 
 ## Convenção de nome e execução
 
@@ -182,20 +176,6 @@ Fica fora da pirâmide porque não prova comportamento nenhum: ele afirma a árv
 A mensagem de falha diz de quem é a peça e pra onde ela vai. É isso que transforma a promoção numa correção óbvia em vez de uma decisão a lembrar no meio de outra tarefa: quem consome uma peça de fora da pasta dela quebra a suíte e lê o destino junto com o erro.
 
 Regra estrutural nova entra aqui só quando a violação for silenciosa.
-
-## Spec de config do dev server (`dev-server-proxy.spec.ts`)
-
-Também fica fora da pirâmide: prova o contrato de encaminhamento do proxy, não a reação da interface a esse contrato. O objeto de proxy é importado do próprio `vite.config.ts`, nunca copiado para dentro do teste, senão a prova passa a valer para a cópia.
-
-O arquivo mora na raiz do app, junto do config, e o nome não pode ser `vite.config.spec.ts`: o `exclude` default do Vitest cobre `**/{...,vite,...}.config.*`, então um spec com esse nome é ignorado sem nenhum aviso, e a suíte segue verde por não executá-lo.
-
-Ele roda num projeto próprio do Vitest, em ambiente node e sem o setup da suíte de interface. Importar o `vite` traz o esbuild junto, e o esbuild recusa iniciar sob jsdom; o setup da interface, por sua vez, monta DOM e carrega os clients do app, que este arquivo não usa. É a única razão de o bloco `test` ter projetos: um caso novo aqui não abre um projeto novo.
-
-O caso é sempre um par. A configuração real preserva o header que o backend precisa ler, e a alternativa plausível o destrói. Um caso positivo sozinho não distingue "a config está certa" de "o valor chegou por acaso"; é o controle negativo que mostra qual opção está segurando o contrato.
-
-O arquivo sobe o dev server e um servidor de destino de brinquedo, que só registra o que recebeu, e fala com eles por `node:http`: o cliente `fetch` da plataforma recusa sobrescrever `Host`. O dublê de rede global continua ligado, e o arquivo libera passagem só para as origens que ele mesmo subiu.
-
-Regra de entrada: só ganha caso aqui a opção de config cuja remoção não quebra nenhum outro teste e não aparece em erro de tipo. Opção que o próprio Vite recusa, ou que qualquer spec de página já acusaria, não entra.
 
 ## Builders de payload (`test/factories/make-<recurso>.factory.ts`)
 
