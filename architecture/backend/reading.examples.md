@@ -20,10 +20,7 @@ export class FetchOrdersPrismaQueryImpl implements FetchOrdersQuery {
   async execute(
     input: FetchOrdersQueryInput,
   ): Promise<PaginatedResult<OrderListItem>> {
-    const where = {
-      customerId: input.customerId,
-      ...(input.status ? { status: input.status } : {}),
-    };
+    const where = input.status ? { status: input.status } : {};
 
     const [rows, total] = await Promise.all([
       this.prisma.client.order.findMany({

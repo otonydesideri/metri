@@ -14,7 +14,6 @@ keywords: [cache, TTL, validade, invalidação, expiração, chave, namespace, v
 not_covered:
   - "o cache de servidor do frontend, que é o do React Query → frontend/data-fetching"
   - "a query de exibição e o caminho de leitura → backend/reading"
-  - "o escopo do dono → backend/access-scope"
   - "a regra dos níveis de service de infra → infrastructure/services"
   - "o mecanismo de uma invalidação que reage a outro fluxo → backend/operation-routing"
   - "o provider e os valores concretos de cada fluxo, que são delegação de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
@@ -70,7 +69,7 @@ namespace + versão + escopo do dono + recurso + parâmetros
 
 **Obrigatório.** A chave carrega só as dimensões que identificam o resultado: o namespace do fluxo, a versão da forma do valor guardado, o escopo do dono quando o resultado depende dele, o recurso e os parâmetros que mudam o resultado.
 
-Quando o resultado depende do dono: **Obrigatório.** O escopo do dono validado (`backend/access-scope.md`) entra na chave.
+Quando o resultado depende de quem pede: **Obrigatório.** O identificador validado de quem pede (o dono do dado) entra na chave.
 
 > **Por quê.** Sem ele, o resultado de um dono responde ao pedido de outro, o vazamento que o filtro no `where` existe para impedir, reaberto pela porta do cache.
 
@@ -213,7 +212,6 @@ async execute(input: FetchOrdersQueryInput): Promise<PaginatedResult<OrderListIt
 ## Referências
 
 - `backend/reading.md`: a query de exibição que o cache envolve.
-- `backend/access-scope.md`: o escopo do dono na chave.
 - `infrastructure/services.md`: a regra dos níveis, o registro e o dublê.
 - `backend/persistence.md`: a fonte de verdade.
 - `backend/transactions.md`: proteção de concorrência contra a fonte.

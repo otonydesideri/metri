@@ -19,8 +19,6 @@ export const envSchema = z.object({
 	NODE_ENV: z.enum(nodeEnvironments),
 	PORT: z.coerce.number().int().positive().default(3333),
 	DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
-	// the proxies in front of app-api, from the "Topologia de deploy" delegation; 0 in development
-	TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;

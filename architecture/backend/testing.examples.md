@@ -6,7 +6,6 @@
 // test/factories/make-order.factory.ts
 import { faker } from '@faker-js/faker';
 import { Injectable } from '@nestjs/common';
-import { UniqueEntityID } from '@metri/core/entities';
 import { Order, type OrderProps } from '../../src/domain/enterprise/order.entity';
 import { OrderItemList } from '../../src/domain/enterprise/order-item-list';
 import { OrderStatus } from '../../src/domain/enterprise/enums/order-status.enum';
@@ -122,31 +121,21 @@ describe('ConfirmOrderUseCase', () => {
 
   beforeEach(() => {
     inMemory = makeInMemoryRepositories();
-    sut = new ConfirmOrderUseCase(inMemory.OrderRepository);
+    sut = new ConfirmOrderUseCase(new InMemoryUnitOfWork(), inMemory.OrderRepository);
   });
 
   it('pedido não encontrado → falha', async () => {
-    const request = {
-      orderId: 'order-1',
-      customerId: 'customer-1',
-    };
-
-    const result = await sut.execute(request);
+    const result = await sut.execute({ orderId: 'order-1' });
 
     expect(result.isFailure()).toBe(true);
     expect(result.isFailure() && result.value).toBeInstanceOf(OrderNotFoundError);
   });
 
-  it('rascunho do próprio cliente → confirmado', async () => {
-    const order = makeOrder({ customerId: new UniqueEntityID('customer-1') });
+  it('rascunho → confirmado', async () => {
+    const order = makeOrder();
     inMemory.OrderRepository.items.push(order);
 
-    const request = {
-      orderId: order.id.toValue(),
-      customerId: 'customer-1',
-    };
-
-    const result = await sut.execute(request);
+    const result = await sut.execute({ orderId: order.id.toValue() });
 
     expect(result.isSuccess()).toBe(true);
     expect(order.status).toBe(OrderStatus.Confirmed);
@@ -166,9 +155,7 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { UniqueEntityID } from '@metri/core/entities';
 import request from 'supertest';
 import { OrderFactory } from '../../../../../test/factories/make-order.factory';
-import { SessionFactory } from '../../../../../test/factories/make-session.factory';
 import { AppModule } from '../../../../app.module';
-import { SESSION_COOKIE_NAME } from '../../../common/session/session-cookie';
 import { PersistenceModule } from '../../../persistence/persistence.module';
 import { PrismaService } from '../../../persistence/prisma/prisma.service';
 
@@ -176,25 +163,20 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
   let app: NestFastifyApplication;
   let prisma: PrismaService;
   let orderFactory: OrderFactory;
-  let sessionFactory: SessionFactory;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule, PersistenceModule],
-      providers: [OrderFactory, SessionFactory],
+      providers: [OrderFactory],
     }).compile();
 
-    app = moduleRef.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-      { bodyParser: false },
-    );
+    app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
     app.setGlobalPrefix('api');
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
 
     prisma = moduleRef.get(PrismaService);
     orderFactory = moduleRef.get(OrderFactory);
-    sessionFactory = moduleRef.get(SessionFactory);
   });
 
   afterAll(async () => {
@@ -202,15 +184,9 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
   });
 
   it('rascunho existente → confirmado', async () => {
-    const customerId = new UniqueEntityID();
-    const order = await orderFactory.makePrismaOrder({ customerId });
+    const order = await orderFactory.makePrismaOrder();
 
-    // the factory stores the token's SHA-256 hash and returns the raw token (defaults/stack, "Autenticação")
-    const { token } = await sessionFactory.makePrismaSession({ customerId: customerId.toValue() });
-
-    const response = await request(app.getHttpServer())
-      .post(`/api/orders/${order.id.toValue()}/confirm`)
-      .set('Cookie', `${SESSION_COOKIE_NAME}=${token}`);
+    const response = await request(app.getHttpServer()).post(`/api/orders/${order.id.toValue()}/confirm`);
 
     expect(response.status).toBe(200);
 

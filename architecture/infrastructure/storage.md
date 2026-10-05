@@ -15,7 +15,6 @@ applies_to:
   - "apps/app-api/test/services/storage/**"
 keywords: [storage, bucket, bucket público, bucket privado, asset, chave canônica, URL assinada, requestUpload, getSignedUrl, getSignedReadUrl, getSignedUploadUrl, publicUrl, stat, upload direto, passthrough, registro pendente, Upload, uploadId, órfão, limpeza, allowlist, SVG, Content-Type, data URL, base64, limite de corpo, R2, R2StorageService, S3Client, CDN, ProductPhotoStorage, OrderReportStorage]
 not_covered:
-  - "o escopo do dono na assinatura e na recarga do registro → backend/access-scope"
   - "a regra transversal de organização — classe de infra sem contrato, contrato específico, registro, dublê → infrastructure/services"
   - "o mecanismo da tarefa agendada que limpa os órfãos → backend/async-jobs"
   - "o provider, os buckets e o domínio público de cada projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
@@ -43,7 +42,7 @@ Os dois buckets são compartilhados por todos os assets do sistema, e o que sepa
 O que o prefixo é e o que não é:
 
 - No bucket público, o prefixo não é controle de acesso: o bucket é público, qualquer URL válida resolve. O prefixo é organização e higiene operacional (auditoria, limpeza); a defesa daquele lado é a chave não adivinhável (componente UUID, seção "A chave").
-- No bucket privado, o prefixo também não é o mecanismo de segurança: a segurança é o escopo do dono, aplicado na assinatura (`backend/access-scope.md`, "Storage").
+- No bucket privado, o prefixo também não é o mecanismo de segurança: a segurança é conferir, na assinatura, que quem pede pode acessar o asset.
 
 Quando um asset pertence a uma entidade que também é fronteira de acesso, ela abre a chave, com a coleção e o identificador dela antes do tipo de asset: uma entidade acumula mais de um asset, e é por ela que a limpeza lista o que apagar. Enquanto essa fronteira não existir, a chave começa direto no tipo de asset (`{assetType}/{uuid}.{ext}`); introduzir um nível de namespace "por precaução" cria um prefixo que ninguém consulta e uma migração de chave quando o nível real aparecer.
 
@@ -145,7 +144,7 @@ A allowlist de tipos do asset é a união fechada do contrato: a fronteira Zod v
 
 ## O upload direto e o registro pendente
 
-Upload direto muda quem segura a chave entre a assinatura e o uso: o navegador. Chave vinda de cliente é input não confiável, e este desenho elimina o problema por construção em vez de validar por disciplina: no momento de assinar, o backend cria um registro pendente no banco apontando pra chave que ele mesmo gerou, e o cliente só carrega o id desse registro. A chave nunca é aceita de volta; o caso de uso que consome o upload recarrega o registro dentro do mesmo escopo que emitiu a permissão, como qualquer leitura protegida (`backend/access-scope.md`).
+Upload direto muda quem segura a chave entre a assinatura e o uso: o navegador. Chave vinda de cliente é input não confiável, e este desenho elimina o problema por construção em vez de validar por disciplina: no momento de assinar, o backend cria um registro pendente no banco apontando pra chave que ele mesmo gerou, e o cliente só carrega o id desse registro. A chave nunca é aceita de volta; o caso de uso que consome o upload recarrega o registro dentro do mesmo escopo que emitiu a permissão, como qualquer leitura protegida.
 
 ```mermaid
 flowchart TB
@@ -227,7 +226,7 @@ O custo é real e precisa ser aceito na decisão: o corpo inteiro passa pelo pro
 
 ## Regras absolutas do storage
 
-1. O dono de um asset, a assinatura e a recarga de registro seguem o escopo validado de `backend/access-scope.md`.
+1. A assinatura e a recarga do registro de upload conferem que quem pede pode acessar o asset.
 2. Chave nunca é aceita de cliente. No upload direto, a referência circula como id do registro pendente; no passthrough, a chave nasce dentro da mesma operação que a persiste. Nos dois, a chave sai do nosso banco.
 3. Chave é gerada pelo backend, com componente UUID, sem nome de arquivo do usuário dentro. É esta regra que mantém a chave segura pra concatenar em URL sem encoding; conteúdo de usuário na chave quebraria também o `publicUrl`.
 4. O banco armazena a chave, nunca a URL.
@@ -249,7 +248,7 @@ O custo é real e precisa ser aceito na decisão: o corpo inteiro passa pelo pro
 
 Dublê por contrato de asset, em `test/services/storage/fake-<asset>-storage.impl.ts`: `requestUpload` devolve chave e URL falsas determinísticas, `save` e `remove` acumulam em listas públicas, `stat` responde de um mapa configurável pelo teste (pra simular objeto ausente ou maior que o limite). O repositório em memória de `Upload` segue o padrão de qualquer agregado. A classe de infra não tem dublê, pela regra de `infrastructure/services.md`. O e2e não sobe storage real: substitui o contrato do asset pelo dublê com `overrideProvider` e afirma sobre as listas dele, junto do que foi persistido.
 
-O e2e de asset que passa pelo backend monta o adapter HTTP com o mesmo limite de corpo da aplicação. Com o default do servidor, um binário dentro do limite do asset seria recusado como corpo grande, e o teste que prova o limite passaria pelo motivo errado. O primeiro asset que pertence a uma entidade também prova a barreira A/B de `backend/access-scope.md`.
+O e2e de asset que passa pelo backend monta o adapter HTTP com o mesmo limite de corpo da aplicação. Com o default do servidor, um binário dentro do limite do asset seria recusado como corpo grande, e o teste que prova o limite passaria pelo motivo errado. O primeiro asset com dono também prova que o registro de outro dono volta como não-encontrado, sem URL assinada.
 
 ## Verificação rápida
 

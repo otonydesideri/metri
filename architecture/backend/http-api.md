@@ -20,7 +20,6 @@ not_covered:
   - "o registro global do pipe de validação e do serializer → infrastructure/runtime"
   - "a superfície `/api` e same-origin → general/http-surface"
   - "query de exibição e paginação → backend/reading"
-  - "o escopo do dono → backend/access-scope"
   - "o client gerado no frontend — `api/`, o Orval e o cliente HTTP → frontend/data-fetching"
   - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
   - "o schema de form → frontend/forms"
@@ -81,7 +80,7 @@ A porta HTTP traduz request em input de caso de uso e resultado em resposta, sem
 
 **Obrigatório.** Todo endpoint declara a resposta com `@ZodResponse({ status, type })`, com o `status` explícito, e o controller leva `@ApiTags('<módulo>')`, que dá o arquivo `api/<módulo>.ts` do app-web.
 
-- **Exceção.** Redirect de protocolo que roda antes da sessão (o início e o retorno do OAuth): responde 302 pelo `reply.redirect`, sem `@ZodResponse` e fora do OpenAPI (`@ApiExcludeController()`), com `@Public()` e o throttle global (`infrastructure/runtime.md`, "Composição no `AppModule`").
+- **Exceção.** Redirect de protocolo (o início e o retorno do OAuth): responde 302 pelo `reply.redirect`, sem `@ZodResponse` e fora do OpenAPI (`@ApiExcludeController()`).
 
 **Obrigatório.** O DTO de resposta é `createZodDto(<schema>, { codec: true })`, e data nele é um codec de string ISO para `Date` (`z.codec(z.iso.datetime(), z.date(), ...)`): a resposta sai pelo `encode`, e o JSON Schema do OpenAPI aceita a data.
 

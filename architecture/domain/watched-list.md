@@ -13,7 +13,7 @@ not_covered:
   - "a escrita do delta no repositório → backend/persistence"
   - "a ordem do arquivo físico em volta da escrita → infrastructure/storage"
 activation: "Algum agregado grava uma coleção filha pelo delta (o que entrou e o que saiu), em vez de regravá-la inteira?"
-examples: [domain/watched-list.examples.md, starter/packages/core/src/entities/watched-list.ts]
+examples: [domain/watched-list.examples.md]
 status: active
 ---
 # WatchedList
@@ -59,7 +59,7 @@ Fora dessas condições, o padrão não se aplica:
 
 ## A classe base
 
-`WatchedList<T>` vive em `@metri/core/entities` (`starter/packages/core/src/entities/watched-list.ts`), pronta; nenhum app reimplementa. A superfície:
+`WatchedList<T>` vive em `@metri/core/entities`: com a capacidade ativa, o projeto copia a classe de watched-list.examples.md#watchedlist para `packages/core/src/entities/watched-list.ts`, e nenhum módulo reimplementa. A superfície:
 
 | Membro | Papel |
 | --- | --- |

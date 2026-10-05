@@ -52,7 +52,6 @@ describe('UnitOfWork (e2e)', () => {
 
 		app = moduleRef.createNestApplication<NestFastifyApplication>(
 			new FastifyAdapter(),
-			{ bodyParser: false },
 		);
 		await app.init();
 
@@ -75,7 +74,6 @@ describe('UnitOfWork (e2e)', () => {
 	beforeEach(() => {
 		DomainEvents.clearHandlers();
 		DomainEvents.clearMarkedAggregates();
-		DomainEvents.shouldRun = true;
 	});
 
 	async function insertRow(id: string): Promise<void> {

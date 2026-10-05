@@ -7,7 +7,7 @@ Comandos:
   init          prepara o projeto: num projeto novo, o starter; AGENTS.md, CLAUDE.md, .metri/ARCHITECTURE.md,
                 links de skills e agents, .gitignore e scripts do package.json; termina rodando verify
   verify        roda os checks e soma o resultado
-  check         os checks de código que nenhum lint cobre: boundaries, access-boundaries e date-time
+  check         os checks de código que nenhum lint cobre: boundaries, date-time e concurrency
   rules-for     lista as regras de arquitetura de caminhos ou de um ticket
   rules-index   gera os INDEX.md das regras (--check confere)
   docs-lint     lint estrutural do source e do projeto

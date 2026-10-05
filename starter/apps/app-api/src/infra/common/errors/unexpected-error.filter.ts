@@ -5,6 +5,7 @@ import {
 	ExceptionFilter,
 	HttpException,
 	HttpStatus,
+	Logger,
 } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 
@@ -17,10 +18,12 @@ const UNEXPECTED: ApiErrorResponse = {
 /** SOURCE OF TRUTH: UnexpectedErrorFilter.
  * WHAT: the global error filter: a status of 500 or more, from an `HttpException` or not, becomes the generic `INTERNAL_ERROR` (a response outside its DTO included); below 500, an `HttpException` that is already the envelope passes, and a native one keeps its status with the body as `REQUEST_REJECTED`.
  * WHY: no native body or internal message reaches the client (backend/errors, "Erro inesperado: filtro global").
- * WHERE: registered by `APP_FILTER` in `AppModule`; the 401 of `AccessGuard` and the 429 of the throttler go through it. It does not log: `LoggerErrorInterceptor` logs the real error.
+ * WHERE: registered by `APP_FILTER` in `AppModule`. It logs the 5xx with its stack (infrastructure/logging); below 500 it does not log.
  */
 @Catch()
 export class UnexpectedErrorFilter implements ExceptionFilter {
+	private readonly logger = new Logger(UnexpectedErrorFilter.name);
+
 	catch(exception: unknown, host: ArgumentsHost): void {
 		const reply = host.switchToHttp().getResponse<FastifyReply>();
 
@@ -41,7 +44,7 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
 				return;
 			}
 
-			// the framework's native HttpException (404, 401, 429): same status, body in the envelope
+			// the framework's native HttpException (404, 405): same status, body in the envelope
 			const rejected: ApiErrorResponse = {
 				code: HttpStatus[status],
 				message: 'Requisição não atendida',
@@ -56,6 +59,10 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
 			exception instanceof HttpException
 				? exception.getStatus()
 				: HttpStatus.INTERNAL_SERVER_ERROR;
+		this.logger.error(
+			exception instanceof Error ? exception.message : String(exception),
+			exception instanceof Error ? exception.stack : undefined,
+		);
 		reply.status(status).send(UNEXPECTED);
 	}
 }

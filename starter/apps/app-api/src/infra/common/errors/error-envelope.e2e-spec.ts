@@ -9,15 +9,13 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { AppModule } from '../../../app.module';
-import { Public } from '../access/public.decorator';
 
 class ProbeBodyDto extends createZodDto(
 	z.object({
-		name: z.string('O nome é obrigatório.').min(1, 'O nome é obrigatório.'),
+		name: z.string('O nome é obrigatório.'),
 	}),
 ) {}
 
-@Public()
 @Controller('probe')
 class ProbeController {
 	@Post()
@@ -36,9 +34,6 @@ describe('Envelope de erro (e2e)', () => {
 
 		app = moduleRef.createNestApplication<NestFastifyApplication>(
 			new FastifyAdapter(),
-			{
-				bodyParser: false,
-			},
 		);
 		app.setGlobalPrefix('api');
 		await app.init();
@@ -65,7 +60,7 @@ describe('Envelope de erro (e2e)', () => {
 	it('corpo fora do schema → 400 no envelope, com a mensagem do campo', async () => {
 		const response = await request(app.getHttpServer())
 			.post('/api/probe')
-			.send({ name: '' });
+			.send({});
 
 		expect(response.status).toBe(400);
 		expect(response.body).toEqual({

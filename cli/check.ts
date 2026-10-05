@@ -1,5 +1,4 @@
-// check: the code checks of the Source that no linter covers (boundaries, access-boundaries, date-time,
-// concurrency). --help has the details.
+// check: the code checks of the Source that no linter covers (boundaries, date-time, concurrency). --help has the details.
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { projectFiles, takeOption } from './lib/layout.ts';
@@ -11,9 +10,6 @@ Uso: metri check [<nome>...] [--root <dir>]
 Checks:
   boundaries          o grafo de dependência do backend (backend/boundaries, "O grafo permitido") e a fronteira
                       produção/teste (frontend/testing): cada import fora do grafo, por fronteira
-  access-boundaries   todo controller do app-api (arquivo com @Controller( fora dos specs) declara @Public() ou um
-                      marcador do dono como decorator de classe, na própria linha e na coluna 0
-                      (backend/access-scope, "Declaração por controller")
   date-time           o construtor Date com componentes soltos (new Date(ano, mês, dia)) no app-api e nos pacotes,
                       que monta a data no fuso do processo; Date.UTC(...) dentro dele passa (general/date-time)
   concurrency         todo model do schema Prisma com coluna version tem um *.concurrency.e2e-spec.ts em algum lugar
@@ -22,11 +18,9 @@ Checks:
 Parâmetros, na chave metri do package.json da raiz:
   "metri": {
     "checks": {
-      "access-boundaries": { "ownerMarkers": ["CustomerOwned"] },
       "boundaries": { "domainPackages": ["decimal.js"] }
     }
   }
-  ownerMarkers     os marcadores do dono aceitos ao lado de @Public() (a delegação "Identidade do dono")
   domainPackages   os pacotes que um ADR do projeto libera em src/domain, além dos da Source
 
 Um check próprio do projeto: node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md, "Destination".
@@ -35,7 +29,7 @@ Saída: nada quando passa; na falha, "falha <check>: <o quê>" e, recuado, cada 
 algum falha. Roda no lint da raiz ("lint": "turbo run lint && metri check"), e por ele no metri verify.
 `;
 
-type Params = { ownerMarkers: string[]; domainPackages: string[] };
+type Params = { domainPackages: string[] };
 type Failure = { label: string; items: string[] };
 type Check = (params: Params) => Failure[];
 
@@ -46,7 +40,7 @@ const WEB_SRC = 'apps/app-web/src';
 const SETUP_E2E = `${API_TEST}/setup-e2e.ts`;
 // The packages the Source allows in src/domain (general/date-time names the date ones).
 const DOMAIN_PACKAGES = ['@nestjs/common', '@metri/core', '@metri/utils', 'date-fns', '@date-fns/tz'];
-const PARAMS: Record<string, (keyof Params)[]> = { boundaries: ['domainPackages'], 'access-boundaries': ['ownerMarkers'] };
+const PARAMS: Record<string, (keyof Params)[]> = { boundaries: ['domainPackages'] };
 
 const args = process.argv.slice(2);
 if (args.includes('--help') || args.includes('-h')) {
@@ -152,19 +146,6 @@ const boundaries: Check = ({ domainPackages }) => {
   return failures;
 };
 
-const accessBoundaries: Check = ({ ownerMarkers }) => {
-  const markers = ['Public', ...ownerMarkers];
-  const declaration = new RegExp(`^@(${markers.map((marker) => marker.replace(/[.$]/g, '\\$&')).join('|')})\\(\\)\\s*$`, 'm');
-  const controllers = tsFiles(API_SRC).filter((path) => readFileSync(path, 'utf8').includes('@Controller('));
-  const accepted = markers.map((marker) => `@${marker}()`).join(' nem ');
-  return [
-    {
-      label: `controller sem ${accepted} na classe`,
-      items: controllers.filter((path) => !declaration.test(readFileSync(path, 'utf8'))),
-    },
-  ];
-};
-
 const dateTime: Check = () => {
   const files = [...tsFiles(API_SRC, { specs: true }), ...tsFiles(API_TEST, { specs: true })];
   const packages = existsSync('packages') ? projectFiles('packages').filter((path) => /^packages\/[^/]+\/src\/.*\.ts$/.test(path) && !path.includes('/generated/')) : [];
@@ -209,7 +190,7 @@ const concurrency: Check = () => {
   ];
 };
 
-const CHECKS: Record<string, Check> = { boundaries, 'access-boundaries': accessBoundaries, 'date-time': dateTime, concurrency };
+const CHECKS: Record<string, Check> = { boundaries, 'date-time': dateTime, concurrency };
 
 // The metri.checks key of the root package.json; an unknown check or parameter is an error, never ignored.
 function paramsOf(name: string): Params | string {
@@ -220,7 +201,7 @@ function paramsOf(name: string): Params | string {
     return `metri.checks.${unknown} no package.json: o check não existe (metri check --help)`;
   }
   const given = all[name] ?? {};
-  const params: Params = { ownerMarkers: [], domainPackages: [] };
+  const params: Params = { domainPackages: [] };
   for (const [key, value] of Object.entries(given)) {
     if (!(PARAMS[name] ?? []).includes(key as keyof Params)) {
       return `metri.checks.${name}.${key} no package.json: o parâmetro não existe (metri check --help)`;

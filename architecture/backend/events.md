@@ -8,7 +8,7 @@ use_when:
 applies_to:
   - "apps/app-api/src/domain/enterprise/events/**"
   - "apps/app-api/src/infra/events/**"
-keywords: [domain event, evento, subscriber, DomainEvent, DomainEvents, EventHandler, AggregateRoot, addDomainEvent, dispatchEventsForAggregate, setupSubscriptions, events.module.ts, bus, in-process, "@metri/core/events", shouldRun, clearHandlers, waitFor, particípio]
+keywords: [domain event, evento, subscriber, DomainEvent, DomainEvents, EventHandler, AggregateRoot, addDomainEvent, dispatchEventsForAggregate, setupSubscriptions, events.module.ts, bus, in-process, "@metri/core/events", clearHandlers, waitFor, particípio]
 not_covered:
   - "a escolha entre evento, chamada direta, transação e job → backend/operation-routing"
 examples: [backend/events.examples.md]
@@ -138,7 +138,7 @@ Além da regra de payload, nenhum código antecipa o bus, nem a entrega at-least
 
 O formato do spec de subscriber (dublês, `waitFor`, limpeza de handlers no `beforeEach`) está em `backend/testing.md`.
 
-**E2e**: o `setup-e2e.ts` desliga os eventos por padrão (`DomainEvents.shouldRun = false`), para nenhum spec pagar por efeito secundário que não está provando. O spec que prova uma reação de evento religa no `beforeAll` (`DomainEvents.shouldRun = true`) e usa o mesmo `waitFor` sobre o efeito observável.
+**E2e**: o spec que prova uma reação de evento usa o mesmo `waitFor` sobre o efeito observável.
 
 ## Verificação rápida
 

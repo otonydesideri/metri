@@ -19,7 +19,6 @@ not_covered:
   - "a regra dos níveis para service de infra → infrastructure/services"
   - "query de exibição → backend/reading"
   - "a escolha do mecanismo de uma operação → backend/operation-routing"
-  - "o escopo do dono → backend/access-scope"
   - "o spec de caso de uso → backend/testing"
 examples: [backend/application.examples.md]
 status: active
@@ -104,7 +103,7 @@ O caso de uso de referência:
 
 Exemplo completo: application.examples.md#confirmorderusecase
 
-- O segundo `if` aplica o escopo do dono na escrita (`backend/access-scope.md`) e devolve a mesma classe do não-encontrado para recurso de outro dono (`backend/errors.md`, "Erros sensíveis").
+- Leitura, decisão e gravação rodam dentro do `UnitOfWork` (`backend/transactions.md`): a escrita do repositório recusa rodar fora dele.
 - A regra da transição é de `order.confirm()`; o caso de uso só propaga a falha.
 - A pasta de contratos é única e do app: qualquer caso de uso injeta qualquer contrato, inclusive de agregado de outro módulo (`backend/modules.md`, "Comunicação entre módulos").
 - O mesmo mecanismo vale para os contratos de service (`infrastructure/services.md`), de query (`backend/reading.md`), de fila (`backend/async-jobs.md`) e de transação (`backend/transactions.md`); cada documento define onde o seu mora e o que ele declara.

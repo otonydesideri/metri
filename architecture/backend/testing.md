@@ -135,10 +135,8 @@ it('envia a confirmação quando o pedido é confirmado', async () => {
 
 ## Como escrever um e2e-spec de controller (`http/controllers/<módulo>/<ação>.e2e-spec.ts`)
 
-- Um arquivo por ação de controller, ao lado dele. `beforeAll` monta o app Nest inteiro do zero (`Test.createTestingModule`, `FastifyAdapter` com `bodyParser: false`, `app.setGlobalPrefix('api')`, `app.init()`, `.getHttpAdapter().getInstance().ready()`), mesmo sendo idêntico entre arquivos — nunca vira um `createTestApp()` compartilhado em `test/`. O e2e não executa `main.ts`, por isso repete o prefixo antes de `app.init()`. Toda rota, inclusive health, é chamada sob `/api`. `afterAll` fecha (`app.close()`).
+- Um arquivo por ação de controller, ao lado dele. `beforeAll` monta o app Nest inteiro do zero (`Test.createTestingModule`, `FastifyAdapter`, `app.setGlobalPrefix('api')`, `app.init()`, `.getHttpAdapter().getInstance().ready()`), mesmo sendo idêntico entre arquivos — nunca vira um `createTestApp()` compartilhado em `test/`. O e2e não executa `main.ts`, por isso repete o prefixo antes de `app.init()`. Toda rota, inclusive health, é chamada sob `/api`. `afterAll` fecha (`app.close()`).
 - Pré-condição que o teste precisa só para chegar ao requisito real é montada por factory registrada em `providers`, sem round-trip HTTP. O fluxo HTTP completo fica reservado para o teste cuja própria mecânica é o requisito sob prova, ou que depende de um efeito colateral que a factory não reproduz. Montar a pré-condição pela API encadeia o teste ao comportamento de outra rota: quando aquela rota quebra, este teste falha por um motivo que não é o dele.
-- Rota protegida recebe a credencial montada pela factory no banco (a sessão de `defaults/stack.md`, "Autenticação", com o cookie do token na chamada); o provedor externo de login fica fora do e2e. Leitura de dado com dono prova o A/B com dois donos, cada um com a sua credencial (`backend/access-scope.md`, "Isolamento e prova A/B").
-- Header que a fronteira de request consome é declarado explicitamente na chamada, com o valor que o chamador real enviaria. Deixá-lo no default do supertest faz o teste depender do endereço interno do servidor; inventá-lo quando o chamador real não o enviaria prova um cenário que não existe.
 - Sem função utilitária escondendo um passo de Arrange/Act/Assert (`createOrder()`, `confirmOrder()`) — o passo fica inline no corpo do `it()`, mesmo que repita as mesmas linhas em vários arquivos, sempre que essa mecânica for o requisito sob prova. Uma factory de teste registrada em `providers` (`OrderFactory`) não é esse tipo de utilitário: grava de verdade contra a infraestrutura real, em vez de só empacotar uma sequência de chamadas HTTP que o próprio teste deveria estar exercitando. Utilitário puro sem semântica de fluxo, que só transforma um dado (`extractLink()` parseando `href` de um HTML, por exemplo), continua permitido, local ao arquivo.
 - `.overrideProvider(<Contrato>).useClass(Fake<Contrato>Impl)` no `Test.createTestingModule` só entra quando o teste precisa inspecionar o que o dublê capturou; teste que só passa pelo fluxo sem checar aquele efeito não precisa do override.
 - Guard de status HTTP de Arrange usa `expect(response.status, \`<Rótulo> falhou (${response.status}): ${JSON.stringify(response.body)}\`).toBeLessThan(400)` — segundo argumento de `expect()` do Vitest é mensagem customizada mostrada só quando a asserção falha. Guard de "achei ou não achei" (`.find()`, path segment, regex match) continua `throw`, nunca `expect()`: o código seguinte desreferencia o resultado contando com o `throw` para estreitar o tipo de `T | undefined` para `T`, e `expect().toBeDefined()` não é assertion function para o TypeScript.
@@ -165,11 +163,10 @@ Um e2e de controller prova um request de cada vez; a invariante de um agregado d
 
 ## E2e de provider global (`infra/common/<fronteira>/<nome>.e2e-spec.ts`)
 
-Pipe, filtro, guard, throttler e serializer globais são provados por um controller de prova declarado no próprio arquivo e registrado ao lado do `AppModule` (`Test.createTestingModule({ imports: [AppModule], controllers: [ProbeController] })`), com o menor DTO que exercita o provider. A montagem do app é a de "Como escrever um e2e-spec de controller".
+Pipe, filtro e serializer globais são provados por um controller de prova declarado no próprio arquivo e registrado ao lado do `AppModule` (`Test.createTestingModule({ imports: [AppModule], controllers: [ProbeController] })`), com o menor DTO que exercita o provider. A montagem do app é a de "Como escrever um e2e-spec de controller".
 
 - Nenhum controller de negócio serve de cobaia: a prova do provider não quebra quando uma rota real muda, e a rota real não ganha caso que não é dela.
-- O controller de prova é `@Public()` quando o provider sob prova não é a fronteira de acesso (`backend/access-scope.md`, "Declaração por controller").
-- O caso afirma o envelope inteiro da resposta (`backend/errors.md`, "O formato de resposta de erro"), inclusive a recusa nativa do framework (rota inexistente, throttler).
+- O caso afirma o envelope inteiro da resposta (`backend/errors.md`, "O formato de resposta de erro"), inclusive a recusa nativa do framework (rota inexistente).
 
 ## O que não tem spec próprio
 
@@ -191,8 +188,6 @@ Pipe, filtro, guard, throttler e serializer globais são provados por um control
 - E2e: Arrange inline, sem função utilitária escondendo um passo que está sob prova?
 - E2e: pré-condição montada por factory; fluxo HTTP completo só quando a mecânica dele é o requisito sob prova?
 - E2e: repetiu `setGlobalPrefix('api')` antes de `app.init()` e chamou a rota sob `/api`?
-- E2e: header que a fronteira de request consome está declarado com o valor que o chamador real enviaria?
-- E2e de rota protegida: a credencial veio da factory, sem o provedor externo, e o dado com dono tem o A/B?
 - Provider global provado por um controller de prova local ao arquivo, sem cobaia de negócio?
 - O que não tem spec próprio (query, worker, classe de infra) segue o documento da área certa, sem dublê inventado aqui?
 - Agregado com `version` tem spec de concorrência, com N requisições simultâneas, 5 rodadas, asserção no estado final do banco e contagem de deadlock? (check: concurrency)

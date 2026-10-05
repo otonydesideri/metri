@@ -18,7 +18,6 @@ describe('banco isolado do e2e', () => {
 
 		app = moduleRef.createNestApplication<NestFastifyApplication>(
 			new FastifyAdapter(),
-			{ bodyParser: false },
 		);
 		app.setGlobalPrefix('api');
 		await app.init();

@@ -23,7 +23,7 @@ O desenho transversal de testes (pirâmide, factories, repositórios em memória
 Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 
 1. **O sistema.** `architecture/INDEX.md`, "Visão geral" (o mapa), `general/code-placement.md` (o monorepo), `backend/layers.md` (as camadas), o caminho de uma request (`backend/layers.md`, "O caminho de uma request"), `backend/boundaries.md` (quem pode importar o quê), `general/principles.md` (os princípios não negociáveis), `general/http-surface.md` (a superfície HTTP same-origin), `general/date-time.md` (instante e momento de parede) e `defaults/stack.md` (a stack padrão).
-2. **O módulo.** `backend/modules.md` (o que é um módulo e como módulos se comunicam), depois as peças dele: `domain/model.md` (entidade, value object, agregado), `backend/application.md` (contrato e caso de uso), `backend/persistence.md` (repositório e mapper) e `backend/http-api.md` (a porta HTTP). Depois `backend/errors.md` (erro esperado é valor de retorno), `backend/reading.md` (leitura de domínio vs. leitura de exibição) e `backend/access-scope.md` (o escopo do dono).
+2. **O módulo.** `backend/modules.md` (o que é um módulo e como módulos se comunicam), depois as peças dele: `domain/model.md` (entidade, value object, agregado), `backend/application.md` (contrato e caso de uso), `backend/persistence.md` (repositório e mapper) e `backend/http-api.md` (a porta HTTP). Depois `backend/errors.md` (erro esperado é valor de retorno), e `backend/reading.md` (leitura de domínio vs. leitura de exibição).
 3. **Os padrões de domínio.** Sob demanda, quando o caso aparece: `backend/operation-routing.md` (qual mecanismo executa a operação), `backend/events.md`, `backend/transactions.md`, `domain/watched-list.md` (coleção filha gravada pelo delta), `domain/domain-services.md` (regra de domínio sem dono natural) e, quando o domínio pede mais de um modelo, `domain/bounded-contexts.md`.
 4. **A infraestrutura.** `infrastructure/runtime.md` (bootstrap, providers globais, env), `infrastructure/services.md` (a regra dos níveis para serviço compartilhado), e as capacidades: `infrastructure/logging.md` (log, métrica, alerta e reconciliação), `infrastructure/storage.md`, `infrastructure/cache.md`, `backend/async-jobs.md`.
 5. **O teste.** `backend/testing.md` fecha o backend.
@@ -71,7 +71,7 @@ Os documentos de frontend descrevem `apps/app-web`, com a stack de `defaults/sta
 
 <!-- rules-index -->
 
-- `backend` → `backend/INDEX.md` (14 regras)
+- `backend` → `backend/INDEX.md` (13 regras)
 - `defaults` → `defaults/INDEX.md` (2 regras)
 - `domain` → `domain/INDEX.md` (4 regras)
 - `frontend` → `frontend/INDEX.md` (10 regras)
