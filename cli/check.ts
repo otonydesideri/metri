@@ -13,7 +13,7 @@ Checks:
   date-time           o construtor Date com componentes soltos (new Date(ano, mês, dia)) no app-api e nos pacotes,
                       que monta a data no fuso do processo; Date.UTC(...) dentro dele passa (general/date-time)
   concurrency         todo model do schema Prisma com coluna version tem um *.concurrency.e2e-spec.ts em algum lugar
-                      do app-api, nomeado pelo model em kebab-case (backend/testing, "Teste de concorrência real")
+                      do app-api, nomeado pelo model em kebab-case (backend/transactions, "Sob demanda")
 
 Parâmetros, na chave metri do package.json da raiz:
   "metri": {

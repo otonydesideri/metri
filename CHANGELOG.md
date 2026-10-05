@@ -42,12 +42,38 @@ enquadramento do usuário sem questioná-lo.
 - **Portão de conhecimento.** Novo destino: como rodar, construir ou testar o projeto vira script do `package.json`
   ou uma linha numa regra do projeto em `.metri/rules/infrastructure/`.
 
+- **Arquitetura enxuta: só o núcleo é base.** A Source fica com o que todo projeto usa desde o primeiro dia, numa
+  stack única (NestJS sobre Fastify, Prisma, Postgres, React + Vite) e DDD-Lite. O que só um projeto com necessidade
+  concreta usa sai das normas e do starter: vira receita em `## Sob demanda` da regra dona, quando o erro do agente
+  importaria (segurança, dado perdido, corrida), ou uma linha em `defaults/stack.md`, "Quando precisar", quando só
+  pede escolher a biblioteca (`skills/writing-for-agents/RULE-FORMAT.md`, "Sob demanda").
+  - Saem `backend/access-scope` (com o check `access-boundaries`), `domain/builder`, `domain/specification`,
+    `domain/strategy`, `infrastructure/mail` e `infrastructure/observability`; métrica, alerta e reconciliação viram
+    uma seção de `infrastructure/logging`, e a variação fechada vira o princípio 3 de `general/principles`.
+  - `domain/watched-list` vira capacidade condicional: o `Order` de referência tem `items: OrderItem[]`, e o `save()`
+    substitui os filhos. A concorrência por `version` vira a receita de `backend/transactions`.
+  - O log é o `Logger` nativo do NestJS: só `infra/` loga, e o caso de uso não loga. O `nestjs-pino` vai para
+    "Quando precisar".
+  - O starter fica um NestJS e um React base: saem o guard de acesso, o rate limit, o requestId, o `TRUST_PROXY`, o
+    pino, o `bodyParser: false`, a `WatchedList` e o `DomainEvents.shouldRun` do `@metri/core`, a versão do metri e
+    os próximos passos da página inicial, o spec do proxy do Vite, o `LANG` do Playwright e o atraso do splash. O
+    filtro de erro inesperado loga o 5xx.
+  - As regras perdem configuração particular: `.max()` obrigatório, uuid nil, os tiers de `staleTime`, localidade
+    pt-BR fixa, fuso fixo, micro estilo de teste, CQRS, o dashboard em SQL do Postgres, slug na raiz.
+  - Formato de regra: o corpo segue, na ordem, propósito, onde mora, árvore de decisão, regras, exemplo de
+    referência, sob demanda e verificação; saem a modalidade `Recomendado` e os status de ferramenta além de
+    `DECIDIDA` e `REFERÊNCIA`. `backend/http-api.examples.md` traz o controller de referência.
+
 ### Migrar de v1.7.0
 
 1. `pnpm add -D github:otonydesideri/metri#v1.8.0`.
 2. `pnpm exec metri init`, que cria o link `.claude/agents/reviewer-risk.md` (o docs-lint acusa o link que falta).
 3. Abra uma sessão nova do Claude Code, que carrega o agent novo.
-4. Nada mais muda nos artefatos do projeto: specs, tickets e matriz continuam no mesmo formato.
+4. Specs, tickets e matriz continuam no mesmo formato.
+5. O starter só entra em projeto novo: um projeto existente mantém o código que tem. Quem usava uma regra que saiu
+   segue o código atual dela; para voltar a ter uma regra, ela entra em `.metri/rules/`. Com `version` num model, a
+   receita de concorrência é `backend/transactions`, "Sob demanda". Remova de `package.json` a chave
+   `metri.checks.access-boundaries`, que agora é erro.
 
 ## v1.7.0 (2026-10-02)
 

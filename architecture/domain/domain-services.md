@@ -53,8 +53,6 @@ Quando a regra tem mais de uma operação que só faz sentido junta (duas faces 
 
 Exemplo: domain-services.examples.md#calculateloyaltydiscount
 
-Exemplo com duas operações coesas: domain-services.examples.md#ordercancellationsettlementservice
-
 ## Verificação
 
 - A regra não é estado persistido sem agregado, orquestração nem valor derivado de uma entidade?

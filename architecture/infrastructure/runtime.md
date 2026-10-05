@@ -129,13 +129,3 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 ## Delegado ao projeto
 
 - **CI e deploy.** O projeto decide o pipeline de CI e o deploy: a topologia de deploy em `.metri/ARCHITECTURE.md`, "Delegações", e a entrega em produção pela regra de release do projeto (`.metri/rules/infrastructure/release.md`).
-
-## Referências
-
-- `backend/errors.md`: o pipe de validação e o filtro de erro inesperado.
-- `infrastructure/services.md`: a regra dos níveis e o `ServicesModule`.
-- `backend/async-jobs.md`: o `PgBossService` e o ciclo de vida dos workers.
-- `general/http-surface.md`: a superfície HTTP.
-- `backend/layers.md`, "O caminho de uma request": o caminho de uma request.
-- `backend/boundaries.md`: Zod na fronteira de env.
-- `backend/testing.md`: a montagem do app nos e2e.

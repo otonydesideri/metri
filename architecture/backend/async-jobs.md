@@ -13,7 +13,7 @@ applies_to:
   - "apps/app-api/src/domain/application/queues/**"
   - "apps/app-api/src/infra/jobs/**"
   - "apps/app-api/test/queues/**"
-keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, inbox, webhook, entrada externa, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts, BullMQ]
+keywords: [job, worker, cron, fila, contrato de fila, enqueue, pg-boss, PgBossService, QueueDefinition, singletonKey, sendInTransaction, enfileiramento transacional, outbox, inbox, webhook, entrada externa, tarefa agendada, "@nestjs/schedule", idempotência, at-least-once, retry, retryBackoff, dead letter, dlq, redrive, expireInSeconds, onModuleInit, jobs.module.ts]
 not_covered:
   - "a escolha entre job, evento, chamada direta e transação → backend/operation-routing"
   - "o processo em que os workers rodam, que é decisão de projeto (\"Capacidades ativas\") → project:ARCHITECTURE"
@@ -24,9 +24,9 @@ status: active
 
 Como um comando sai do fluxo de quem pediu e executa depois, com garantia: o contrato de fila, o worker, o enfileiramento transacional, tarefas agendadas, idempotência e o destino de um job que falha.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `notification`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
+**A fila é o pg-boss** (`defaults/stack.md`, "Quando precisar"): job é linha no próprio Postgres, e enfileirar pode participar da `$transaction` do Prisma. Outra ferramenta é troca de default, por ADR. O que vale com qualquer ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência.
 
-**A fila é o pg-boss**, o default de `defaults/stack.md`, pelas razões de "Por que pg-boss: fila no Postgres"; outra ferramenta é troca de default, por ADR. O que vale com qualquer ferramenta: a escolha de job pela árvore de `backend/operation-routing.md`, o contrato de fila, o worker fino, a regra de falha e a idempotência.
+**A entrega é at-least-once.** Retry, expiração de job ativo e restart reexecutam o handler, com qualquer fila: todo handler é idempotente por contrato (seção "Idempotência").
 
 ## Worker é adaptador de entrada
 
@@ -36,20 +36,6 @@ Worker é adaptador de entrada fino, da mesma natureza do controller e do subscr
 
 Job é um comando: descreve uma intenção no imperativo (`generate-order-report`), o oposto simétrico do evento, que descreve um fato no particípio (`OrderConfirmedEvent`, ver "Evento não é comando" em `backend/events.md`). Quando uma operação vira job é decisão de `backend/operation-routing.md`.
 
-## Por que pg-boss: fila no Postgres
-
-O [pg-boss](https://github.com/timgit/pg-boss): jobs são linhas em tabelas do próprio Postgres do produto, reivindicadas com `SELECT ... FOR UPDATE SKIP LOCKED`, e os workers rodam dentro do processo do app. Três razões fazem dela o default:
-
-- Zero infra nova: nenhum broker para operar, configurar persistência ou monitorar separado.
-- Enfileirar pode participar da `$transaction` do Prisma. Isso dissolve o problema clássico das duas escritas (job enfileirado antes do commit roda sem os dados; crash depois do commit perde o trabalho em silêncio) sem precisar de tabela de outbox com drenador próprio.
-- Retry com backoff, dead letter com redrive, cron e deduplicação são nativos, e um job é uma linha: inspecionável com SQL, sem dashboard obrigatório.
-
-O custo dessa família é o teto de throughput: a fila compete com o banco por WAL e vacuum, e a conta muda na casa de milhares de jobs por minuto sustentados.
-
-**A entrega é at-least-once.** O pg-boss garante que dois workers nunca pegam o mesmo job ao mesmo tempo, mas o ciclo completo continua at-least-once: retry, expiração de job ativo e restart reexecutam o handler. Vale para qualquer fila. Todo handler é idempotente por contrato (seção "Idempotência").
-
-**Troca de ferramenta.** Muda o transporte por trás do `PgBossService`, ou do serviço equivalente que o substituir. Os demais candidatos e o cenário de cada um: BullMQ com milhares de jobs por minuto sustentados ou Redis já na infra por outro motivo; durable execution (Inngest, Trigger.dev, Temporal) quando o problema for workflow longo multi-etapas, com espera de dias e compensação entre passos; broker (Kafka, RabbitMQ) é transporte de eventos entre processos e pertence ao bus de `backend/events.md`, "O bus é in-process, preparado para deixar de ser", não a esta.
-
 ## O contrato de fila
 
 O caso de uso (ou subscriber) que enfileira não conhece pg-boss; conhece um contrato de fila do fluxo, em `src/domain/application/queues/<fluxo>-queue.contract.ts`. É uma família de contrato da camada application, como `repositories/` e `services/`: service é "faça agora, em linha"; fila é "garanta que isso acontece depois".
@@ -57,7 +43,6 @@ O caso de uso (ou subscriber) que enfileira não conhece pg-boss; conhece um con
 ```ts
 export type OrderReportQueueInput = {
   orderId: string;
-  customerId: string;
 };
 
 export abstract class OrderReportQueue {
@@ -107,21 +92,17 @@ await this.prisma.client.$transaction(async (tx) => {
 });
 ```
 
-`sendInTransaction` repassa o `tx` ao pg-boss pela opção `db` (um adapter `executeSql` sobre `tx.$queryRawUnsafe(text, ...values)`). É a exceção sancionada da política de SQL cru de `backend/persistence.md`. Este é o caminho de exceção: a maioria dos efeitos tolera a janela mínima do subscriber, e o custo aqui é acoplar o repositório ao enfileiramento. O mecanismo mostrado supõe a fila no próprio Postgres; ferramenta de outra família troca este caminho por uma tabela de outbox com processo drenador, desenhada junto com a decisão.
+`sendInTransaction` repassa o `tx` ao pg-boss pela opção `db` (um adapter `executeSql` sobre `tx.$queryRawUnsafe(text, ...values)`). É a exceção sancionada da política de SQL cru de `backend/persistence.md`. Este é o caminho de exceção: a maioria dos efeitos tolera a janela mínima do subscriber, e o custo aqui é acoplar o repositório ao enfileiramento.
 
 ## Entrada externa: grava antes de processar
 
-Webhook e consumo de fila externa (`backend/application.md`, "Adaptador de entrada fino") entregam um payload que não existe em mais nenhum lugar: perdê-lo antes de processar é definitivo, ao contrário de um comando nosso, que a fila ou o remetente interno sempre podem reconstituir.
+Webhook e consumo de fila externa (`backend/application.md`, "Adaptador de entrada fino") entregam um payload que não existe em mais nenhum lugar.
 
-**Obrigatório.** O adapter de entrada grava o payload bruto, intacto, numa tabela de entrada (`<origem>_inbox`, com o id de evento do remetente, quando ele existe, como chave de deduplicação) antes de chamar qualquer caso de uso, numa transação curta que só faz essa gravação.
+**Obrigatório.** O adapter de entrada grava o payload bruto numa tabela de entrada (`<origem>_inbox`) antes de chamar qualquer caso de uso, numa transação curta que só faz essa gravação, com o id de evento do remetente, quando existe, como constraint de unicidade.
 
-**Obrigatório.** O processamento do payload gravado acontece por um job comum ("O contrato de fila", acima), enfileirado na mesma escrita de entrada ou por um worker que varre entradas pendentes; nunca em linha, dentro do handler que recebeu o request.
+**Obrigatório.** O processamento do payload gravado é um job comum, nunca em linha no handler que recebeu o request; tentativa esgotada vai para a dead letter como qualquer job.
 
-> **Por quê.** Gravar e responder antes de processar é o que torna o recebimento durável: o processamento pode falhar, reiniciar e retentar sem o remetente saber nem reenviar nada; processar em linha faz o payload desaparecer junto com uma queda no meio do caminho.
-
-**Obrigatório.** Id de evento do remetente vira constraint de unicidade na tabela de entrada: reentrega do mesmo evento grava uma vez, pela técnica 3 de "Idempotência", abaixo.
-
-Tentativa esgotada do job de processamento segue "Falha, retry e dead letter" como qualquer outro job: vai para a dead letter com o payload de origem, e o alerta de profundidade cobre a entrada externa perdida, não só um efeito interno.
+> **Por quê.** Processar em linha faz o payload desaparecer com uma queda no meio do caminho; gravado, ele pode falhar e retentar sem o remetente reenviar.
 
 ## Tarefas agendadas
 
@@ -130,9 +111,7 @@ Cron é a própria fila com um agendamento: o pg-boss grava o cronograma no banc
 ```ts
 async onModuleInit(): Promise<void> {
   await this.pgBoss.work(CLEANUP_ABANDONED_ORDERS_QUEUE, () => this.handle());
-  await this.pgBoss.schedule(CLEANUP_ABANDONED_ORDERS_QUEUE.name, '0 3 * * *', {
-    tz: 'America/Sao_Paulo',
-  });
+  await this.pgBoss.schedule(CLEANUP_ABANDONED_ORDERS_QUEUE.name, '0 3 * * *');
 }
 ```
 
@@ -157,12 +136,12 @@ Efeito externo sem idempotência natural (e-mail, cobrança) combina 2 com o reg
 
 O ciclo de vida da falha, com os papéis de cada peça:
 
-- **Erro permanente** (`failure` esperado do caso de uso): sem retry. O worker loga e conclui (seção "O worker"). Queimar cinco tentativas num "pedido não encontrado" só atrasa a fila.
-- **Erro transitório** (exceção técnica): o throw marca o job como failed e o pg-boss retenta com backoff exponencial (`retryDelay: 5` com `retryBackoff: true` espera 5s, 10s, 20s, 40s, 80s). O backoff espalha a nova carga no tempo; falha transitória costuma chegar em rajada, e retry em onda sincronizada amplifica o problema que o causou.
+- **Erro permanente** (`failure` esperado do caso de uso): sem retry. O worker loga e conclui (seção "O worker"). Retentar um "pedido não encontrado" só atrasa a fila.
+- **Erro transitório** (exceção técnica): o throw marca o job como failed e o pg-boss retenta com backoff exponencial (`retryBackoff: true`). O backoff espalha a nova carga no tempo; falha transitória costuma chegar em rajada, e retry em onda sincronizada amplifica o problema que o causou.
 - **Tentativas esgotadas**: o job vai para a dead letter da fila (`<fila>-dlq`), carregando a origem e o erro. Dead letter é instrumento de diagnóstico com dono, não lixeira: profundidade maior que zero é incidente a investigar, e o `redrive` do pg-boss devolve o job à fila de origem depois da causa corrigida. O alerta de profundidade segue `infrastructure/logging.md`, "Métrica, alerta e reconciliação", com janela, severidade e destino decididos pelo projeto (`.metri/ARCHITECTURE.md`).
-- **Job ativo que trava**: `expireInSeconds` (default de 15 minutos) devolve à fila o job cujo worker morreu sem concluir. Handler que legitimamente demora mais que isso declara o próprio limite na definição da fila.
+- **Job ativo que trava**: `expireInSeconds` devolve à fila o job cujo worker morreu sem concluir. Handler que legitimamente demora mais que isso declara o próprio limite na definição da fila.
 
-Os parâmetros de retry são decididos pelo custo de reexecutar aquele comando; os valores do exemplo são ponto de partida, não regra.
+Os parâmetros de retry são decididos pelo custo de reexecutar aquele comando; os do exemplo são default.
 
 ## Registro e ciclo de vida
 

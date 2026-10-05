@@ -24,7 +24,7 @@ status: active
 | `packages/ui` | `@metri/ui` | o kit de UI, com os tokens e o tema (`defaults/ui.md`) |
 | `packages/utils` | `@metri/utils` | função pura agnóstica de app e de domínio |
 
-Quando o projeto precisa de outro app ou pacote: **Obrigatório.** Ele segue a mesma forma (`apps/app-<nome>`; `packages/<nome>` com `@metri/<nome>`) e entra por ADR.
+Quando o projeto precisa de outro app ou pacote: **Obrigatório.** Ele segue a mesma forma: `apps/app-<nome>`; `packages/<nome>` com `@metri/<nome>`.
 
 ### Código pode nascer no pacote dono quando nada nele é do app
 
@@ -58,3 +58,9 @@ A reavaliação percorre esta árvore, sempre pelo ownership:
    ├─ SIM → packages/, no pacote dono do conceito
    └─ NÃO → fica no app; parar e perguntar se parece compartilhado
 ```
+
+## Verificação
+
+- App ou pacote novo segue a forma `apps/app-<nome>` ou `packages/<nome>` com `@metri/<nome>`?
+- Código em `packages/` não conhece app nem módulo, e tem dono claro no pacote do conceito?
+- Nada subiu para `packages/` só porque talvez seja reutilizado?

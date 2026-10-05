@@ -1,6 +1,6 @@
 ---
 id: frontend/components
-description: "a construção de página e componente no `app-web` — a ordem do corpo da página e do modal, o nome que separa estado da fonte e estado da página, a forma da condicional, um arquivo por componente, a composição (primitivo do pacote por import nomeado, compound do app) e os estados de leitura (loading, vazio e erro)."
+description: "a construção de página e componente no `app-web` — o corpo da página e do modal, o nome que separa estado da fonte e estado da página, um arquivo por componente, a composição (primitivo do pacote por import nomeado, compound do app) e os estados de leitura (loading, vazio e erro)."
 use_when:
   - "criar página, componente ou estado de tela"
   - "extrair um componente"
@@ -26,44 +26,27 @@ status: active
 
 Os exemplos usam o domínio didático de pedidos (`order`, `customer`).
 
-## O corpo da página segue a ordem das decisões
+## O corpo da página
 
-Página mantém a mesma ordem de leitura independentemente do tamanho do módulo: hooks e estados externos, dados e condições de leitura, guards terminais, handlers, condições do conteúdo e da interação, modo alternativo da tela e JSX principal. Blocos separados por linha em branco bastam; comentário de seção repetiria o que a ordem e os nomes já dizem.
+Os guards de leitura retornam cedo, na ordem loading, erro sem dado utilizável e indisponibilidade definitiva; um modo normal da tela, como criação no lugar da listagem, não se mistura aos estados de falha.
 
 Exemplo completo: components.examples.md#orderpage
 
-Todo hook fica antes do primeiro retorno. Os guards terminam o ciclo de leitura na ordem loading, erro sem dado utilizável e indisponibilidade definitiva. Um modo normal da tela, como criação no lugar da listagem, vem depois dos handlers e das condições de conteúdo; não é misturado aos estados de falha.
-
-Handler nomeado começa com `handle` (`handleSave`, `handleRetry`); prop que o recebe começa com `on` (`onSave`, `onRetry`). Callback curto fica inline quando pertence somente ao guard que o mostra ou quando precisa vincular o item atual, como `onChoose={() => handleChoose(order.id)}`. Os demais handlers ficam juntos depois dos guards terminais. Ação pronta retornada por hook mantém o verbo de domínio (`confirmOrder`) e vai direto à prop quando não há lógica local; não nasce um `handleConfirmOrder` só pra repassar a chamada.
+Handler nomeado começa com `handle` (`handleSave`, `handleRetry`); prop que o recebe começa com `on` (`onSave`, `onRetry`). Callback curto fica inline quando pertence somente ao guard que o mostra ou quando precisa vincular o item atual, como `onChoose={() => handleChoose(order.id)}`. Ação pronta retornada por hook mantém o verbo de domínio (`confirmOrder`) e vai direto à prop quando não há lógica local; não nasce um `handleConfirmOrder` só pra repassar a chamada.
 
 ### O nome separa estado da fonte e estado da página
 
 O estado recebido de hook ou biblioteca preserva o vocabulário e nomeia a fonte quando necessário: `isOrderPending`, `isCustomersPending`, `isSubmitting`. A condição que a página usa pra decidir o guard tem nome estável mesmo quando só repete uma fonte: `const isLoading = isOrderPending`. Quando combina fontes, continua `isLoading`, e a composição fica visível uma vez na declaração.
 
-Os nomes booleanos seguem o papel que exercem:
-
-- `is...` descreve estado ou característica (`isLoading`, `isJoining`, `isUnavailable`);
-- `has...` descreve presença (`hasItems`, `hasLoadError`);
-- `can...` descreve capacidade ou permissão (`canCreateOrder`);
-- `should...` descreve uma decisão de comportamento (`shouldRedirect`);
-- `isBusy` reúne duas ou mais ações que bloqueiam o mesmo conjunto de controles;
-- ação específica em andamento usa o verbo correspondente (`isJoining`, `isAccepting`, `isRejecting`), enquanto `isPending` permanece o estado cru da mutation; a primitiva do em-voo em si segue `frontend/data-fetching.md`, "O estado em voo cobre a ação inteira".
+`isBusy` reúne duas ou mais ações que bloqueiam o mesmo conjunto de controles; ação específica em andamento usa o verbo (`isConfirming`), e `isPending` permanece o estado cru da mutation (`frontend/data-fetching.md`, "O estado em voo cobre a ação inteira").
 
 Condição sai do JSX quando decide uma seção ou modo, combina mais de uma variável, aparece mais de uma vez, vira prop ou nomeia um conceito da página. Condição específica de uma linha de lista fica como `const` dentro do callback do `map`. Condição local e autoexplicativa de campo, como `errors.email`, continua inline.
-
-### A forma da condicional acompanha a decisão
-
-- Elemento opcional usa condição booleana positiva com `&&`.
-- Duas alternativas equivalentes usam ternário.
-- Três ou mais alternativas derivam um estado nomeado ou usam componentes com identidade própria.
-- `condition ? null : <X />` vira condição positiva com `&&`.
-- Condição composta não fica escondida dentro de prop; recebe nome declarativo antes do JSX.
 
 Componente é extraído por identidade, conforme "Um arquivo, um componente" e `frontend/structure.md`, "A pasta do dono", nunca pela quantidade de linhas ou elementos. Formulário continua inline, e a organização de condicionais não o parte em componentes (`frontend/forms.md`, "Onde o formulário mora").
 
 ### O corpo do modal
 
-O corpo do modal segue a mesma ordem do corpo de página, incluindo os guards de leitura quando ele carrega dado próprio — a lista de opções que só existe por causa dele mora nele, não na página que o abre.
+O corpo do modal segue o corpo de página, incluindo os guards de leitura quando ele carrega dado próprio — a lista de opções que só existe por causa dele mora nele, não na página que o abre.
 
 ## Um arquivo, um componente
 
@@ -97,9 +80,9 @@ O erro de leitura não apaga a tela inteira: o chrome que não depende do dado q
 
 ## Verificação rápida
 
-- O corpo segue hooks e leitura, guards terminais, handlers, condições declarativas, modo alternativo e JSX, com o vocabulário booleano canônico?
+- Os guards de leitura retornam cedo, na ordem loading, erro e indisponível, separados do modo alternativo da tela?
 - Handler nomeado começa com `handle`, e a prop que o recebe, com `on`?
-- O corpo do modal segue a mesma ordem, com o dado próprio dele carregado nele?
+- O corpo do modal carrega o dado próprio dele nele?
 - Loading de lista usa skeleton com a forma do conteúdo, e todo estado vazio ou de erro oferece uma saída (inclusive "limpar filtro" quando o vazio é do filtro)?
 - O arquivo declara um componente só, com as peças da tela em arquivos próprios na pasta da página?
 - Nenhum componente existe só pra repassar prop pro primitivo do pacote, e peça compartilhada de anatomia variável é compound consumido via `import * as`?

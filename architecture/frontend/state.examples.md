@@ -35,53 +35,6 @@ export function OrderDetailsTabs() {
 }
 ```
 
-## useListParams
-
-```ts
-// pages/order/list/use-list-params.ts
-import { OrderStatus } from '@/api/model.zod';
-import { useSearchParams } from 'react-router';
-
-export function useListParams() {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // the query string is user input: validate it before it becomes a filter
-  const statusParam = OrderStatus.safeParse(searchParams.get('status'));
-  const status = statusParam.success ? statusParam.data : undefined;
-  const search = searchParams.get('q') ?? undefined;
-  const pageParam = Number(searchParams.get('page'));
-  const page = Number.isInteger(pageParam) && pageParam >= 1 ? pageParam : 1;
-
-  // a new filter invalidates the current page: every filter setter goes through here
-  function updateResettingPage(mutate: (params: URLSearchParams) => void) {
-    setSearchParams((params) => {
-      mutate(params);
-      params.delete('page');
-      return params;
-    });
-  }
-
-  function setStatus(value: string) {
-    updateResettingPage((params) => {
-      if (value === 'all') {
-        params.delete('status');
-      } else {
-        params.set('status', value);
-      }
-    });
-  }
-
-  function setPage(nextPage: number) {
-    setSearchParams((params) => {
-      params.set('page', String(nextPage));
-      return params;
-    });
-  }
-
-  return { status, search, page, setStatus, setPage };
-}
-```
-
 ## OrderWizardProvider
 
 ```tsx

@@ -12,7 +12,7 @@ applies_to:
   - "apps/app-api/src/domain/enterprise/enums/**"
 keywords: [entidade, value object, agregado, enum de domínio, AggregateRoot, ValueObject, UniqueEntityID, "create()", "reconstitute()", "touch()", Optional, Either, setter, atualização parcial, propriedade do agregado, tabela externa, referência entre agregados, uuid, .entity.ts, .vo.ts, .enum.ts, "@metri/core/entities"]
 not_covered:
-  - "quando e como uma coleção usa `WatchedList` → domain/watched-list"
+  - "coleção que grava só o delta (`WatchedList`), capacidade condicional → domain/watched-list"
   - "classe de erro, `Either` e tradução → backend/errors"
   - "registro e despacho de evento → backend/events"
   - "repositório, mapper e escrita → backend/persistence"
@@ -73,15 +73,17 @@ Quando uma invariante de domínio precisa ser preservada atomicamente pelo próp
 
 A regra não põe toda consistência do sistema, nem toda operação transacional, dentro de um agregado só: operação que envolve mais de uma fronteira é coordenada por `backend/transactions.md`, com transação entre agregados ou consistência eventual pela árvore de `backend/operation-routing.md`, e a leitura de exibição atravessa agregados sem redesenhá-los (`backend/reading.md`).
 
-O agregado é também a unidade de concorrência: a regra de quando a raiz ganha coluna `version` e como ela protege a escrita mora em `backend/transactions.md`, "Concorrência e locking".
+O agregado é também a unidade de concorrência: quando escrita concorrente disputa a raiz, a proteção por coluna `version` é a de `backend/transactions.md`, "Concorrência e locking".
 
 **Obrigatório.** Coleção interna do agregado preserva as invariantes por método de domínio: item entra e sai por método de intenção da entidade (`addItem()`), que aplica a regra antes de tocar a coleção.
 
-**Proibido.** Mutar a coleção de fora da entidade (`order.items.add()` direto).
+**Proibido.** Mutar a coleção de fora da entidade (`order.items.push()` direto).
 
 **Obrigatório.** Getter que devolve array devolve `readonly T[]`.
 
-Quando a coleção precisa rastrear o que entrou e o que saiu: **Obrigatório.** A forma dela sai da árvore de `domain/watched-list.md`, dono da decisão de usar `WatchedList`.
+**Padrão.** Coleção filha é array simples nas props (`items: OrderItem[]`), e o repositório substitui os filhos ao gravar (`backend/persistence.md`).
+
+Quando o repositório precisa gravar só o que entrou e o que saiu: a coleção vira `WatchedList`, capacidade condicional de `domain/watched-list.md`.
 
 ### Referência entre agregados
 
@@ -91,35 +93,9 @@ Quando a coleção precisa rastrear o que entrou e o que saiu: **Obrigatório.**
 
 ### Propriedade do agregado: quem escreve a tabela
 
-**Obrigatório.** A propriedade de cada agregado — quem insere linha na tabela dele — é decidida antes de escrever qualquer contrato.
+**Padrão.** O agregado é do app: a entidade tem `create()` e `reconstitute()`, e o repositório escreve e lê.
 
-**Padrão.** O agregado é do app: a entidade tem `create()` e `reconstitute()`, e o contrato do repositório tem escrita e leitura completas. É o que se assume enquanto ninguém decidir o contrário.
-
-Quando a tabela é escrita por um sistema externo (um adapter de biblioteca que traz o próprio schema, uma integração que sincroniza a tabela de fora): **Obrigatório.** O agregado existe para ler e decidir, não para criar, e segue as regras abaixo.
-
-**Proibido.** `create()` em agregado de tabela externa.
-
-> **Por quê.** Criar a linha é operação de quem é dono dela. A ausência do método faz o compilador barrar o que, com um `create()` presente, dependeria de disciplina; todo agregado dessa forma chega ao domínio por `reconstitute()`, vindo de uma linha que já existe.
-
-**Proibido.** Escrita do app inserir linha em tabela externa, inclusive por upsert.
-
-> **Por quê.** Um upsert criaria pela porta lateral o que a ausência de `create()` fecha na entidade, já que `reconstitute()` é público.
-
-**Obrigatório.** A entidade de tabela externa carrega a linha inteira.
-
-> **Por quê.** Como a escrita grava a entidade inteira, coluna que existe na tabela e não existe nas props fica fora do alcance do domínio, e nada acusa isso.
-
-**Obrigatório.** O formato do id de tabela externa é acordo explícito da integração, decidido antes da primeira linha gravada.
-
-> **Por quê.** Quem gera o id é o sistema externo, e o formato dele raramente coincide com o `UniqueEntityID` (uuid v4) por default: sem o acordo, duas tabelas do mesmo banco guardam id de formatos diferentes sem nenhum erro, e qualquer validação que assuma uuid recusa a linha externa.
-
-| Forma | Entidade e contrato |
-| --- | --- |
-| Do app | `create()`/`reconstitute()` na entidade, escrita e leitura completas no contrato |
-| Externo, com escrita do domínio | Só `reconstitute()`; leitura + escrita que recebe o agregado, sem insert |
-| Externo, leitura pura | Só `reconstitute()`; só leitura |
-
-**Obrigatório.** A forma que cada agregado real assume é registrada como decisão de projeto do app antes do primeiro contrato (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto").
+Quando a tabela é escrita por um sistema externo (adapter de biblioteca com schema próprio, integração que sincroniza): **Proibido.** `create()` na entidade e escrita do app que insira linha nela, upsert incluso; o agregado chega só por `reconstitute()`, carrega a linha inteira, e o formato do id é acordo da integração. A forma de cada agregado real é decisão de projeto (`skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto").
 
 ### Atualização parcial: setter por campo, e o que não cabe nele
 
@@ -130,7 +106,7 @@ Quando um endpoint atualiza alguns campos de uma vez, deixando os outros como es
 **Obrigatório.** O setter aceita só o que ele já pode aplicar; o que precisa recusar valor vai para onde consegue falhar:
 
 - invariante do valor em si (formato, faixa) é value object, e o caso de uso cria o VO antes de atribuir, propagando o `failure` dele;
-- restrição de entrada sem regra de domínio atrás (tamanho máximo de um texto livre) é `.max()` no schema Zod da porta (`backend/http-api.md`);
+- restrição de entrada sem regra de domínio atrás é validação no schema Zod da porta (`backend/http-api.md`);
 - regra que depende de outros campos do agregado, ou de uma transição de estado, não é atualização parcial: é método nomeado pela operação, devolvendo `Either`.
 
 > **Por quê.** Setter não devolve nada, então não tem como recusar valor, e `throw` para erro esperado é proibido (`backend/errors.md`).
@@ -153,13 +129,11 @@ Quando a operação tem nome de negócio: **Obrigatório.** Método nomeado, mes
 
 A entidade completa, com a coleção de itens e dois métodos de domínio:
 
-Exemplo completo: model.examples.md#orderitemlist
-
 Exemplo completo: model.examples.md#order
 
-- `Order` usa `WatchedList` porque a coleção de itens passa pela árvore de `domain/watched-list.md` (limitada, mutada pelo domínio, com invariante da raiz sobre ela). O getter expõe a lista porque o repositório lê o delta dela (`backend/persistence.md`); a mutação continua passando por `addItem()`.
+- `items` é array simples: o getter devolve `readonly OrderItem[]`, e a mutação passa por `addItem()`.
 - Transição que interessa a outras partes do sistema registra o evento no próprio método (`addDomainEvent(...)`, de `AggregateRoot`); registro e despacho seguem `backend/events.md`.
-- A coleção de vínculo a outro agregado (as tags de um produto) aplica a referência por identidade: a lista guarda os ids referenciados (`domain/watched-list.md`, "Coleção de vínculo").
+- A coleção de vínculo a outro agregado (as tags de um produto) aplica a referência por identidade: guarda os ids referenciados.
 
 A atualização parcial, com o setter e o uso no caso de uso:
 
@@ -187,35 +161,30 @@ O value object de referência:
 
 Exemplo completo: model.examples.md#money
 
-- `add()` devolve instância nova, `zero()` dá nome ao caso conhecido, e uma invariante de operação (somar moedas diferentes, por exemplo) falharia aqui dentro. Um VO que só valida e normaliza (um slug, por exemplo) é o mínimo do padrão, não o teto dele.
+- `add()` devolve instância nova, `zero()` dá nome ao caso conhecido, e uma invariante de operação (somar moedas diferentes, por exemplo) falharia aqui dentro.
 
-O VO de um endereço público, que vira o primeiro segmento de URL na raiz da SPA, recusa as palavras reservadas (`general/http-surface.md`, "Superfície HTTP") e devolve na falha uma sugestão no formato válido; a disponibilidade fica com o caso de uso:
-
-Exemplo completo: model.examples.md#productslug
-
-Os arquivos seguem a tabela "Onde cada arquivo mora" do `backend/layers.md`: `<entidade>.entity.ts` na raiz de `enterprise/`, value object em `enterprise/value-objects/<nome>.vo.ts`, enum de domínio no mesmo formato em `enterprise/enums/<nome>.enum.ts`, classes de erro do módulo em `enterprise/errors/<módulo>.errors.ts` (`backend/errors.md`), lista rastreada ao lado da entidade dona (`domain/watched-list.md`) e evento em `enterprise/events/` (`backend/events.md`).
+Os arquivos seguem a tabela "Onde cada arquivo mora" do `backend/layers.md`: `<entidade>.entity.ts` na raiz de `enterprise/`, value object em `enterprise/value-objects/<nome>.vo.ts`, enum de domínio no mesmo formato em `enterprise/enums/<nome>.enum.ts`, classes de erro do módulo em `enterprise/errors/<módulo>.errors.ts` (`backend/errors.md`) e evento em `enterprise/events/` (`backend/events.md`).
 
 ## Verificação
 
 - `create()` recebe só o que o chamador decide, nasce os derivados dentro e devolve `Either`; `reconstitute()` é o único caminho de mapper e factory?
 - Mudança de estado é método com nome de intenção, sem setter público fora da atualização parcial?
-- Coleção interna muda só por método de domínio, e a decisão de usar `WatchedList` saiu da árvore dela?
+- Coleção interna é array simples, mudada só por método de domínio, com getter `readonly T[]`?
 - Referência a outro agregado guarda o id, nunca a entidade?
 - Dado que participa de invariante tem entidade ou value object, e nenhuma entidade artificial nasceu só para uma tabela técnica?
-- A propriedade de cada agregado foi decidida e registrada como decisão de projeto antes do contrato?
-- Agregado de tabela externa está sem `create()`, nenhuma escrita insere linha nela, a entidade carrega a linha inteira e o formato do id foi acordado?
+- Agregado de tabela externa está sem `create()`, sem escrita que insira linha nela, com a forma registrada como decisão de projeto?
 - Atualização parcial usa setter por campo, com o que precisa recusar valor em value object ou na porta, e operação com nome de negócio como método próprio?
 - Value object valida e normaliza dentro do `create()` e devolve instância nova em toda operação?
 
 ## Referências
 
-- `domain/watched-list.md`: quando e como a coleção usa `WatchedList`.
+- `domain/watched-list.md`: a coleção que grava só o delta (capacidade condicional).
 - `domain/domain-services.md`: regra de domínio sem dono natural no modelo.
 - `domain/bounded-contexts.md`: a fronteira do modelo.
 - `backend/errors.md`: classe de erro, `Either` e a proibição de `throw` para erro esperado.
 - `backend/events.md`: registro do fato na entidade e despacho depois de persistir.
 - `backend/persistence.md`: repositório, mapper e a escrita que recebe o agregado.
 - `backend/application.md`: o caso de uso que orquestra a entidade.
-- `backend/http-api.md`: `.max()` na porta para restrição de entrada.
+- `backend/http-api.md`: a validação de entrada na porta.
 - `backend/layers.md`: onde cada arquivo mora.
 - `skills/writing-for-agents/RULE-FORMAT.md`: casa da decisão de projeto sobre a forma de cada agregado.

@@ -53,7 +53,7 @@ Exemplo completo: events.examples.md#orderconfirmedevent
 
 Pontos-chave:
 
-- O payload é enxuto e serializável: ids e dados resumidos que os subscribers precisam, todos `readonly`. Nunca a entidade inteira. `UniqueEntityID` e `Date` são os únicos não primitivos aceitos, porque ambos têm serialização direta. A razão é a seção "O bus é in-process": um evento que carrega a entidade viva não sobrevive à serialização de um bus distribuído.
+- O payload é enxuto e serializável: ids e dados resumidos que os subscribers precisam, todos `readonly`. Nunca a entidade inteira. `UniqueEntityID` e `Date` são os únicos não primitivos aceitos, porque ambos têm serialização direta. A razão é a seção "O bus é in-process, preparado para deixar de ser".
 - A identidade do evento é o nome da classe: o despacho do core usa `event.constructor.name` e o registro usa `<Evento>.name`.
 - Subscriber de outro módulo importa a classe direto do caminho dela: a camada `enterprise` é única e do app (`backend/modules.md`).
 
@@ -87,7 +87,7 @@ public confirm(): Either<InvalidOrderStatusTransitionError, void> {
 
 ```ts
 async save(order: Order): Promise<void> {
-  // ...upsert of the root + WatchedList delta, in one transaction (backend/persistence.md)...
+  // ...root and items written in one transaction (backend/persistence.md)...
 
   DomainEvents.dispatchEventsForAggregate(order.id);
 }
@@ -98,9 +98,6 @@ Pontos-chave:
 - Registrar não é despachar. Entre `addDomainEvent()` e o despacho, o evento só existe dentro do agregado; se o caso de uso retornar `failure(...)` antes de gravar, nenhum subscriber fica sabendo de nada.
 - Dentro de um escopo de `UnitOfWork` (`backend/transactions.md`), o repositório registra o agregado no contexto em vez de despachar, e a unidade de trabalho despacha os eventos de cada agregado gravado depois do commit; num escopo desfeito, descarta-os. Cada agregado carrega os próprios eventos e cada um pode interessar a subscribers diferentes.
 - O dublê em memória espelha o real também nisso: cada método de escrita de `test/repositories/` termina com o mesmo `dispatchEventsForAggregate(...)`. Sem isso, o spec unitário de subscriber não tem como provar a reação.
-- Falha técnica entre o registro e o despacho (a escrita lança e a request morre em 500) deixa o agregado retido na lista estática de marcados. O desenho aceita esse resíduo: o gatilho é raro e o processo é reciclado em deploy.
-
-**Agregado cuja tabela é escrita por um sistema externo não emite evento nas escritas dele.** Escrita que não passa por repositório nosso não tem ponto de despacho, e nenhum mecanismo do domínio a observa (`domain/model.md`, "Propriedade do agregado: quem escreve a tabela"). A reação a esses fatos entra pela porta que aquele sistema oferecer — um webhook, um hook do próprio adapter — chamando um caso de uso: é o papel de subscriber, com outro registro. Domain event nesses agregados só nasce das escritas nossas, que têm despacho normal.
 
 ## Subscriber
 
@@ -128,11 +125,7 @@ Engolir com log é a estratégia para efeito em que a perda é tolerável e vis�
 
 ## O bus é in-process, preparado para deixar de ser
 
-Emissor e subscribers vivem no mesmo processo Node. Para um monólito modular, é o desenho certo: sem rede, sem serialização, sem duplicação de entrega.
-
-A necessidade de um bus distribuído (Kafka, RabbitMQ, Redis) só aparece com processos separados, workers dedicados ou um segundo backend reagindo a eventos deste. A estrutura daqui já deixa essa porta aberta, e é por isso que o payload do evento é serializável por regra: na migração, a classe de evento e o subscriber permanecem, e o que muda é o transporte por trás do despacho.
-
-Além da regra de payload, nenhum código antecipa o bus, nem a entrega at-least-once, a deduplicação e a idempotência de handler que a migração traria.
+Emissor e subscribers vivem no mesmo processo Node. Um bus distribuído só entra com processos separados; o payload serializável é o que deixa a classe de evento e o subscriber intactos nessa troca, e nenhum outro código a antecipa.
 
 ## Testes
 
@@ -147,5 +140,4 @@ O formato do spec de subscriber (dublês, `waitFor`, limpeza de handlers no `bef
 - O registro acontece na entidade (`create()` ou método de domínio), nunca em caso de uso ou controller?
 - Todo método de escrita do repositório (Prisma e dublê) termina com `dispatchEventsForAggregate(...)`, fora da transação?
 - O subscriber é fino, registrado em `events.module.ts`, e o `handle()` não deixa erro escapar?
-- Fato que acontece dentro de um sistema externo entrou pela porta dele chamando um caso de uso, não por evento?
 - O spec de subscriber limpa os handlers no `beforeEach` e usa `waitFor`?

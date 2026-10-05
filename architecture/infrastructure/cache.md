@@ -65,19 +65,13 @@ Forma canônica dos componentes da chave, nesta ordem:
 namespace + versão + escopo do dono + recurso + parâmetros
 ```
 
-**Obrigatório.** A chave de um fluxo é montada num lugar só, a implementação do contrato dele, a partir de componentes tipados, na ordem da forma canônica.
-
-**Obrigatório.** A chave carrega só as dimensões que identificam o resultado: o namespace do fluxo, a versão da forma do valor guardado, o escopo do dono quando o resultado depende dele, o recurso e os parâmetros que mudam o resultado.
+**Obrigatório.** A chave carrega só o que identifica o resultado, e é montada num lugar só, a implementação do contrato do fluxo.
 
 Quando o resultado depende de quem pede: **Obrigatório.** O identificador validado de quem pede (o dono do dado) entra na chave.
 
-> **Por quê.** Sem ele, o resultado de um dono responde ao pedido de outro, o vazamento que o filtro no `where` existe para impedir, reaberto pela porta do cache.
+> **Por quê.** Sem ele, o resultado de um dono responde ao pedido de outro.
 
-**Proibido.** Chave em string improvisada, montada em mais de um ponto do código.
-
-**Obrigatório.** A mesma entrada produz sempre a mesma chave; a serialização dos componentes (separador, codificação, ordem dos parâmetros) é do mecanismo e não aparece no contrato.
-
-Quando a forma do valor guardado muda: **Obrigatório.** A versão da chave sobe, e as entradas da versão anterior deixam de ser lidas.
+Quando a forma do valor guardado muda: **Obrigatório.** A versão da chave sobe.
 
 ### Cache de leitura
 

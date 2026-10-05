@@ -202,14 +202,12 @@ Nomes que os exemplos da Source usam.
 | --- | --- |
 | Pedido (agregado de referência) | `Order`, `OrderItem`, `OrderStatus`, `OrderConfirmedEvent` |
 | Valor monetário | `Money` |
-| Cliente (o dono no escopo de acesso) | `Customer`, `CustomerTier` |
-| Fatura | `Invoice`, `InvoiceLine`, `InvoiceDocument` |
-| Notificação | `OrderNotifier`, `NotificationChannel`, `SendOrderConfirmationUseCase` |
-| Produto | `Product`, `ProductPhoto`, `ProductTagIds` |
-| Frete | `ShippingCostCalculator`, `DeliveryMethod` |
+| Cliente | `Customer`, `CustomerTier` |
+| Fatura | `Invoice` |
+| Notificação | `SendOrderConfirmationUseCase` |
+| Produto | `Product`, `ProductTagIds` |
+| Frete | `DeliveryMethod` |
 | Desconto | `calculateLoyaltyDiscount` |
-| Cancelamento | `OrderCancellationSettlementService` |
-| Reembolso | `RefundableOrderSpecification` |
 | Relatório de pedidos | `OrderReportStorage`, `GenerateOrderReportUseCase` |
 | Carrinho | `CartItem`, `useCartStore` |
 | Pagamento | `PaymentReceivedEvent` |
@@ -363,7 +361,7 @@ Quando uma instrução local contradiz a Source sem ADR explícito que a sustent
 
 ### Referências
 
-- `architecture/INDEX.md`: autoridade e precedência da Source, navegação, decisões transversais e índice.
+- `architecture/INDEX.md`: autoridade e precedência da Source, navegação e índice.
 - `backend/boundaries.md`: verificação por check executável.
 - `infrastructure/storage.md`: implementação de referência declarada.
 - `docs/adr/`: casa dos ADRs do projeto.

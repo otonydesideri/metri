@@ -5,9 +5,9 @@
 ```ts
 // test/factories/make-order.factory.ts
 import { faker } from '@faker-js/faker';
+import { UniqueEntityID } from '@metri/core/entities';
 import { Injectable } from '@nestjs/common';
 import { Order, type OrderProps } from '../../src/domain/enterprise/order.entity';
-import { OrderItemList } from '../../src/domain/enterprise/order-item-list';
 import { OrderStatus } from '../../src/domain/enterprise/enums/order-status.enum';
 import { OrderPrismaMapper } from '../../src/infra/persistence/prisma/mappers/order.prisma-mapper';
 import { PrismaService } from '../../src/infra/persistence/prisma/prisma.service';
@@ -19,7 +19,7 @@ export function makeOrder(
   return Order.reconstitute(
     {
       customerId: new UniqueEntityID(),
-      items: new OrderItemList([]),
+      items: [],
       status: OrderStatus.Draft,
       createdAt: faker.date.recent(),
       ...override,
@@ -83,7 +83,7 @@ export class OrderInMemoryRepositoryImpl implements OrderRepository {
 ```ts
 describe('Order', () => {
   it('create() sem item → falha', () => {
-    const result = Order.create({ customerId: new UniqueEntityID(), items: new OrderItemList([]) });
+    const result = Order.create({ customerId: new UniqueEntityID(), items: [] });
 
     expect(result.isFailure()).toBe(true);
     expect(result.isFailure() && result.value).toBeInstanceOf(EmptyOrderError);
@@ -97,7 +97,7 @@ describe('Order', () => {
     }).value;
     const orderOrError = Order.create({
       customerId: new UniqueEntityID(),
-      items: new OrderItemList([item]),
+      items: [item],
     });
     const sut = orderOrError.value;
 
@@ -190,10 +190,10 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
 
     expect(response.status).toBe(200);
 
-    const confirmedOnDatabase = await prisma.client.order.findUnique({
+    const saved = await prisma.client.order.findUnique({
       where: { id: order.id.toValue() },
     });
-    expect(confirmedOnDatabase?.status).toBe('CONFIRMED');
+    expect(saved?.status).toBe('CONFIRMED');
   });
 });
 ```

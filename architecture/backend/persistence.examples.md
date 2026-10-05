@@ -10,7 +10,6 @@ import type {
   Prisma,
 } from '@metri/db/client';
 import { OrderItem } from '../../../../domain/enterprise/order-item.entity';
-import { OrderItemList } from '../../../../domain/enterprise/order-item-list';
 import { Order } from '../../../../domain/enterprise/order.entity';
 import type { OrderStatus } from '../../../../domain/enterprise/enums/order-status.enum';
 
@@ -32,7 +31,7 @@ export class OrderPrismaMapper {
     const order = Order.reconstitute(
       {
         customerId: new UniqueEntityID(raw.customerId),
-        items: new OrderItemList(items),
+        items,
         status: raw.status as OrderStatus,
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
@@ -101,8 +100,6 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
 
   async save(order: Order): Promise<void> {
     const data = OrderPrismaMapper.toPrisma(order);
-    const newItems = order.items.getNewItems();
-    const removedItems = order.items.getRemovedItems();
     const tx = this.context.requireTx();
 
     await tx.order.upsert({
@@ -111,17 +108,10 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
       update: { status: data.status, updatedAt: data.updatedAt },
     });
 
-    if (newItems.length > 0) {
-      await tx.orderItem.createMany({
-        data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-      });
-    }
-
-    if (removedItems.length > 0) {
-      await tx.orderItem.deleteMany({
-        where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
-      });
-    }
+    await tx.orderItem.deleteMany({ where: { orderId: data.id } });
+    await tx.orderItem.createMany({
+      data: order.items.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
+    });
 
     this.context.track(order.id);
   }
