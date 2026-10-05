@@ -19,7 +19,7 @@ not_covered:
   - "o formato de import e a composição no app → frontend/components"
   - "o uso de token e tema no código, o provider e o script inline → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
-examples: [starter/packages/ui/components.json, starter/packages/ui/src/styles/globals.css, starter/packages/ui/src/lib/utils.ts]
+examples: [defaults/ui.examples.md]
 enforced_by: [design-tokens, sot, lint]
 status: active
 ---
@@ -32,7 +32,7 @@ status: active
   - o `app-web` depende do `@metri/ui` (`workspace:*`) e importa `@metri/ui/styles/globals.css` na entrada.
 - O `globals.css` abre com `@import "tailwindcss"`, `@import "tw-animate-css"` (as animações das classes que os arquivos da CLI usam, dependência do `@metri/ui`) e dois `@source`, relativos a ele: um para os arquivos de `apps/` e outro para os do próprio pacote.
 
-Exemplo completo: `starter/packages/ui/src/styles/globals.css`.
+Exemplo completo: ui.examples.md#globalscss.
 
 > **Por quê.** O Tailwind procura classes a partir da pasta de quem processa o CSS, o app. Sem o segundo `@source`, as classes dos componentes do pacote (`bg-primary`, `rounded-md`) somem do CSS final, sem erro.
 
@@ -55,7 +55,7 @@ O `@metri/ui` segue o layout de monorepo do shadcn com uma pasta a mais: os comp
 
 - Os aliases do `components.json` usam o nome do pacote, com o `@`; o `tsconfig.json` do pacote tem o `paths` que os resolve, e os `exports` expõem as mesmas pastas.
 
-Exemplo completo: `starter/packages/ui/components.json`, `starter/packages/ui/tsconfig.json` e `starter/packages/ui/package.json`.
+Exemplo completo: ui.examples.md#componentsjson, ui.examples.md#tsconfigjson-do-kit e ui.examples.md#packagejson-do-kit.
 
 ## Componente novo
 
@@ -90,7 +90,7 @@ Quando o token não resolve: **Padrão.** O ajuste é feito no próprio arquivo 
 - O `cn` do `@metri/ui` (`packages/ui/src/lib/utils.ts`) monta o tailwind-merge com `extendTailwindMerge`, com cada nível de `typography` do `DESIGN.md` como tamanho de fonte (`theme.text`). Sem isso, o tailwind-merge lê `text-<nível>` como cor e o descarta ao lado de `text-muted-foreground`.
 - Nível novo no `@theme` entra na lista do `cn` na mesma edição.
 
-Exemplo completo: `starter/packages/ui/src/lib/utils.ts`, com o `@theme` de `starter/packages/ui/src/styles/globals.css`.
+Exemplo completo: ui.examples.md#cn, com o `@theme` de ui.examples.md#globalscss.
 
 - Espaçamento: a escala padrão do Tailwind, sem variável própria no `@theme`. Ela coincide com a `spacing` do `DESIGN.md` (`xxs` 4px = `1`, `md` 16px = `4`, `4xl` 64px = `16`).
 

@@ -197,3 +197,169 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
   });
 });
 ```
+
+## setup-e2e
+
+```ts title="apps/app-api/test/setup-e2e.ts"
+// The isolated database of each e2e file (backend/testing, "Convenção de nome e execução"): before the file,
+// creates on the Postgres server of DATABASE_URL a new database named after the project's one, never a schema in
+// the same database, applies the @metri/db migrations to it and points the process DATABASE_URL at it, so the file's
+// AppModule connects there; after the file, drops it. The only file outside infra/persistence/prisma that
+// imports @metri/db (backend/boundaries).
+
+import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { Prisma, PrismaClient } from '@metri/db/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { afterAll } from 'vitest';
+
+const serverUrl = process.env.DATABASE_URL;
+if (!serverUrl) {
+	throw new Error(
+		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo no Postgres dele (o .env da raiz, que o metri init cria do .env.example)',
+	);
+}
+
+const databaseUrl = new URL(serverUrl);
+const databaseName = `${databaseUrl.pathname.slice(1)}_e2e_${randomUUID().replaceAll('-', '')}`;
+databaseUrl.pathname = `/${databaseName}`;
+// the server's maintenance database: the project's one need not exist
+const maintenanceUrl = new URL(serverUrl);
+maintenanceUrl.pathname = '/postgres';
+
+const server = new PrismaClient({
+	adapter: new PrismaPg({ connectionString: maintenanceUrl.toString() }),
+});
+
+// an identifier is not a parameter: the name enters the SQL quoted
+await server.$executeRaw`CREATE DATABASE ${Prisma.raw(`"${databaseName}"`)}`;
+
+execFileSync('pnpm', ['--silent', '--filter', '@metri/db', 'migrate:deploy'], {
+	env: {
+		...process.env,
+		DATABASE_URL: databaseUrl.toString(),
+		PRISMA_HIDE_UPDATE_MESSAGE: '1',
+	},
+	stdio: 'pipe',
+});
+
+process.env.DATABASE_URL = databaseUrl.toString();
+
+afterAll(async () => {
+	await server.$executeRaw`DROP DATABASE IF EXISTS ${Prisma.raw(`"${databaseName}"`)} WITH (FORCE)`;
+	await server.$disconnect();
+});
+```
+
+## vitest.config.e2e
+
+```ts title="apps/app-api/vitest.config.e2e.ts"
+import { existsSync } from 'node:fs';
+import { defineConfig } from 'vitest/config';
+
+// The project's one DATABASE_URL is in the root .env; a variable already in the environment (the CI) wins.
+const ENV_FILE = new URL('../../.env', import.meta.url);
+if (existsSync(ENV_FILE)) {
+	process.loadEnvFile(ENV_FILE);
+}
+
+/** SOURCE OF TRUTH: the e2e Vitest config of app-api.
+ * WHAT: runs the `*.e2e-spec.ts` files under `src/`, each mounting the whole `AppModule`, with `NODE_ENV=test`, the root `.env` loaded and `test/setup-e2e.ts` as setup.
+ * WHY: each file gets a new Postgres database on the server of the DATABASE_URL, migrated and dropped at the end (backend/testing, "Convenção de nome e execução").
+ * WHERE: read by Vitest through the `test:e2e` script, which accepts a path filter (`test:e2e health`).
+ */
+export default defineConfig({
+	test: {
+		include: ['src/**/*.e2e-spec.ts'],
+		setupFiles: ['test/setup-e2e.ts'],
+		env: { NODE_ENV: 'test' },
+		hookTimeout: 30_000,
+		passWithNoTests: true,
+	},
+});
+```
+
+## E2e de provider global
+
+```ts title="apps/app-api/src/infra/common/errors/error-envelope.e2e-spec.ts"
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import {
+	FastifyAdapter,
+	type NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { createZodDto } from 'nestjs-zod';
+import request from 'supertest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { z } from 'zod';
+import { AppModule } from '../../../app.module';
+
+class ProbeBodyDto extends createZodDto(
+	z.object({
+		name: z.string('O nome é obrigatório.'),
+	}),
+) {}
+
+@Controller('probe')
+class ProbeController {
+	@Post()
+	@HttpCode(204)
+	create(@Body() _body: ProbeBodyDto): void {}
+}
+
+describe('Envelope de erro (e2e)', () => {
+	let app: NestFastifyApplication;
+
+	beforeAll(async () => {
+		const moduleRef: TestingModule = await Test.createTestingModule({
+			imports: [AppModule],
+			controllers: [ProbeController],
+		}).compile();
+
+		app = moduleRef.createNestApplication<NestFastifyApplication>(
+			new FastifyAdapter(),
+		);
+		app.setGlobalPrefix('api');
+		await app.init();
+		await app.getHttpAdapter().getInstance().ready();
+	});
+
+	afterAll(async () => {
+		await app.close();
+	});
+
+	it('rota inexistente → 404 no envelope, sem o corpo nativo', async () => {
+		const response = await request(app.getHttpServer()).get(
+			'/api/rota-inexistente',
+		);
+
+		expect(response.status).toBe(404);
+		expect(response.body).toEqual({
+			code: 'NOT_FOUND',
+			message: 'Requisição não atendida',
+			type: 'REQUEST_REJECTED',
+		});
+	});
+
+	it('corpo fora do schema → 400 no envelope, com a mensagem do campo', async () => {
+		const response = await request(app.getHttpServer())
+			.post('/api/probe')
+			.send({});
+
+		expect(response.status).toBe(400);
+		expect(response.body).toEqual({
+			code: 'INVALID_REQUEST_FORMAT',
+			message: 'name: O nome é obrigatório.',
+			type: 'INVALID_REQUEST',
+		});
+	});
+
+	it('corpo dentro do schema → passa pelo pipe', async () => {
+		const response = await request(app.getHttpServer())
+			.post('/api/probe')
+			.send({ name: 'Ana' });
+
+		expect(response.status).toBe(204);
+	});
+});
+```

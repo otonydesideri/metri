@@ -14,7 +14,7 @@ keywords: [transação, unidade de trabalho, UnitOfWork, run, $transaction, Asyn
 not_covered:
   - "a decisão de que a reação é atômica, em linha, evento ou job → backend/operation-routing"
 enforced_by: [concurrency]
-examples: [backend/transactions.examples.md, starter/apps/app-api/src/domain/application/transactions/unit-of-work.contract.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/transaction-context.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts, starter/apps/app-api/src/infra/persistence/prisma/transactions/unit-of-work.e2e-spec.ts]
+examples: [backend/transactions.examples.md]
 status: active
 ---
 # Consistência da escrita
@@ -57,10 +57,10 @@ A proteção de um agregado disputado por escrita concorrente é a receita de "S
 
 A infraestrutura é código real do starter, sem domínio nenhum nela:
 
-- O contrato: `starter/apps/app-api/src/domain/application/transactions/unit-of-work.contract.ts`.
-- `TransactionContext`, que publica o `tx` por `AsyncLocalStorage`: `client()` para leitura (o `tx` aberto, ou o client comum fora de escopo) e `requireTx()` para escrita (o mesmo `tx`, ou lança), em `starter/apps/app-api/src/infra/persistence/prisma/transactions/transaction-context.ts`.
-- `PrismaUnitOfWork.run()`, com o despacho ou o descarte dos eventos depois do `$transaction`: `starter/apps/app-api/src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts`.
-- A prova, contra uma tabela que o próprio teste cria e derruba: `starter/apps/app-api/src/infra/persistence/prisma/transactions/unit-of-work.e2e-spec.ts`.
+- O contrato: transactions.examples.md#unitofwork-o-contrato.
+- `TransactionContext`, que publica o `tx` por `AsyncLocalStorage`: `client()` para leitura (o `tx` aberto, ou o client comum fora de escopo) e `requireTx()` para escrita (o mesmo `tx`, ou lança): transactions.examples.md#transactioncontext.
+- `PrismaUnitOfWork.run()`, com o despacho ou o descarte dos eventos depois do `$transaction`: transactions.examples.md#prismaunitofwork.
+- A prova, contra uma tabela que o próprio teste cria e derruba: transactions.examples.md#a-prova-do-unitofwork.
 
 O caso de uso com dois agregados no mesmo escopo, `Order` confirmado e `Invoice` emitida, é exemplo didático: transactions.examples.md#unitofwork.
 

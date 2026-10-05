@@ -117,3 +117,120 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
   }
 }
 ```
+
+## PrismaService
+
+```ts title="apps/app-api/src/infra/persistence/prisma/prisma.service.ts"
+import { PrismaClient } from '@metri/db/client';
+import {
+	Injectable,
+	type OnModuleDestroy,
+	type OnModuleInit,
+} from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { EnvService } from '../../common/env/env.service';
+
+// how long a connection attempt waits before the boot fails
+const CONNECTION_TIMEOUT_MS = 3_000;
+
+// The Postgres answer the driver adapter attaches to the error; absent when the server never answered.
+type DriverCause = { kind?: string; originalMessage?: string };
+
+function driverCauseOf(error: unknown): DriverCause {
+	const { meta } = error as {
+		meta?: { driverAdapterError?: { cause?: DriverCause } };
+	};
+	return meta?.driverAdapterError?.cause ?? {};
+}
+
+// What to do, in the boot error: the Postgres off, the database missing or the connection refused.
+function unreachableMessage(databaseUrl: string, error: unknown): string {
+	const url = new URL(databaseUrl);
+	const address = `${url.hostname}:${url.port || '5432'}`;
+	const database = url.pathname.slice(1);
+	const { kind, originalMessage } = driverCauseOf(error);
+	if (kind === undefined) {
+		return `O Postgres do DATABASE_URL (.env da raiz) não responde em ${address}. Suba o banco com pnpm db:up, ou o Postgres que o projeto usa, e rode de novo.`;
+	}
+	if (kind === 'DatabaseDoesNotExist') {
+		return `O banco ${database} não existe no Postgres de ${address}. Crie-o com as migrations: pnpm --filter @metri/db migrate:dev.`;
+	}
+	return `O Postgres de ${address} recusou a conexão ao banco ${database} (${originalMessage ?? kind}). Confira o DATABASE_URL do .env da raiz.`;
+}
+
+/** SOURCE OF TRUTH: PrismaService.
+ * WHAT: builds the @metri/db `PrismaClient` with the Postgres driver adapter, reading DATABASE_URL through `EnvService` in the constructor; on module init, fails the boot within seconds, saying what to do, when the database does not answer; disconnects on module destroy.
+ * WHY: a client is born in the constructor, never at the top level of a file (infrastructure/runtime, "Env e montagem de client"; backend/persistence); without the check at boot, a database that is off only shows up in the first request (infrastructure/runtime, "Banco de desenvolvimento").
+ * WHERE: injected, through `client`, by the repositories and queries of infra/persistence/prisma, by `DatabaseHealth` and by the test factories; never by a controller or a use case (backend/boundaries).
+ */
+@Injectable()
+export class PrismaService implements OnModuleInit, OnModuleDestroy {
+	readonly client: PrismaClient;
+	private readonly databaseUrl: string;
+
+	constructor(env: EnvService) {
+		this.databaseUrl = env.getOrThrow('DATABASE_URL');
+		this.client = new PrismaClient({
+			adapter: new PrismaPg({
+				connectionString: this.databaseUrl,
+				connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
+			}),
+		});
+	}
+
+	async onModuleInit(): Promise<void> {
+		try {
+			await this.client.$queryRaw`SELECT 1`;
+		} catch (error) {
+			// without the cause: the message says what to do, and the driver's stack would bury it
+			throw new Error(unreachableMessage(this.databaseUrl, error));
+		}
+	}
+
+	async onModuleDestroy(): Promise<void> {
+		await this.client.$disconnect();
+	}
+}
+```
+
+## schema.prisma
+
+```prisma title="packages/db/prisma/schema.prisma"
+// The generator of the client and the datasource. Each model lives in `models/<module>.prisma`, the file of the
+// module that owns the table (backend/persistence, "Propriedade de tabela no schema"). After changing a model:
+// `pnpm --filter @metri/db migrate:dev --name <name>`, then `pnpm --filter @metri/db generate`.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+```
+
+## prisma.config.ts
+
+```ts title="packages/db/prisma.config.ts"
+import { existsSync } from 'node:fs';
+import { defineConfig } from 'prisma/config';
+
+// The project's one DATABASE_URL is in the root .env; a variable already in the environment wins.
+const ENV_FILE = new URL('../../.env', import.meta.url);
+if (existsSync(ENV_FILE)) {
+	process.loadEnvFile(ENV_FILE);
+}
+
+/** SOURCE OF TRUTH: the Prisma config of @metri/db.
+ * WHAT: points the Prisma CLI to the multi-file schema in `prisma/`, to the migrations and to the DATABASE_URL.
+ * WHY: in Prisma 7 the URL lives here, not in the schema (backend/persistence, "Aplicação").
+ * WHERE: read by every `prisma` command of the package (`generate`, `migrate:dev`, which creates a missing database, `migrate:deploy`), run by hand and by the app-api e2e setup.
+ */
+export default defineConfig({
+	schema: 'prisma',
+	migrations: { path: 'prisma/migrations' },
+	datasource: { url: process.env.DATABASE_URL },
+});
+```

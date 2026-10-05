@@ -23,7 +23,7 @@ not_covered:
   - "o client gerado no frontend — `api/`, o Orval e o cliente HTTP → frontend/data-fetching"
   - "o consumo do contrato no frontend — casa de tipos e constantes → frontend/helpers"
   - "o schema de form → frontend/forms"
-examples: [backend/http-api.examples.md, starter/apps/app-api/src/openapi.ts, starter/apps/app-api/src/infra/health/health.controller.ts, starter/apps/app-api/src/infra/http/dtos/health/health-response.dto.ts]
+examples: [backend/http-api.examples.md]
 status: active
 ---
 # API HTTP
@@ -89,12 +89,12 @@ Quando um parâmetro ou campo varia num conjunto fechado (status, coluna de orde
 - O controller é o adaptador fino de `backend/application.md` para HTTP.
 - Endpoint de leitura de exibição injeta o contrato de query, e o DTO da query é o corpo quando essa é a única porta (`backend/reading.md`).
 - O `@ZodResponse` valida a resposta pelo `ZodSerializerInterceptor`, registrado como `APP_INTERCEPTOR` (`infrastructure/runtime.md`); a resposta fora do DTO sai 500, `INTERNAL_ERROR` (`backend/errors.md`, "Erro inesperado: filtro global").
-- A geração: `starter/apps/app-api/src/openapi.ts`, que roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"), nunca pelo `tsx`, que descarta o metadata dos decorators.
+- A geração: http-api.examples.md#openapits, que roda a partir do build do `tsdown` (`defaults/stack.md`, "Stack"), nunca pelo `tsx`, que descarta o metadata dos decorators.
 - O `verify` roda o `api:generate` e falha quando ele muda algum arquivo (`api:drift`).
 
 ## Exemplo de referência
 
-Exemplo completo, controller, DTOs e presenter de `POST /orders/:orderId/confirm`: backend/http-api.examples.md#confirmordercontroller. O endpoint do `starter/`: `starter/apps/app-api/src/infra/health/health.controller.ts`.
+Exemplo completo, controller, DTOs e presenter de `POST /orders/:orderId/confirm`: backend/http-api.examples.md#confirmordercontroller. O endpoint de infra externa: http-api.examples.md#healthcontroller.
 
 ## Verificação
 

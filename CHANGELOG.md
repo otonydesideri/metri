@@ -63,6 +63,9 @@ enquadramento do usuário sem questioná-lo.
   - Formato de regra: o corpo segue, na ordem, propósito, onde mora, árvore de decisão, regras, exemplo de
     referência, sob demanda e verificação; saem a modalidade `Recomendado` e os status de ferramenta além de
     `DECIDIDA` e `REFERÊNCIA`. `backend/http-api.examples.md` traz o controller de referência.
+  - A regra aponta só para o `<tema>.examples.md`, nunca para arquivo do `starter/`. O exemplo que o starter replica
+    traz no bloco de código o caminho do arquivo no projeto (`title="..."`), e o teste `cli/examples.test.ts`
+    confere que o starter é igual a ele.
 
 ### Migrar de v1.7.0
 

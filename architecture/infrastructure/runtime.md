@@ -20,7 +20,7 @@ not_covered:
   - "a superfície HTTP sob `/api` → general/http-surface"
   - "o formato do e2e → backend/testing"
   - "a topologia de deploy de cada projeto (\"Delegações\") → project:ARCHITECTURE"
-examples: [starter/apps/app-api/src/main.ts, starter/apps/app-api/src/app.module.ts, starter/apps/app-api/src/infra/common/env/env.service.ts, starter/apps/app-api/src/infra/persistence/prisma/prisma.service.ts, starter/compose.yaml]
+examples: [infrastructure/runtime.examples.md]
 status: active
 ---
 # Runtime da aplicação

@@ -13,7 +13,7 @@ applies_to:
 keywords: [spec, e2e, e2e-spec, pirâmide, factory de teste, "make<Agregado>", makePrisma, repositório em memória, InMemoryRepositoryImpl, makeInMemoryRepositories, dublê, Vitest, setup-e2e.ts, "@faker-js/faker", instanceof, waitFor, supertest, overrideProvider, setGlobalPrefix]
 not_covered:
   - "o teste do frontend, com pirâmide própria → frontend/testing"
-examples: [backend/testing.examples.md, starter/apps/app-api/test/setup-e2e.ts, starter/apps/app-api/vitest.config.e2e.ts, starter/apps/app-api/src/infra/common/errors/error-envelope.e2e-spec.ts]
+examples: [backend/testing.examples.md]
 status: active
 ---
 # Testes

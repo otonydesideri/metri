@@ -12,7 +12,7 @@ applies_to:
 keywords: [log, Logger, "@nestjs/common", nível, dado sensível, PII, coletor, nestjs-pino, redact, métrica, alerta, reconciliação, cardinalidade, dimensão]
 not_covered:
   - "a tradução de erro em resposta HTTP → backend/errors"
-examples: [starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts]
+examples: [backend/errors.examples.md]
 status: active
 ---
 # Log

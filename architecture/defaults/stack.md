@@ -5,7 +5,7 @@ use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
   - "implementar login, sessão ou logout"
-examples: [starter/biome.json, starter/package.json, starter/apps/app-api/vitest.config.ts]
+examples: [defaults/stack.examples.md]
 status: active
 ---
 # Stack padrão
@@ -46,7 +46,7 @@ Testes:
 
 ## Quando precisar
 
-A escolha para a necessidade que o projeto ainda não tem. Entra quando a necessidade aparece, não no `starter/`; a forma, quando há uma, está na regra entre parênteses.
+A escolha para a necessidade que o projeto ainda não tem. Entra quando a necessidade aparece, não no starter; a forma, quando há uma, está na regra entre parênteses.
 
 - Fila e job: pg-boss (backend/async-jobs).
 - E-mail: Resend, com o template em React Email (`@react-email/render`); o vendor é delegado ao projeto.
@@ -70,13 +70,13 @@ Quando o produto tem identidade autenticada, a delegação "Autenticação" (`no
 
 O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS (`tailwindDirectives`: `@theme`, `@source`, `@custom-variant`). O código gerado do contrato de API, que o `api:drift` confere, fica fora dele, com `!` (o scanner ainda lê os tipos). O código de fornecedor do kit, `packages/ui/src/components/ui/`, fica sem formatação e sem as regras do preset, para a CLI e o código continuarem iguais; só o `noRestrictedImports` vale nele, e em todo o repositório: barra o pacote npm `cn` (`defaults/ui.md`, "Componente novo"). O override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
 
-Exemplo completo: `starter/biome.json`.
+Exemplo completo: stack.examples.md#biomejson.
 
 O `test` da raiz repassa o filtro ao Vitest de cada pacote pelo `--`: sem ele, o Turborepo lê o filtro (`pnpm test order-confirmation`) como nome de task.
 
-Exemplo completo: `starter/package.json`.
+Exemplo completo: stack.examples.md#packagejson-da-raiz.
 
-O Vitest de cada app e pacote passa sem arquivo de teste (`passWithNoTests`), para o pacote recém-criado não derrubar o `verify`: no `vite.config.ts` do app-web, nos dois configs do app-api (`backend/testing.md`) e no de cada pacote do `starter/`.
+O Vitest de cada app e pacote passa sem arquivo de teste (`passWithNoTests`), para o pacote recém-criado não derrubar o `verify`: no `vite.config.ts` do app-web, nos dois configs do app-api (`backend/testing.md`) e no de cada pacote.
 
 O `turbo.json` desliga o `agentGuidance`: o Turborepo 2.11 grava um bloco próprio no `AGENTS.md` quando detecta um agente, e o `AGENTS.md` do projeto é do `metri init`.
 

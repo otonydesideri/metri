@@ -18,7 +18,7 @@ keywords: [pirâmide, spec, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, 
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 enforced_by: [boundaries]
-examples: [frontend/testing.examples.md, starter/apps/app-web/playwright.config.ts, starter/apps/app-web/e2e/evidence.ts, starter/apps/app-web/src/structure.spec.ts]
+examples: [frontend/testing.examples.md]
 status: active
 ---
 # Testes do frontend
@@ -81,9 +81,9 @@ test('1: o pedido confirmado aparece nos confirmados', async ({ page }, testInfo
 });
 ```
 
-Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da ferramenta, com `strictPort: true` no `vite.config.ts`: porta ocupada é erro, nunca a porta seguinte. O `playwright.config.ts` tira a porta do e2e de `E2E_PORT` (o app-web nela, o app-api na seguinte, com o proxy do dev server apontando para ela) e sobe cada `webServer` com `reuseExistingServer: false`, para o e2e nunca bater no servidor de outro projeto ou de outro worktree (`starter/apps/app-web/playwright.config.ts`).
+Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da ferramenta, com `strictPort: true` no `vite.config.ts`: porta ocupada é erro, nunca a porta seguinte. O `playwright.config.ts` tira a porta do e2e de `E2E_PORT` (o app-web nela, o app-api na seguinte, com o proxy do dev server apontando para ela) e sobe cada `webServer` com `reuseExistingServer: false`, para o e2e nunca bater no servidor de outro projeto ou de outro worktree (testing.examples.md#playwrightconfig).
 
-O `saveEvidence` de `e2e/evidence.ts` (`starter/apps/app-web/e2e/evidence.ts`) grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
+O `saveEvidence` de `e2e/evidence.ts` (testing.examples.md#saveevidence) grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
 
 O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`. O compilador não a guarda, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos; quem guarda é o check `boundaries` (`metri check --help`).
 
@@ -112,7 +112,7 @@ Regras de uso:
 - O facade `lib/http/client.ts` tem um spec próprio que captura a URL recebida pelo MSW e afirma que a rota REST sai na origem da página sob `/api`. É uma guarda de que o path gerado sai na origem da página, não uma segunda prova da operação de domínio.
 - `vi.mock` fica reservado a fronteira que não é rede: o `toast` da lib `sonner`, quando o teste afirma título e descrição sem montar o `Toaster`, e uma função de `lib/<integração>/` cujo efeito é sobre a biblioteca, não sobre a tela. Nunca para substituir uma chamada de rede.
 
-Exemplo completo: `starter/apps/app-web/test/msw/server.ts` e `starter/apps/app-web/test/setup.ts`.
+Exemplo completo: testing.examples.md#msw-server e testing.examples.md#setup.
 
 ## Como escrever spec de função pura (`shared/rules/`, `shared/schemas/`, `lib/`)
 

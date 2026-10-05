@@ -18,7 +18,7 @@ keywords: [httpClient, ApiError, orval, orval.config.ts, "api/model.zod.ts", toU
 not_covered:
   - "o estado que vive só no navegador → frontend/state"
   - "o contrato da API do lado do backend → backend/http-api"
-examples: [frontend/data-fetching.examples.md, starter/apps/app-web/src/lib/http/client.ts, starter/apps/app-web/orval.config.ts, starter/apps/app-web/src/app/index.tsx, starter/apps/app-web/src/hooks/health/use-health.ts]
+examples: [frontend/data-fetching.examples.md]
 status: active
 ---
 # Busca de dados no frontend
@@ -50,11 +50,11 @@ flowchart TD
 
 Um cliente só, `httpClient` em `lib/http/client.ts`, sobre o `fetch`. É o mutator que as funções geradas de `api/` chamam, e facade de dependência externa (`frontend/structure.md`, casa `lib/`): não conhece domínio. Ele trabalha sempre na origem da página: os paths do OpenAPI já trazem o `/api`.
 
-Exemplo completo: `starter/apps/app-web/src/lib/http/client.ts`.
+Exemplo completo: data-fetching.examples.md#httpclient.
 
 Como a chamada sai na própria origem, o browser envia o cookie sem configuração cross-origin, e não existe env de URL da API no frontend — trocar de ambiente não troca nada no bundle.
 
-Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy aponta para a porta do app-api (`starter/apps/app-web/vite.config.ts`). Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao IaC, não ao bundle do frontend.
+Em desenvolvimento, o Vite encaminha `/api` para o app-api. O proxy aponta para a porta do app-api (data-fetching.examples.md#viteconfig). Em produção, o edge mantém o mesmo contrato de path e de preservação do host; essa configuração pertence ao IaC, não ao bundle do frontend.
 
 A mensagem que a interface mostra sai do erro por `lib/http/to-user-facing-message.ts`, e quem monta a notificação a consome (adiante). O nome segue a convenção `to<Alvo>`/`from<Origem>`, um por arquivo. O formato de resposta de erro é o do backend (`backend/errors.md`, "O formato de resposta de erro").
 
@@ -82,7 +82,7 @@ Só a mensagem sai daqui. O título da notificação é a ação que falhou, e q
 
 As funções de `api/` são geradas pelo Orval a partir do `openapi.json` do app-api (`backend/http-api.md`, "Contrato de API: o backend é a fonte"): uma função por endpoint em `api/<módulo>.ts`, e os schemas Zod e os tipos em `api/model.zod.ts`. Elas chamam o `httpClient`, não têm lógica de UI e não conhecem React Query, e não validam a resposta em runtime: quem garante a forma é o `@ZodResponse` do servidor. A pasta inteira é do gerador: muda por `pnpm api:generate`.
 
-Exemplo completo: `starter/apps/app-web/orval.config.ts`.
+Exemplo completo: data-fetching.examples.md#orvalconfig.
 
 O tipo da resposta, do filtro e do payload é o gerado, importado de `@/api/model.zod`, nunca redeclarado à mão (`frontend/helpers.md`, "Tipos compartilhados"). A função gerada devolve o corpo como o backend o nomeia (`{ order }`, `backend/http-api.md`, "Presenter e corpo de resposta"): quem desembrulha é a `queryFn` do hook. O hook a chama dentro de uma arrow (`() => fetchOrder(id)`): passada por referência, ela receberia o contexto do React Query no lugar do `init` do fetch.
 
@@ -243,7 +243,7 @@ Erro de campo de formulário continua no `FieldError` do campo via react-hook-fo
 
 O `QueryClient` é singleton de módulo em `app/providers/query-client.ts` (casa dos providers globais do app), importado no provider em `app/index.tsx` (a casa de composição). Sem SSR, um singleton de módulo basta; não há request a isolar, então o `useState(() => new QueryClient())` do modelo Next.js não é necessário.
 
-Exemplo completo: `starter/apps/app-web/src/app/index.tsx`.
+Exemplo completo: data-fetching.examples.md#app.
 
 O `@tanstack/react-query-devtools` entra só em desenvolvimento, montado como irmão do router, quando o primeiro consumo real justificar.
 

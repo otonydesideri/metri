@@ -149,3 +149,120 @@ export class Money extends ValueObject<MoneyProps> {
   }
 }
 ```
+
+## Entity
+
+```ts title="packages/core/src/entities/entity.ts"
+import { UniqueEntityID } from './unique-entity-id';
+
+/** SOURCE OF TRUTH: Entity.
+ * WHAT: the entity base: protected constructor, `id` as `UniqueEntityID` (new when absent) and equality by identity.
+ * WHY: creation and reconstitution are separate paths, each a static method of the subclass (domain/model).
+ * WHERE: extended by `AggregateRoot` and by the child entities of an aggregate.
+ */
+export abstract class Entity<Props> {
+	private readonly _id: UniqueEntityID;
+	protected props: Props;
+
+	protected constructor(props: Props, id?: UniqueEntityID) {
+		this.props = props;
+		this._id = id ?? new UniqueEntityID();
+	}
+
+	get id(): UniqueEntityID {
+		return this._id;
+	}
+
+	equals(entity: unknown): boolean {
+		if (entity === this) {
+			return true;
+		}
+
+		if (!(entity instanceof Entity)) {
+			return false;
+		}
+
+		return this._id.equals(entity._id);
+	}
+}
+```
+
+## ValueObject
+
+```ts title="packages/core/src/entities/value-object.ts"
+/** SOURCE OF TRUTH: ValueObject.
+ * WHAT: the value object base: protected constructor, read-only props and structural equality.
+ * WHY: a value object has no id and is compared by value (domain/model, "Value objects").
+ * WHERE: extended by the value objects of apps/app-api/src/domain/enterprise/value-objects.
+ */
+export abstract class ValueObject<Props> {
+	protected readonly props: Props;
+
+	protected constructor(props: Props) {
+		this.props = props;
+	}
+
+	equals(vo?: ValueObject<Props>): boolean {
+		if (vo === null || vo === undefined) {
+			return false;
+		}
+
+		if (vo.props === undefined) {
+			return false;
+		}
+
+		return JSON.stringify(this.props) === JSON.stringify(vo.props);
+	}
+}
+```
+
+## Either
+
+```ts title="packages/core/src/types/either.ts"
+/** SOURCE OF TRUTH: Either, Left, Right, failure, success.
+ * WHAT: the return of an operation that can fail: `failure(...)` or `success(...)`, narrowed by `isFailure()`/`isSuccess()`.
+ * WHY: the domain returns errors, never throws them (backend/errors, "Retornando erro: sempre `Either`, nunca `throw`").
+ * WHERE: returned by `create()`, by entity transitions and by use cases; read by the controller.
+ */
+export class Left<L, R> {
+	readonly value: L;
+
+	constructor(value: L) {
+		this.value = value;
+	}
+
+	isFailure(): this is Left<L, R> {
+		return true;
+	}
+
+	isSuccess(): this is Right<L, R> {
+		return false;
+	}
+}
+
+export class Right<L, R> {
+	readonly value: R;
+
+	constructor(value: R) {
+		this.value = value;
+	}
+
+	isFailure(): this is Left<L, R> {
+		return false;
+	}
+
+	isSuccess(): this is Right<L, R> {
+		return true;
+	}
+}
+
+export type Either<L, R> = Left<L, R> | Right<L, R>;
+
+export function failure<L, R = never>(value: L): Either<L, R> {
+	return new Left(value);
+}
+
+export function success<R, L = never>(value: R): Either<L, R> {
+	return new Right(value);
+}
+```

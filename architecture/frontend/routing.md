@@ -19,7 +19,7 @@ not_covered:
   - "uso de token e tema no código → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
   - "o spec de rota e guard → frontend/testing"
-examples: [starter/apps/app-web/src/app/router/routes.tsx, starter/apps/app-web/src/app/layouts/app/app-layout.tsx, starter/apps/app-web/src/shared/components/app-splash.tsx]
+examples: [frontend/routing.examples.md]
 status: active
 ---
 # Rotas do frontend
@@ -100,7 +100,7 @@ Quando o fluxo é longo, com passos ou estado que mereça link compartilhável: 
 
 ## Aplicação
 
-A página no router, com o import mapeado para o default que o `lazy` espera, e o `Suspense` no layout: `starter/apps/app-web/src/app/router/routes.tsx` e `starter/apps/app-web/src/app/layouts/app/app-layout.tsx`.
+A página no router, com o import mapeado para o default que o `lazy` espera, e o `Suspense` no layout: routing.examples.md#approutes e routing.examples.md#applayout.
 
 O modal de tarefa montado por estado na página que o dispara:
 
