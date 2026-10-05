@@ -87,8 +87,6 @@ flowchart TD
 | Entidade | `src/domain/enterprise/<entidade>.entity.ts` | `domain/model.md` |
 | Classes de erro do módulo | `src/domain/enterprise/errors/<módulo>.errors.ts` | `backend/errors.md` |
 | Lista rastreada de coleção filha | `src/domain/enterprise/<coleção>-list.ts`, vínculo puro em `<referenciado>-ids.ts` | `domain/watched-list.md` |
-| Família de regra com variação (Strategy) | `src/domain/enterprise/strategies/<regra>.strategy.ts` | `domain/strategy.md` |
-| Regra com mais de um consumidor (Specification) | `src/domain/enterprise/specifications/<regra>.specification.ts` | `domain/specification.md` |
 | Regra de domínio sem dono natural (Domain Service) | `src/domain/enterprise/domain-services/<regra>.ts` | `domain/domain-services.md` |
 | Value object | `src/domain/enterprise/value-objects/<nome>.vo.ts` | `domain/model.md` |
 | Enum de domínio | `src/domain/enterprise/enums/<nome>.enum.ts` | `domain/model.md` |

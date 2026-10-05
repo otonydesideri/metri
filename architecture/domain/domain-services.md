@@ -11,8 +11,6 @@ keywords: [domain service, service de domínio, função pura, classe sem estado
 not_covered:
   - "value object, entidade, agregado e a mutação interna → domain/model"
   - "caso de uso e orquestração → backend/application"
-  - "variação de comportamento escolhida por dado → domain/strategy"
-  - "regra booleana de domínio com mais de um consumidor → domain/specification"
   - "interação entre contextos → domain/bounded-contexts"
 activation: "Alguma BR dos UCs é regra de domínio sem dono natural num value object, numa entidade ou num agregado?"
 examples: [domain/domain-services.examples.md]
@@ -31,7 +29,7 @@ Não é domain service:
 - **Estado persistido que a regra lê e reescreve** (um saldo, um contador, os lotes de um produto): é agregado, e a regra é método dele (`domain/model.md`).
 - **Função que só encadeia métodos de entidades**, passando o resultado de um ao outro: é orquestração, e mora no caso de uso.
 - **Valor derivado do estado de uma entidade**, mesmo que uma leitura de tela também precise dele: é método da entidade.
-- **Variação escolhida por dado** ou **regra booleana com mais de um consumidor**: `domain/strategy.md` e `domain/specification.md`.
+- **Variação escolhida por dado**: um `Record` total do valor fechado para a função de cada ramo (`general/principles.md`).
 
 > **Por quê.** Quando o dono não existe, a regra procura casa e vira função solta ou código de infra; criar o dono é o que dá casa a ela.
 

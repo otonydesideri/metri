@@ -148,20 +148,17 @@ const ORDER_LIST_CACHE_TTL_IN_SECONDS = 60;
 
 @Injectable()
 export class OrderListCacheImpl implements OrderListCache {
-  constructor(
-    // infra class of the chosen provider; the real name carries the provider's
-    private readonly cache: CacheProviderService,
-    private readonly logger: PinoLogger,
-  ) {
-    this.logger.setContext(OrderListCacheImpl.name);
-  }
+  private readonly logger = new Logger(OrderListCacheImpl.name);
+
+  // infra class of the chosen provider; the real name carries the provider's
+  constructor(private readonly cache: CacheProviderService) {}
 
   async get(input: FetchOrdersQueryInput): Promise<PaginatedResult<OrderListItem> | null> {
     try {
       const stored = await this.cache.get(this.keyOf(input));
       return stored ? reviveOrderList(stored) : null;
     } catch (error) {
-      this.logger.warn({ err: error }, 'Cache da listagem de pedidos indisponível');
+      this.logger.warn(`Cache da listagem de pedidos indisponível: ${(error as Error).message}`);
       return null;
     }
   }

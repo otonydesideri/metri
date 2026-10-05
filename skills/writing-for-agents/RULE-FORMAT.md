@@ -303,7 +303,7 @@ As pastas de área do source estão em `node_modules/metri/architecture/INDEX.md
 
 **Proibido.** Pasta `system/` ou `cross-cutting/`.
 
-**Obrigatório.** Um documento cobre um assunto só: um padrão de construção (`domain/strategy.md`), uma capacidade de infra (`infrastructure/mail.md`), uma área do sistema (`backend/errors.md`).
+**Obrigatório.** Um documento cobre um assunto só: um padrão de construção (`domain/watched-list.md`), uma capacidade de infra (`infrastructure/storage.md`), uma área do sistema (`backend/errors.md`).
 
 Quando um assunto acumula partes independentes: **Obrigatório.** Cada parte vira documento próprio.
 

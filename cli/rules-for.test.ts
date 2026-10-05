@@ -4,7 +4,7 @@ import { copyFixture, edit, FIXTURE, REPO, removeCopies, run, write } from './li
 afterAll(removeCopies);
 
 const PAGE = 'apps/app-web/src/pages/orders/orders-page.tsx';
-const MAIL = 'apps/app-api/src/infra/services/mail/resend-mail.service.ts';
+const STORAGE = 'apps/app-api/src/infra/services/storage/r2-storage.service.ts';
 const CACHE = 'apps/app-api/src/infra/services/cache/cache-provider.service.ts';
 
 function ids(lines: string[]): string[] {
@@ -39,7 +39,7 @@ describe('rules-for', { timeout: 30_000 }, () => {
 
   it('regra sem applies_to não sai por caminho: backend/layers e frontend/structure; backend/boundaries sai', () => {
     expect(ids(run('rules-for', ['--root', FIXTURE, PAGE]).lines)).not.toContain('frontend/structure');
-    const backend = ids(run('rules-for', ['--root', FIXTURE, MAIL]).lines);
+    const backend = ids(run('rules-for', ['--root', FIXTURE, STORAGE]).lines);
     expect(backend).toContain('backend/boundaries');
     expect(backend).not.toContain('backend/layers');
   });
@@ -53,7 +53,7 @@ describe('rules-for', { timeout: 30_000 }, () => {
   it('ticket T: usa os ids de areas do bloco do T', () => {
     const { status, lines } = run('rules-for', ['--root', FIXTURE, '--ticket', 'T2.1']);
     expect(status).toBe(0);
-    expect(ids(lines)).toEqual(['infrastructure/mail', 'infrastructure/runtime']);
+    expect(ids(lines)).toEqual(['infrastructure/runtime', 'infrastructure/storage']);
   });
 
   it('ticket inexistente é erro', () => {
@@ -72,9 +72,8 @@ describe('rules-for', { timeout: 30_000 }, () => {
   });
 
   it('capacidade ativa entra; no source, todas entram', () => {
-    const storage = 'apps/app-api/src/infra/services/storage/r2-storage.service.ts';
-    expect(ids(run('rules-for', ['--root', FIXTURE, storage]).lines)).toContain('infrastructure/storage');
-    expect(ids(run('rules-for', ['--root', REPO, MAIL]).lines)).toContain('infrastructure/mail');
+    expect(ids(run('rules-for', ['--root', FIXTURE, STORAGE]).lines)).toContain('infrastructure/storage');
+    expect(ids(run('rules-for', ['--root', REPO, CACHE]).lines)).toContain('infrastructure/cache');
   });
 
   it('orçamento: mais de 5 regras gera aviso, sem erro', () => {

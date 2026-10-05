@@ -12,7 +12,6 @@ applies_to:
   - "apps/app-api/test/services/**"
 keywords: [ServicesModule, services.module.ts, classe de infra, contrato por fluxo, vendor, nível de abstração, capacidade, useClass, provide, exports, PrismaService, PgBossService, dublê, fake, items, stub, overrideProvider]
 not_covered:
-  - "o desenho de cada capacidade → infrastructure/mail"
   - "o desenho de cada capacidade → infrastructure/storage"
   - "o desenho de cada capacidade → infrastructure/cache"
   - "a fila → backend/async-jobs"
@@ -24,7 +23,7 @@ status: active
 
 Como as capacidades técnicas compartilhadas são organizadas e consumidas pelos módulos: quantos níveis de abstração cada uma tem, onde o contrato mora, onde a implementação concreta mora e o critério pra decidir se um nível a mais compensa.
 
-Os exemplos usam as classes de e-mail de `infrastructure/mail.md` como instância da regra.
+Os exemplos usam o envio de e-mail pelo Resend (`defaults/stack.md`, "Quando precisar") como instância da regra.
 
 ## A regra dos níveis para um serviço de infraestrutura compartilhado
 
@@ -46,7 +45,7 @@ flowchart TD
 
 Domínio ou aplicação, seja um caso de uso, seja uma composição de infra que monta uma resposta domínio-específica, nunca injeta a classe de infra. Injeta um contrato específico do que aquele fluxo precisa, um por fluxo real, nunca um contrato genérico da capacidade nem um contrato por módulo agrupando vários fluxos. Um contrato genérico só permite ao spec provar que algo foi chamado; um contrato por fluxo permite provar a intenção, com dado estruturado. É a mesma forma que `backend/async-jobs.md` fixa pra fila (`<fluxo>-queue.contract.ts`). Infra que faz trabalho puramente técnico, como health check, injeta a classe de infra direto. O que a implementação de query injeta segue `backend/reading.md`, "A query de exibição", e o controller consome o contrato da ação em `domain/application/queries/`; resposta que precisa de outra capacidade não é query, é caso de uso (terceira pergunta da árvore daquele documento). A implementação de um contrato de service injeta a classe de infra da própria capacidade e, quando o fluxo pede, o contrato de outra: service que completa o próprio resultado com o de outra capacidade compõe pelo contrato dela, nunca pela classe de vendor dela. A capacidade de baixo segue com contrato, dublê e registro próprios, e continua servindo quem a consome direto.
 
-`services/` ganha subpasta por capacidade (`mail/`, `storage/`, `cache/`), porque acumula contratos de tecnologias diferentes; mesmo motivo de `enterprise/` ter `value-objects/` e `enums/` (`backend/modules.md`), `strategies/` (`domain/strategy.md`) e `specifications/` (`domain/specification.md`). A subpasta nomeia a capacidade externa e não reusa o nome de um módulo que tem agregado: esse nome já é de `use-cases/` e `queries/`, e a terceira pasta com ele passa a prometer os services daquele módulo. Módulo sem agregado, que existe só por causa da capacidade, empresta o nome sem ambiguidade. É diferente de `queues/` em `backend/async-jobs.md`, que é flat: lá todo contrato é a mesma tecnologia, só muda o fluxo, então não tem o que separar por capacidade.
+`services/` ganha subpasta por capacidade (`mail/`, `storage/`, `cache/`), porque acumula contratos de tecnologias diferentes; mesmo motivo de `enterprise/` ter `value-objects/` e `enums/` (`backend/modules.md`). A subpasta nomeia a capacidade externa e não reusa o nome de um módulo que tem agregado: esse nome já é de `use-cases/` e `queries/`, e a terceira pasta com ele passa a prometer os services daquele módulo. Módulo sem agregado, que existe só por causa da capacidade, empresta o nome sem ambiguidade. É diferente de `queues/` em `backend/async-jobs.md`, que é flat: lá todo contrato é a mesma tecnologia, só muda o fluxo, então não tem o que separar por capacidade.
 
 ## Registro no Nest
 

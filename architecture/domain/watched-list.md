@@ -12,6 +12,7 @@ keywords: [WatchedList, compareItems, sameValueAs, identidade estrutural, "getIt
 not_covered:
   - "a escrita do delta no repositório → backend/persistence"
   - "a ordem do arquivo físico em volta da escrita → infrastructure/storage"
+activation: "Algum agregado grava uma coleção filha pelo delta (o que entrou e o que saiu), em vez de regravá-la inteira?"
 examples: [domain/watched-list.examples.md, starter/packages/core/src/entities/watched-list.ts]
 status: active
 ---

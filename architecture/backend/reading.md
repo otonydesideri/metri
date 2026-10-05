@@ -242,7 +242,7 @@ Pontos-chave:
 1. Read-only: nunca INSERT, UPDATE ou DELETE. Escrita disfarçada de leitura ("marcar como visto", contador de acesso) é operação de negócio, caminho de domínio.
 2. Dado protegido segue o escopo do dono de `backend/access-scope.md`.
 3. Devolve DTO plano serializável, nunca entidade, value object ou `UniqueEntityID`.
-4. Não toma decisão nem executa comportamento de domínio. Critério de seleção com significado de negócio pode aparecer no `where`; quando a mesma regra tem consumidor em memória, a definição compartilhada vira specification e a implementação aplica seu `toWhere()` (`domain/specification.md`).
+4. Não toma decisão nem executa comportamento de domínio. Critério de seleção com significado de negócio pode aparecer no `where`; quando a mesma regra também decide em memória, a definição dela tem uma casa só, e a query a reusa em vez de reescrevê-la.
 5. O controller injeta o contrato da query em `domain/application`, sem caso de uso de repasse no meio nem dependência da implementação Prisma.
 6. Não emite domain event e não tem efeito colateral: nada de log de auditoria, contador ou invalidação de cache dentro dela. Gravar no cache o resultado que ela mesma montou, na leitura cacheada, é parte da leitura (`infrastructure/cache.md`).
 7. Listagem que cresce tem paginação, com defaults e teto no schema Zod.
@@ -268,7 +268,7 @@ A evolução sob custo real (SQL cru, índice ou view materializada, cache de `i
 
 ## Testes
 
-Contrato e implementação de query não têm spec unitário nem dublê em memória. O contrato não contém comportamento; o que quebra na implementação é o `where` errado, o `include` faltando, a projeção com campo trocado, e só o banco real exercita isso: a prova é o e2e do controller (`test/setup-e2e.ts`, banco isolado por arquivo), com a tag de regra no título quando a listagem implementa regra de spec. Specification compartilhada continua com spec unitário próprio (`domain/specification.md`).
+Contrato e implementação de query não têm spec unitário nem dublê em memória. O contrato não contém comportamento; o que quebra na implementação é o `where` errado, o `include` faltando, a projeção com campo trocado, e só o banco real exercita isso: a prova é o e2e do controller (`test/setup-e2e.ts`, banco isolado por arquivo), com a tag de regra no título quando a listagem implementa regra de spec.
 
 O que o e2e de leitura cobre, além do caminho feliz: o filtro aplicado, a paginação (um `total` maior que a página devolvida), o 404 do detalhe, e o escopo do dono, pela prova de dois donos de `backend/access-scope.md`.
 
