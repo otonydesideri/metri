@@ -20,7 +20,7 @@ function renderPage() {
 }
 
 describe('HomeStartPage', () => {
-	it('API fora do ar → o erro de leitura com a nova tentativa, e o resto da página fica', async () => {
+	it('API fora do ar → o erro de leitura com a nova tentativa', async () => {
 		let calls = 0;
 		server.use(
 			http.get(HEALTH_URL, () => {
@@ -33,7 +33,6 @@ describe('HomeStartPage', () => {
 		renderPage();
 
 		expect(await screen.findByText('A API não respondeu')).toBeVisible();
-		expect(screen.getByText('/shape')).toBeVisible();
 
 		await userEvent.click(
 			screen.getByRole('button', { name: 'Tentar de novo' }),

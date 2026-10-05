@@ -8,7 +8,6 @@ const APP_URL = `http://localhost:${E2E_PORT}`;
  * WHAT: runs the `*.e2e.ts` files under `e2e/` on the `desktop` (Desktop Chrome) and `mobile` (Pixel 7) projects, against app-api on `E2E_PORT + 1` and the Vite dev server on `E2E_PORT`, which serves the page and `/api` on one origin.
  * WHY: each worktree gets its own `E2E_PORT`, and `reuseExistingServer: false` keeps the e2e from hitting another project's server (frontend/testing, "E2e de critério de UI").
  * WHERE: run by `pnpm --filter app-web test:e2e`; app-api reads the root `.env` and fails at boot when its database does not answer, and the environment wins.
- * `LANG` sets the format of the native date and time controls, which neither `locale` nor `--lang` reach.
  */
 export default defineConfig({
 	testDir: 'e2e',
@@ -21,7 +20,6 @@ export default defineConfig({
 		baseURL: APP_URL,
 		locale: 'pt-BR',
 		trace: 'retain-on-failure',
-		launchOptions: { env: { ...process.env, LANG: 'pt_BR.UTF-8' } },
 	},
 	projects: [
 		{ name: 'desktop', use: { ...devices['Desktop Chrome'] } },
