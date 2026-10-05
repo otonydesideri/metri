@@ -1,6 +1,6 @@
 ---
 id: backend/persistence
-description: "o repositório (contrato e implementação Prisma), o mapper, a escrita canônica do agregado (`save()`, delta da coleção filha, escrita em lote), o nome do método de escrita, a leitura em lote contra N+1, a propriedade de tabela no schema, a política de SQL cru e o outcome de persistência: como uma condição que o driver só revela na gravação vira um resultado declarado da operação."
+description: "o repositório (contrato e implementação Prisma), o mapper, a escrita canônica do agregado (`save()` que grava a raiz e substitui os filhos), o nome do método de escrita, a leitura em lote contra N+1, a propriedade de tabela no schema, a política de SQL cru e o outcome de persistência: como uma condição que o driver só revela na gravação vira um resultado declarado da operação."
 use_when:
   - "criar ou mudar repositório, mapper ou método de contrato de persistência"
   - "escrever SQL cru"
@@ -11,12 +11,12 @@ applies_to:
   - "apps/app-api/src/infra/persistence/prisma/repositories/**"
   - "apps/app-api/src/infra/persistence/prisma/mappers/**"
   - "packages/db/**/models/*.prisma"
-keywords: [repositório, mapper, toDomain, toPrisma, reconstitute, save, upsert, createMany, deleteMany, delta, WatchedList, leitura em lote, N+1, findManyByIds, Map, PrismaService, PrismaClient, UncheckedCreateInput, SQL cru, $queryRaw, $queryRawUnsafe, outcome de persistência, "models/<módulo>.prisma"]
+keywords: [repositório, mapper, toDomain, toPrisma, reconstitute, save, upsert, createMany, deleteMany, leitura em lote, N+1, findManyByIds, Map, TransactionContext, PrismaService, PrismaClient, UncheckedCreateInput, SQL cru, $queryRaw, $queryRawUnsafe, outcome de persistência, "models/<módulo>.prisma"]
 not_covered:
   - "atomicidade entre agregados, unidade de trabalho, concorrência e locking → backend/transactions"
   - "o mecanismo de contrato `abstract class` e o caso de uso → backend/application"
   - "a propriedade do agregado e o formato do id → domain/model"
-  - "quando a coleção usa `WatchedList` → domain/watched-list"
+  - "a gravação só do delta da coleção filha (`WatchedList`), capacidade condicional → domain/watched-list"
   - "o despacho de evento depois de persistir → backend/events"
   - "a query de exibição → backend/reading"
   - "quem importa `@metri/db` e `PrismaService` → backend/boundaries"
@@ -38,7 +38,7 @@ Persistência é a borda entre o agregado em memória e o banco: o repositório 
 
 **Proibido.** Repositório devolver dado cru.
 
-**Obrigatório.** O repositório injeta `PrismaService`, nunca `PrismaClient` direto.
+**Obrigatório.** O repositório injeta `TransactionContext` (`backend/transactions.md`, "Unidade de trabalho"), nunca `PrismaService` nem `PrismaClient` direto: lê por `client()` e escreve por `requireTx()`.
 
 **Proibido.** A implementação de um repositório injetar ou importar outro repositório; o que cruza arquivos entre persistências é o mapper.
 
@@ -49,14 +49,6 @@ Persistência é a borda entre o agregado em memória e o banco: o repositório 
 > **Por quê.** A decisão sai da entidade e vai para o repositório, onde passa a existir em duas cópias, a real e a do dublê de teste.
 
 **Proibido.** Escrita que não é o estado do agregado carregado no contrato do repositório: outra tabela ou condição sobre outro agregado entram pela unidade de trabalho, com o repositório de cada agregado (`backend/transactions.md`, "Unidade de trabalho").
-
-Quando o agregado tem coluna `version`: **Obrigatório.** O `save()` confere a `version` esperada no `where`, grava a incrementada e devolve o outcome `'saved' | 'conflict'` (`backend/transactions.md`, "Concorrência e locking").
-
-**Obrigatório.** A condição de `version` no `where` é mecânica: compara o número lido com o número gravado, nada além disso.
-
-**Proibido.** `where` de uma escrita condicional carregar critério de regra de negócio (um limite, um estado permitido, uma faixa) além da própria `version` ou da constraint de unicidade; a decisão que motiva a escrita já aconteceu no domínio, antes de chamar o repositório (`backend/transactions.md`, "O domínio decide; a infra só faz IO").
-
-> **Por quê.** `where` com condição de negócio decide sem o domínio ver, e o outcome devolvido vira `'conflict'` mesmo quando a causa real não foi disputa de concorrência — ninguém consegue distinguir as duas coisas de fora do repositório.
 
 **Obrigatório.** Dentro de um escopo de `UnitOfWork`, o repositório usa o `tx` do escopo, pelo contexto que a implementação publica (`backend/transactions.md`, "Unidade de trabalho").
 
@@ -84,13 +76,7 @@ Quando um filho parece precisar de contrato de repositório: **Obrigatório.** T
 
 ### Escrita canônica do agregado
 
-**Obrigatório.** O `save()` grava a raiz e o delta da coleção filha numa única transação: novos por `createMany`, removidos por `deleteMany`.
-
-**Proibido.** Reescrever a coleção filha inteira a cada gravação.
-
-Quando um filho que continua na coleção muda de conteúdo (o saldo de um lote): **Obrigatório.** A raiz marca os filhos alterados, e o `save()` grava cada um por `update`, no mesmo `tx`.
-
-Quando a coleção filha cresce sem limite (lotes, histórico): **Obrigatório.** O repositório carrega só o subconjunto que a regra usa, por um método de leitura que diz qual (`findWithAvailableLots`), e a raiz declara que a coleção carregada é esse subconjunto.
+**Obrigatório.** O `save()` grava a raiz e substitui os filhos no mesmo `tx`: `deleteMany` dos filhos da raiz, `createMany` da coleção atual.
 
 **Obrigatório.** A tabela do filho é escrita direto no `tx` da escrita da raiz, pelo mapper do filho.
 
@@ -167,7 +153,7 @@ Exemplo completo: persistence.examples.md#orderprismarepositoryimpl
 O client do Prisma 7: o `@metri/db` do starter (`starter/packages/db/prisma/schema.prisma`, `starter/packages/db/prisma.config.ts`, com a URL fora do schema, e o `postinstall` que gera o client, exportado como `@metri/db/client`) e o `starter/apps/app-api/src/infra/persistence/prisma/prisma.service.ts`, que monta o client com o driver adapter.
 
 - `toDomain()` chama `reconstitute()`, nunca `create()`, pela regra de `domain/model.md`: linha do banco não passa de novo pela validação de nascimento.
-- O delta vem de `getNewItems()`/`getRemovedItems()` da `WatchedList` (`domain/watched-list.md`), que rastreia pertencimento, não conteúdo.
+- A coleção carregada é a coleção inteira: substituir os filhos a partir de um subconjunto apagaria o resto.
 - O despacho depois da transação e fora dela aplica `backend/events.md`, "A entidade registra, o repositório despacha".
 - `toPrisma()` também serve à factory de teste (`make<Agregado>.factory.ts`), para gravar estado que o fluxo real levaria passos demais para alcançar; em agregado de adapter externo é ele quem monta o `create` da factory, papel que em produção pertence ao adapter. O dublê do contrato segue `backend/testing.md`, "Como criar um repositório em memória de teste".
 - A coluna `id` de todo model segue o formato do id de `domain/model.md`.
@@ -184,21 +170,25 @@ const orderById = new Map(orders.map((order) => [order.id.toValue(), order]));
 
 Daí em diante, cada acesso é `orderById.get(...)`, sem nova consulta.
 
-Dentro de uma transação, a escrita condicional aplica o outcome de persistência pela escada de `backend/transactions.md`, "Concorrência e locking"; na idempotência de job, a violação de unicidade reconhecida vira o outcome que o caso de uso trata como sucesso (`backend/async-jobs.md`, "Idempotência").
+Com `version`, o `save()` devolve o outcome `'saved' | 'conflict'` pela receita de `backend/transactions.md`, "Sob demanda"; na idempotência de job, a violação de unicidade reconhecida vira o outcome que o caso de uso trata como sucesso (`backend/async-jobs.md`, "Idempotência").
 
 ## Verificação
 
-- Contrato e implementação do repositório estão nos caminhos e nomes canônicos, com a implementação injetando `PrismaService` e sem importar outro repositório?
+- Contrato e implementação do repositório estão nos caminhos e nomes canônicos, com a implementação injetando `TransactionContext` e sem importar outro repositório?
 - Toda leitura devolve entidade pelo mapper, e toda escrita de estado recebe o agregado?
 - `toDomain()` chama `reconstitute()`, e `toPrisma()` tem o retorno anotado com o tipo de create do Prisma?
-- O `save()` grava raiz e delta na mesma transação, com o filho escrito no `tx` pelo mapper dele?
+- O `save()` grava a raiz e substitui os filhos no mesmo `tx`, pelo mapper do filho?
 - O nome da escrita descreve o efeito na linha, e escrita que recusa duplicata não é upsert?
 - Leitura de N registros é em lote, com `Map`, sem `find` em loop?
 - Model novo está no `models/<módulo>.prisma` do módulo dono?
 - SQL cru usa template tag, sem `$queryRawUnsafe` fora do adapter da fila, e identificador variável é união fechada?
 - Escrita com condição que só o banco avalia devolve o outcome declarado (`false` ou a união que nomeia cada resultado), com o código do driver lido só na implementação, sem `Either`, `DomainError` nem tipo genérico de resultado?
-- A condição de `version` no `where` é só a comparação mecânica, sem critério de negócio junto?
 - A implementação recusa escrita fora de um escopo de `UnitOfWork` ativo, com leitura livre para acontecer fora?
+
+## Sob demanda
+
+- **Gravar só o delta da coleção filha.** Quando regravar os filhos a cada `save()` não serve (filho referenciado por outra tabela, coleção cara de regravar): capacidade condicional `domain/watched-list.md`.
+- **`version` no `save()`.** Quando o agregado é disputado de fato por escrita concorrente: `backend/transactions.md`, "Sob demanda".
 
 ## Delegado ao projeto
 
@@ -209,7 +199,7 @@ Dentro de uma transação, a escrita condicional aplica o outcome de persistênc
 - `backend/transactions.md`: unidade de trabalho, concorrência e locking.
 - `backend/application.md`: o mecanismo de contrato e o caso de uso.
 - `domain/model.md`: entidade, `reconstitute()`, propriedade do agregado e formato do id.
-- `domain/watched-list.md`: o delta da coleção filha.
+- `domain/watched-list.md`: a gravação só do delta da coleção filha (capacidade condicional).
 - `backend/events.md`: o despacho depois de persistir.
 - `backend/errors.md`: o filtro de erro inesperado e as classes de `DomainError`.
 - `backend/async-jobs.md`: a exceção do `$queryRawUnsafe` e a idempotência.

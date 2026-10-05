@@ -1,6 +1,6 @@
 ---
 id: backend/reading
-description: "a leitura no backend — o caminho de domínio versus a query de exibição, com contrato na aplicação e execução direta no banco; DTO, projeção e read model; o não-encontrado do detalhe; a paginação e a agregação de dashboard e relatório."
+description: "a leitura no backend — o caminho de domínio versus a query de exibição, com contrato na aplicação e execução direta no banco; o não-encontrado do detalhe; a paginação e a agregação de dashboard e relatório."
 use_when:
   - "criar endpoint ou query de listagem, detalhe, dashboard ou relatório"
   - "paginar ou agregar uma leitura"
@@ -9,7 +9,7 @@ use_when:
 applies_to:
   - "apps/app-api/src/domain/application/queries/**"
   - "apps/app-api/src/infra/persistence/prisma/queries/**"
-keywords: [leitura, query de exibição, "<Ação>Query", "<Ação>PrismaQueryImpl", DTO, projeção, read model, CQRS, não-encontrado, PaginatedResult, paginação, pageSize, dashboard, relatório, agregação, módulo de tela, $queryRaw, DATE_TRUNC, bigint, persistence.module.ts]
+keywords: [leitura, query de exibição, query service, "<Ação>Query", "<Ação>PrismaQueryImpl", DTO, projeção, não-encontrado, PaginatedResult, paginação, pageSize, dashboard, relatório, agregação, módulo de tela, persistence.module.ts]
 not_covered:
   - "o cache de uma leitura → infrastructure/cache"
 examples: [backend/reading.examples.md]
@@ -18,8 +18,6 @@ status: active
 # Leitura
 
 Como o backend monta respostas de consulta: quando uma leitura pertence ao caminho de domínio (contrato, entidade, caso de uso) e quando ela vira uma query de exibição com contrato na aplicação e execução direta no banco pela infraestrutura, onde cada artefato mora, paginação, não-encontrado e agregação.
-
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
 
 ## As duas naturezas de uma leitura
 
@@ -62,8 +60,6 @@ A terceira pergunta é sobre composição, não sobre regra. Query é projeção
 O que a pergunta evita é a implementação de query virar orquestradora por baixo. Ela mora em `infra/persistence/prisma/`, então injetar contrato de serviço ali obriga o módulo de persistência a importar o de serviços, e a mesma feature termina com a escrita compondo no caso de uso e a leitura compondo na persistência. Leitura e escrita do mesmo agregado que precisam das mesmas peças têm a mesma forma.
 
 Esse caso de uso não é query disfarçada, mesmo sem veto nenhum: ele declara a falha que tem, a classe de não-encontrado do módulo quando o recurso não existe, e devolve um DTO plano.
-
-Quando uma biblioteca externa já expõe um endpoint de leitura que devolve exatamente o que a tela precisa, ele é usado como está, sem query nossa duplicando. Query nossa nasce quando a resposta precisa de formato, filtro ou agregação que o endpoint pronto não oferece.
 
 ## Leitura no caminho de domínio
 
@@ -113,17 +109,11 @@ Exemplo completo: reading.examples.md#fetchordersprismaqueryimpl
 
 Pontos-chave:
 
-- O contrato é a capacidade exposta pela aplicação. Não importa NestJS, Prisma, `@metri/db`, entidade ou value object; seu DTO é o modelo de leitura que o consumidor recebe.
+- O contrato é o query service da aplicação: nomeia uma capacidade de leitura e devolve um DTO, sem ser domain service nem repositório. Separá-lo da escrita não pede banco separado nem eventos. Não importa NestJS, Prisma, `@metri/db`, entidade ou value object; seu DTO é o modelo de leitura que o consumidor recebe.
 - A implementação injeta `PrismaService` e nada mais; a leitura cacheada injeta também o contrato de cache do próprio fluxo (`infrastructure/cache.md`, "Cache de leitura"). Por morar dentro de `infra/persistence/prisma/`, também pode tipar contra os tipos gerados de `@metri/db` quando precisar.
 - `include`/`select` pode atravessar agregados do mesmo bounded context e datastore, com `select` estreito dos campos usados.
 - O DTO da query é o corpo HTTP quando essa é a única porta, sob a chave que o nomeia (`{ order: ... }`) ou dentro do envelope de paginação, que já é tipado (`{ items: [...], total, page, pageSize }`). Nomear não é transformar: não existe presenter ou mapper por cerimônia na leitura, e mapper de agregado pertence à escrita (`backend/persistence.md`). Se outra porta exigir representação diferente, cada adapter transforma o DTO ou ganha uma query própria conforme a intenção.
 - O DTO é plano e serializável: primitivos, `Date`, arrays e objetos deles. O `Date` sai no HTTP como string ISO, pelo codec do DTO de resposta (`backend/http-api.md`, "Contrato de API: o backend é a fonte").
-
-## DTO, projeção, read model e CQRS
-
-O contrato `<Ação>Query` é o query service da aplicação. Ele nomeia uma capacidade de leitura e devolve um DTO; não é domain service nem repositório. Projeção é a seleção e transformação que a implementação faz para produzir esse DTO, seja por `select`, SQL, view ou outra fonte. Read model é o modelo conceitual otimizado para leitura: pode ser o próprio DTO montado a cada execução ou uma estrutura persistida e desnormalizada.
-
-Separar essa query do caminho de escrita já é segregação entre comando e consulta, mas não exige banco separado, eventos ou consistência eventual. Read store próprio entra quando escala, custo da consulta, autonomia de bounded context ou disponibilidade justificarem sincronização e operação adicionais. Sem essa justificativa, contrato de aplicação com implementação sobre o mesmo Postgres preserva a separação sem adotar o custo inteiro de CQRS.
 
 ## O não-encontrado do detalhe
 
@@ -181,7 +171,7 @@ Defaults e teto pertencem à fronteira HTTP, no schema Zod do endpoint; a query 
 
 ```ts
 export const FetchOrdersQueryStringSchema = z.object({
-  status: z.string().max(50).optional(),
+  status: z.enum(OrderStatus).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -193,39 +183,9 @@ Um lugar só resolve default: se a query também aplicasse `?? 20`, os dois valo
 
 Tela que não pertence a nenhum agregado (dashboard, relatório) é módulo de tela: mesmo critério de "A query de exibição", com o módulo do controller sendo o conceito da tela (`dashboard`, `reports`) em vez de um agregado. Ganha a própria pasta em `domain/application/queries/<módulo>/`, `infra/persistence/prisma/queries/<módulo>/` e `controllers/<módulo>/`, sem entidade, repositório de agregado ou caso de uso.
 
-Agregação usa a API do Prisma enquanto ela expressa a consulta (`count`, `aggregate`, `groupBy`). Quando o SQL preciso é mais claro ou mais eficiente (window function, `DATE_TRUNC`, join com agregação), `$queryRaw` com template tag é bem-vindo:
-
-```ts
-// infra/persistence/prisma/queries/reports/revenue-by-period.prisma-query.impl.ts
-async execute(input: RevenueByPeriodQueryInput): Promise<RevenuePeriod[]> {
-  const rows = await this.prisma.client.$queryRaw<
-    Array<{ period: Date; totalInCents: bigint; orderCount: bigint }>
-  >`
-    SELECT
-      DATE_TRUNC(${input.groupBy}, o.created_at) AS period,
-      SUM(o.total_in_cents)::bigint              AS "totalInCents",
-      COUNT(*)                                   AS "orderCount"
-    FROM orders o
-    WHERE o.created_at >= ${input.startDate}
-      AND o.created_at < ${input.endDate}
-    GROUP BY period
-    ORDER BY period
-  `;
-
-  const items = rows.map((row) => ({
-    period: row.period,
-    totalInCents: Number(row.totalInCents),
-    orderCount: Number(row.orderCount),
-  }));
-  return items;
-}
-```
-
-Pontos-chave:
-
-- Interpolação e identificador variável (a unidade do `DATE_TRUNC`) seguem a política de SQL cru de `backend/persistence.md`: template tag parametrizada, identificador como união fechada validada na fronteira.
-- O join e o group by acontecem no banco; a query devolve linhas prontas. Agregar em memória o que o SQL agregaria é a versão de leitura do N+1.
-- Agregado numérico não volta como `number`: `COUNT` devolve `bigint`, e `SUM` sobre inteiros devolve `numeric` (`Decimal` no client), por isso o cast `::bigint` no próprio SQL quando o valor é inteiro. A conversão para `number` acontece no `map`, nunca vaza para a projeção.
+- Agregação usa a API do Prisma enquanto ela expressa a consulta (`count`, `aggregate`, `groupBy`); quando não expressa, SQL cru pela política de `backend/persistence.md`, com template tag parametrizada e identificador variável como união fechada validada na fronteira.
+- O join e o group by acontecem no banco, e a query devolve linhas prontas: agregar em memória o que o SQL agregaria é a versão de leitura do N+1.
+- Agregado numérico do SQL cru (`bigint`, `Decimal`) vira `number` dentro da implementação, sem vazar para o DTO.
 
 ## Regras absolutas da query
 
@@ -272,7 +232,7 @@ Os dois lados do corte ficam mais baratos ao mesmo tempo: o dublê em memória n
 - O controller injeta o contrato, só a implementação conhece Prisma, e ela não injeta nada além do `PrismaService` e, quando cacheada, do contrato de cache do fluxo?
 - O detalhe devolve `null` e o controller traduz com a classe de não-encontrado do módulo + `toHttpException`?
 - A listagem é paginada com `PaginatedResult`, defaults e teto no Zod, query recebendo valores resolvidos?
-- Agregação com template tag parametrizada, identificador variável como união fechada, conversão numérica no `map`?
+- Agregação feita no banco, com SQL cru parametrizado e conversão numérica dentro da implementação?
 - O contrato de repositório continua sem método que só uma tela consome?
 - Join direto ficou dentro do bounded context e datastore?
 - O e2e cobre filtro, paginação e o 404?

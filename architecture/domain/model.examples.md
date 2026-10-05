@@ -1,19 +1,5 @@
 # Modelo de domínio: exemplos
 
-## OrderItemList
-
-```ts
-// domain/enterprise/order-item-list.ts
-import { WatchedList } from '@metri/core/entities';
-import { OrderItem } from './order-item.entity';
-
-export class OrderItemList extends WatchedList<OrderItem> {
-  compareItems(a: OrderItem, b: OrderItem): boolean {
-    return a.equals(b);
-  }
-}
-```
-
 ## Order
 
 ```ts
@@ -28,7 +14,6 @@ import {
 import { OrderConfirmedEvent } from './events/order-confirmed.event';
 import { OrderStatus } from './enums/order-status.enum';
 import { OrderItem } from './order-item.entity';
-import { OrderItemList } from './order-item-list';
 import {
   EmptyOrderError,
   InvalidOrderStatusTransitionError,
@@ -37,7 +22,7 @@ import {
 
 export interface OrderProps {
   customerId: UniqueEntityID;
-  items: OrderItemList;
+  items: OrderItem[];
   status: OrderStatus;
   createdAt: Date;
   updatedAt?: Date | null;
@@ -52,7 +37,7 @@ export class Order extends AggregateRoot<OrderProps> {
   public static create(
     props: Optional<OrderProps, 'status' | 'createdAt'>,
   ): Either<EmptyOrderError, Order> {
-    if (props.items.getItems().length === 0) {
+    if (props.items.length === 0) {
       return failure(new EmptyOrderError());
     }
 
@@ -73,7 +58,7 @@ export class Order extends AggregateRoot<OrderProps> {
     return this.props.customerId;
   }
 
-  public get items(): OrderItemList {
+  public get items(): readonly OrderItem[] {
     return this.props.items;
   }
 
@@ -99,7 +84,7 @@ export class Order extends AggregateRoot<OrderProps> {
       return failure(new OrderNotEditableError(this.props.status));
     }
 
-    this.props.items.add(item);
+    this.props.items.push(item);
     this.touch();
 
     return success(undefined);
@@ -162,55 +147,5 @@ export class Money extends ValueObject<MoneyProps> {
   public toValue(): number {
     return this.props.amountInCents;
   }
-}
-```
-
-## ProductSlug
-
-```ts
-import { ValueObject } from '@metri/core/entities';
-import { type Either, failure, success } from '@metri/core/types';
-import { InvalidProductSlugError, ReservedProductSlugError } from '../errors/product.errors';
-
-const SLUG_FORMAT = /^[a-z0-9-]{3,40}$/;
-
-/** The first segment of every SPA route and the API prefix (general/http-surface). */
-const RESERVED_SLUGS = new Set(['api', 'admin', 'assets', 'login', 'logout', 'orders', 'products', 'settings']);
-
-interface ProductSlugProps {
-  value: string;
-}
-
-/** The product's public address, `/<slug>` at the SPA root; the failure carries a suggestion in the valid format, and availability is the use case's check. */
-export class ProductSlug extends ValueObject<ProductSlugProps> {
-  private constructor(props: ProductSlugProps) {
-    super(props);
-  }
-
-  public static create(raw: string): Either<InvalidProductSlugError | ReservedProductSlugError, ProductSlug> {
-    const value = raw.trim().toLowerCase();
-
-    if (!SLUG_FORMAT.test(value)) {
-      return failure(new InvalidProductSlugError(suggestProductSlug(value)));
-    }
-
-    if (RESERVED_SLUGS.has(value)) {
-      return failure(new ReservedProductSlugError(suggestProductSlug(value)));
-    }
-
-    return success(new ProductSlug({ value }));
-  }
-
-  public get value(): string {
-    return this.props.value;
-  }
-}
-
-export function suggestProductSlug(base: string): string {
-  const cleaned = base.replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-  const stem = cleaned.length >= 3 ? cleaned.slice(0, 34) : 'produto';
-  const suffix = Math.floor(1000 + Math.random() * 9000);
-
-  return `${stem}-${suffix}`;
 }
 ```

@@ -18,11 +18,9 @@ status: active
 
 Como erro de domínio é modelado, retornado e traduzido em resposta HTTP, e o envelope único que toda resposta de erro da API usa, com a taxonomia de protocolo dele (`ApiErrorType`).
 
-Os exemplos usam o domínio didático de pedidos (`order`, `invoice`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático".
-
 ## Os três tipos de erro que existem no sistema
 
-**Erro de formato HTTP.** Corpo ou path param fora do schema Zod (`createZodDto`): campo obrigatório ausente, tipo errado, string acima do `.max()` declarado. Capturado pelo `ZodValidationPipe` global (`APP_PIPE`, `app.module.ts`) antes do controller rodar; não vira `DomainError`, mas a resposta segue o mesmo formato único, ver "Erro de formato HTTP: `toInvalidRequestException`" adiante.
+**Erro de formato HTTP.** Corpo ou path param fora do schema Zod (`createZodDto`): campo obrigatório ausente, tipo errado, valor fora do formato declarado. Capturado pelo `ZodValidationPipe` global (`APP_PIPE`, `app.module.ts`) antes do controller rodar; não vira `DomainError`, mas a resposta segue o mesmo formato único, ver "Erro de formato HTTP: `toInvalidRequestException`" adiante.
 
 **Erro de domínio.** Regra de negócio violada ou invariante inválido: recurso que já existe, recurso que não existe, transição de estado proibida. Previsível, faz parte do vocabulário do negócio, e o cliente da API precisa discriminar qual aconteceu para reagir. Nunca lançado como exceção: todo caso de uso retorna `Either<Erro, Sucesso>`. É o assunto deste documento.
 
@@ -179,7 +177,7 @@ Exemplo completo: `starter/apps/app-api/src/infra/common/errors/to-invalid-reque
 Pontos-chave:
 
 - `code` e `type` são fixos (`INVALID_REQUEST_FORMAT`/`INVALID_REQUEST`), fora de `DomainErrorType` pelo mesmo critério do `'INTERNAL_ERROR'` e dentro do `ApiErrorType`: erro de formato não pronuncia vocabulário de negócio. O detalhe por campo vai em `message`, agregando cada issue do Zod como `caminho.do.campo: mensagem`.
-- A mensagem de cada campo é escrita em português no próprio schema (`.min(8, 'A senha deve ter no mínimo 8 caracteres.')`); o default do Zod é em inglês, então campo sem mensagem própria vaza inglês pro cliente.
+- A mensagem de cada campo é escrita em português no próprio schema (`z.array(orderItemSchema).min(1, 'Informe ao menos um item.')`); o default do Zod é em inglês, então campo sem mensagem própria vaza inglês pro cliente.
 - O pipe só chama a função com o `ZodError` do schema; não há branch de erro não classificado aqui, esse papel é do `UnexpectedErrorFilter`.
 
 ## Erro inesperado: filtro global
@@ -187,8 +185,6 @@ Pontos-chave:
 Erro inesperado não passa pela tabela de tradução acima: não é um `DomainError`, é uma exceção lançada por acidente de programação ou por falha de infraestrutura externa. A captura é um filtro global do Nest, registrado via `APP_FILTER` (`infrastructure/runtime.md`):
 
 Exemplo completo: `starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts`, registrado no `starter/apps/app-api/src/app.module.ts`.
-
-`FastifyReply` é tipado direto no filtro, sem passar por `HttpAdapterHost`. O Fastify é a única plataforma HTTP (`defaults/stack.md`, "Stack"); a portabilidade entre adapters que `HttpAdapterHost` existe pra dar não tem uso real aqui.
 
 O filtro loga o 5xx com a stack, pelo `Logger` nativo (`infrastructure/logging.md`); abaixo de 500 não loga.
 
@@ -200,7 +196,7 @@ Pontos-chave:
 - Pedido sem identidade validada (sem sessão ou com sessão inválida) é a `UnauthorizedException` nativa do Nest, lançada pela fronteira: sai 401 no envelope, `code: 'UNAUTHORIZED'` e `type: 'REQUEST_REJECTED'`. Nunca um `DomainError`: quem pede ainda não é ninguém no domínio.
 - Exceção que não é `HttpException` é, por definição, não classificada. O cliente recebe sempre o mesmo corpo genérico com status 500; a mensagem original e o stack ficam só no log (`infrastructure/logging.md`), nunca no corpo da resposta.
 - `code: 'INTERNAL_SERVER_ERROR'` e `type: 'INTERNAL_ERROR'` reaproveitam as mesmas três chaves do formato de erro de domínio (`code`, `message`, `type`), mantendo um único formato de erro na API. `'INTERNAL_ERROR'` é valor do `ApiErrorType` e não entra em `DomainErrorType`: esse enum é reservado a categorias do vocabulário de negócio, e um erro inesperado não pronuncia vocabulário de negócio nenhum.
-- Erro do Prisma que escapa da persistência cai no mesmo filtro, sem tratamento especial por código do driver (`P2002`, `P2025`...). Condição esperada que o banco só revela na gravação (violação de unicidade, registro não encontrado) não chega aqui: a implementação do contrato de persistência reconhece o código e devolve o outcome declarado da operação, e o caso de uso é quem o traduz na classe de `DomainError` (`backend/persistence.md`, "Outcome de persistência"). Um erro de Prisma chegando aqui já é, por definição, um caso que nenhum contrato declarou: é tratado como qualquer outro erro inesperado.
+- Erro do Prisma que escapa da persistência cai no mesmo filtro, sem tratamento por código do driver: a condição esperada que o banco só revela na gravação (violação de unicidade, registro não encontrado) vira o outcome declarado do contrato de persistência, que o caso de uso traduz em `DomainError` (`backend/persistence.md`, "Outcome de persistência"). Erro de driver que chega aqui nenhum contrato declarou, e é inesperado como qualquer outro.
 
 ## Erros sensíveis: o que não vazar
 

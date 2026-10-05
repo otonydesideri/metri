@@ -10,12 +10,11 @@ applies_to:
   - "apps/app-web/src/app/router/**"
   - "apps/app-web/src/app/layouts/**"
   - "apps/app-web/index.html"
-keywords: [rota, grupo de rota, guard, layout, routes.tsx, react-router, "<Route path=\"*\">", não-encontrado, modal de tarefa, isDirty, onEscapeKeyDown, onInteractOutside, React.lazy, lazy, Suspense, Outlet, AppSplash, code splitting, segmento de rota, kebab-case, orderId]
+keywords: [rota, grupo de rota, guard, layout, routes.tsx, react-router, "<Route path=\"*\">", não-encontrado, modal de tarefa, React.lazy, lazy, Suspense, Outlet, AppSplash, code splitting, segmento de rota, kebab-case, orderId]
 not_covered:
   - "o corpo da página e do modal como componente → frontend/components"
   - "o formulário dentro do modal → frontend/forms"
   - "estado guardado na URL → frontend/state"
-  - "o que o cache descarta quando um guard lê um dado pra decidir rota → frontend/data-fetching"
   - "a pasta e o nome de arquivo de guard, layout e página → frontend/structure"
   - "uso de token e tema no código → frontend/theming"
   - "valores e vocabulário visual → project:DESIGN"
@@ -69,13 +68,7 @@ Quando a tarefa é curta e cancelável, como a criação de um registro simples:
 
 Quando o fluxo é longo, com passos ou estado que mereça link compartilhável: **Obrigatório.** Ele continua sendo rota.
 
-Quando a tarefa edita um item de uma lista curta e o editor não cabe num modal no celular: **Permitido.** Drill-down por estado, a terceira forma: a página troca a lista pelo editor em tela cheia com `useState`, fora da URL, com a ação "Voltar" para a lista, e o editor montado condicionalmente como o modal.
-
-> **Por quê.** O editor ganha a tela inteira sem virar lugar. O custo é que o Voltar do navegador sai da página em vez de voltar à lista, então vale só quando cada item grava ao salvar e fechar o editor não perde trabalho salvo.
-
 **Obrigatório.** O modal de tarefa é montado condicionalmente, nunca por `open` persistente: cada abertura monta o componente do zero e o formulário nasce zerado, sem `useEffect` de limpeza nem `reset` por reflexo.
-
-Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e clique fora não descartam o trabalho: `onEscapeKeyDown`/`onInteractOutside` fazem `preventDefault`, e descartar é ação explícita do Cancelar ou do X.
 
 ### Página carregada com lazy
 
@@ -105,8 +98,6 @@ Quando o formulário do modal está sujo (`isDirty`): **Obrigatório.** Esc e cl
 
 > **Por quê.** Slug muda quando alguém renomeia, e todo link já compartilhado passa a apontar para lugar nenhum.
 
-- **Exceção.** Endereço público escolhido pelo usuário, na raiz (`/<slug>`, `general/http-surface.md`): o slug é o identificador que ele divulga, e o value object dele recusa as palavras reservadas (`domain/model.md`, "Aplicação").
-
 ## Aplicação
 
 A página no router, com o import mapeado para o default que o `lazy` espera, e o `Suspense` no layout: `starter/apps/app-web/src/app/router/routes.tsx` e `starter/apps/app-web/src/app/layouts/app/app-layout.tsx`.
@@ -114,7 +105,7 @@ A página no router, com o import mapeado para o default que o `lazy` espera, e 
 O modal de tarefa montado por estado na página que o dispara:
 
 ```tsx
-{creating.value && <CreateOrderModal onClose={creating.onFalse} />}
+{isCreating && <CreateOrderModal onClose={() => setIsCreating(false)} />}
 ```
 
 - Navegação entre páginas irmãs nunca mostra o fallback: o react-router envolve a navegação em `startTransition`, e o React segura a tela anterior até o chunk novo resolver.
@@ -125,9 +116,8 @@ O modal de tarefa montado por estado na página que o dispara:
 
 - Página nova entrou no grupo de rota certo, e conta com o que o guard daquele grupo garantiu, sem re-checar por dentro?
 - A isenção do guard é estrutural, sem lista de paths isentos, e rota sem match cai no `<Route path="*">`?
-- Rota nova nasceu para um lugar, e tarefa curta e cancelável virou modal por estado, montado condicionalmente, com Esc e clique fora bloqueados quando o form está sujo?
+- Rota nova nasceu para um lugar, e tarefa curta e cancelável virou modal por estado, montado condicionalmente?
 - Página entra no router via `React.lazy`, com o `Suspense` em cada layout ou guard de grupo ao redor do `<Outlet />`, e o da rota `*`?
-- Drill-down por estado só onde cada item grava ao salvar, com a ação "Voltar" para a lista?
 - Segmento de rota está em inglês e kebab-case, com recurso identificado por id?
 
 ## Delegado ao projeto
@@ -140,6 +130,5 @@ O modal de tarefa montado por estado na página que o dispara:
 - `frontend/forms.md`: o formulário dentro do modal.
 - `frontend/structure.md`: a casa de `app/router/`, de guard, layout e página.
 - `frontend/state.md`: estado guardado na URL.
-- `frontend/data-fetching.md`: o cache que um guard lê.
 - `docs/DESIGN.md`: o token do canvas.
 - `frontend/testing.md`: spec de rota e guard e spec de fluxo.

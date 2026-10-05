@@ -5,7 +5,7 @@ use_when:
   - "guardar, comparar ou passar entre camadas um instante: um prazo, um agendamento, um criado em"
   - "guardar ou converter um momento de parede: um dia e uma hora que valem num fuso, como um horário de funcionamento"
   - "decidir se um valor de data precisa de fuso explícito"
-keywords: [instante, momento de parede, wall clock, fuso, timezone, IANA, UTC, TZDate, date-fns, "@date-fns/tz", "new Date", timestamptz, horário de verão, Temporal]
+keywords: [instante, momento de parede, wall clock, fuso, timezone, IANA, UTC, TZDate, date-fns, "@date-fns/tz", "new Date", timestamptz, horário de verão]
 not_covered:
   - "a formatação e o dia de calendário local no frontend (\"Nível 3: fora do módulo, a casa é o que a função conhece\") → frontend/helpers"
   - "a forma e a casa do domain service → domain/domain-services"
@@ -16,13 +16,6 @@ status: active
 # Data e fuso
 
 Todo valor de data ou hora é um de dois conceitos, nunca uma mistura: o instante, um ponto fixo no tempo, e o momento de parede, um dia e uma hora que só valem num fuso. Nos exemplos, o `confirmedAt` de um `Order` é instante, e o horário de corte do envio no mesmo dia de um `DeliveryMethod` ("pedido confirmado até 14:00 sai hoje") é momento de parede.
-
-## Ferramentas
-
-| Ferramenta | Status | Decisão |
-| --- | --- | --- |
-| `date-fns` 4.4.0 e `@date-fns/tz` 1.5.0 | DECIDIDA | "A conversão", abaixo |
-| `Temporal` | CANDIDATA | Nativo no Chrome 144+, no Firefox 139+ e no Node 26, e fora do Safari estável e do Node 24 LTS, conferido em 29/09/2026 |
 
 ## Instante
 

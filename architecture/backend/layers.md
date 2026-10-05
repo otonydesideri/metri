@@ -1,6 +1,6 @@
 ---
 id: backend/layers
-description: "as camadas do backend (layer-first) — `domain/` e `infra/` como únicas pastas na raiz de `src/`, módulo como pasta dentro de cada camada, o que cada camada pode conhecer —, os princípios não negociáveis de camada, o caminho de uma request e onde cada arquivo mora."
+description: "as camadas do backend (layer-first) — `domain/` e `infra/` como únicas pastas na raiz de `src/`, módulo como pasta dentro de cada camada, o que cada camada pode conhecer —, o que mora em cada camada, o caminho de uma request e onde cada arquivo mora."
 use_when:
   - "decidir em qual camada do backend uma regra entra"
   - "criar arquivo novo no app backend"
@@ -31,7 +31,6 @@ src/
 │   ├── persistence/             # Prisma: repositórios, mappers, implementações de query
 │   ├── services/<capacidade>/   # implementações de integração externa (e-mail, storage, ...)
 │   ├── health/                  # endpoints de infra externa (probe, monitor)
-│   ├── auth/                    # redirects de protocolo antes da sessão (OAuth), módulo próprio
 │   └── common/                  # env, constantes e fronteiras transversais de request
 └── main.ts
 ```
@@ -46,13 +45,9 @@ O que cada camada pode conhecer, em resumo (regras completas de import e exceç�
 - `domain/application`: o mesmo, mais o decorator `@Injectable()` de `@nestjs/common`, e nada além dele.
 - `infra/`: conhece `domain/` e as bibliotecas de infraestrutura. É o único lugar que toca Prisma e HTTP.
 
-## Princípios não negociáveis
+## O que mora em cada camada
 
-1. Regra de negócio mora na entidade ou no value object. O use case orquestra; o controller adapta HTTP. Invariante dentro de controller está no lugar errado. Detalhe em `domain/model.md` e `backend/application.md`.
-2. Erro esperado é valor de retorno (`Either`), nunca exceção. `throw` fica reservado para bug de programação. Ver `backend/errors.md`.
-3. Use case não importa Zod. Schema Zod é fronteira (`backend/boundaries.md`, "Zod é fronteira, não vocabulário interno"); o request/response do use case é tipo próprio, local ao arquivo, mesmo quando estruturalmente idêntico ao schema. Detalhe em `backend/application.md`.
-4. Quem injeta pede o contrato (`abstract class`), nunca a implementação concreta. Detalhe em `backend/application.md`.
-5. Toda escrita passa por use case e entidade de domínio, e leitura que alimenta decisão de negócio também. Leitura de exibição expõe contrato e DTO na aplicação, com implementação direta no banco pela infra; o critério e as regras estão em `backend/reading.md`.
+Regra de negócio na entidade e no value object (`domain/model.md`); orquestração no caso de uso, com erro esperado como `Either` e injeção por contrato (`backend/application.md`, `backend/errors.md`); leitura de exibição por query (`backend/reading.md`).
 
 ## O caminho de uma request
 
@@ -73,11 +68,11 @@ flowchart TD
     Q --> K
 ```
 
-- As rotas ficam sob `/api` (`general/http-surface.md`, "Superfície HTTP"). Guards e pipe globais, e o módulo dos endpoints de infra externa, entram no grafo de módulos pela regra de `infrastructure/runtime.md`.
+- As rotas ficam sob `/api` (`general/http-surface.md`, "Superfície HTTP"). O pipe global e o módulo dos endpoints de infra externa, entram no grafo de módulos pela regra de `infrastructure/runtime.md`.
 - `ZodValidationPipe` global valida body, query e path param na fronteira (`backend/http-api.md`).
 - Controller é por ação (`backend/http-api.md`) e traduz `Either.failure` em `HttpException` pela tabela de `backend/errors.md`.
 - Use case fala com o banco só pelo contrato; repositório concreto e mapper vivem em `infra/persistence`.
-- Endpoint de leitura de exibição substitui use case e repositório de agregado por um contrato de query da aplicação, implementado em infra e injetado no controller (`backend/reading.md`); guards, pipe e formato de erro são os mesmos.
+- Endpoint de leitura de exibição substitui use case e repositório de agregado por um contrato de query da aplicação, implementado em infra e injetado no controller (`backend/reading.md`); pipe e formato de erro são os mesmos.
 
 ## Onde cada arquivo mora
 
@@ -85,7 +80,7 @@ flowchart TD
 | --- | --- | --- |
 | Entidade | `src/domain/enterprise/<entidade>.entity.ts` | `domain/model.md` |
 | Classes de erro do módulo | `src/domain/enterprise/errors/<módulo>.errors.ts` | `backend/errors.md` |
-| Lista rastreada de coleção filha | `src/domain/enterprise/<coleção>-list.ts`, vínculo puro em `<referenciado>-ids.ts` | `domain/watched-list.md` |
+| Lista rastreada de coleção filha (capacidade condicional) | `src/domain/enterprise/<coleção>-list.ts`, vínculo puro em `<referenciado>-ids.ts` | `domain/watched-list.md` |
 | Regra de domínio sem dono natural (Domain Service) | `src/domain/enterprise/domain-services/<regra>.ts` | `domain/domain-services.md` |
 | Value object | `src/domain/enterprise/value-objects/<nome>.vo.ts` | `domain/model.md` |
 | Enum de domínio | `src/domain/enterprise/enums/<nome>.enum.ts` | `domain/model.md` |
@@ -94,7 +89,6 @@ flowchart TD
 | Contrato de repositório | `src/domain/application/repositories/<agregado>-repository.contract.ts` | `backend/persistence.md` |
 | Contrato + service de integração | `src/domain/application/services/<capacidade>/` + `src/infra/services/<capacidade>/` | `infrastructure/services.md` |
 | Controller | `src/infra/http/controllers/<módulo>/<ação>.controller.ts` | `backend/http-api.md` |
-| Controller de redirect de protocolo (OAuth) | `src/infra/auth/<ação>.controller.ts`, no `auth.module.ts` | `infrastructure/runtime.md` |
 | DTO | `src/infra/http/dtos/<módulo>/<nome>.dto.ts` | `backend/http-api.md` |
 | Presenter | `src/infra/http/presenters/<agregado>.presenter.ts` | `backend/http-api.md` |
 | Repositório concreto | `src/infra/persistence/prisma/repositories/<agregado>.prisma-repository.impl.ts` | `backend/persistence.md` |

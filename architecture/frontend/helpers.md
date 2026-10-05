@@ -1,10 +1,9 @@
 ---
 id: frontend/helpers
-description: "o código auxiliar do `app-web` que não é componente nem página — a hierarquia pelo que a função conhece (inline, helper do módulo, casa fora do módulo); as rules de UI por domínio; as constantes; os tipos compartilhados e a escolha entre Zod schema e type plain."
+description: "o código auxiliar do `app-web` que não é componente nem página — a hierarquia pelo que a função conhece (inline, helper do módulo, casa fora do módulo); as rules de UI por domínio; as constantes; os tipos compartilhados."
 use_when:
   - "criar um helper, uma rule, uma constante ou um tipo compartilhado no `app-web`"
   - "tirar um valor inline para arquivo próprio"
-  - "escolher entre Zod schema e type plain"
 applies_to:
   - "apps/app-web/src/pages/**/*.helpers.ts"
   - "apps/app-web/src/shared/utils/**"
@@ -14,7 +13,7 @@ applies_to:
   - "packages/utils/src/**"
   - "packages/ui/src/hooks/**"
   - "packages/ui/src/lib/**"
-keywords: [helper, "<módulo>.helpers.ts", util.ts, rule, orderRules, constante, PER_PAGE, tipo compartilhado, z.infer, Pick, type plain, Zod schema, formatBRL, parseBRLToCents, Intl, "@metri/utils", "@metri/ui", "@metri/core", ApiErrorType, "@metri/core/errors"]
+keywords: [helper, "<módulo>.helpers.ts", util.ts, rule, orderRules, constante, tipo compartilhado, z.infer, Pick, formatCurrency, Intl, "@metri/utils", "@metri/ui", "@metri/core", ApiErrorType, "@metri/core/errors"]
 status: active
 ---
 # Código auxiliar do frontend
@@ -46,21 +45,6 @@ O tamanho decide só o degrau mais estreito, entre continuar inline e sair pro a
 
 Função trivial, usada num lugar só, fica inline.
 
-```tsx
-// right — inline is the choice
-function OrderCard({ order }: Props) {
-  const itemCount = order.items.length;
-  const itemsLabel = itemCount === 1 ? '1 item' : `${itemCount} itens`;
-
-  return <Card>{itemsLabel}</Card>;
-}
-
-// avoid — named function for a single use
-function getItemsLabel(count: number): string {
-  return count === 1 ? '1 item' : `${count} itens`;
-}
-```
-
 ## Nível 2: helper do módulo
 
 Função específica de um módulo, grande demais pra ficar inline ou usada por mais de um arquivo dele, vai num `<módulo>.helpers.ts` na pasta do módulo. É um arquivo por módulo, nunca um por componente: o helper de uma página, o de outra página do mesmo módulo e o de um componente de qualquer uma delas moram no mesmo arquivo, mesmo agrupamento de `shared/rules/<módulo>.rule.ts` e `shared/constants/<módulo>.constant.ts`.
@@ -76,15 +60,15 @@ pages/order/
 
 ```ts
 // pages/order/order.helpers.ts
-import { formatBRL } from '@metri/utils/currency';
+import { formatCurrency } from '@metri/utils/currency';
 import type { Order } from '@/api/model.zod';
 
 export function buildOrderSummary(
-  order: Pick<Order, 'items' | 'totalInCents'>,
+  order: Pick<Order, 'items' | 'totalInCents' | 'currency'>,
 ): string {
   const itemCount = order.items.length;
   const itemsLabel = itemCount === 1 ? '1 item' : `${itemCount} itens`;
-  return `${itemsLabel} · ${formatBRL(order.totalInCents)}`;
+  return `${itemsLabel} · ${formatCurrency(order.totalInCents, order.currency)}`;
 }
 ```
 
@@ -102,17 +86,20 @@ Função que não é de um módulo sai de `pages/`, e a casa sai do que ela conh
 
 ```ts
 // @metri/utils — src/currency.ts
-export function formatBRL(amountInCents: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(amountInCents / 100);
+export function formatCurrency(
+  amountInCents: number,
+  currency: string,
+  locale?: string,
+): string {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(
+    amountInCents / 100,
+  );
 }
 ```
 
-**O par de conversão mora junto.** O format e o parse do mesmo conceito (`formatBRL` e `parseBRLToCents`) ficam no mesmo arquivo: o dono da conversão é um só, e separá-los é o que deixa os dois lados divergirem sem nada acusar.
+**O par de conversão mora junto.** O format e o parse do mesmo conceito (`formatCurrency` e `parseCurrencyToCents`) ficam no mesmo arquivo: o dono da conversão é um só, e separá-los é o que deixa os dois lados divergirem sem nada acusar.
 
-**Formatação de data usa `Intl`, sem biblioteca externa**, em `@metri/utils` (`date.ts`): o runtime já entrega locale e timezone. A conta que cruza fuso é do backend (`general/date-time.md`).
+**Formatação de data usa `Intl`**, em `@metri/utils` (`date.ts`); a conta que cruza fuso segue `general/date-time.md`.
 
 **O dia de calendário local sai dos componentes locais da data** (`getFullYear()`, `getMonth() + 1`, `getDate()`), no fuso de quem olha, nunca de `toISOString().slice(0, 10)`: esse devolve o dia em UTC e erra o "hoje" à noite, em fuso negativo.
 
@@ -156,22 +143,7 @@ Não criar rule pra condição trivial de uso único: `{order.status === 'DRAFT'
 
 Valor usado num arquivo só fica inline nele. Só vai pra `shared/constants/<módulo>.constant.ts` o valor que se repetiria em mais de um arquivo do app.
 
-Limite que a API impõe não vira constante do app: vem da constante gerada em `api/model.zod.ts` (`backend/http-api.md`, "União fechada e limite do contrato").
-
 O agrupamento é por módulo, nunca um arquivo por constante, mesmo critério de `shared/schemas/<módulo>.schema.ts`: isso evita a proliferação de arquivo de uma linha só.
-
-Valor genuinamente genérico e repetido entre módulos usa nome genérico, não um por domínio:
-
-```ts
-// right — one generic value
-export const PER_PAGE = 20;
-
-// avoid — same value under per-domain names
-export const ORDERS_PER_PAGE = 20;
-export const CUSTOMERS_PER_PAGE = 20;
-```
-
-Se um módulo precisar de tamanho diferente, o override é local àquele caso.
 
 ## Tipos compartilhados
 
@@ -182,7 +154,6 @@ A exceção é o tipo de formulário (`<Nome>Values`), que continua exportado no
 A fonte do tipo depende de onde o dado vem:
 
 - Dado da API tem o tipo gerado em `api/model.zod.ts`; dado que o app valida em runtime (input de form, parâmetro de URL) tem o tipo derivado do schema Zod por `z.infer`, não redeclarado à mão.
-- Dado que chega pelo client de uma integração externa, sem passar por schema do app, deriva do próprio client (`Awaited<ReturnType<typeof client.<método>>>`), reduzido com `Pick` pros campos que o app consome. Redeclarar à mão criaria uma segunda descrição da mesma linha, que diverge sem nada acusar quando o pacote renomeia um campo. A derivação depende do formato exato da chamada: opção que muda o tipo de retorno (um `throw` que troca a união `{ data, error }` pelo dado) entra na derivação, senão ela colapsa pra `any` em silêncio, e o `Pick` não acusa isso.
 - Categoria de erro da API é o `ApiErrorType` de `@metri/core/errors`, importado direto do pacote, nunca recriado no app nem trocado pelo `DomainErrorType` (`backend/errors.md`, "O formato de resposta de erro").
 - Tipo interno ao frontend, sem validação em runtime, é `type` puro.
 
@@ -200,12 +171,6 @@ export type OrderListItem = Pick<
 
 Tipo que cruza a fronteira com o backend é o gerado em `api/model.zod.ts` (`backend/http-api.md`, "Contrato de API: o backend é a fonte"); tipo local de tela continua em `shared/types/`, mesmo quando se parece com um do contrato.
 
-## Zod schema vs. type plain
-
-`z.infer` de um schema Zod quando o app precisa validar o valor em runtime: input de form, parsing de parâmetro de URL. O parse tem custo, então não se paga por ele onde não há validação.
-
-`type` puro quando o tipo é interno ao frontend e só existe em tempo de compilação, sem nada pra validar em runtime.
-
 ## Verificação rápida
 
 - Função trivial de uso único está inline, não numa função nomeada à parte?
@@ -217,8 +182,7 @@ Tipo que cruza a fronteira com o backend é o gerado em `api/model.zod.ts` (`bac
 - Rule está em `shared/rules/<módulo>.rule.ts`, é função pura e usa `Pick` do tipo?
 - Rule é mais permissiva que o backend, nunca mais restritiva, e não duplica regra de negócio?
 - Condição trivial de uso único ficou inline, sem virar rule?
-- Constante só subiu pra `shared/constants/<módulo>.constant.ts` por repetição entre arquivos, e limite da API vem da constante gerada?
-- Valor genérico repetido usa nome genérico, não um por domínio?
+- Constante só subiu pra `shared/constants/<módulo>.constant.ts` por repetição entre arquivos?
 - Tipo do contrato de API vem de `api/model.zod.ts`, e tipo do app compartilhado está em `shared/types/<módulo>.type.ts`, derivado de schema (`z.infer`) quando há validação em runtime, e estendido com `&`/`Pick` em vez de duplicado?
 - `ApiErrorType` vem de `@metri/core/errors`, não redeclarado no app nem substituído pelo `DomainErrorType`?
 - O dia de calendário local vem dos componentes locais da data? `grep -rnE "toISOString\(\)\.(slice\(0, ?10\)|split\(['\"]T)" apps/app-web/src packages/*/src --include='*.ts' --include='*.tsx'` devolve vazio.

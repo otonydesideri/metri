@@ -4,28 +4,14 @@ A Architecture Source: a arquitetura do sistema, em documentos por área — o q
 
 Caso real que não se encaixa em nenhuma regra escrita segue a regra de escape do `AGENTS.md`.
 
-## Visão geral
-
-O sistema numa página: o que existe no monorepo (`general/code-placement.md`), as camadas do backend (`backend/layers.md`) e o caminho que uma request percorre (`backend/layers.md`, "O caminho de uma request").
-
-O como construir cada artefato vive no documento correspondente (`backend/layers.md`, "Onde cada arquivo mora"); o que não é decisão da Source segue `skills/writing-for-agents/RULE-FORMAT.md`, "Decisões específicas de projeto". Fronteiras de import vivem em `backend/boundaries.md`; estrutura de módulo e comunicação entre módulos, em `backend/modules.md`.
-
-### Observabilidade
-
-O log, com métrica, alerta e reconciliação quando uma pergunta operacional pede, tem desenho em `infrastructure/logging.md`, e a captura de erro inesperado (filtro global, corpo padronizado), em `backend/errors.md`; ferramenta e valores concretos são decisão de projeto (`.metri/ARCHITECTURE.md`).
-
-### Testes
-
-O desenho transversal de testes (pirâmide, factories, repositórios em memória, e2e) está em `backend/testing.md`, para o backend, e em `frontend/testing.md`, para o frontend.
-
 ## Como ler
 
 Quem está chegando lê nesta ordem; cada bloco só depende dos anteriores.
 
-1. **O sistema.** `architecture/INDEX.md`, "Visão geral" (o mapa), `general/code-placement.md` (o monorepo), `backend/layers.md` (as camadas), o caminho de uma request (`backend/layers.md`, "O caminho de uma request"), `backend/boundaries.md` (quem pode importar o quê), `general/principles.md` (os princípios não negociáveis), `general/http-surface.md` (a superfície HTTP same-origin), `general/date-time.md` (instante e momento de parede) e `defaults/stack.md` (a stack padrão).
+1. **O sistema.** `general/code-placement.md` (o monorepo), `backend/layers.md` (as camadas), o caminho de uma request (`backend/layers.md`, "O caminho de uma request"), `backend/boundaries.md` (quem pode importar o quê), `general/principles.md` (os princípios não negociáveis), `general/http-surface.md` (a superfície HTTP same-origin), `general/date-time.md` (instante e momento de parede) e `defaults/stack.md` (a stack padrão).
 2. **O módulo.** `backend/modules.md` (o que é um módulo e como módulos se comunicam), depois as peças dele: `domain/model.md` (entidade, value object, agregado), `backend/application.md` (contrato e caso de uso), `backend/persistence.md` (repositório e mapper) e `backend/http-api.md` (a porta HTTP). Depois `backend/errors.md` (erro esperado é valor de retorno), e `backend/reading.md` (leitura de domínio vs. leitura de exibição).
 3. **Os padrões de domínio.** Sob demanda, quando o caso aparece: `backend/operation-routing.md` (qual mecanismo executa a operação), `backend/events.md`, `backend/transactions.md`, `domain/watched-list.md` (coleção filha gravada pelo delta), `domain/domain-services.md` (regra de domínio sem dono natural) e, quando o domínio pede mais de um modelo, `domain/bounded-contexts.md`.
-4. **A infraestrutura.** `infrastructure/runtime.md` (bootstrap, providers globais, env), `infrastructure/services.md` (a regra dos níveis para serviço compartilhado), e as capacidades: `infrastructure/logging.md` (log, métrica, alerta e reconciliação), `infrastructure/storage.md`, `infrastructure/cache.md`, `backend/async-jobs.md`.
+4. **A infraestrutura.** `infrastructure/runtime.md` (bootstrap, providers globais, env), `infrastructure/services.md` (a regra dos níveis para serviço compartilhado), e as capacidades: `infrastructure/logging.md` (log), `infrastructure/storage.md`, `infrastructure/cache.md`, `backend/async-jobs.md`.
 5. **O teste.** `backend/testing.md` fecha o backend.
 6. **O frontend.** `frontend/structure.md` primeiro, depois `frontend/routing.md`, `frontend/components.md` e `frontend/experience.md` (a experiência de uma tela); o resto (`frontend/forms.md`, `frontend/state.md`, `frontend/data-fetching.md`, `frontend/helpers.md`, `frontend/theming.md`, `defaults/ui.md` (o kit de UI), `frontend/testing.md`) sob demanda.
 
@@ -44,24 +30,6 @@ Como a Source é escrita e mantida está em `skills/writing-for-agents/RULE-FORM
 ## Ativação
 
 A pergunta de ativação de cada capacidade condicional é a chave `activation` da regra dona, listada em "Capacidades condicionais", abaixo; a resposta do projeto fica no `.metri/ARCHITECTURE.md`, "Capacidades ativas".
-
-## Decisões transversais
-
-Resumo das decisões que valem em todo documento e em todo app; cada uma é definida no owner indicado. Um exemplo que contradiz uma delas é bug de documentação.
-
-| Tema | Decisão |
-| --- | --- |
-| Organização de pastas | Definida em `backend/layers.md`, "As camadas do backend (layer-first)" |
-| Contrato injetável | Definida em `backend/application.md`, "Contratos são `abstract class`" |
-| Erro esperado | Definida em `backend/errors.md`, "Retornando erro: sempre `Either`, nunca `throw`" |
-| Domain events | Definida em `backend/events.md`, "A entidade registra, o repositório despacha" |
-| Controller | Definida em `backend/http-api.md`, "Controller por ação" |
-| Servidor HTTP | Definida em `defaults/stack.md`, "Stack" |
-| Env | Definida em `infrastructure/runtime.md`, "Env e montagem de client" |
-| Transação | Definida em `backend/transactions.md`, "Unidade de trabalho" |
-| Id | Definida em `domain/model.md`, "Entidade: criação e reconstituição são caminhos separados" |
-| Idioma | Definida em `defaults/stack.md`, "Stack" |
-| Default silencioso | Definida em `general/principles.md`, "Princípios não negociáveis" |
 
 ## Índice
 

@@ -93,7 +93,7 @@ O sufixo é `.spec.ts` quando o arquivo é TypeScript puro e `.spec.tsx` quando 
 
 O config do Vitest mora no bloco `test` do `vite.config.ts` do app, não num arquivo separado. O backend separa em `vitest.config.ts` e `vitest.config.e2e.ts` porque precisa de dois configs e não tem config de Vite para reusar; aqui `react()`, `tailwindcss()` e o `resolve.tsconfigPaths: true` do Vite 8, no lugar do plugin `vite-tsconfig-paths`, já são o que o Vitest precisa, e um segundo arquivo os redeclararia com garantia de divergir no próximo plugin adicionado.
 
-O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação com máscara e reposicionamento de cursor do campo de telefone e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
+O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação, o foco e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
 
 A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
@@ -114,21 +114,13 @@ Regras de uso:
 
 Exemplo completo: `starter/apps/app-web/test/msw/server.ts` e `starter/apps/app-web/test/setup.ts`.
 
-## Store de biblioteca externa em teste
-
-Client de biblioteca externa costuma ser singleton de módulo, com o dado num store reativo próprio. Dentro de um mesmo arquivo de spec, o valor do teste anterior continua no store depois que o handler do MSW já mudou — trocar o handler não invalida nada que a biblioteca já tenha em memória.
-
-Quando o valor é só pré-condição, trocar o handler no `beforeEach` basta. Quando o arquivo exercita mais de um valor, a troca precisa avisar o store explicitamente, com a mesma chamada que o app já usa depois de uma escrita que não passou pelo client, seguida de um `waitFor` até o store refletir o valor novo. Não inventar um dublê próprio do client para isso.
-
-Atenção a store que se desliga sem assinantes: alguns só mantêm o valor vivo enquanto alguém escuta, e voltam a devolver o valor antigo quando o último componente desmonta. Nesse caso o setup mantém um assinante vivo durante cada teste e o libera no fim. Sem isso, o resultado passa a depender de quanto tempo o teste anterior levou, e a suíte fica intermitente de um jeito que muda de arquivo conforme a ordem de execução.
-
 ## Como escrever spec de função pura (`shared/rules/`, `shared/schemas/`, `lib/`)
 
 - Arrange é literal inline, montado no próprio `it()`. Nunca usa builder de `test/factories/`: o builder parte de um payload já válido, e num spec de schema é exatamente a validade que está sob prova. Mesmo princípio de "spec de entidade usa `create()`, nunca a factory" do backend.
 - Um `it()` por linha da tabela de decisão, sem `it.each`: o título nomeia a condição e o resultado, e a falha aponta a linha exata.
 - Título no formato `'<condição> → <resultado>'`.
-- Formatação com `Intl` compara com o espaço que ele gera: o NBSP (U+00A0) entre o símbolo e o valor, escrito como escape no literal (`'R$\u00a010,00'`); o espaço comum do teclado falha sem diferença visível.
 - Schema prova o que aceita, o que recusa e o que transforma. Coerção e normalização (aparar espaço, converter texto em data) são comportamento, não detalhe: o consumidor depende do valor de saída.
+- Schema de form mais estrito que o do backend (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes") leva um caso com o valor que o backend aceitaria e este recusa.
 
 Exemplo completo: testing.examples.md#orderrulesresolvedestination
 
@@ -136,7 +128,7 @@ Exemplo completo: testing.examples.md#orderrulesresolvedestination
 
 - `renderHook` com um wrapper montado no próprio arquivo. O `QueryClient` é novo a cada teste, com `retry: false`. Nunca reusar o singleton de `app/providers/`: ele tem retry e cache que atravessam testes.
 - Hook que lê a URL ganha `MemoryRouter` com `initialEntries` no wrapper.
-- O que se afirma sobre cache é o efeito observável, não a chamada: dado descartado deixa de existir, dado invalidado continua lá marcado como velho. A diferença entre os dois é decisão de produto (`frontend/data-fetching.md`, "Atualizar vs. invalidar o cache"), então o teste tem que distinguir os dois, não só verificar que "sincronizou".
+- O que se afirma sobre cache é o efeito observável, não a chamada: dado atualizado já chega no cache com o valor novo, dado invalidado continua lá marcado como velho. A diferença entre os dois é decisão do hook (`frontend/data-fetching.md`, "Atualizar vs. invalidar o cache"), então o teste tem que distinguir os dois, não só verificar que "sincronizou".
 - Debounce usa timers falsos, com o avanço dentro de `act`.
 - Mudança de props entre renders usa `rerender`, com o valor novo passado como argumento, não uma variável externa mutada.
 
@@ -202,12 +194,6 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 - **Página que só compõe componentes já provados**, sem estado, sem escrita e sem ramo.
 - **O contrato com o backend**: quem garante que o servidor devolve o que o contrato declara é o próprio servidor (`@ZodResponse`) e o client gerado, atualizado pelo `api:drift` do `verify` (`backend/http-api.md`).
 
-## Limite do contrato
-
-Regra de formato que a API impõe (comprimento máximo, formato de identificador) existe uma vez, no DTO do backend, e o frontend importa a constante gerada. Não há teste cruzado: cada lado prova o limite onde o consome, com caso no valor limite e no valor seguinte.
-
-Schema de form mais estrito que o do backend (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes") leva no spec do frontend um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
-
 ## Verificação rápida
 
 - O teste está no nível mais barato que consegue afirmar o comportamento por inteiro?
@@ -225,4 +211,3 @@ Schema de form mais estrito que o do backend (`frontend/forms.md`, "Schema de fo
 - O helper de render, se existe, é local ao arquivo e só monta providers?
 - O teste afirma reação da interface ao contrato, e não uma regra derivada que só o servidor pode provar?
 - Produção não importa de `test/`? (check: boundaries)
-- Tela atrás de login recebe no e2e a sessão gravada no banco e o cookie por `addCookies`, sem o provedor externo?

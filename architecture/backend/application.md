@@ -1,13 +1,13 @@
 ---
 id: backend/application
-description: "o contrato injetável como `abstract class` e o mecanismo de injeção dele; o caso de uso (arquivo, `execute()`, `Input`/`Output`, responsabilidade, ordem de leitura, regra e gravação, proibição de chamar outro caso de uso, papel de leitura ao vivo ou de confirmação); o caso de uso agnóstico de quem o chama; o log do caso de uso por contrato neutro de framework; o adaptador de entrada fino e a fronteira entre a aplicação e os adaptadores."
+description: "o contrato injetável como `abstract class` e o mecanismo de injeção dele; o caso de uso (arquivo, `execute()`, `Input`/`Output`, responsabilidade, ordem de leitura, regra e gravação, proibição de chamar outro caso de uso); o caso de uso agnóstico de quem o chama; o adaptador de entrada fino e a fronteira entre a aplicação e os adaptadores."
 use_when:
   - "criar caso de uso ou contrato de aplicação"
   - "criar adaptador de entrada (controller, subscriber, worker, webhook, router de biblioteca)"
   - "decidir se uma decisão mora no adaptador ou no caso de uso"
 applies_to:
   - "apps/app-api/src/domain/application/**"
-keywords: [caso de uso, use case, execute(), Input, Output, abstract class, contrato, injeção de dependência, useClass, Symbol token, "@Inject", "@Injectable", método especulativo, leitura ao vivo, confirmação, adaptador de entrada, adaptador fino, controller, subscriber, worker, webhook, failure, Either]
+keywords: [caso de uso, use case, execute(), Input, Output, abstract class, contrato, injeção de dependência, useClass, Symbol token, "@Inject", "@Injectable", método especulativo, adaptador de entrada, adaptador fino, controller, subscriber, worker, webhook, failure, Either]
 not_covered:
   - "a regra de domínio que o caso de uso orquestra → domain/model"
   - "a regra de domínio que o caso de uso orquestra → domain/domain-services"
@@ -31,7 +31,7 @@ A camada `domain/application` orquestra o domínio: casos de uso que carregam, d
 
 ### Contratos são `abstract class`
 
-Quando o contrato é injetável, usado como token de injeção de dependência (repositório, service, query, fila, transação, log): **Obrigatório.** Ele é uma `abstract class` em `domain/application`, implementada em `infra/` e registrada com `{ provide: <Contrato>, useClass: <Impl> }`.
+Quando o contrato é injetável, usado como token de injeção de dependência (repositório, service, query, fila, transação): **Obrigatório.** Ele é uma `abstract class` em `domain/application`, implementada em `infra/` e registrada com `{ provide: <Contrato>, useClass: <Impl> }`.
 
 A regra não alcança tipo sem injeção: `Input`, `Output`, DTO, união discriminada, outcome, tipo auxiliar e value object seguem a forma dos próprios documentos.
 
@@ -60,10 +60,6 @@ A regra não alcança tipo sem injeção: `Input`, `Output`, DTO, união discrim
 **Proibido.** Caso de uso chamar outro caso de uso: o que dois fluxos compartilham vira método de entidade, de value object ou de contrato.
 
 > **Por quê.** Composição de casos de uso esconde uma segunda leitura e uma segunda decisão dentro de uma chamada só.
-
-Quando a leitura é "ao vivo", disparada a cada interação (checagem de disponibilidade, autocomplete): **Obrigatório.** Entrada inválida volta como payload de sucesso (`{ available: false }`); a confirmação ou escrita devolve a mesma validação como `failure`.
-
-**Obrigatório.** O papel do caso de uso, leitura ao vivo ou confirmação, é decidido antes de escrevê-lo.
 
 **Obrigatório.** Todo caso de uso nasce com spec unitário colocado, na forma de `backend/testing.md`.
 
@@ -115,7 +111,6 @@ Exemplo completo: application.examples.md#confirmorderusecase
 - O caso de uso tem um `execute()` só, com `Input`/`Output` locais e sem Zod?
 - A ordem é leitura, regra, gravação, com a regra na entidade ou no value object?
 - Nenhum caso de uso chama outro caso de uso?
-- Leitura ao vivo devolve entrada inválida como sucesso, e confirmação a devolve como `failure`?
 - O adaptador é fino, sem regra de negócio, e o destino do `failure` é decidido nele?
 - A porta nova teve o desenho registrado na Source antes do código?
 

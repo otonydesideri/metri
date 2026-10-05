@@ -34,8 +34,7 @@ import { PgBossService, type QueueDefinition } from './pg-boss.service';
 export const GENERATE_ORDER_REPORT_QUEUE: QueueDefinition = {
   name: 'generate-order-report',
   deadLetter: 'generate-order-report-dlq',
-  retryLimit: 5,
-  retryDelay: 5,
+  retryLimit: 3,
   retryBackoff: true,
 };
 
@@ -58,7 +57,6 @@ export class GenerateOrderReportWorker implements OnModuleInit {
   private async handle(input: OrderReportQueueInput): Promise<void> {
     const result = await this.generateOrderReportUseCase.execute({
       orderId: input.orderId,
-      customerId: input.customerId,
     });
 
     if (result.isFailure()) {
