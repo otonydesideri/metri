@@ -11,7 +11,6 @@ applies_to:
   - "apps/app-api/src/infra/persistence/prisma/queries/**"
 keywords: [leitura, query de exibição, "<Ação>Query", "<Ação>PrismaQueryImpl", DTO, projeção, read model, CQRS, não-encontrado, PaginatedResult, paginação, pageSize, dashboard, relatório, agregação, módulo de tela, $queryRaw, DATE_TRUNC, bigint, persistence.module.ts]
 not_covered:
-  - "o filtro pelo escopo do dono → backend/access-scope"
   - "o cache de uma leitura → infrastructure/cache"
 examples: [backend/reading.examples.md]
 status: active
@@ -89,7 +88,6 @@ O `<módulo>` das duas pastas é o mesmo módulo do controller que consome a que
 import type { PaginatedResult } from '../pagination';
 
 export interface FetchOrdersQueryInput {
-  customerId: string;
   status?: string;
   page: number;
   pageSize: number;
@@ -117,7 +115,6 @@ Pontos-chave:
 
 - O contrato é a capacidade exposta pela aplicação. Não importa NestJS, Prisma, `@metri/db`, entidade ou value object; seu DTO é o modelo de leitura que o consumidor recebe.
 - A implementação injeta `PrismaService` e nada mais; a leitura cacheada injeta também o contrato de cache do próprio fluxo (`infrastructure/cache.md`, "Cache de leitura"). Por morar dentro de `infra/persistence/prisma/`, também pode tipar contra os tipos gerados de `@metri/db` quando precisar.
-- Leitura de dado protegido segue o escopo do dono de `backend/access-scope.md`: escopo no input, filtro no `where`.
 - `include`/`select` pode atravessar agregados do mesmo bounded context e datastore, com `select` estreito dos campos usados.
 - O DTO da query é o corpo HTTP quando essa é a única porta, sob a chave que o nomeia (`{ order: ... }`) ou dentro do envelope de paginação, que já é tipado (`{ items: [...], total, page, pageSize }`). Nomear não é transformar: não existe presenter ou mapper por cerimônia na leitura, e mapper de agregado pertence à escrita (`backend/persistence.md`). Se outra porta exigir representação diferente, cada adapter transforma o DTO ou ganha uma query própria conforme a intenção.
 - O DTO é plano e serializável: primitivos, `Date`, arrays e objetos deles. O `Date` sai no HTTP como string ISO, pelo codec do DTO de resposta (`backend/http-api.md`, "Contrato de API: o backend é a fonte").
@@ -135,7 +132,7 @@ Query de detalhe devolve `<DTO> | null`. `Either` não entra: `Either` é o voca
 ```ts
 async execute(input: GetOrderDetailsQueryInput): Promise<OrderDetails | null> {
   const row = await this.prisma.client.order.findFirst({
-    where: { id: input.orderId, customerId: input.customerId },
+    where: { id: input.orderId },
     include: {
       customer: { select: { id: true, name: true, email: true } },
       items: true,
@@ -150,14 +147,11 @@ async execute(input: GetOrderDetailsQueryInput): Promise<OrderDetails | null> {
 }
 ```
 
-O controller traduz `null` com a classe de não-encontrado do módulo e o `toHttpException` de `backend/errors.md`, para o corpo de erro da API continuar único. O escopo do dono chega resolvido pela fronteira de request (`backend/access-scope.md`, "De onde o dono chega"):
+O controller traduz `null` com a classe de não-encontrado do módulo e o `toHttpException` de `backend/errors.md`, para o corpo de erro da API continuar único.:
 
 ```ts
-// controller excerpt, with the scope already resolved by the boundary
-const details = await this.getOrderDetailsQuery.execute({
-  customerId: scope.customerId,
-  orderId: params.orderId,
-});
+// controller excerpt
+const details = await this.getOrderDetailsQuery.execute({ orderId: params.orderId });
 
 if (!details) {
   throw toHttpException(new OrderNotFoundError(params.orderId));
@@ -165,8 +159,6 @@ if (!details) {
 
 return { order: details };
 ```
-
-Como o `where` da query filtra o dono, pedido de outro dono e pedido inexistente produzem o mesmo `null` e a mesma resposta, indistinguíveis por construção (`backend/errors.md`, "Erros sensíveis").
 
 ## Paginação
 
@@ -214,8 +206,7 @@ async execute(input: RevenueByPeriodQueryInput): Promise<RevenuePeriod[]> {
       SUM(o.total_in_cents)::bigint              AS "totalInCents",
       COUNT(*)                                   AS "orderCount"
     FROM orders o
-    WHERE o.customer_id = ${input.customerId}
-      AND o.created_at >= ${input.startDate}
+    WHERE o.created_at >= ${input.startDate}
       AND o.created_at < ${input.endDate}
     GROUP BY period
     ORDER BY period
@@ -235,19 +226,17 @@ Pontos-chave:
 - Interpolação e identificador variável (a unidade do `DATE_TRUNC`) seguem a política de SQL cru de `backend/persistence.md`: template tag parametrizada, identificador como união fechada validada na fronteira.
 - O join e o group by acontecem no banco; a query devolve linhas prontas. Agregar em memória o que o SQL agregaria é a versão de leitura do N+1.
 - Agregado numérico não volta como `number`: `COUNT` devolve `bigint`, e `SUM` sobre inteiros devolve `numeric` (`Decimal` no client), por isso o cast `::bigint` no próprio SQL quando o valor é inteiro. A conversão para `number` acontece no `map`, nunca vaza para a projeção.
-- O `WHERE` de escopo do dono vale aqui igual (`backend/access-scope.md`), e em SQL cru ele é ainda mais fácil de esquecer.
 
 ## Regras absolutas da query
 
 1. Read-only: nunca INSERT, UPDATE ou DELETE. Escrita disfarçada de leitura ("marcar como visto", contador de acesso) é operação de negócio, caminho de domínio.
-2. Dado protegido segue o escopo do dono de `backend/access-scope.md`.
-3. Devolve DTO plano serializável, nunca entidade, value object ou `UniqueEntityID`.
-4. Não toma decisão nem executa comportamento de domínio. Critério de seleção com significado de negócio pode aparecer no `where`; quando a mesma regra também decide em memória, a definição dela tem uma casa só, e a query a reusa em vez de reescrevê-la.
-5. O controller injeta o contrato da query em `domain/application`, sem caso de uso de repasse no meio nem dependência da implementação Prisma.
-6. Não emite domain event e não tem efeito colateral: nada de log de auditoria, contador ou invalidação de cache dentro dela. Gravar no cache o resultado que ela mesma montou, na leitura cacheada, é parte da leitura (`infrastructure/cache.md`).
-7. Listagem que cresce tem paginação, com defaults e teto no schema Zod.
-8. SQL cru segue a política de `backend/persistence.md`.
-9. Join direto só atravessa agregados do mesmo bounded context e datastore. Outro bounded context expõe contrato publicado ou alimenta read model próprio do consumidor.
+2. Devolve DTO plano serializável, nunca entidade, value object ou `UniqueEntityID`.
+3. Não toma decisão nem executa comportamento de domínio. Critério de seleção com significado de negócio pode aparecer no `where`; quando a mesma regra também decide em memória, a definição dela tem uma casa só, e a query a reusa em vez de reescrevê-la.
+4. O controller injeta o contrato da query em `domain/application`, sem caso de uso de repasse no meio nem dependência da implementação Prisma.
+5. Não emite domain event e não tem efeito colateral: nada de log de auditoria, contador ou invalidação de cache dentro dela. Gravar no cache o resultado que ela mesma montou, na leitura cacheada, é parte da leitura (`infrastructure/cache.md`).
+6. Listagem que cresce tem paginação, com defaults e teto no schema Zod.
+7. SQL cru segue a política de `backend/persistence.md`.
+8. Join direto só atravessa agregados do mesmo bounded context e datastore. Outro bounded context expõe contrato publicado ou alimenta read model próprio do consumidor.
 
 ## Registro no Nest
 
@@ -270,7 +259,7 @@ A evolução sob custo real (SQL cru, índice ou view materializada, cache de `i
 
 Contrato e implementação de query não têm spec unitário nem dublê em memória. O contrato não contém comportamento; o que quebra na implementação é o `where` errado, o `include` faltando, a projeção com campo trocado, e só o banco real exercita isso: a prova é o e2e do controller (`test/setup-e2e.ts`, banco isolado por arquivo), com a tag de regra no título quando a listagem implementa regra de spec.
 
-O que o e2e de leitura cobre, além do caminho feliz: o filtro aplicado, a paginação (um `total` maior que a página devolvida), o 404 do detalhe, e o escopo do dono, pela prova de dois donos de `backend/access-scope.md`.
+O que o e2e de leitura cobre, além do caminho feliz: o filtro aplicado, a paginação (um `total` maior que a página devolvida), e o 404 do detalhe.
 
 Os dois lados do corte ficam mais baratos ao mesmo tempo: o dublê em memória não implementa nada de exibição, e o spec unitário de caso de uso não muda, porque caso de uso continua falando só contrato.
 
@@ -279,11 +268,11 @@ Os dois lados do corte ficam mais baratos ao mesmo tempo: o dublê em memória n
 - A leitura passou pela árvore de decisão (passo de escrita, decisão, composição, exibição)?
 - O contrato está em `domain/application/queries/<módulo>/<ação>.query.ts` e a implementação em `infra/persistence/prisma/queries/<módulo>/<ação>.prisma-query.impl.ts`, uma dupla por ação e sem dublê?
 - O DTO é plano e serializável, sem entidade, value object ou `UniqueEntityID`?
-- A query não toma decisão de domínio, critério compartilhado usa specification, e não existe caso de uso de repasse sobre ela?
+- A query não toma decisão de domínio, critério compartilhado tem uma casa só, e não existe caso de uso de repasse sobre ela?
 - O controller injeta o contrato, só a implementação conhece Prisma, e ela não injeta nada além do `PrismaService` e, quando cacheada, do contrato de cache do fluxo?
 - O detalhe devolve `null` e o controller traduz com a classe de não-encontrado do módulo + `toHttpException`?
 - A listagem é paginada com `PaginatedResult`, defaults e teto no Zod, query recebendo valores resolvidos?
 - Agregação com template tag parametrizada, identificador variável como união fechada, conversão numérica no `map`?
 - O contrato de repositório continua sem método que só uma tela consome?
 - Join direto ficou dentro do bounded context e datastore?
-- O e2e cobre filtro, paginação, escopo do dono e o 404?
+- O e2e cobre filtro, paginação e o 404?

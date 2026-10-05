@@ -6,7 +6,6 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../../app.module';
-import { RATE_LIMIT } from '../common/rate-limit/rate-limit.constants';
 import { DatabaseHealth } from './database-health';
 
 describe('GET /api/health (e2e)', () => {
@@ -19,9 +18,6 @@ describe('GET /api/health (e2e)', () => {
 
 		app = moduleRef.createNestApplication<NestFastifyApplication>(
 			new FastifyAdapter(),
-			{
-				bodyParser: false,
-			},
 		);
 		app.setGlobalPrefix('api');
 		await app.init();
@@ -39,16 +35,6 @@ describe('GET /api/health (e2e)', () => {
 		expect(response.body).toEqual({ status: 'ok', database: 'up' });
 	});
 
-	it('fica fora do rate limit global', async () => {
-		const statuses: number[] = [];
-		for (let index = 0; index <= RATE_LIMIT.limit; index++) {
-			const response = await request(app.getHttpServer()).get('/api/health');
-			statuses.push(response.status);
-		}
-
-		expect(statuses.every((status) => status === 200)).toBe(true);
-	});
-
 	describe('com o banco fora do ar', () => {
 		let downApp: NestFastifyApplication;
 
@@ -62,7 +48,6 @@ describe('GET /api/health (e2e)', () => {
 
 			downApp = moduleRef.createNestApplication<NestFastifyApplication>(
 				new FastifyAdapter(),
-				{ bodyParser: false },
 			);
 			downApp.setGlobalPrefix('api');
 			await downApp.init();

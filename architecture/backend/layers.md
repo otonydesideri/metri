@@ -30,7 +30,7 @@ src/
 │   ├── http/                    # controllers por ação, DTOs Zod, presenters
 │   ├── persistence/             # Prisma: repositórios, mappers, implementações de query
 │   ├── services/<capacidade>/   # implementações de integração externa (e-mail, storage, ...)
-│   ├── health/                  # endpoints de infra, fora do throttler global
+│   ├── health/                  # endpoints de infra externa (probe, monitor)
 │   ├── auth/                    # redirects de protocolo antes da sessão (OAuth), módulo próprio
 │   └── common/                  # env, constantes e fronteiras transversais de request
 └── main.ts
@@ -58,8 +58,7 @@ O que cada camada pode conhecer, em resumo (regras completas de import e exceç�
 
 ```mermaid
 flowchart TD
-    A["Request em /api/*"] --> B[Guards globais: throttler]
-    B --> C[ZodValidationPipe global]
+    A["Request em /api/*"] --> C[ZodValidationPipe global]
     C --> D["Controller da ação (infra/http)"]
     D --> E["UseCase.execute() (domain/application)"]
     E --> F["Contrato de repositório (abstract class)"]

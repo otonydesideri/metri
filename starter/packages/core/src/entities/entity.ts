@@ -4,7 +4,6 @@ import { UniqueEntityID } from './unique-entity-id';
  * WHAT: the entity base: protected constructor, `id` as `UniqueEntityID` (new when absent) and equality by identity.
  * WHY: creation and reconstitution are separate paths, each a static method of the subclass (domain/model).
  * WHERE: extended by `AggregateRoot` and by the child entities of an aggregate.
- * The domain event registry enters with the first use case that reacts to a domain fact (backend/events).
  */
 export abstract class Entity<Props> {
 	private readonly _id: UniqueEntityID;

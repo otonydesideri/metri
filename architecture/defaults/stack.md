@@ -64,7 +64,7 @@ Quando o produto tem identidade autenticada, a delegação "Autenticação" (`no
 - o cookie é `HttpOnly`, `Secure`, `SameSite=Lax` e `Path=/`, e leva um token aleatório de 256 bits;
 - o banco guarda o hash SHA-256 do token, nunca o token, e a sessão é achada pelo hash: quem lê o banco não assume uma sessão;
 - sair apaga a linha e devolve o cookie com `Max-Age=0`;
-- a fronteira de request valida a sessão e anexa o dono (`backend/access-scope.md`, "Declaração por controller"); sem sessão válida, 401 (`backend/errors.md`, "Erro inesperado: filtro global").
+- um guard global valida a sessão e anexa a identidade à request; sem sessão válida, 401 (`backend/errors.md`, "Erro inesperado: filtro global").
 
 ## Configuração de referência
 

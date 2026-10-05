@@ -3,9 +3,9 @@ import { emptyProject, removeCopies, run, write } from './lib/testing.ts';
 
 afterAll(removeCopies);
 
-const CONTROLLER = "import { Controller } from '@nestjs/common';\n\n@Public()\n@Controller('health')\nexport class HealthController {}\n";
+const CONTROLLER = "import { Controller } from '@nestjs/common';\n\n@Controller('health')\nexport class HealthController {}\n";
 
-// A project that passes every check: a public controller, a use case with Injectable, a date built in UTC.
+// A project that passes every check: a controller, a use case with Injectable, a date built in UTC.
 function project(): string {
   const dir = emptyProject();
   write(dir, 'package.json', JSON.stringify({ name: 'app' }));
@@ -63,20 +63,6 @@ describe('check', { timeout: 30_000 }, () => {
     expect(check(dir, 'boundaries')).toEqual({ status: 0, lines: [] });
   });
 
-  it('access-boundaries: controller sem a declaração na linha da classe; o marcador do dono vem do package.json', () => {
-    const dir = project();
-    write(dir, 'apps/app-api/src/infra/http/controllers/list-orders.controller.ts', "// @Public()\n@CustomerOwned()\n@Controller('orders')\nexport class ListOrdersController {}\n");
-    expect(check(dir, 'access-boundaries')).toEqual({
-      status: 1,
-      lines: [
-        'falha access-boundaries: controller sem @Public() na classe',
-        '  apps/app-api/src/infra/http/controllers/list-orders.controller.ts',
-      ],
-    });
-    write(dir, 'package.json', JSON.stringify({ name: 'app', metri: { checks: { 'access-boundaries': { ownerMarkers: ['CustomerOwned'] } } } }));
-    expect(check(dir, 'access-boundaries')).toEqual({ status: 0, lines: [] });
-  });
-
   it('date-time: new Date com componentes soltos no app-api e nos pacotes; o app-web fica de fora', () => {
     const dir = project();
     write(dir, 'apps/app-api/src/domain/enterprise/domain-services/cutoff.ts', 'const a = 1;\nconst cutoff = new Date(2026, 8, 30, 14);\n');
@@ -132,10 +118,10 @@ describe('check', { timeout: 30_000 }, () => {
   it('check ou parâmetro que não existe é erro', () => {
     const dir = project();
     expect(check(dir, 'lint')).toEqual({ status: 1, lines: ['erro: o check lint não existe (metri check --help)'] });
-    write(dir, 'package.json', JSON.stringify({ name: 'app', metri: { checks: { 'access-boundaries': { ownerMarker: 'CustomerOwned' } } } }));
+    write(dir, 'package.json', JSON.stringify({ name: 'app', metri: { checks: { boundaries: { domainPackage: 'decimal.js' } } } }));
     expect(check(dir)).toEqual({
       status: 1,
-      lines: ['erro: metri.checks.access-boundaries.ownerMarker no package.json: o parâmetro não existe (metri check --help)'],
+      lines: ['erro: metri.checks.boundaries.domainPackage no package.json: o parâmetro não existe (metri check --help)'],
     });
   });
 });

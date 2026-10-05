@@ -9,14 +9,12 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { AppModule } from '../../../app.module';
-import { Public } from '../access/public.decorator';
 
 class ProbeResponseDto extends createZodDto(
 	z.object({ probe: z.object({ name: z.string() }) }),
 	{ codec: true },
 ) {}
 
-@Public()
 @Controller('probe')
 class ProbeController {
 	@Get('extra-field')
@@ -45,7 +43,6 @@ describe('Serialização de resposta (e2e)', () => {
 
 		app = moduleRef.createNestApplication<NestFastifyApplication>(
 			new FastifyAdapter(),
-			{ bodyParser: false },
 		);
 		app.setGlobalPrefix('api');
 		await app.init();
