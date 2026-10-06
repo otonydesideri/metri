@@ -20,7 +20,7 @@ not_covered:
   - "a divisão real de agregados e a forma de cada um num app, que são decisão de projeto (\"Delegações\") → project:ARCHITECTURE"
   - "Domain Service → domain/domain-services"
   - "bounded context → domain/bounded-contexts"
-examples: [domain/model.examples.md, starter/packages/core/src/entities/entity.ts, starter/packages/core/src/entities/value-object.ts, starter/packages/core/src/types/either.ts]
+examples: [domain/model.examples.md]
 status: active
 ---
 # Modelo de domínio
@@ -71,9 +71,7 @@ Tabela sem representação no modelo de domínio (estado técnico de persistênc
 
 Quando uma invariante de domínio precisa ser preservada atomicamente pelo próprio modelo durante uma mudança: **Obrigatório.** Os elementos responsáveis por ela pertencem à mesma fronteira de agregado, a raiz (`AggregateRoot`, de `@metri/core/entities`) e os filhos dela.
 
-A regra não põe toda consistência do sistema, nem toda operação transacional, dentro de um agregado só: operação que envolve mais de uma fronteira é coordenada por `backend/transactions.md`, com transação entre agregados ou consistência eventual pela árvore de `backend/operation-routing.md`, e a leitura de exibição atravessa agregados sem redesenhá-los (`backend/reading.md`).
-
-O agregado é também a unidade de concorrência: quando escrita concorrente disputa a raiz, a proteção por coluna `version` é a de `backend/transactions.md`, "Concorrência e locking".
+A regra não põe toda consistência do sistema, nem toda operação transacional, dentro de um agregado só: operação que envolve mais de uma fronteira segue a árvore de `backend/operation-routing.md`, com transação no repositório (`backend/persistence.md`) ou consistência eventual, e a leitura de exibição atravessa agregados sem redesenhá-los (`backend/reading.md`).
 
 **Obrigatório.** Coleção interna do agregado preserva as invariantes por método de domínio: item entra e sai por método de intenção da entidade (`addItem()`), que aplica a regra antes de tocar a coleção.
 

@@ -8,7 +8,7 @@ status: open
 mode: afk
 sensitive: false
 blocked_by: [UC1.1, T2.1]
-areas: [backend/transactions, backend/application, backend/persistence, backend/events, domain/model, backend/errors, infrastructure/services]
+areas: [backend/operation-routing, backend/application, backend/persistence, backend/events, domain/model, backend/errors, infrastructure/services]
 touches: [events:order-confirmed]
 checks: ["`pnpm verify`", "`pnpm test order-confirmation`"]
 ---

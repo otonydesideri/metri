@@ -100,7 +100,7 @@ A pergunta é sobre identidade, não sobre quantos consomem hoje: se o dono some
 - Some junto, porque só existe pra montar a tela dele e o nome só faz sentido perto dele (o esqueleto da lista de pedidos, as bolinhas do carrossel): pasta do dono.
 - Sobrevive, porque a identidade não vem de quem usa (um ícone, um campo de form com dependência externa, o estado de erro de leitura): casa de papel, com o critério de pertença escrito nela.
 
-Um campo de form com dependência externa pode ter um consumidor só e mesmo assim não ser peça de ninguém, porque continuaria existindo se a tela que o usa sumisse. Um segundo consumidor de fora não é a regra, é o sintoma: quando ele aparece, quase sempre a identidade nunca foi do dono, e a peça muda de casa.
+O campo de telefone tem um consumidor só e mesmo assim não é peça de ninguém, porque continuaria existindo se a tela de perfil sumisse. Um segundo consumidor de fora não é a regra, é o sintoma: quando ele aparece, quase sempre a identidade nunca foi do dono, e a peça muda de casa.
 
 Peça com identidade própria vai pra casa mais estreita que cobre os donos dela: `pages/<módulo>/components/` quando serve páginas de um módulo só, `shared/components/` quando cruza módulos, e o pacote quando a colocação de `general/code-placement.md` o admite. `components/` do módulo nasce no primeiro caso real, não antes.
 
@@ -114,7 +114,7 @@ Cada casa tem um propósito único e não abraça o mundo. Quando um código nã
 
 A casa é o propósito, não a pasta: ela pode estar declarada aqui sem ter caso real. `shared/contexts/` (estado de uma árvore, propósito definido em `frontend/state.md`) tem o propósito fechado antes do primeiro arquivo, que entra sem decidir nada de novo.
 
-`shared/mocks/` guarda o dado que monta uma tela enquanto a integração com o backend não existe: a lista que o switcher apresenta, o conteúdo do painel de notificações. Ele existe pra ser apagado inteiro quando a leitura real entrar, e é isso que o separa de `shared/constants/`, onde mora valor fixo que o app mantém. Tipo que só descreve a forma desse dado mora no mesmo arquivo, não em `shared/types/`, pelo mesmo motivo: ele some junto.
+`shared/mocks/` guarda o dado que monta uma tela enquanto a integração com o backend não existe: a lista que o switcher apresenta, o conteúdo do painel de notificações. Ele existe pra ser apagado inteiro quando a leitura real entrar, e é isso que o separa de `shared/constants/`, onde mora valor fixo que o app mantém. Tipo que só descreve a forma desse dado mora no mesmo arquivo, não em `shared/types/`, pelo mesmo motivo: ele some junto. Mock com data se ancora no dia real (`hoje + 2 dias`), nunca numa data fixa, para a tela não envelhecer e cair no estado vazio sem ninguém mexer.
 
 ## O que sobe pro pacote
 

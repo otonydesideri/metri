@@ -10,7 +10,7 @@ applies_to:
   - "apps/app-api/src/infra/events/**"
 keywords: [domain event, evento, subscriber, DomainEvent, DomainEvents, EventHandler, AggregateRoot, addDomainEvent, dispatchEventsForAggregate, setupSubscriptions, events.module.ts, bus, in-process, "@metri/core/events", clearHandlers, waitFor, particípio]
 not_covered:
-  - "a escolha entre evento, chamada direta, transação e job → backend/operation-routing"
+  - "a escolha entre evento, chamada direta e job → backend/operation-routing"
 examples: [backend/events.examples.md]
 status: active
 ---
@@ -33,7 +33,7 @@ O mecanismo é o `DomainEvents` de `@metri/core/events`, um registry estático i
 
 ## Quando usar evento
 
-A escolha entre evento, chamada direta, service dedicado, transação e job é de `backend/operation-routing.md`, pela árvore de decisão única de lá.
+A escolha entre evento, chamada direta, service dedicado e job é de `backend/operation-routing.md`, pela árvore de decisão única de lá.
 
 ## Evento não é comando
 
@@ -83,7 +83,7 @@ public confirm(): Either<InvalidOrderStatusTransitionError, void> {
 
 `reconstitute()` nunca registra evento: a volta do banco não é um fato do domínio, é releitura de um fato antigo. Como criação e reconstituição são caminhos separados (`domain/model.md`), o evento de nascimento entra em `create()` sem nenhuma detecção de "é novo?".
 
-**2. O repositório despacha depois de persistir, nunca antes.** Todo método de escrita termina com o despacho, fora de qualquer transação:
+**2. O repositório despacha depois de persistir, nunca antes.** Todo método de escrita termina com o despacho, depois da escrita e fora da `$transaction`, quando houver:
 
 ```ts
 async save(order: Order): Promise<void> {
@@ -96,7 +96,6 @@ async save(order: Order): Promise<void> {
 Pontos-chave:
 
 - Registrar não é despachar. Entre `addDomainEvent()` e o despacho, o evento só existe dentro do agregado; se o caso de uso retornar `failure(...)` antes de gravar, nenhum subscriber fica sabendo de nada.
-- Dentro de um escopo de `UnitOfWork` (`backend/transactions.md`), o repositório registra o agregado no contexto em vez de despachar, e a unidade de trabalho despacha os eventos de cada agregado gravado depois do commit; num escopo desfeito, descarta-os. Cada agregado carrega os próprios eventos e cada um pode interessar a subscribers diferentes.
 - O dublê em memória espelha o real também nisso: cada método de escrita de `test/repositories/` termina com o mesmo `dispatchEventsForAggregate(...)`. Sem isso, o spec unitário de subscriber não tem como provar a reação.
 
 ## Subscriber

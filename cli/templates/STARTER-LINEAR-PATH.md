@@ -1,4 +1,4 @@
-1. `apps/app-api/src/main.ts:bootstrap` sobe o Fastify, aplica o prefixo `/api` e, fora de produção, serve a documentação em `/api/docs`.
+1. `apps/app-api/src/main.ts:bootstrap` sobe o app, aplica o prefixo `/api` e, fora de produção, serve a documentação em `/api/docs`.
 2. `apps/app-api/src/app.module.ts:AppModule` compõe env e módulos, e registra o pipe de validação, o filtro de erro e o serializer.
 3. `apps/app-api/src/infra/common/errors/unexpected-error.filter.ts:UnexpectedErrorFilter` põe todo erro no envelope único e loga o 5xx.
 4. `apps/app-api/src/infra/health/health.controller.ts:HealthController` responde `GET /api/health`, com o estado do banco.

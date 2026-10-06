@@ -8,7 +8,7 @@ import type {
   Order as PrismaOrder,
   OrderItem as PrismaOrderItem,
   Prisma,
-} from '@metri/db/client';
+} from '@metri/db/postgres/app';
 import { OrderItem } from '../../../../domain/enterprise/order-item.entity';
 import { Order } from '../../../../domain/enterprise/order.entity';
 import type { OrderStatus } from '../../../../domain/enterprise/enums/order-status.enum';
@@ -57,19 +57,20 @@ export class OrderPrismaMapper {
 ## OrderPrismaRepositoryImpl
 
 ```ts
+import { DomainEvents } from '@metri/core/events';
 import { Injectable } from '@nestjs/common';
 import { OrderRepository } from '../../../../domain/application/repositories/order-repository.contract';
 import type { Order } from '../../../../domain/enterprise/order.entity';
 import { OrderItemPrismaMapper } from '../mappers/order-item.prisma-mapper';
 import { OrderPrismaMapper } from '../mappers/order.prisma-mapper';
-import { TransactionContext } from '../transactions/transaction-context';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class OrderPrismaRepositoryImpl implements OrderRepository {
-  constructor(private readonly context: TransactionContext) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findById(id: string): Promise<Order | null> {
-    const data = await this.context.client().order.findUnique({
+    const data = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -88,7 +89,7 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
       return [];
     }
 
-    const rows = await this.context.client().order.findMany({
+    const rows = await this.prisma.order.findMany({
       where: { id: { in: ids } },
       include: { items: true },
     });
@@ -100,20 +101,113 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
 
   async save(order: Order): Promise<void> {
     const data = OrderPrismaMapper.toPrisma(order);
-    const tx = this.context.requireTx();
 
-    await tx.order.upsert({
-      where: { id: data.id },
-      create: data,
-      update: { status: data.status, updatedAt: data.updatedAt },
+    // root and items are written together or not at all
+    await this.prisma.$transaction(async (tx) => {
+      await tx.order.upsert({
+        where: { id: data.id },
+        create: data,
+        update: { status: data.status, updatedAt: data.updatedAt },
+      });
+
+      await tx.orderItem.deleteMany({ where: { orderId: data.id } });
+      await tx.orderItem.createMany({
+        data: order.items.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
+      });
     });
 
-    await tx.orderItem.deleteMany({ where: { orderId: data.id } });
-    await tx.orderItem.createMany({
-      data: order.items.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-    });
-
-    this.context.track(order.id);
+    DomainEvents.dispatchEventsForAggregate(order.id);
   }
 }
+```
+
+## PrismaService
+
+```ts title="apps/app-api/src/infra/persistence/prisma/prisma.service.ts"
+import { PrismaClient } from '@metri/db/postgres/app';
+import {
+	Injectable,
+	type OnModuleDestroy,
+	type OnModuleInit,
+} from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { EnvService } from '../../common/env/env.service';
+
+/** SOURCE OF TRUTH: PrismaService.
+ * WHAT: the @metri/db `PrismaClient` with the Postgres driver adapter, built from the DATABASE_URL of `EnvService`; connects on module init and disconnects on module destroy.
+ * WHY: a client is born in the constructor, never at the top level of a file (infrastructure/runtime, "Env e montagem de client"; backend/persistence).
+ * WHERE: injected by the repositories and queries of infra/persistence/prisma, by `DatabaseHealth` and by the test factories; never by a controller or a use case (backend/boundaries).
+ */
+@Injectable()
+export class PrismaService
+	extends PrismaClient
+	implements OnModuleInit, OnModuleDestroy
+{
+	constructor(env: EnvService) {
+		super({
+			adapter: new PrismaPg({
+				connectionString: env.getOrThrow('DATABASE_URL'),
+			}),
+		});
+	}
+
+	async onModuleInit(): Promise<void> {
+		await this.$connect();
+	}
+
+	async onModuleDestroy(): Promise<void> {
+		await this.$disconnect();
+	}
+}
+```
+
+## schema.prisma
+
+```prisma title="packages/db/src/postgres/app/models/schema.prisma"
+// The generator of the client and the datasource. Each model lives beside this file, in `<module>.prisma`, the file of the
+// module that owns the table (backend/persistence, "Propriedade de tabela no schema"). After changing a model:
+// `pnpm --filter @metri/db migrate:dev --name <name>`, then `pnpm --filter @metri/db generate`.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/client"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+```
+
+## prisma.config.ts
+
+```ts title="packages/db/src/postgres/app/prisma.config.ts"
+import 'dotenv/config';
+import { defineConfig, env } from 'prisma/config';
+
+/** SOURCE OF TRUTH: the Prisma config of the `app` database, in the Postgres connector of @metri/db.
+ * WHAT: points the Prisma CLI to the multi-file schema in `models/`, to `migrations/` and to the DATABASE_URL of the package's own `.env`.
+ * WHY: one folder per connector under `src/` and, inside it, one per database, with its config, schema and migrations, so a second app's database is a sibling folder (backend/persistence); in Prisma 7 the URL lives here, not in the schema, and a variable already in the environment wins over the `.env`.
+ * WHERE: passed by `--config` to every `prisma` command of the package (`generate`, `migrate:dev`, `migrate:deploy`), run by hand and by the app-api e2e setup.
+ */
+export default defineConfig({
+	schema: 'models',
+	migrations: {
+		path: 'migrations',
+	},
+	datasource: {
+		url: env('DATABASE_URL'),
+	},
+});
+```
+
+## index.ts do banco
+
+```ts title="packages/db/src/postgres/app/index.ts"
+/** SOURCE OF TRUTH: the `app` database of the Postgres connector of @metri/db.
+ * WHAT: the generated Prisma client and its types, exported as `@metri/db/postgres/app`.
+ * WHY: consumers import the connector, never the generated folder (backend/persistence).
+ * WHERE: imported by the `PrismaService` of app-api and by its e2e setup.
+ */
+export * from './generated/client/client';
 ```

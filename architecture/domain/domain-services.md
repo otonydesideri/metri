@@ -39,7 +39,7 @@ Não é domain service:
 
 Quando a regra pode recusar: **Obrigatório.** Devolve `Either` com a classe de erro do módulo, como entidade e value object (`backend/errors.md`).
 
-**Proibido.** Conhecer repositório, contrato, framework ou IO, e ser chamado pela infra ou por dublê (`backend/transactions.md`).
+**Proibido.** Conhecer repositório, contrato, framework ou IO, e ser chamado pela infra ou por dublê (`backend/boundaries.md`, "A infra não importa regra de domínio").
 
 **Padrão.** A forma é função pura exportada, uma operação só, em `src/domain/enterprise/domain-services/<regra>.ts`.
 

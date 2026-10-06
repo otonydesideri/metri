@@ -1,7 +1,4 @@
-import {
-	FastifyAdapter,
-	type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import type { INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -9,19 +6,16 @@ import { AppModule } from '../../app.module';
 import { DatabaseHealth } from './database-health';
 
 describe('GET /api/health (e2e)', () => {
-	let app: NestFastifyApplication;
+	let app: INestApplication;
 
 	beforeAll(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
 		}).compile();
 
-		app = moduleRef.createNestApplication<NestFastifyApplication>(
-			new FastifyAdapter(),
-		);
+		app = moduleRef.createNestApplication();
 		app.setGlobalPrefix('api');
 		await app.init();
-		await app.getHttpAdapter().getInstance().ready();
 	});
 
 	afterAll(async () => {
@@ -36,7 +30,7 @@ describe('GET /api/health (e2e)', () => {
 	});
 
 	describe('com o banco fora do ar', () => {
-		let downApp: NestFastifyApplication;
+		let downApp: INestApplication;
 
 		beforeAll(async () => {
 			const moduleRef: TestingModule = await Test.createTestingModule({
@@ -46,12 +40,9 @@ describe('GET /api/health (e2e)', () => {
 				.useValue({ isUp: async () => false })
 				.compile();
 
-			downApp = moduleRef.createNestApplication<NestFastifyApplication>(
-				new FastifyAdapter(),
-			);
+			downApp = moduleRef.createNestApplication();
 			downApp.setGlobalPrefix('api');
 			await downApp.init();
-			await downApp.getHttpAdapter().getInstance().ready();
 		});
 
 		afterAll(async () => {

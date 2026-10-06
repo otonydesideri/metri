@@ -51,7 +51,7 @@ flowchart TD
 
 ## Exemplo de referência
 
-Exemplo completo: <tema>.examples.md#<âncora> ou `starter/<caminho>`.
+Exemplo completo: <tema>.examples.md#<âncora>.
 
 ## Sob demanda
 
@@ -69,7 +69,8 @@ Chave marcada `# opcional` só é escrita quando tem valor (`node_modules/metri/
 ## Escrita da regra
 
 - `description` é o "Dono de" da regra; `use_when`, o gatilho do próprio arquivo ("Consultar antes de"), uma entrada por situação, e nunca uma lista de pré-requisitos, que é `read_first`; `not_covered`, o "Não cobre".
-- Exemplo de implementação completa (classe, caso de uso, componente inteiro) vai para `<tema>.examples.md`, com um ponteiro no texto; trecho curto que ilustra uma regra fica onde está.
+- Exemplo de implementação completa (classe, caso de uso, componente inteiro, config) vai para `<tema>.examples.md`, com um ponteiro no texto e em `examples`; trecho curto que ilustra uma regra fica onde está. A regra nunca aponta para arquivo do `starter/`.
+- O exemplo que o `starter/` replica leva o caminho do arquivo no projeto no bloco de código (```ts title="apps/app-api/src/main.ts"```), e o arquivo do `starter/` é igual ao bloco (o teste `cli/examples.test.ts`).
 - Conteúdo cujo dono é outro arquivo fica no dono; aqui vira ponteiro.
 - A regra de escape vive no `AGENTS.md`, "How to work here", e não é copiada.
 - Citação cujo arquivo e seção não dizem o que foi citado: a frase vai para o arquivo dono, com um texto que já existe em outro arquivo; sem esse texto, vira dúvida.
@@ -257,7 +258,7 @@ Quando a necessidade só pede escolher a biblioteca: **Obrigatório.** Uma linha
 
 Quando a receita é um documento inteiro: **Obrigatório.** Ele é capacidade condicional, com `activation`.
 
-**Padrão.** O exemplo de referência é o que o `starter/` replica, e o `starter/` traz só o que um exemplo da base mostra.
+**Padrão.** O `starter/` replica os exemplos de referência e traz só o que um exemplo da base mostra.
 
 > **Por quê.** Configuração particular na base vira cópia em todo projeto novo, sem a necessidade que a justificaria.
 

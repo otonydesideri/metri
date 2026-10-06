@@ -111,8 +111,10 @@ describe('init', { timeout: 60_000 }, () => {
     expect(existsSync(join(dir, 'scripts'))).toBe(false);
     expect(readFileSync(join(dir, 'apps/app-web/index.html'), 'utf8')).toContain(`<title>${name}</title>`);
     expect(readFileSync(join(dir, 'compose.yaml'), 'utf8')).toContain(`\nname: ${name}\n`);
-    expect(readFileSync(join(dir, '.env'), 'utf8')).toBe(readFileSync(join(dir, '.env.example'), 'utf8'));
-    expect(readFileSync(join(dir, '.env'), 'utf8')).toContain(`@localhost:5432/${name}\n`);
+    for (const app of ['apps/app-api', 'packages/db']) {
+      expect(readFileSync(join(dir, app, '.env'), 'utf8')).toBe(readFileSync(join(dir, app, '.env.example'), 'utf8'));
+      expect(readFileSync(join(dir, app, '.env'), 'utf8')).toContain(`@localhost:5432/${name}\n`);
+    }
     const architecture = readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8');
     expect(architecture).not.toContain('mapeamento: pendente');
     expect(architecture).toContain('## Caminho linear\n\n1. `apps/app-api/src/main.ts:bootstrap`');
@@ -127,11 +129,9 @@ describe('init', { timeout: 60_000 }, () => {
     write(dir, 'pnpm-workspace.yaml', 'allowBuilds:\n  esbuild: false\n');
     write(dir, 'biome.json', '{}\n');
     write(dir, '.gitignore', 'node_modules\n.env\n.env.*\n');
-    write(dir, '.env', 'DATABASE_URL=postgresql://postgres:segredo@localhost:5432/loja\n');
     const { status, lines } = initWithStarter(dir, pnpm);
     expect(status).toBe(0);
     expect(readFileSync(join(dir, 'biome.json'), 'utf8')).toBe('{}\n');
-    expect(readFileSync(join(dir, '.env'), 'utf8')).toBe('DATABASE_URL=postgresql://postgres:segredo@localhost:5432/loja\n');
     expect(lines).toContain('mantido: biome.json já existe');
     const gitignore = readFileSync(join(dir, '.gitignore'), 'utf8');
     expect(gitignore.startsWith('node_modules\n.env\n.env.*\n')).toBe(true);

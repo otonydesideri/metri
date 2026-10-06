@@ -1,11 +1,11 @@
 ---
 id: defaults/stack
-description: "a stack e o idioma do código, lista única das ferramentas que as regras exigem, com a versão de referência de cada uma: monorepo pnpm workspaces + Turborepo e Biome; no backend, NestJS sobre Fastify com Prisma/Postgres, build pelo tsdown, Zod e log; no frontend, React + Vite, roteamento, dado do servidor, cliente HTTP, formulário, UI, tema e estado global; nos testes, Vitest, supertest, dados de teste, o ambiente de interface e o e2e com Playwright; a escolha para o que só entra quando o projeto precisa (fila, e-mail, storage, log estruturado, rate limit, telefone, máscara); e a autenticação padrão (sessão no servidor, same-origin)."
+description: "a stack e o idioma do código, lista única das ferramentas que as regras exigem, com a versão de referência de cada uma: monorepo pnpm workspaces + Turborepo e Biome; no backend, NestJS com Prisma/Postgres, build pelo tsdown, env, Zod e log; no frontend, React + Vite, roteamento, dado do servidor, cliente HTTP, formulário, UI, tema e estado global; nos testes, Vitest, supertest, dados de teste, o ambiente de interface e o e2e com Playwright; a escolha para o que só entra quando o projeto precisa (fila, e-mail, storage, log estruturado, rate limit, telefone, máscara); e a autenticação padrão (sessão no servidor, same-origin)."
 use_when:
   - "escolher ferramenta de backend, frontend, validação, lint/format ou testes"
   - "decidir o idioma do código, da documentação, dos comentários ou das mensagens de erro"
   - "implementar login, sessão ou logout"
-examples: [starter/biome.json, starter/package.json, starter/apps/app-api/vitest.config.ts]
+examples: [defaults/stack.examples.md]
 status: active
 ---
 # Stack padrão
@@ -18,8 +18,9 @@ status: active
 
 Backend:
 
-- NestJS sobre Fastify, Prisma/Postgres via `@metri/db` (backend/layers, backend/persistence, infrastructure/runtime).
-- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node --env-file-if-exists=../../.env dist/main.mjs"` no dev, com o `.env` da raiz), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
+- NestJS, Prisma/Postgres via `@metri/db` (backend/layers, backend/persistence, infrastructure/runtime).
+- Build e dev do app-api: `tsdown` (`tsdown` no build; `tsdown --watch --on-success "node dist/main.mjs"` no dev), com `experimentalDecorators` e `emitDecoratorMetadata` no `tsconfig.json`. O tsx e o esbuild não emitem o metadata dos decorators, de que a injeção do NestJS e o `api:generate` dependem.
+- Env: `@nestjs/config` (`ConfigModule` com `validate` Zod, lido pelo `EnvService`) no app-api, e `dotenv` no `prisma.config.ts` do `@metri/db` e no setup do e2e; um `.env` por app e pacote (infrastructure/runtime).
 - Validação de formato HTTP e contrato de API: Zod via `nestjs-zod` (`createZodDto`, `@ZodResponse`), pipe e serializer globais; OpenAPI pelo `@nestjs/swagger`, com o `cleanupOpenApiDoc` do nestjs-zod (backend/http-api, backend/boundaries).
 - Log: o `Logger` nativo do NestJS (infrastructure/logging).
 - Data e fuso: `date-fns` + `@date-fns/tz`, no domínio (general/date-time).
@@ -46,7 +47,7 @@ Testes:
 
 ## Quando precisar
 
-A escolha para a necessidade que o projeto ainda não tem. Entra quando a necessidade aparece, não no `starter/`; a forma, quando há uma, está na regra entre parênteses.
+A escolha para a necessidade que o projeto ainda não tem. Entra quando a necessidade aparece, não no starter; a forma, quando há uma, está na regra entre parênteses.
 
 - Fila e job: pg-boss (backend/async-jobs).
 - E-mail: Resend, com o template em React Email (`@react-email/render`); o vendor é delegado ao projeto.
@@ -70,13 +71,13 @@ Quando o produto tem identidade autenticada, a delegação "Autenticação" (`no
 
 O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS (`tailwindDirectives`: `@theme`, `@source`, `@custom-variant`). O código gerado do contrato de API, que o `api:drift` confere, fica fora dele, com `!` (o scanner ainda lê os tipos). O código de fornecedor do kit, `packages/ui/src/components/ui/`, fica sem formatação e sem as regras do preset, para a CLI e o código continuarem iguais; só o `noRestrictedImports` vale nele, e em todo o repositório: barra o pacote npm `cn` (`defaults/ui.md`, "Componente novo"). O override do NestJS: o `import type` apagaria o metadata que a injeção de dependência lê (`emitDecoratorMetadata`), o módulo dinâmico só com `static forRoot()` é classe só de estáticos, e decorator de parâmetro (`@Body()`, `@Inject()`) precisa da opção do parser.
 
-Exemplo completo: `starter/biome.json`.
+Exemplo completo: stack.examples.md#biomejson.
 
 O `test` da raiz repassa o filtro ao Vitest de cada pacote pelo `--`: sem ele, o Turborepo lê o filtro (`pnpm test order-confirmation`) como nome de task.
 
-Exemplo completo: `starter/package.json`.
+Exemplo completo: stack.examples.md#packagejson-da-raiz.
 
-O Vitest de cada app e pacote passa sem arquivo de teste (`passWithNoTests`), para o pacote recém-criado não derrubar o `verify`: no `vite.config.ts` do app-web, nos dois configs do app-api (`backend/testing.md`) e no de cada pacote do `starter/`.
+O Vitest de cada app e pacote passa sem arquivo de teste (`passWithNoTests`), para o pacote recém-criado não derrubar o `verify`: no `vite.config.ts` do app-web, nos dois configs do app-api (`backend/testing.md`) e no de cada pacote.
 
 O `turbo.json` desliga o `agentGuidance`: o Turborepo 2.11 grava um bloco próprio no `AGENTS.md` quando detecta um agente, e o `AGENTS.md` do projeto é do `metri init`.
 

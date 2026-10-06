@@ -12,7 +12,7 @@ export class DatabaseHealth {
 
 	async isUp(): Promise<boolean> {
 		try {
-			await this.prisma.client.$queryRaw`SELECT 1`;
+			await this.prisma.$queryRaw`SELECT 1`;
 			return true;
 		} catch {
 			return false;

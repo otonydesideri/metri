@@ -1,8 +1,10 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import {
-	FastifyAdapter,
-	type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+	Body,
+	Controller,
+	HttpCode,
+	type INestApplication,
+	Post,
+} from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { createZodDto } from 'nestjs-zod';
 import request from 'supertest';
@@ -24,7 +26,7 @@ class ProbeController {
 }
 
 describe('Envelope de erro (e2e)', () => {
-	let app: NestFastifyApplication;
+	let app: INestApplication;
 
 	beforeAll(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
@@ -32,12 +34,9 @@ describe('Envelope de erro (e2e)', () => {
 			controllers: [ProbeController],
 		}).compile();
 
-		app = moduleRef.createNestApplication<NestFastifyApplication>(
-			new FastifyAdapter(),
-		);
+		app = moduleRef.createNestApplication();
 		app.setGlobalPrefix('api');
 		await app.init();
-		await app.getHttpAdapter().getInstance().ready();
 	});
 
 	afterAll(async () => {

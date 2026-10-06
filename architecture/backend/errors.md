@@ -11,7 +11,7 @@ applies_to:
   - "apps/app-api/src/domain/enterprise/errors/**"
   - "packages/core/src/errors/**"
 keywords: [DomainError, DomainErrorType, ApiErrorType, type, code, Either, failure, throw, toHttpException, STATUS_MAP, "Record<DomainErrorType, number>", toInvalidRequestException, ZodValidationPipe, APP_PIPE, UnexpectedErrorFilter, APP_FILTER, envelope, INVALID_REQUEST, INTERNAL_ERROR, REQUEST_REJECTED, erros sensíveis, anti-enumeração, "@metri/core/errors"]
-examples: [backend/errors.examples.md, starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts, starter/apps/app-api/src/infra/common/errors/to-http-exception.ts, starter/packages/core/src/errors/domain-error.ts]
+examples: [backend/errors.examples.md]
 status: active
 ---
 # Erros
@@ -32,7 +32,7 @@ A recusa nativa do framework (rota inexistente, método não permitido) não é 
 
 Vivem em `packages/core/src/errors`. Com o `ApiErrorType` do protocolo ("O formato de resposta de erro", adiante), são a única coisa que o core define sobre erros; as classes concretas pertencem aos módulos.
 
-Exemplo completo: `starter/packages/core/src/errors/domain-error.ts`.
+Exemplo completo: errors.examples.md#domainerror.
 
 ### O significado de `type`
 
@@ -124,7 +124,7 @@ expect(result.value).toBeInstanceOf(OrderNotFoundError);
 
 Nenhum controller escreve `switch` por erro. A tradução é uma tabela declarativa mais uma função, na infra do app.
 
-Exemplo completo: `starter/apps/app-api/src/infra/common/errors/to-http-exception.ts`.
+Exemplo completo: errors.examples.md#tohttpexception.
 
 O handler vira uma linha:
 
@@ -160,7 +160,7 @@ O corpo produzido por `toHttpException` é o formato único de erro da API, o en
 
 O cliente discrimina por `code`; `type` e o status HTTP dão a categoria. O `type` do envelope é o `ApiErrorType`, a taxonomia do protocolo HTTP, distinta da do domínio: ela contém os valores do `DomainErrorType` e as categorias que só a porta HTTP produz.
 
-Exemplo completo: `starter/packages/core/src/errors/api-error.ts`.
+Exemplo completo: errors.examples.md#apierrorresponse.
 
 - `INVALID_REQUEST`: erro de formato HTTP (`toInvalidRequestException`, adiante).
 - `INTERNAL_ERROR`: erro inesperado (o filtro global, adiante).
@@ -172,7 +172,7 @@ O `ApiErrorType` vive ao lado do `DomainErrorType`, em `packages/core/src/errors
 
 O erro de formato não passa pelas tabelas acima (não é `DomainError`), mas o corpo da resposta fala o mesmo formato único. A tradução é a `createValidationException` do `ZodValidationPipe`, composta em `app.module.ts` e registrada via `APP_PIPE`, pela regra de registro global de `infrastructure/runtime.md`:
 
-Exemplo completo: `starter/apps/app-api/src/infra/common/errors/to-invalid-request-exception.ts`, composto no `starter/apps/app-api/src/app.module.ts`.
+Exemplo completo: errors.examples.md#toinvalidrequestexception, composto no `AppModule` (`infrastructure/runtime.examples.md#appmodule`).
 
 Pontos-chave:
 
@@ -184,7 +184,7 @@ Pontos-chave:
 
 Erro inesperado não passa pela tabela de tradução acima: não é um `DomainError`, é uma exceção lançada por acidente de programação ou por falha de infraestrutura externa. A captura é um filtro global do Nest, registrado via `APP_FILTER` (`infrastructure/runtime.md`):
 
-Exemplo completo: `starter/apps/app-api/src/infra/common/errors/unexpected-error.filter.ts`, registrado no `starter/apps/app-api/src/app.module.ts`.
+Exemplo completo: errors.examples.md#unexpectederrorfilter, registrado no `AppModule` (`infrastructure/runtime.examples.md#appmodule`).
 
 O filtro loga o 5xx com a stack, pelo `Logger` nativo (`infrastructure/logging.md`); abaixo de 500 não loga.
 

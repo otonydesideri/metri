@@ -11,13 +11,15 @@ type Aggregate = {
 
 type Callback = (event: DomainEvent) => void;
 
-// biome-ignore-start lint/complexity/noStaticOnlyClass: the shape (DomainEvents.register(), .dispatchEventsForAggregate()) is the documented API (backend/events.md), not a style choice.
+// biome-ignore-start lint/complexity/noStaticOnlyClass: the shape (DomainEvents.shouldRun, .register(), .dispatchEventsForAggregate()) is the documented API (backend/events.md), not a style choice.
 /** SOURCE OF TRUTH: DomainEvents.
- * WHAT: the static in-process registry — `markAggregateForDispatch` (called by `AggregateRoot.addDomainEvent`), `dispatchEventsForAggregate` (called by the repository after persisting) and `discardEventsForAggregate` (called by `UnitOfWork` on rollback); `register`/`clearHandlers` for subscribers.
+ * WHAT: the static in-process registry — `markAggregateForDispatch` (called by `AggregateRoot.addDomainEvent`), `dispatchEventsForAggregate` (called by the repository after persisting) and `discardEventsForAggregate` (called by `UnitOfWork` on rollback); `register`/`clearHandlers` for subscribers; `shouldRun` to skip dispatch in e2e that do not prove a reaction.
  * WHY: registering a fact is not dispatching it — the event only reaches a handler once the aggregate that carries it is marked dispatched, never before the write that proves the fact actually happened (backend/events, "A entidade registra, o repositório despacha").
- * WHERE: `AggregateRoot` marks on `addDomainEvent`; the Prisma repository and `UnitOfWork` call dispatch/discard; a subscriber calls `register` in `setupSubscriptions()`.
+ * WHERE: `AggregateRoot` marks on `addDomainEvent`; the Prisma repository and `UnitOfWork` call dispatch/discard; a subscriber calls `register` in `setupSubscriptions()`; `test/setup-e2e.ts` sets `shouldRun = false` by default.
  */
 export class DomainEvents {
+	static shouldRun = true;
+
 	private static handlersByEvent = new Map<string, Callback[]>();
 	private static markedAggregates: Aggregate[] = [];
 
@@ -37,8 +39,10 @@ export class DomainEvents {
 		if (!aggregate) {
 			return;
 		}
-		for (const event of aggregate.domainEvents) {
-			DomainEvents.dispatch(event);
+		if (DomainEvents.shouldRun) {
+			for (const event of aggregate.domainEvents) {
+				DomainEvents.dispatch(event);
+			}
 		}
 		aggregate.clearEvents();
 		DomainEvents.removeFromMarked(id);
@@ -102,4 +106,4 @@ export class DomainEvents {
 		);
 	}
 }
-// biome-ignore-end lint/complexity/noStaticOnlyClass: the shape (DomainEvents.register(), .dispatchEventsForAggregate()) is the documented API (backend/events.md), not a style choice.
+// biome-ignore-end lint/complexity/noStaticOnlyClass: the shape (DomainEvents.shouldRun, .register(), .dispatchEventsForAggregate()) is the documented API (backend/events.md), not a style choice.

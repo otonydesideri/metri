@@ -15,7 +15,7 @@ not_covered:
   - "valores e vocabulário visual → project:DESIGN"
   - "preferência de tema fora da árvore de estado cliente → frontend/state"
 enforced_by: [design-tokens]
-examples: [starter/packages/ui/src/components/providers/theme-provider.tsx, starter/apps/app-web/index.html]
+examples: [frontend/theming.examples.md]
 status: active
 ---
 # Token e tema no frontend
@@ -76,7 +76,7 @@ Quando o `--background` muda no `globals.css`: **Obrigatório.** O `<style>` do 
 
 - O arquivo do `ThemeProvider` reexporta o `useTheme()`, que expõe `theme` e `setTheme` para o toggle do app.
 
-Exemplo completo: `starter/packages/ui/src/components/providers/theme-provider.tsx` e o `<head>` de `starter/apps/app-web/index.html`.
+Exemplo completo: theming.examples.md#themeprovider e o `<head>` de theming.examples.md#indexhtml.
 
 ## Verificação
 

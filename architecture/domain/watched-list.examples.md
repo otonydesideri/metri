@@ -2,9 +2,9 @@
 
 ## WatchedList
 
-A classe base, que o projeto copia para `packages/core/src/entities/watched-list.ts` e exporta em `packages/core/src/entities/index.ts` quando ativa a capacidade.
+A classe base, em `@metri/core/entities`.
 
-```ts
+```ts title="packages/core/src/entities/watched-list.ts"
 /** SOURCE OF TRUTH: WatchedList.
  * WHAT: a child collection that tracks its delta: `getNewItems()` and `getRemovedItems()` against the initial items.
  * WHY: the repository saves only what changed in the collection, without rewriting it on every `save()` (domain/watched-list).
@@ -151,26 +151,27 @@ async save(order: Order): Promise<void> {
   const data = OrderPrismaMapper.toPrisma(order);
   const newItems = order.items.getNewItems();
   const removedItems = order.items.getRemovedItems();
-  const tx = this.context.requireTx();
 
-  await tx.order.upsert({
-    where: { id: data.id },
-    create: data,
-    update: { status: data.status, updatedAt: data.updatedAt },
+  await this.prisma.$transaction(async (tx) => {
+    await tx.order.upsert({
+      where: { id: data.id },
+      create: data,
+      update: { status: data.status, updatedAt: data.updatedAt },
+    });
+
+    if (newItems.length > 0) {
+      await tx.orderItem.createMany({
+        data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
+      });
+    }
+
+    if (removedItems.length > 0) {
+      await tx.orderItem.deleteMany({
+        where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
+      });
+    }
   });
 
-  if (newItems.length > 0) {
-    await tx.orderItem.createMany({
-      data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-    });
-  }
-
-  if (removedItems.length > 0) {
-    await tx.orderItem.deleteMany({
-      where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
-    });
-  }
-
-  this.context.track(order.id);
+  DomainEvents.dispatchEventsForAggregate(order.id);
 }
 ```
