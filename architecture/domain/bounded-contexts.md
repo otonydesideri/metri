@@ -72,7 +72,7 @@ Quando o mesmo conceito tem significados diferentes nos dois lados: **Obrigatór
 - Dentro de um contexto, módulos se comunicam pelas regras de `backend/modules.md`, "Comunicação entre módulos"; as proibições de "Interação entre contextos" valem entre contextos.
 - Comando em linha entre contextos, ou consumo de capacidade que não é evento nem leitura, é a integração além do contrato compartilhado, delegada ao projeto (`backend/modules.md`, "Delegado ao projeto"): nenhum mecanismo próprio nasce sem a decisão do projeto (`skills/writing-for-agents/RULE-FORMAT.md`, "Delegado ao projeto").
 - Leitura entre contextos segue a regra de join de `backend/reading.md`, "Regras absolutas da query".
-- A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Unidade de trabalho que grava agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos": o caso de uso carregaria as entidades dos dois lados (`backend/transactions.md`).
+- A escolha do mecanismo de uma reação segue a árvore de `backend/operation-routing.md`. Escrita atômica que grava agregados de contextos diferentes esbarra na primeira proibição de "Interação entre contextos".
 - A divisão concreta (quantos contextos, nomes, fronteiras, módulos de cada um e contratos entre eles) é decisão de projeto: o gatilho é a `activation` desta regra, e o registro, a linha dela em `.metri/ARCHITECTURE.md`, "Capacidades ativas".
 
 ## Verificação

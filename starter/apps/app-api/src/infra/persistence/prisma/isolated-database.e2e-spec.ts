@@ -1,14 +1,11 @@
-import {
-	FastifyAdapter,
-	type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import type { INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../../../app.module';
 import { PrismaService } from './prisma.service';
 
 describe('banco isolado do e2e', () => {
-	let app: NestFastifyApplication;
+	let app: INestApplication;
 	let prisma: PrismaService;
 
 	beforeAll(async () => {
@@ -16,12 +13,9 @@ describe('banco isolado do e2e', () => {
 			imports: [AppModule],
 		}).compile();
 
-		app = moduleRef.createNestApplication<NestFastifyApplication>(
-			new FastifyAdapter(),
-		);
+		app = moduleRef.createNestApplication();
 		app.setGlobalPrefix('api');
 		await app.init();
-		await app.getHttpAdapter().getInstance().ready();
 
 		prisma = moduleRef.get(PrismaService);
 	});
@@ -31,7 +25,7 @@ describe('banco isolado do e2e', () => {
 	});
 
 	it('conecta num banco novo, só deste arquivo', async () => {
-		const [databaseOnDatabase] = await prisma.client.$queryRaw<
+		const [databaseOnDatabase] = await prisma.$queryRaw<
 			{ name: string }[]
 		>`SELECT current_database() AS name`;
 

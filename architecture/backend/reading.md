@@ -30,7 +30,7 @@ Por isso a leitura tem dois caminhos, e a escolha não é livre:
 - **Leitura que alimenta decisão** fica no caminho de domínio: contrato de repositório devolvendo entidade, caso de uso com `Either`, regra na entidade, no value object ou num domain service (`domain/domain-services.md`) quando nenhuma entidade é dona natural da decisão. O resultado pode ser um tipo de negócio próprio, não precisa ser entidade.
 - **Leitura de exibição** vai por uma query quando a resposta sai de um datastore só: contrato da ação em `domain/application`, implementação em infra que fala com o banco direto e devolve um DTO plano. O controller consome o contrato sem caso de uso de repasse no meio. Se um campo da resposta precisa de outra porta, a montagem é de caso de uso mesmo sem regra nenhuma (seção "A árvore de decisão").
 
-Na escrita, a propriedade de agregados e as fronteiras de consistência são rígidas (`domain/model.md`, `backend/transactions.md`). Na leitura de exibição, uma projeção pode atravessar agregados do mesmo bounded context e do mesmo datastore: ela acopla schema e significado dos campos, mas não usa esses dados para modificar estado nem contorna invariantes. Fronteira de bounded context (`domain/bounded-contexts.md`) continua rígida também na leitura; composição entre contextos usa contrato publicado, API ou read model alimentado pelo contexto dono, nunca join direto nas tabelas internas do outro contexto.
+Na escrita, a propriedade de agregados e as fronteiras de consistência são rígidas (`domain/model.md`, `backend/persistence.md`). Na leitura de exibição, uma projeção pode atravessar agregados do mesmo bounded context e do mesmo datastore: ela acopla schema e significado dos campos, mas não usa esses dados para modificar estado nem contorna invariantes. Fronteira de bounded context (`domain/bounded-contexts.md`) continua rígida também na leitura; composição entre contextos usa contrato publicado, API ou read model alimentado pelo contexto dono, nunca join direto nas tabelas internas do outro contexto.
 
 Os sinais de que uma leitura de exibição entrou no caminho errado, qualquer um deles:
 
@@ -121,7 +121,7 @@ Query de detalhe devolve `<DTO> | null`. `Either` não entra: `Either` é o voca
 
 ```ts
 async execute(input: GetOrderDetailsQueryInput): Promise<OrderDetails | null> {
-  const row = await this.prisma.client.order.findFirst({
+  const row = await this.prisma.order.findFirst({
     where: { id: input.orderId },
     include: {
       customer: { select: { id: true, name: true, email: true } },

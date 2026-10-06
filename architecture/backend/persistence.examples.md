@@ -57,19 +57,20 @@ export class OrderPrismaMapper {
 ## OrderPrismaRepositoryImpl
 
 ```ts
+import { DomainEvents } from '@metri/core/events';
 import { Injectable } from '@nestjs/common';
 import { OrderRepository } from '../../../../domain/application/repositories/order-repository.contract';
 import type { Order } from '../../../../domain/enterprise/order.entity';
 import { OrderItemPrismaMapper } from '../mappers/order-item.prisma-mapper';
 import { OrderPrismaMapper } from '../mappers/order.prisma-mapper';
-import { TransactionContext } from '../transactions/transaction-context';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class OrderPrismaRepositoryImpl implements OrderRepository {
-  constructor(private readonly context: TransactionContext) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findById(id: string): Promise<Order | null> {
-    const data = await this.context.client().order.findUnique({
+    const data = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -88,7 +89,7 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
       return [];
     }
 
-    const rows = await this.context.client().order.findMany({
+    const rows = await this.prisma.order.findMany({
       where: { id: { in: ids } },
       include: { items: true },
     });
@@ -100,20 +101,22 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
 
   async save(order: Order): Promise<void> {
     const data = OrderPrismaMapper.toPrisma(order);
-    const tx = this.context.requireTx();
 
-    await tx.order.upsert({
-      where: { id: data.id },
-      create: data,
-      update: { status: data.status, updatedAt: data.updatedAt },
+    // root and items are written together or not at all
+    await this.prisma.$transaction(async (tx) => {
+      await tx.order.upsert({
+        where: { id: data.id },
+        create: data,
+        update: { status: data.status, updatedAt: data.updatedAt },
+      });
+
+      await tx.orderItem.deleteMany({ where: { orderId: data.id } });
+      await tx.orderItem.createMany({
+        data: order.items.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
+      });
     });
 
-    await tx.orderItem.deleteMany({ where: { orderId: data.id } });
-    await tx.orderItem.createMany({
-      data: order.items.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-    });
-
-    this.context.track(order.id);
+    DomainEvents.dispatchEventsForAggregate(order.id);
   }
 }
 ```
@@ -130,65 +133,30 @@ import {
 import { PrismaPg } from '@prisma/adapter-pg';
 import { EnvService } from '../../common/env/env.service';
 
-// how long a connection attempt waits before the boot fails
-const CONNECTION_TIMEOUT_MS = 3_000;
-
-// The Postgres answer the driver adapter attaches to the error; absent when the server never answered.
-type DriverCause = { kind?: string; originalMessage?: string };
-
-function driverCauseOf(error: unknown): DriverCause {
-	const { meta } = error as {
-		meta?: { driverAdapterError?: { cause?: DriverCause } };
-	};
-	return meta?.driverAdapterError?.cause ?? {};
-}
-
-// What to do, in the boot error: the Postgres off, the database missing or the connection refused.
-function unreachableMessage(databaseUrl: string, error: unknown): string {
-	const url = new URL(databaseUrl);
-	const address = `${url.hostname}:${url.port || '5432'}`;
-	const database = url.pathname.slice(1);
-	const { kind, originalMessage } = driverCauseOf(error);
-	if (kind === undefined) {
-		return `O Postgres do DATABASE_URL (.env da raiz) não responde em ${address}. Suba o banco com pnpm db:up, ou o Postgres que o projeto usa, e rode de novo.`;
-	}
-	if (kind === 'DatabaseDoesNotExist') {
-		return `O banco ${database} não existe no Postgres de ${address}. Crie-o com as migrations: pnpm --filter @metri/db migrate:dev.`;
-	}
-	return `O Postgres de ${address} recusou a conexão ao banco ${database} (${originalMessage ?? kind}). Confira o DATABASE_URL do .env da raiz.`;
-}
-
 /** SOURCE OF TRUTH: PrismaService.
- * WHAT: builds the @metri/db `PrismaClient` with the Postgres driver adapter, reading DATABASE_URL through `EnvService` in the constructor; on module init, fails the boot within seconds, saying what to do, when the database does not answer; disconnects on module destroy.
- * WHY: a client is born in the constructor, never at the top level of a file (infrastructure/runtime, "Env e montagem de client"; backend/persistence); without the check at boot, a database that is off only shows up in the first request (infrastructure/runtime, "Banco de desenvolvimento").
- * WHERE: injected, through `client`, by the repositories and queries of infra/persistence/prisma, by `DatabaseHealth` and by the test factories; never by a controller or a use case (backend/boundaries).
+ * WHAT: the @metri/db `PrismaClient` with the Postgres driver adapter, built from the DATABASE_URL of `EnvService`; connects on module init and disconnects on module destroy.
+ * WHY: a client is born in the constructor, never at the top level of a file (infrastructure/runtime, "Env e montagem de client"; backend/persistence).
+ * WHERE: injected by the repositories and queries of infra/persistence/prisma, by `DatabaseHealth` and by the test factories; never by a controller or a use case (backend/boundaries).
  */
 @Injectable()
-export class PrismaService implements OnModuleInit, OnModuleDestroy {
-	readonly client: PrismaClient;
-	private readonly databaseUrl: string;
-
+export class PrismaService
+	extends PrismaClient
+	implements OnModuleInit, OnModuleDestroy
+{
 	constructor(env: EnvService) {
-		this.databaseUrl = env.getOrThrow('DATABASE_URL');
-		this.client = new PrismaClient({
+		super({
 			adapter: new PrismaPg({
-				connectionString: this.databaseUrl,
-				connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
+				connectionString: env.getOrThrow('DATABASE_URL'),
 			}),
 		});
 	}
 
 	async onModuleInit(): Promise<void> {
-		try {
-			await this.client.$queryRaw`SELECT 1`;
-		} catch (error) {
-			// without the cause: the message says what to do, and the driver's stack would bury it
-			throw new Error(unreachableMessage(this.databaseUrl, error));
-		}
+		await this.$connect();
 	}
 
 	async onModuleDestroy(): Promise<void> {
-		await this.client.$disconnect();
+		await this.$disconnect();
 	}
 }
 ```
@@ -214,23 +182,17 @@ datasource db {
 ## prisma.config.ts
 
 ```ts title="packages/db/prisma.config.ts"
-import { existsSync } from 'node:fs';
-import { defineConfig } from 'prisma/config';
-
-// The project's one DATABASE_URL is in the root .env; a variable already in the environment wins.
-const ENV_FILE = new URL('../../.env', import.meta.url);
-if (existsSync(ENV_FILE)) {
-	process.loadEnvFile(ENV_FILE);
-}
+import 'dotenv/config';
+import { defineConfig, env } from 'prisma/config';
 
 /** SOURCE OF TRUTH: the Prisma config of @metri/db.
- * WHAT: points the Prisma CLI to the multi-file schema in `prisma/`, to the migrations and to the DATABASE_URL.
- * WHY: in Prisma 7 the URL lives here, not in the schema (backend/persistence, "Aplicação").
- * WHERE: read by every `prisma` command of the package (`generate`, `migrate:dev`, which creates a missing database, `migrate:deploy`), run by hand and by the app-api e2e setup.
+ * WHAT: points the Prisma CLI to the multi-file schema in `prisma/`, to the migrations and to the DATABASE_URL of the package's own `.env`.
+ * WHY: in Prisma 7 the URL lives here, not in the schema (backend/persistence); a variable already in the environment wins over the `.env`.
+ * WHERE: read by every `prisma` command of the package (`generate`, `migrate:dev`, `migrate:deploy`), run by hand and by the app-api e2e setup.
  */
 export default defineConfig({
 	schema: 'prisma',
 	migrations: { path: 'prisma/migrations' },
-	datasource: { url: process.env.DATABASE_URL },
+	datasource: { url: env('DATABASE_URL') },
 });
 ```

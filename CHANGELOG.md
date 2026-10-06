@@ -43,23 +43,31 @@ enquadramento do usuário sem questioná-lo.
   ou uma linha numa regra do projeto em `.metri/rules/infrastructure/`.
 
 - **Arquitetura enxuta: só o núcleo é base.** A Source fica com o que todo projeto usa desde o primeiro dia, numa
-  stack única (NestJS sobre Fastify, Prisma, Postgres, React + Vite) e DDD-Lite. O que só um projeto com necessidade
+  stack única (NestJS, Prisma, Postgres, React + Vite) e DDD-Lite. O que só um projeto com necessidade
   concreta usa sai das normas e do starter: vira receita em `## Sob demanda` da regra dona, quando o erro do agente
   importaria (segurança, dado perdido, corrida), ou uma linha em `defaults/stack.md`, "Quando precisar", quando só
   pede escolher a biblioteca (`skills/writing-for-agents/RULE-FORMAT.md`, "Sob demanda").
   - Saem `backend/access-scope` (com o check `access-boundaries`), `domain/builder`, `domain/specification`,
     `domain/strategy`, `infrastructure/mail` e `infrastructure/observability`; métrica, alerta e reconciliação viram
     uma seção de `infrastructure/logging`, e a variação fechada vira o princípio 3 de `general/principles`.
+  - Sai `backend/transactions`, com o `UnitOfWork`, a concorrência por `version` e o check `concurrency`: a escrita
+    que precisa ser atômica abre `$transaction` dentro do próprio repositório, e o agente estrutura o resto conforme
+    a necessidade. O `AggregateRoot` perde o `version`.
   - `domain/watched-list` vira capacidade condicional: o `Order` de referência tem `items: OrderItem[]`, e o `save()`
-    substitui os filhos. A concorrência por `version` vira a receita de `backend/transactions`.
+    substitui os filhos.
+  - A API é o NestJS padrão (Express): saem o `FastifyAdapter` e o `@fastify/static`. O `PrismaService` estende o
+    `PrismaClient`, sem a checagem do banco no boot. O env é do `ConfigModule`, validado no boot por `validate` e
+    lido pelo `EnvService`; cada app e pacote tem o próprio `.env`, criado pelo `metri init` do `.env.example` ao
+    lado, e o `@metri/db` lê o dele pelo `prisma.config.ts` com `dotenv`.
   - O log é o `Logger` nativo do NestJS: só `infra/` loga, e o caso de uso não loga. O `nestjs-pino` vai para
     "Quando precisar".
   - O starter fica um NestJS e um React base: saem o guard de acesso, o rate limit, o requestId, o `TRUST_PROXY`, o
     pino, o `bodyParser: false`, a `WatchedList` e o `DomainEvents.shouldRun` do `@metri/core`, a versão do metri e
     os próximos passos da página inicial, o spec do proxy do Vite, o `LANG` do Playwright e o atraso do splash. O
     filtro de erro inesperado loga o 5xx.
-  - As regras perdem configuração particular: `.max()` obrigatório, uuid nil, os tiers de `staleTime`, localidade
-    pt-BR fixa, fuso fixo, micro estilo de teste, CQRS, o dashboard em SQL do Postgres, slug na raiz.
+  - As regras do backend perdem configuração particular: `.max()` obrigatório, uuid nil, localidade pt-BR fixa,
+    fuso fixo, micro estilo de teste, CQRS, o dashboard em SQL do Postgres. As do frontend ficam como estavam,
+    menos o que dependia do que saiu; os hooks `useBoolean` e `useLocalStorage` entram no `@metri/ui`.
   - Formato de regra: o corpo segue, na ordem, propósito, onde mora, árvore de decisão, regras, exemplo de
     referência, sob demanda e verificação; saem a modalidade `Recomendado` e os status de ferramenta além de
     `DECIDIDA` e `REFERÊNCIA`. `backend/http-api.examples.md` traz o controller de referência.
@@ -74,9 +82,8 @@ enquadramento do usuário sem questioná-lo.
 3. Abra uma sessão nova do Claude Code, que carrega o agent novo.
 4. Specs, tickets e matriz continuam no mesmo formato.
 5. O starter só entra em projeto novo: um projeto existente mantém o código que tem. Quem usava uma regra que saiu
-   segue o código atual dela; para voltar a ter uma regra, ela entra em `.metri/rules/`. Com `version` num model, a
-   receita de concorrência é `backend/transactions`, "Sob demanda". Remova de `package.json` a chave
-   `metri.checks.access-boundaries`, que agora é erro.
+   segue o código atual dela; para voltar a ter uma regra, ela entra em `.metri/rules/`. Remova de `package.json` a
+   chave `metri.checks.access-boundaries`, que agora é erro.
 
 ## v1.7.0 (2026-10-02)
 

@@ -14,7 +14,7 @@ applies_to:
   - "apps/app-web/vite.config.ts"
   - "apps/app-web/playwright.config.ts"
   - "apps/app-web/e2e/**"
-keywords: [pirâmide, spec, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock]
+keywords: [pirâmide, spec, addCookies, saveEvidence, METRI_EVIDENCE, E2E_PORT, strictPort, reuseExistingServer, Vitest, jsdom, MSW, setupServer, server.use, onUnhandledRequest, renderHook, "@testing-library/react", user-event, fireEvent, data-testid, MemoryRouter, initialEntries, rota-sonda, AppRoutes, spec de fluxo, structure.spec.ts, builder, "make<Recurso>", "@faker-js/faker", renderWithProviders, vi.mock]
 not_covered:
   - "o teste do backend, que tem documento próprio, com pirâmide e convenções diferentes: nada daqui vale lá → backend/testing"
 enforced_by: [boundaries]
@@ -85,6 +85,8 @@ Cada app declara a própria porta de desenvolvimento, fora da faixa padrão da f
 
 O `saveEvidence` de `e2e/evidence.ts` (testing.examples.md#saveevidence) grava a página inteira em `.metri/tickets/<id>/<n>-<projeto>.png`, a partir da raiz do repositório, só quando a variável `METRI_EVIDENCE` é o id do ticket do spec. O /build a define ao rodar o e2e do ticket; a suíte cheia roda sem ela e não grava nada, nem regrava a evidência de um ticket done.
 
+Tela atrás de login recebe a sessão pelo banco, não pela tela de login: o teste grava a sessão no banco, na forma de `defaults/stack.md`, "Autenticação", e injeta o cookie `HttpOnly` com `context.addCookies` antes do primeiro `goto`. O provedor externo de login fica fora do e2e; a tela de login ganha o próprio teste, até o redirect.
+
 O spec mora ao lado do arquivo que prova e por isso não abre casa nova: herda a casa do arquivo. Isso é `src/` para tudo que prova código de produção. `test/` é casa própria, com propósito único de infraestrutura de teste compartilhada entre specs. Produção nunca importa de `test/`, a mesma fronteira que o backend fixa em `backend/boundaries.md`. O compilador não a guarda, porque o app não tem `tsconfig.build.json` e o `vite build` não checa tipos; quem guarda é o check `boundaries` (`metri check --help`).
 
 ## Convenção de nome e execução
@@ -93,7 +95,7 @@ O sufixo é `.spec.ts` quando o arquivo é TypeScript puro e `.spec.tsx` quando 
 
 O config do Vitest mora no bloco `test` do `vite.config.ts` do app, não num arquivo separado. O backend separa em `vitest.config.ts` e `vitest.config.e2e.ts` porque precisa de dois configs e não tem config de Vite para reusar; aqui `react()`, `tailwindcss()` e o `resolve.tsconfigPaths: true` do Vite 8, no lugar do plugin `vite-tsconfig-paths`, já são o que o Vitest precisa, e um segundo arquivo os redeclararia com garantia de divergir no próximo plugin adicionado.
 
-O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação, o foco e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
+O runner é o Vitest, mesmo do backend, e o ambiente é `jsdom`. A digitação com máscara e reposicionamento de cursor do campo de telefone e a checagem de `pointer-events` do `user-event` dependem de fidelidade de DOM, e jsdom é o alvo de referência da `@testing-library`. API de browser que jsdom não implementa (`ResizeObserver`, `PointerEvent`) entra como polyfill no arquivo de setup quando um componente passar a exigir, nunca como troca de ambiente.
 
 A suíte usa a origem do próprio jsdom, disponível em `window.location.origin`; não configura uma origem separada para a API. Quando um spec precisa repetir a origem em mais de um handler, declara `const APP_URL = window.location.origin` no próprio arquivo.
 
@@ -114,13 +116,22 @@ Regras de uso:
 
 Exemplo completo: testing.examples.md#msw-server e testing.examples.md#setup.
 
+## Store de biblioteca externa em teste
+
+Client de biblioteca externa costuma ser singleton de módulo, com o dado num store reativo próprio. Dentro de um mesmo arquivo de spec, o valor do teste anterior continua no store depois que o handler do MSW já mudou — trocar o handler não invalida nada que a biblioteca já tenha em memória.
+
+Quando o valor é só pré-condição, trocar o handler no `beforeEach` basta. Quando o arquivo exercita mais de um valor, a troca precisa avisar o store explicitamente, com a mesma chamada que o app já usa depois de uma escrita que não passou pelo client, seguida de um `waitFor` até o store refletir o valor novo. Não inventar um dublê próprio do client para isso.
+
+Atenção a store que se desliga sem assinantes: alguns só mantêm o valor vivo enquanto alguém escuta, e voltam a devolver o valor antigo quando o último componente desmonta. Nesse caso o setup mantém um assinante vivo durante cada teste e o libera no fim. Sem isso, o resultado passa a depender de quanto tempo o teste anterior levou, e a suíte fica intermitente de um jeito que muda de arquivo conforme a ordem de execução.
+
 ## Como escrever spec de função pura (`shared/rules/`, `shared/schemas/`, `lib/`)
 
 - Arrange é literal inline, montado no próprio `it()`. Nunca usa builder de `test/factories/`: o builder parte de um payload já válido, e num spec de schema é exatamente a validade que está sob prova. Mesmo princípio de "spec de entidade usa `create()`, nunca a factory" do backend.
 - Um `it()` por linha da tabela de decisão, sem `it.each`: o título nomeia a condição e o resultado, e a falha aponta a linha exata.
 - Título no formato `'<condição> → <resultado>'`.
+- Formatação com `Intl` compara com o espaço que ele gera: o NBSP (U+00A0) que o locale põe entre o valor e o símbolo, escrito como escape no literal (`'10,00\u00a0€'` em `de-DE`); o espaço comum do teclado falha sem diferença visível.
 - Schema prova o que aceita, o que recusa e o que transforma. Coerção e normalização (aparar espaço, converter texto em data) são comportamento, não detalhe: o consumidor depende do valor de saída.
-- Schema de form mais estrito que o do backend (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes") leva um caso com o valor que o backend aceitaria e este recusa.
+- Schema de form mais estrito que o do backend (`frontend/forms.md`, "Schema de form e schema de API são coisas diferentes") leva um caso com o valor que o backend aceitaria e este recusa, que é o que fixa a intenção e impede alguém "corrigir" o schema depois.
 
 Exemplo completo: testing.examples.md#orderrulesresolvedestination
 
@@ -128,7 +139,7 @@ Exemplo completo: testing.examples.md#orderrulesresolvedestination
 
 - `renderHook` com um wrapper montado no próprio arquivo. O `QueryClient` é novo a cada teste, com `retry: false`. Nunca reusar o singleton de `app/providers/`: ele tem retry e cache que atravessam testes.
 - Hook que lê a URL ganha `MemoryRouter` com `initialEntries` no wrapper.
-- O que se afirma sobre cache é o efeito observável, não a chamada: dado atualizado já chega no cache com o valor novo, dado invalidado continua lá marcado como velho. A diferença entre os dois é decisão do hook (`frontend/data-fetching.md`, "Atualizar vs. invalidar o cache"), então o teste tem que distinguir os dois, não só verificar que "sincronizou".
+- O que se afirma sobre cache é o efeito observável, não a chamada: dado descartado deixa de existir, dado invalidado continua lá marcado como velho. A diferença entre os dois é decisão de produto (`frontend/data-fetching.md`, "Atualizar vs. invalidar o cache"), então o teste tem que distinguir os dois, não só verificar que "sincronizou".
 - Debounce usa timers falsos, com o avanço dentro de `act`.
 - Mudança de props entre renders usa `rerender`, com o valor novo passado como argumento, não uma variável externa mutada.
 
@@ -211,3 +222,4 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 - O helper de render, se existe, é local ao arquivo e só monta providers?
 - O teste afirma reação da interface ao contrato, e não uma regra derivada que só o servidor pode provar?
 - Produção não importa de `test/`? (check: boundaries)
+- Tela atrás de login recebe no e2e a sessão gravada no banco e o cookie por `addCookies`, sem o provedor externo?

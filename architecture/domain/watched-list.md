@@ -90,13 +90,13 @@ Vínculo que carrega payload próprio (uma quantidade, uma posição) é conteú
 
 ## O repositório grava o delta
 
-**Obrigatório.** O `save()` grava a raiz e o delta no mesmo `tx`: `createMany` de `getNewItems()`, `deleteMany` de `getRemovedItems()`, pelo mapper do filho.
+**Obrigatório.** O `save()` grava a raiz e o delta na mesma `$transaction` (`backend/persistence.md`): `createMany` de `getNewItems()`, `deleteMany` de `getRemovedItems()`, pelo mapper do filho.
 
 Exemplo completo: watched-list.examples.md#orderprismarepositoryimpl
 
 O delta rastreia pertencimento, não conteúdo: filho que continua na coleção e mudou um campo não aparece nele.
 
-Quando um filho que continua na coleção muda de conteúdo (a quantidade de um item): **Obrigatório.** A raiz marca os filhos alterados, e o `save()` grava cada um por `update`, no mesmo `tx`.
+Quando um filho que continua na coleção muda de conteúdo (a quantidade de um item): **Obrigatório.** A raiz marca os filhos alterados, e o `save()` grava cada um por `update`, na mesma `$transaction`.
 
 ## Verificação rápida
 
@@ -106,4 +106,4 @@ Quando um filho que continua na coleção muda de conteúdo (a quantidade de um 
 - A operação usa item a item ou uma única substituição completa, com `update()` recebendo o conjunto final?
 - Na substituição de itens com id, item mantido é a instância corrente, e o input chega sem duplicatas?
 - Em vínculo puro, os ids foram validados em lote antes de montar a lista?
-- O `save()` grava raiz, delta e filhos alterados no mesmo `tx`, e nenhuma instância é salva duas vezes?
+- O `save()` grava raiz, delta e filhos alterados na mesma `$transaction`, e nenhuma instância é salva duas vezes?

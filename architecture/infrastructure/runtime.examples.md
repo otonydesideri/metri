@@ -4,33 +4,26 @@
 
 ```ts title="apps/app-api/src/main.ts"
 import { NestFactory } from '@nestjs/core';
-import {
-	FastifyAdapter,
-	type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { EnvService } from './infra/common/env/env.service';
 import { createOpenApiDocument } from './infra/http/openapi-document';
 
 /** SOURCE OF TRUTH: bootstrap.
- * WHAT: creates the app on the `FastifyAdapter`, applies the `/api` prefix, serves the OpenAPI docs at `/api/docs` outside production and listens on the `PORT` of the env.
- * WHY: only what depends on the process lives here; what must also hold in the e2e lives in `AppModule` (infrastructure/runtime, "O bootstrap do processo"). The env comes from an `EnvService` of its own, before the app.
+ * WHAT: creates the app, applies the `/api` prefix, serves the OpenAPI docs at `/api/docs` outside production and listens on the `PORT` of the env.
+ * WHY: only what depends on the process lives here; what must also hold in the e2e lives in `AppModule` (infrastructure/runtime, "O bootstrap do processo").
  * WHERE: the process entry, run from `dist/main.mjs` by the `dev` and `start` scripts.
  */
 async function bootstrap(): Promise<void> {
-	const env = new EnvService();
-	const app = await NestFactory.create<NestFastifyApplication>(
-		AppModule,
-		new FastifyAdapter(),
-	);
+	const app = await NestFactory.create(AppModule);
+	const env = app.get(EnvService);
 
 	app.setGlobalPrefix('api');
 	if (env.getOrThrow('NODE_ENV') !== 'production') {
 		SwaggerModule.setup('api/docs', app, () => createOpenApiDocument(app));
 	}
 
-	await app.listen(env.getOrThrow('PORT'), '0.0.0.0');
+	await app.listen(env.getOrThrow('PORT'));
 }
 
 void bootstrap();
@@ -73,35 +66,74 @@ export class AppModule {}
 
 ```ts title="apps/app-api/src/infra/common/env/env.service.ts"
 import { Injectable } from '@nestjs/common';
-import { type Env, envSchema } from './env.validation';
+import { ConfigService } from '@nestjs/config';
+import type { EnvVariables } from './env.validation';
 
 /** SOURCE OF TRUTH: EnvService.
- * WHAT: validates `process.env` against `envSchema` when Nest instantiates it, and reads a variable by `getOrThrow(...)`.
- * WHY: the environment is read in one validated place, never through `process.env` or `ConfigService` (infrastructure/runtime, "Env e montagem de client").
- * WHERE: injected by whoever builds a client or a config, in the constructor or in a `useFactory` (`LoggerModule`, `PrismaService`).
+ * WHAT: reads a validated variable by `getOrThrow(...)`, typed by `EnvVariables`.
+ * WHY: the environment is read in one typed place, never through `process.env` (infrastructure/runtime, "Env e montagem de client").
+ * WHERE: injected by whoever builds a client or a config, in the constructor or in a `useFactory` (`PrismaService`), and read by main.ts.
  */
 @Injectable()
 export class EnvService {
-	private readonly env: Env;
+	constructor(private readonly config: ConfigService<EnvVariables, true>) {}
 
-	constructor() {
-		const result = envSchema.safeParse(process.env);
-		if (!result.success) {
-			const issues = result.error.issues
-				.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-				.join('; ');
-			throw new Error(`Variáveis de ambiente inválidas: ${issues}`);
-		}
-		this.env = result.data;
+	getOrThrow<K extends keyof EnvVariables>(key: K): EnvVariables[K] {
+		return this.config.getOrThrow(key, { infer: true });
+	}
+}
+```
+
+## EnvModule
+
+```ts title="apps/app-api/src/infra/common/env/env.module.ts"
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { EnvService } from './env.service';
+import { validate } from './env.validation';
+
+/** SOURCE OF TRUTH: EnvModule.
+ * WHAT: loads the `.env` of app-api into the `ConfigModule`, validated by `validate`, and provides and exports the `EnvService`.
+ * WHY: a module that builds a client imports it instead of reading the environment (infrastructure/runtime, "Env e montagem de client").
+ * WHERE: imported by `AppModule` and by `PersistenceModule`.
+ */
+@Module({
+	imports: [ConfigModule.forRoot({ validate })],
+	providers: [EnvService],
+	exports: [EnvService],
+})
+export class EnvModule {}
+```
+
+## validate
+
+```ts title="apps/app-api/src/infra/common/env/env.validation.ts"
+import { z } from 'zod';
+
+/** SOURCE OF TRUTH: envSchema, EnvVariables, validate.
+ * WHAT: the only list of the environment variables app-api reads, from its own `.env`, and the validation that the `ConfigModule` runs once at boot.
+ * WHY: a missing or malformed variable fails the boot with every problem at once (infrastructure/runtime, "Env e montagem de client").
+ * WHERE: `validate` is passed to `ConfigModule.forRoot` in `EnvModule`; one of the two places of Zod outside infra/http/dtos (backend/boundaries).
+ * A new variable enters here and is read only by `EnvService.getOrThrow(...)`.
+ */
+export const envSchema = z.object({
+	NODE_ENV: z.enum(['local', 'development', 'test', 'production']),
+	PORT: z.coerce.number().int().positive().default(3333),
+	DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+});
+
+export type EnvVariables = z.infer<typeof envSchema>;
+
+// Runs once at the ConfigModule boot and aggregates every error at once, instead of each provider finding a broken
+// variable at runtime, through `getOrThrow`, the first time it is instantiated.
+export function validate(config: Record<string, unknown>): EnvVariables {
+	const result = envSchema.safeParse(config);
+
+	if (!result.success) {
+		throw new Error(result.error.toString());
 	}
 
-	getOrThrow<Key extends keyof Env>(key: Key): Env[Key] {
-		const value = this.env[key];
-		if (value === undefined) {
-			throw new Error(`Variável de ambiente ausente: ${key}`);
-		}
-		return value;
-	}
+	return result.data;
 }
 ```
 
@@ -111,7 +143,7 @@ export class EnvService {
 # The development Postgres of the Docker path (node_modules/metri/architecture/infrastructure/runtime.md, "Banco de
 # desenvolvimento"): `pnpm db:up` starts it and waits for the healthcheck, `pnpm db:down` removes the container and
 # keeps the volume. One per project, shared by every worktree. User, password and database are the ones of the
-# DATABASE_URL of .env.example; the host port is the POSTGRES_PORT of the root .env, which compose reads.
+# DATABASE_URL of apps/app-api/.env.example; the host port is POSTGRES_PORT, 5432 by default.
 name: __PROJECT__
 
 services:

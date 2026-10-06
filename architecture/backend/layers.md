@@ -23,7 +23,6 @@ src/
 │       ├── use-cases/<módulo>/  # casos de uso
 │       ├── queries/<módulo>/    # contratos e DTOs de leitura de exibição
 │       ├── repositories/        # contratos de repositório (abstract class)
-│       ├── transactions/        # a porta UnitOfWork (abstract class)
 │       ├── queues/              # contratos de fila (abstract class)
 │       └── services/<capacidade>/  # contratos de service (abstract class)
 ├── infra/
@@ -95,8 +94,6 @@ flowchart TD
 | Mapper | `src/infra/persistence/prisma/mappers/<agregado>.prisma-mapper.ts` | `backend/persistence.md` |
 | Contrato + DTO de query de exibição | `src/domain/application/queries/<módulo>/<ação>.query.ts` | `backend/reading.md` |
 | Implementação Prisma de query | `src/infra/persistence/prisma/queries/<módulo>/<ação>.prisma-query.impl.ts` | `backend/reading.md` |
-| Unidade de trabalho | `src/domain/application/transactions/unit-of-work.contract.ts` | `backend/transactions.md` |
-| Implementação Prisma da unidade de trabalho | `src/infra/persistence/prisma/transactions/prisma-unit-of-work.ts` | `backend/transactions.md` |
 | Subscriber de evento | `src/infra/events/on-<evento>.subscriber.ts` | `backend/events.md` |
 | Contrato de fila | `src/domain/application/queues/<fluxo>-queue.contract.ts` | `backend/async-jobs.md` |
 | Worker de job | `src/infra/jobs/<job>.worker.ts` | `backend/async-jobs.md` |
@@ -105,7 +102,6 @@ flowchart TD
 | Factory de teste | `test/factories/make-<agregado>.factory.ts` | `backend/testing.md` |
 | Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` | `backend/testing.md` |
 | Fila em memória | `test/queues/<fluxo>.in-memory-queue.impl.ts` | `backend/async-jobs.md` |
-| Dublê da unidade de trabalho | `test/transactions/in-memory-unit-of-work.ts` | `backend/transactions.md` |
 | Primitivo de domínio compartilhado | `packages/core/src/<área>/` | instruções de projeto de `packages/core` |
 | Schema e migrations; client de banco gerado | `packages/db/prisma/` (`schema.prisma`, `models/`, `migrations/`); `packages/db/src/generated/prisma/` | `backend/persistence.md` |
 

@@ -31,7 +31,7 @@ A camada `domain/application` orquestra o domínio: casos de uso que carregam, d
 
 ### Contratos são `abstract class`
 
-Quando o contrato é injetável, usado como token de injeção de dependência (repositório, service, query, fila, transação): **Obrigatório.** Ele é uma `abstract class` em `domain/application`, implementada em `infra/` e registrada com `{ provide: <Contrato>, useClass: <Impl> }`.
+Quando o contrato é injetável, usado como token de injeção de dependência (repositório, service, query, fila): **Obrigatório.** Ele é uma `abstract class` em `domain/application`, implementada em `infra/` e registrada com `{ provide: <Contrato>, useClass: <Impl> }`.
 
 A regra não alcança tipo sem injeção: `Input`, `Output`, DTO, união discriminada, outcome, tipo auxiliar e value object seguem a forma dos próprios documentos.
 
@@ -99,10 +99,10 @@ O caso de uso de referência:
 
 Exemplo completo: application.examples.md#confirmorderusecase
 
-- Leitura, decisão e gravação rodam dentro do `UnitOfWork` (`backend/transactions.md`): a escrita do repositório recusa rodar fora dele.
+- O caso de uso lê pelo repositório, decide pela entidade e grava pelo repositório; atomicidade da escrita é do repositório (`backend/persistence.md`).
 - A regra da transição é de `order.confirm()`; o caso de uso só propaga a falha.
 - A pasta de contratos é única e do app: qualquer caso de uso injeta qualquer contrato, inclusive de agregado de outro módulo (`backend/modules.md`, "Comunicação entre módulos").
-- O mesmo mecanismo vale para os contratos de service (`infrastructure/services.md`), de query (`backend/reading.md`), de fila (`backend/async-jobs.md`) e de transação (`backend/transactions.md`); cada documento define onde o seu mora e o que ele declara.
+- O mesmo mecanismo vale para os contratos de service (`infrastructure/services.md`), de query (`backend/reading.md`) e de fila (`backend/async-jobs.md`); cada documento define onde o seu mora e o que ele declara.
 - Cada adaptador aplica este documento no que tem de específico: o controller e a tradução com `toHttpException` em `backend/http-api.md`; o subscriber, que loga e engole o `failure`, em `backend/events.md`; o worker, que loga e conclui o job no `failure`, em `backend/async-jobs.md`.
 
 ## Verificação

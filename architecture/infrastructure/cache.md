@@ -41,7 +41,7 @@ Quando existe necessidade concreta e medida — custo de leitura relevante, lat�
 
 **Proibido.** Leitura que carrega agregado para decidir e gravar passar por cache.
 
-> **Por quê.** Decisão tomada sobre cópia velha grava o que a invariante recusaria, e a proteção de concorrência da escrita compara com a fonte, não com a cópia (`backend/transactions.md`, "Concorrência e locking").
+> **Por quê.** Decisão tomada sobre cópia velha grava o que a invariante recusaria.
 
 ### Semântica é de quem conhece o dado
 
@@ -208,7 +208,6 @@ async execute(input: FetchOrdersQueryInput): Promise<PaginatedResult<OrderListIt
 - `backend/reading.md`: a query de exibição que o cache envolve.
 - `infrastructure/services.md`: a regra dos níveis, o registro e o dublê.
 - `backend/persistence.md`: a fonte de verdade.
-- `backend/transactions.md`: proteção de concorrência contra a fonte.
 - `backend/operation-routing.md`: o mecanismo de uma invalidação que reage a outro fluxo.
 - `infrastructure/logging.md`: o log da falha do cache.
 - `skills/writing-for-agents/RULE-FORMAT.md`: casa do ADR de exceção.

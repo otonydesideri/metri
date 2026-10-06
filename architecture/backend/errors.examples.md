@@ -155,7 +155,7 @@ import {
 	HttpStatus,
 	Logger,
 } from '@nestjs/common';
-import type { FastifyReply } from 'fastify';
+import type { Response } from 'express';
 
 const UNEXPECTED: ApiErrorResponse = {
 	code: 'INTERNAL_SERVER_ERROR',
@@ -173,7 +173,7 @@ export class UnexpectedErrorFilter implements ExceptionFilter {
 	private readonly logger = new Logger(UnexpectedErrorFilter.name);
 
 	catch(exception: unknown, host: ArgumentsHost): void {
-		const reply = host.switchToHttp().getResponse<FastifyReply>();
+		const reply = host.switchToHttp().getResponse<Response>();
 
 		if (
 			exception instanceof HttpException &&

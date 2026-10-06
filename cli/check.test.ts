@@ -101,20 +101,6 @@ describe('check', { timeout: 30_000 }, () => {
     });
   });
 
-  it('concurrency: model com version sem *.concurrency.e2e-spec.ts nomeado pelo model', () => {
-    const dir = project();
-    write(dir, 'packages/db/prisma/models/order.prisma', 'model Order {\n  id      String @id\n  version Int    @default(1)\n}\n');
-    expect(check(dir, 'concurrency')).toEqual({
-      status: 1,
-      lines: [
-        'falha concurrency: model com version sem *.concurrency.e2e-spec.ts nomeado pelo model',
-        '  packages/db/prisma/models/order.prisma: Order',
-      ],
-    });
-    write(dir, 'apps/app-api/src/infra/persistence/prisma/order.concurrency.e2e-spec.ts', '');
-    expect(check(dir, 'concurrency')).toEqual({ status: 0, lines: [] });
-  });
-
   it('check ou parâmetro que não existe é erro', () => {
     const dir = project();
     expect(check(dir, 'lint')).toEqual({ status: 1, lines: ['erro: o check lint não existe (metri check --help)'] });

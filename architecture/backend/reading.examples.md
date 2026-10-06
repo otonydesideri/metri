@@ -23,14 +23,14 @@ export class FetchOrdersPrismaQueryImpl implements FetchOrdersQuery {
     const where = input.status ? { status: input.status } : {};
 
     const [rows, total] = await Promise.all([
-      this.prisma.client.order.findMany({
+      this.prisma.order.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip: (input.page - 1) * input.pageSize,
         take: input.pageSize,
         include: { customer: { select: { name: true } } },
       }),
-      this.prisma.client.order.count({ where }),
+      this.prisma.order.count({ where }),
     ]);
 
     const items = rows.map((row) => ({

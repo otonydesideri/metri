@@ -57,7 +57,7 @@ Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client
 
 ## A infra não importa regra de domínio
 
-`src/infra` importa entidades, contratos e mappers do domínio, mas nunca `domain/enterprise/domain-services/`: regra chamada pela infra sai do caminho do caso de uso (`backend/transactions.md`).
+`src/infra` importa entidades, contratos e mappers do domínio, mas nunca `domain/enterprise/domain-services/`: regra chamada pela infra sai do caminho do caso de uso.
 
 ## `packages/core` não depende de nada externo
 
@@ -75,8 +75,8 @@ Mesma restrição de dependência externa do core, mais uma: `@metri/utils` não
 
 São duas superfícies diferentes:
 
-- `@metri/db` (client e tipos gerados do Prisma): só `infra/persistence/prisma/` importa. Os mappers tipam contra os tipos gerados e `prisma.service.ts` monta o client. Tipo gerado usado fora dali é o schema do banco vazando para outra camada.
-- `PrismaService` (o wrapper injetável): qualquer área de `infra/` pode injetar quando o acesso é técnico do adapter, como o health check. Escrita e leitura que alimenta decisão de negócio passam por contrato + repositório + mapper; leitura de exibição expõe contrato em `domain/application/queries/`, implementado por uma classe de `infra/persistence/prisma/queries/` que injeta `PrismaService` direto (`backend/reading.md`). Controller injeta o contrato da query; controller e use case nunca injetam `PrismaService`.
+- `@metri/db` (client e tipos gerados do Prisma): só `infra/persistence/prisma/` importa. Os mappers tipam contra os tipos gerados e `prisma.service.ts` estende o client. Tipo gerado usado fora dali é o schema do banco vazando para outra camada.
+- `PrismaService` (o client injetável): qualquer área de `infra/` pode injetar quando o acesso é técnico do adapter, como o health check. Escrita e leitura que alimenta decisão de negócio passam por contrato + repositório + mapper; leitura de exibição expõe contrato em `domain/application/queries/`, implementado por uma classe de `infra/persistence/prisma/queries/` que injeta `PrismaService` direto (`backend/reading.md`). Controller injeta o contrato da query; controller e use case nunca injetam `PrismaService`.
 
 Exceções de teste: `test/setup-e2e.ts` importa `@metri/db` para criar o banco isolado por arquivo, e as factories de teste usam `PrismaService` + `toPrisma()` (ver `backend/testing.md`).
 

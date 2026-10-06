@@ -1,7 +1,7 @@
 # The development Postgres of the Docker path (node_modules/metri/architecture/infrastructure/runtime.md, "Banco de
 # desenvolvimento"): `pnpm db:up` starts it and waits for the healthcheck, `pnpm db:down` removes the container and
 # keeps the volume. One per project, shared by every worktree. User, password and database are the ones of the
-# DATABASE_URL of .env.example; the host port is the POSTGRES_PORT of the root .env, which compose reads.
+# DATABASE_URL of apps/app-api/.env.example; the host port is POSTGRES_PORT, 5432 by default.
 name: __PROJECT__
 
 services:

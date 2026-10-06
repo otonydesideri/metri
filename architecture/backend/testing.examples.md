@@ -39,7 +39,7 @@ export class OrderFactory {
   ): Promise<Order> {
     const order = makeOrder(override, id);
 
-    await this.prisma.client.order.create({
+    await this.prisma.order.create({
       data: OrderPrismaMapper.toPrisma(order),
     });
 
@@ -121,7 +121,7 @@ describe('ConfirmOrderUseCase', () => {
 
   beforeEach(() => {
     inMemory = makeInMemoryRepositories();
-    sut = new ConfirmOrderUseCase(new InMemoryUnitOfWork(), inMemory.OrderRepository);
+    sut = new ConfirmOrderUseCase(inMemory.OrderRepository);
   });
 
   it('pedido não encontrado → falha', async () => {
@@ -147,10 +147,7 @@ describe('ConfirmOrderUseCase', () => {
 
 ```ts
 // infra/http/controllers/order/confirm-order.e2e-spec.ts
-import {
-  FastifyAdapter,
-  type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import type { INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { UniqueEntityID } from '@metri/core/entities';
 import request from 'supertest';
@@ -160,7 +157,7 @@ import { PersistenceModule } from '../../../persistence/persistence.module';
 import { PrismaService } from '../../../persistence/prisma/prisma.service';
 
 describe('POST /api/orders/:orderId/confirm (e2e)', () => {
-  let app: NestFastifyApplication;
+  let app: INestApplication;
   let prisma: PrismaService;
   let orderFactory: OrderFactory;
 
@@ -170,10 +167,9 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
       providers: [OrderFactory],
     }).compile();
 
-    app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api');
     await app.init();
-    await app.getHttpAdapter().getInstance().ready();
 
     prisma = moduleRef.get(PrismaService);
     orderFactory = moduleRef.get(OrderFactory);
@@ -190,7 +186,7 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
 
     expect(response.status).toBe(200);
 
-    const saved = await prisma.client.order.findUnique({
+    const saved = await prisma.order.findUnique({
       where: { id: order.id.toValue() },
     });
     expect(saved?.status).toBe('CONFIRMED');
@@ -204,9 +200,10 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
 // The isolated database of each e2e file (backend/testing, "Convenção de nome e execução"): before the file,
 // creates on the Postgres server of DATABASE_URL a new database named after the project's one, never a schema in
 // the same database, applies the @metri/db migrations to it and points the process DATABASE_URL at it, so the file's
-// AppModule connects there; after the file, drops it. The only file outside infra/persistence/prisma that
+// AppModule connects there (the ConfigModule never overrides a variable already in the environment); after the file, drops it. The only file outside infra/persistence/prisma that
 // imports @metri/db (backend/boundaries).
 
+import 'dotenv/config';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { Prisma, PrismaClient } from '@metri/db/client';
@@ -216,7 +213,7 @@ import { afterAll } from 'vitest';
 const serverUrl = process.env.DATABASE_URL;
 if (!serverUrl) {
 	throw new Error(
-		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo no Postgres dele (o .env da raiz, que o metri init cria do .env.example)',
+		'DATABASE_URL ausente: o e2e cria o banco de cada arquivo no Postgres dele (o .env do app-api, que o metri init cria do .env.example)',
 	);
 }
 
@@ -254,17 +251,10 @@ afterAll(async () => {
 ## vitest.config.e2e
 
 ```ts title="apps/app-api/vitest.config.e2e.ts"
-import { existsSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 
-// The project's one DATABASE_URL is in the root .env; a variable already in the environment (the CI) wins.
-const ENV_FILE = new URL('../../.env', import.meta.url);
-if (existsSync(ENV_FILE)) {
-	process.loadEnvFile(ENV_FILE);
-}
-
 /** SOURCE OF TRUTH: the e2e Vitest config of app-api.
- * WHAT: runs the `*.e2e-spec.ts` files under `src/`, each mounting the whole `AppModule`, with `NODE_ENV=test`, the root `.env` loaded and `test/setup-e2e.ts` as setup.
+ * WHAT: runs the `*.e2e-spec.ts` files under `src/`, each mounting the whole `AppModule`, with `NODE_ENV=test` and `test/setup-e2e.ts` as setup, which loads the app-api `.env`.
  * WHY: each file gets a new Postgres database on the server of the DATABASE_URL, migrated and dropped at the end (backend/testing, "Convenção de nome e execução").
  * WHERE: read by Vitest through the `test:e2e` script, which accepts a path filter (`test:e2e health`).
  */
@@ -282,11 +272,13 @@ export default defineConfig({
 ## E2e de provider global
 
 ```ts title="apps/app-api/src/infra/common/errors/error-envelope.e2e-spec.ts"
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import {
-	FastifyAdapter,
-	type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+	Body,
+	Controller,
+	HttpCode,
+	type INestApplication,
+	Post,
+} from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { createZodDto } from 'nestjs-zod';
 import request from 'supertest';
@@ -308,7 +300,7 @@ class ProbeController {
 }
 
 describe('Envelope de erro (e2e)', () => {
-	let app: NestFastifyApplication;
+	let app: INestApplication;
 
 	beforeAll(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
@@ -316,12 +308,9 @@ describe('Envelope de erro (e2e)', () => {
 			controllers: [ProbeController],
 		}).compile();
 
-		app = moduleRef.createNestApplication<NestFastifyApplication>(
-			new FastifyAdapter(),
-		);
+		app = moduleRef.createNestApplication();
 		app.setGlobalPrefix('api');
 		await app.init();
-		await app.getHttpAdapter().getInstance().ready();
 	});
 
 	afterAll(async () => {

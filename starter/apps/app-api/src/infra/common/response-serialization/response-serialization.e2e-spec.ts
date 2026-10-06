@@ -1,8 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
-import {
-	FastifyAdapter,
-	type NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import { Controller, Get, type INestApplication } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import request from 'supertest';
@@ -33,7 +29,7 @@ class ProbeController {
 }
 
 describe('Serialização de resposta (e2e)', () => {
-	let app: NestFastifyApplication;
+	let app: INestApplication;
 
 	beforeAll(async () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
@@ -41,12 +37,9 @@ describe('Serialização de resposta (e2e)', () => {
 			controllers: [ProbeController],
 		}).compile();
 
-		app = moduleRef.createNestApplication<NestFastifyApplication>(
-			new FastifyAdapter(),
-		);
+		app = moduleRef.createNestApplication();
 		app.setGlobalPrefix('api');
 		await app.init();
-		await app.getHttpAdapter().getInstance().ready();
 	});
 
 	afterAll(async () => {

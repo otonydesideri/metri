@@ -1,17 +1,16 @@
 ---
 id: backend/operation-routing
-description: "a escolha do mecanismo que executa uma operação ou um efeito — escrita do agregado, unidade de trabalho, chamada direta em linha, domain event, job assíncrono e tarefa agendada — e a resposta a um efeito pós-commit que falha."
+description: "a escolha do mecanismo que executa uma operação ou um efeito — escrita do agregado, transação no repositório, chamada direta em linha, domain event, job assíncrono e tarefa agendada — e a resposta a um efeito pós-commit que falha."
 use_when:
   - "decidir se uma reação vira chamada direta, transação, evento ou job"
   - "escrever caso de uso que grava em mais de um agregado"
   - "criar evento, subscriber, job ou cron novo"
   - "aceitar a perda de um efeito secundário"
-keywords: [roteamento de operação, chamada direta, em linha, unidade de trabalho, domain event, subscriber, job, tarefa agendada, cron, compensação, retry, dead letter, efeito aditivo, efeito pós-commit, auditoria]
+keywords: [roteamento de operação, chamada direta, em linha, transação, domain event, subscriber, job, tarefa agendada, cron, compensação, retry, dead letter, efeito aditivo, efeito pós-commit, auditoria]
 not_covered:
-  - "unidade de trabalho, concorrência e locking → backend/transactions"
   - "evento, despacho, subscriber e falha no handler → backend/events"
   - "contrato de fila, worker, quem enfileira, idempotência, retry e dead letter → backend/async-jobs"
-  - "escrita canônica do agregado → backend/persistence"
+  - "escrita canônica do agregado e a `$transaction` do repositório → backend/persistence"
 status: active
 ---
 # Roteamento de operação
@@ -28,7 +27,7 @@ Por qual mecanismo cada parte de uma operação acontece. Os documentos de cada 
 | --- | --- |
 | Disparada por tempo, não por ação | Tarefa agendada (`backend/async-jobs.md`) |
 | Raiz e filhos do mesmo agregado | Escrita do agregado (`backend/persistence.md`) |
-| Precisa valer junto com a operação, ou o resultado decide o fluxo e a falha reverte | Unidade de trabalho (`backend/transactions.md`) |
+| Precisa valer junto com a operação, ou o resultado decide o fluxo e a falha reverte | `$transaction` dentro do método do repositório (`backend/persistence.md`) |
 | O resultado decide o fluxo, a falha não reverte a operação | Chamada direta em linha, por contrato injetado (`backend/application.md`) |
 | Reação que tolera perda com log (alerta, cache, analytics) | Domain event (`backend/events.md`) |
 | Reação que não pode se perder, pesada ou dependente de sistema instável | Job (`backend/async-jobs.md`) |
@@ -41,7 +40,7 @@ Por qual mecanismo cada parte de uma operação acontece. Os documentos de cada 
 
 > **Por quê.** Ela fica longa, com contenção e acoplada à disponibilidade do efeito.
 
-Auditoria que não pode existir sem a operação, nem a operação sem ela: **Obrigatório.** Grava na mesma unidade de trabalho.
+Auditoria que não pode existir sem a operação, nem a operação sem ela: **Obrigatório.** Grava na mesma transação.
 
 ## Efeito pós-commit que falha
 

@@ -42,20 +42,6 @@ describe('DomainEvents', () => {
 		expect(aggregate.domainEvents).toHaveLength(0);
 	});
 
-	it('discardEventsForAggregate() limpa sem chamar nenhum handler', () => {
-		const received: DomainEvent[] = [];
-		DomainEvents.register(
-			(event) => received.push(event),
-			FakeCreatedEvent.name,
-		);
-
-		const aggregate = FakeAggregate.create();
-		DomainEvents.discardEventsForAggregate(aggregate.id);
-
-		expect(received).toHaveLength(0);
-		expect(aggregate.domainEvents).toHaveLength(0);
-	});
-
 	it('dispatchEventsForAggregate() de um id não marcado não lança', () => {
 		expect(() =>
 			DomainEvents.dispatchEventsForAggregate(new UniqueEntityID()),

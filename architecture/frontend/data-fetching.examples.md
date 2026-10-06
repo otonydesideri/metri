@@ -36,6 +36,77 @@ export function useConfirmOrder() {
 }
 ```
 
+## useOrders
+
+```ts
+// hooks/order/use-orders.ts
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import type { FetchOrdersParams } from '@/api/model.zod';
+import { fetchOrders } from '@/api/order';
+import { orderKeys } from './keys';
+
+export function useOrders(filters: FetchOrdersParams) {
+  const queryClient = useQueryClient();
+  const { status, page, pageSize } = filters;
+
+  const query = useQuery({
+    queryKey: orderKeys.list(filters),
+    queryFn: () => fetchOrders(filters),
+    placeholderData: (previous) => previous,
+  });
+
+  // primitive deps on purpose: the `filters` object changes reference on
+  // every render and would fire the prefetch on every commit
+  const total = query.data?.total;
+
+  useEffect(() => {
+    const hasNextPage = total !== undefined && page * pageSize < total;
+
+    if (hasNextPage) {
+      const nextFilters = { status, page: page + 1, pageSize };
+      queryClient.prefetchQuery({
+        queryKey: orderKeys.list(nextFilters),
+        queryFn: () => fetchOrders(nextFilters),
+      });
+    }
+  }, [total, status, page, pageSize, queryClient]);
+
+  return query;
+}
+```
+
+## useCancelOrder
+
+```ts
+export function useCancelOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => cancelOrder(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: orderKeys.detail(id) });
+      const previous = queryClient.getQueryData<OrderDetails>(orderKeys.detail(id));
+      queryClient.setQueryData<OrderDetails>(orderKeys.detail(id), (old) => {
+        if (!old) {
+          return old;
+        }
+        return { ...old, status: 'CANCELLED' };
+      });
+      return { previous };
+    },
+    onError: (_err, id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(orderKeys.detail(id), context.previous);
+      }
+    },
+    onSettled: (_data, _err, id) => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) });
+    },
+  });
+}
+```
+
 ## httpClient
 
 ```ts title="apps/app-web/src/lib/http/client.ts"
@@ -150,22 +221,15 @@ export function useHealth() {
 ## vite.config
 
 ```ts title="apps/app-web/vite.config.ts"
-import { existsSync, readFileSync } from 'node:fs';
-import { parseEnv } from 'node:util';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
-// app-api listens on the PORT of the root .env; parsed, not loaded, so its NODE_ENV stays out of Vite
-const ROOT_ENV = new URL('../../.env', import.meta.url);
-const rootEnv = existsSync(ROOT_ENV)
-	? parseEnv(readFileSync(ROOT_ENV, 'utf8'))
-	: {};
 const WEB_PORT = Number(process.env.WEB_PORT ?? 5279);
-const API_PORT = Number(process.env.API_PORT ?? rootEnv.PORT ?? 3333);
+const API_PORT = Number(process.env.API_PORT ?? 3333);
 
 /** SOURCE OF TRUTH: the Vite and Vitest config of app-web.
- * WHAT: the dev server on its own port (`WEB_PORT`, strict), forwarding `/api` to app-api (`API_PORT`, or the `PORT` of the root .env), and the unit tests in jsdom.
+ * WHAT: the dev server on its own port (`WEB_PORT`, strict), forwarding `/api` to app-api (`API_PORT`, 3333 by default, the app-api `PORT`), and the unit tests in jsdom.
  * WHY: page and API share one origin (frontend/data-fetching, "O cliente HTTP"); a taken port is an error, never another project's server answering (frontend/testing, "E2e de critério de UI").
  * WHERE: read by Vite and Vitest; playwright.config.ts sets both ports from `E2E_PORT`.
  */
