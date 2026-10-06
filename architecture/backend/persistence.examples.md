@@ -8,7 +8,7 @@ import type {
   Order as PrismaOrder,
   OrderItem as PrismaOrderItem,
   Prisma,
-} from '@metri/db/postgres';
+} from '@metri/db/postgres/app';
 import { OrderItem } from '../../../../domain/enterprise/order-item.entity';
 import { Order } from '../../../../domain/enterprise/order.entity';
 import type { OrderStatus } from '../../../../domain/enterprise/enums/order-status.enum';
@@ -124,7 +124,7 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
 ## PrismaService
 
 ```ts title="apps/app-api/src/infra/persistence/prisma/prisma.service.ts"
-import { PrismaClient } from '@metri/db/postgres';
+import { PrismaClient } from '@metri/db/postgres/app';
 import {
 	Injectable,
 	type OnModuleDestroy,
@@ -163,7 +163,7 @@ export class PrismaService
 
 ## schema.prisma
 
-```prisma title="packages/db/src/postgres/models/schema.prisma"
+```prisma title="packages/db/src/postgres/app/models/schema.prisma"
 // The generator of the client and the datasource. Each model lives beside this file, in `<module>.prisma`, the file of the
 // module that owns the table (backend/persistence, "Propriedade de tabela no schema"). After changing a model:
 // `pnpm --filter @metri/db migrate:dev --name <name>`, then `pnpm --filter @metri/db generate`.
@@ -181,13 +181,13 @@ datasource db {
 
 ## prisma.config.ts
 
-```ts title="packages/db/src/postgres/prisma.config.ts"
+```ts title="packages/db/src/postgres/app/prisma.config.ts"
 import 'dotenv/config';
 import { defineConfig, env } from 'prisma/config';
 
-/** SOURCE OF TRUTH: the Prisma config of the Postgres connector of @metri/db.
+/** SOURCE OF TRUTH: the Prisma config of the `app` database, in the Postgres connector of @metri/db.
  * WHAT: points the Prisma CLI to the multi-file schema in `models/`, to `migrations/` and to the DATABASE_URL of the package's own `.env`.
- * WHY: one folder per data connector under `src/`, with its config, schema and migrations inside it (backend/persistence); in Prisma 7 the URL lives here, not in the schema, and a variable already in the environment wins over the `.env`.
+ * WHY: one folder per connector under `src/` and, inside it, one per database, with its config, schema and migrations, so a second app's database is a sibling folder (backend/persistence); in Prisma 7 the URL lives here, not in the schema, and a variable already in the environment wins over the `.env`.
  * WHERE: passed by `--config` to every `prisma` command of the package (`generate`, `migrate:dev`, `migrate:deploy`), run by hand and by the app-api e2e setup.
  */
 export default defineConfig({
@@ -201,11 +201,11 @@ export default defineConfig({
 });
 ```
 
-## index.ts do conector
+## index.ts do banco
 
-```ts title="packages/db/src/postgres/index.ts"
-/** SOURCE OF TRUTH: the Postgres connector of @metri/db.
- * WHAT: the generated Prisma client and its types, exported as `@metri/db/postgres`.
+```ts title="packages/db/src/postgres/app/index.ts"
+/** SOURCE OF TRUTH: the `app` database of the Postgres connector of @metri/db.
+ * WHAT: the generated Prisma client and its types, exported as `@metri/db/postgres/app`.
  * WHY: consumers import the connector, never the generated folder (backend/persistence).
  * WHERE: imported by the `PrismaService` of app-api and by its e2e setup.
  */

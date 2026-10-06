@@ -206,7 +206,7 @@ describe('POST /api/orders/:orderId/confirm (e2e)', () => {
 import 'dotenv/config';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { Prisma, PrismaClient } from '@metri/db/postgres';
+import { Prisma, PrismaClient } from '@metri/db/postgres/app';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll } from 'vitest';
 

@@ -58,8 +58,9 @@ enquadramento do usuário sem questioná-lo.
   - A API é o NestJS padrão (Express): saem o `FastifyAdapter` e o `@fastify/static`. O `PrismaService` estende o
     `PrismaClient`, sem a checagem do banco no boot. O env é do `ConfigModule`, validado no boot por `validate` e
     lido pelo `EnvService`; cada app e pacote tem o próprio `.env`, criado pelo `metri init` do `.env.example` ao
-    lado. O `@metri/db` tem uma pasta por conector, `src/postgres/` (`prisma.config.ts` com `dotenv`, `models/`,
-    `migrations/` e o `index.ts` exportado como `@metri/db/postgres`).
+    lado. O `@metri/db` tem uma pasta por conector e, dentro dela, uma por banco de app, `src/postgres/app/`
+    (`prisma.config.ts` com `dotenv`, `models/`, `migrations/` e o `index.ts` exportado como `@metri/db/postgres/app`);
+    outro app é uma pasta irmã.
   - O log é o `Logger` nativo do NestJS: só `infra/` loga, e o caso de uso não loga. O `nestjs-pino` vai para
     "Quando precisar".
   - O starter fica um NestJS e um React base: saem o guard de acesso, o rate limit, o requestId, o `TRUST_PROXY`, o

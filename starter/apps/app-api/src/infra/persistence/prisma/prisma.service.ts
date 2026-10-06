@@ -1,4 +1,4 @@
-import { PrismaClient } from '@metri/db/postgres';
+import { PrismaClient } from '@metri/db/postgres/app';
 import {
 	Injectable,
 	type OnModuleDestroy,

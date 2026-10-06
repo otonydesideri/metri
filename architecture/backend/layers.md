@@ -103,7 +103,7 @@ flowchart TD
 | Repositório em memória | `test/repositories/<agregado>.in-memory-repository.impl.ts` | `backend/testing.md` |
 | Fila em memória | `test/queues/<fluxo>.in-memory-queue.impl.ts` | `backend/async-jobs.md` |
 | Primitivo de domínio compartilhado | `packages/core/src/<área>/` | instruções de projeto de `packages/core` |
-| Conector de banco: config, schema, migrations e client gerado | `packages/db/src/postgres/` (`prisma.config.ts`, `models/` com o `schema.prisma`, `migrations/`, `generated/client/`, `index.ts`) | `backend/persistence.md` |
+| Banco de um app: config, schema, migrations e client gerado | `packages/db/src/<conector>/<app>/`, como `packages/db/src/postgres/app/` (`prisma.config.ts`, `models/` com o `schema.prisma`, `migrations/`, `generated/client/`, `index.ts`); outro app ganha uma pasta irmã | `backend/persistence.md` |
 
 Paths de `src/` e `test/` são relativos ao app backend (`apps/app-api/`).
 
