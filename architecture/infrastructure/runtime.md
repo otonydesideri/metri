@@ -112,7 +112,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - O `PgBossService` (a fila padrão, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; é o caso da Source em que o runtime depende do shutdown gracioso: sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
 - O que o e2e repete do bootstrap: o prefixo `/api` e, no e2e de asset de `infrastructure/storage.md`, o limite de corpo.
 - O schema de env e o `validate` moram em `src/infra/common/env/env.validation.ts` (`backend/layers.md`, "Onde cada arquivo mora"), um dos dois lugares de Zod de `backend/boundaries.md`.
-- O `@metri/db` lê o `.env` dele no `prisma.config.ts` (`import 'dotenv/config'` e `env('DATABASE_URL')` de `prisma/config`); o e2e carrega o `.env` do app-api por `dotenv/config` no `test/setup-e2e.ts` (`backend/testing.md`).
+- O `@metri/db` lê o `.env` dele no `src/postgres/prisma.config.ts` (`import 'dotenv/config'` e `env('DATABASE_URL')` de `prisma/config`); o e2e carrega o `.env` do app-api por `dotenv/config` no `test/setup-e2e.ts` (`backend/testing.md`).
 - O `compose.yaml` publica o Postgres na porta `POSTGRES_PORT`, 5432 por padrão.
 
 ## Verificação

@@ -37,7 +37,7 @@ flowchart TD
 
 ## A classe base
 
-`WatchedList<T>` vive em `@metri/core/entities`: com a capacidade ativa, o projeto copia a classe de watched-list.examples.md#watchedlist para `packages/core/src/entities/watched-list.ts`, e nenhum módulo reimplementa.
+`WatchedList<T>` vive em `@metri/core/entities`, pronta (watched-list.examples.md#watchedlist), e nenhum módulo reimplementa.
 
 | Membro | Papel |
 | --- | --- |

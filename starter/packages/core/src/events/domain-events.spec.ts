@@ -23,6 +23,7 @@ class FakeAggregate extends AggregateRoot<Record<string, never>> {
 beforeEach(() => {
 	DomainEvents.clearHandlers();
 	DomainEvents.clearMarkedAggregates();
+	DomainEvents.shouldRun = true;
 });
 
 describe('DomainEvents', () => {
@@ -39,6 +40,35 @@ describe('DomainEvents', () => {
 		DomainEvents.dispatchEventsForAggregate(aggregate.id);
 
 		expect(received).toHaveLength(1);
+		expect(aggregate.domainEvents).toHaveLength(0);
+	});
+
+	it('discardEventsForAggregate() limpa sem chamar nenhum handler', () => {
+		const received: DomainEvent[] = [];
+		DomainEvents.register(
+			(event) => received.push(event),
+			FakeCreatedEvent.name,
+		);
+
+		const aggregate = FakeAggregate.create();
+		DomainEvents.discardEventsForAggregate(aggregate.id);
+
+		expect(received).toHaveLength(0);
+		expect(aggregate.domainEvents).toHaveLength(0);
+	});
+
+	it('shouldRun = false limpa o agregado sem chamar handler', () => {
+		const received: DomainEvent[] = [];
+		DomainEvents.register(
+			(event) => received.push(event),
+			FakeCreatedEvent.name,
+		);
+		DomainEvents.shouldRun = false;
+
+		const aggregate = FakeAggregate.create();
+		DomainEvents.dispatchEventsForAggregate(aggregate.id);
+
+		expect(received).toHaveLength(0);
 		expect(aggregate.domainEvents).toHaveLength(0);
 	});
 

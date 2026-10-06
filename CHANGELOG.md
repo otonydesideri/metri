@@ -52,17 +52,18 @@ enquadramento do usuário sem questioná-lo.
     uma seção de `infrastructure/logging`, e a variação fechada vira o princípio 3 de `general/principles`.
   - Sai `backend/transactions`, com o `UnitOfWork`, a concorrência por `version` e o check `concurrency`: a escrita
     que precisa ser atômica abre `$transaction` dentro do próprio repositório, e o agente estrutura o resto conforme
-    a necessidade. O `AggregateRoot` perde o `version`.
+    a necessidade.
   - `domain/watched-list` vira capacidade condicional: o `Order` de referência tem `items: OrderItem[]`, e o `save()`
     substitui os filhos.
   - A API é o NestJS padrão (Express): saem o `FastifyAdapter` e o `@fastify/static`. O `PrismaService` estende o
     `PrismaClient`, sem a checagem do banco no boot. O env é do `ConfigModule`, validado no boot por `validate` e
     lido pelo `EnvService`; cada app e pacote tem o próprio `.env`, criado pelo `metri init` do `.env.example` ao
-    lado, e o `@metri/db` lê o dele pelo `prisma.config.ts` com `dotenv`.
+    lado. O `@metri/db` tem uma pasta por conector, `src/postgres/` (`prisma.config.ts` com `dotenv`, `models/`,
+    `migrations/` e o `index.ts` exportado como `@metri/db/postgres`).
   - O log é o `Logger` nativo do NestJS: só `infra/` loga, e o caso de uso não loga. O `nestjs-pino` vai para
     "Quando precisar".
   - O starter fica um NestJS e um React base: saem o guard de acesso, o rate limit, o requestId, o `TRUST_PROXY`, o
-    pino, o `bodyParser: false`, a `WatchedList` e o `DomainEvents.shouldRun` do `@metri/core`, a versão do metri e
+    pino, o `bodyParser: false`, a versão do metri e
     os próximos passos da página inicial, o spec do proxy do Vite, o `LANG` do Playwright e o atraso do splash. O
     filtro de erro inesperado loga o 5xx.
   - As regras do backend perdem configuração particular: `.max()` obrigatório, uuid nil, localidade pt-BR fixa,

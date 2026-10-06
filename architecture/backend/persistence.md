@@ -89,7 +89,7 @@ Quando um filho parece precisar de contrato de repositório: **Obrigatório.** T
 
 ### Propriedade de tabela no schema
 
-**Obrigatório.** O schema Prisma de `packages/db` é dividido por módulo, `models/<módulo>.prisma`, um arquivo por módulo dono.
+**Obrigatório.** O schema Prisma de `packages/db` é dividido por módulo, `src/postgres/models/<módulo>.prisma`, um arquivo por módulo dono, ao lado do `schema.prisma` (só generator e datasource).
 
 **Obrigatório.** Model novo entra no arquivo do módulo dono da tabela, o mesmo dono registrado na propriedade de agregados do app.
 
@@ -139,7 +139,7 @@ Exemplo completo: persistence.examples.md#orderprismamapper
 
 Exemplo completo: persistence.examples.md#orderprismarepositoryimpl
 
-O client do Prisma 7: o `@metri/db` (persistence.examples.md#schemaprisma e persistence.examples.md#prismaconfigts, com a URL fora do schema, e o `postinstall` que gera o client, exportado como `@metri/db/client`) e o `PrismaService` (persistence.examples.md#prismaservice), que estende o `PrismaClient` com o driver adapter.
+O client do Prisma 7: o `@metri/db` (persistence.examples.md#schemaprisma e persistence.examples.md#prismaconfigts, com a URL fora do schema, e o `postinstall` que gera o client, exportado como `@metri/db/postgres` pelo index.ts do conector, persistence.examples.md#indexts-do-conector) e o `PrismaService` (persistence.examples.md#prismaservice), que estende o `PrismaClient` com o driver adapter.
 
 - `toDomain()` chama `reconstitute()`, nunca `create()`, pela regra de `domain/model.md`: linha do banco não passa de novo pela validação de nascimento.
 - A coleção carregada é a coleção inteira: substituir os filhos a partir de um subconjunto apagaria o resto.
@@ -170,7 +170,7 @@ Na idempotência de job, a violação de unicidade reconhecida vira o outcome qu
 - Escrita que precisa ser atômica abre a `$transaction` dentro do próprio método do repositório?
 - O nome da escrita descreve o efeito na linha, e escrita que recusa duplicata não é upsert?
 - Leitura de N registros é em lote, com `Map`, sem `find` em loop?
-- Model novo está no `models/<módulo>.prisma` do módulo dono?
+- Model novo está no `src/postgres/models/<módulo>.prisma` do módulo dono?
 - SQL cru usa template tag, sem `$queryRawUnsafe` fora do adapter da fila, e identificador variável é união fechada?
 - Escrita com condição que só o banco avalia devolve o outcome declarado (`false` ou a união que nomeia cada resultado), com o código do driver lido só na implementação, sem `Either`, `DomainError` nem tipo genérico de resultado?
 

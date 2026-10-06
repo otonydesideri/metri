@@ -1,10 +1,10 @@
-// The generator of the client and the datasource. Each model lives in `models/<module>.prisma`, the file of the
+// The generator of the client and the datasource. Each model lives beside this file, in `<module>.prisma`, the file of the
 // module that owns the table (backend/persistence, "Propriedade de tabela no schema"). After changing a model:
 // `pnpm --filter @metri/db migrate:dev --name <name>`, then `pnpm --filter @metri/db generate`.
 
 generator client {
   provider     = "prisma-client"
-  output       = "../src/generated/prisma"
+  output       = "../generated/client"
   moduleFormat = "esm"
 }
 

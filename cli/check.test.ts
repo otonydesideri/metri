@@ -11,7 +11,7 @@ function project(): string {
   write(dir, 'package.json', JSON.stringify({ name: 'app' }));
   write(dir, 'apps/app-api/src/infra/health/health.controller.ts', CONTROLLER);
   write(dir, 'apps/app-api/src/domain/application/use-cases/create-order.ts', "import { Injectable } from '@nestjs/common';\nimport { TZDate } from '@date-fns/tz';\nimport { right } from '@metri/core/types';\n");
-  write(dir, 'apps/app-api/src/infra/persistence/prisma/prisma.service.ts', "import { PrismaClient } from '@metri/db/client';\n");
+  write(dir, 'apps/app-api/src/infra/persistence/prisma/prisma.service.ts', "import { PrismaClient } from '@metri/db/postgres';\n");
   write(dir, 'packages/core/src/types/either.ts', "import { randomUUID } from 'node:crypto';\nconst epoch = new Date(Date.UTC(2026, 0, 1));\n");
   return dir;
 }
@@ -28,7 +28,7 @@ describe('check', { timeout: 30_000 }, () => {
   it('boundaries: cada import fora do grafo, pela fronteira dele', () => {
     const dir = project();
     write(dir, 'apps/app-api/src/domain/enterprise/entities/order.ts', "import { Module } from '@nestjs/common';\nimport { z } from 'zod';\nimport { PrismaService } from '../../../infra/persistence/prisma/prisma.service';\n");
-    write(dir, 'apps/app-api/src/infra/http/controllers/order.controller.ts', "import { Order } from '@metri/db/client';\nimport { makeOrder } from '../../../../test/factories/make-order.factory';\n");
+    write(dir, 'apps/app-api/src/infra/http/controllers/order.controller.ts', "import { Order } from '@metri/db/postgres';\nimport { makeOrder } from '../../../../test/factories/make-order.factory';\n");
     write(dir, 'packages/core/src/entities/entity.ts', "import { z } from 'zod';\n");
     write(dir, 'apps/app-web/src/pages/orders/orders-page.tsx', "import { server } from '@/test/msw/server';\n");
     const { status, lines } = check(dir, 'boundaries');
@@ -45,7 +45,7 @@ describe('check', { timeout: 30_000 }, () => {
       'falha boundaries: domain usando de @nestjs/common algo além de Injectable',
       "  apps/app-api/src/domain/enterprise/entities/order.ts: import { Module } from '@nestjs/common'",
       'falha boundaries: @metri/db fora de infra/persistence/prisma e do setup do e2e',
-      '  apps/app-api/src/infra/http/controllers/order.controller.ts: @metri/db/client',
+      '  apps/app-api/src/infra/http/controllers/order.controller.ts: @metri/db/postgres',
       'falha boundaries: core com dependência externa',
       '  packages/core/src/entities/entity.ts: zod',
       'falha boundaries: produção do app-api importando test/',

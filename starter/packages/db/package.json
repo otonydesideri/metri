@@ -4,13 +4,13 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./client": "./src/generated/prisma/client.ts"
+		"./postgres": "./src/postgres/index.ts"
 	},
 	"scripts": {
-		"postinstall": "prisma generate",
-		"generate": "prisma generate",
-		"migrate:dev": "prisma migrate dev",
-		"migrate:deploy": "prisma migrate deploy",
+		"postinstall": "prisma generate --config src/postgres/prisma.config.ts",
+		"generate": "prisma generate --config src/postgres/prisma.config.ts",
+		"migrate:dev": "prisma migrate dev --config src/postgres/prisma.config.ts",
+		"migrate:deploy": "prisma migrate deploy --config src/postgres/prisma.config.ts",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
 		"test": "vitest run"

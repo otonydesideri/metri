@@ -69,7 +69,7 @@ Todo comportamento exposto por um módulo entra por uma porta: a HTTP, um contro
 2. Propriedade de cada agregado decidida antes de qualquer contrato e registrada como decisão de projeto (`domain/model.md`).
 3. Entidades e value objects conforme `domain/model.md`.
 4. Contratos e casos de uso conforme `backend/application.md`, com spec unitário colocado, factory e repositório em memória (`backend/testing.md`).
-5. Repositório, mapper e model no `models/<módulo>.prisma` do módulo dono, conforme `backend/persistence.md`.
+5. Repositório, mapper e model no `<módulo>.prisma` do módulo dono, em `packages/db/src/postgres/models/`, conforme `backend/persistence.md`.
 6. Porta de entrada: controller por ação + DTO, conforme `backend/http-api.md`, com a tradução de erro de `backend/errors.md`.
 7. Registro nos módulos Nest centrais: `http.module.ts` (bloco comentado por área) e `persistence.module.ts`.
 8. E2e-spec por controller.

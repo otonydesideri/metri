@@ -1,10 +1,3 @@
-# WatchedList: exemplos
-
-## WatchedList
-
-A classe base, em `@metri/core/entities`.
-
-```ts title="packages/core/src/entities/watched-list.ts"
 /** SOURCE OF TRUTH: WatchedList.
  * WHAT: a child collection that tracks its delta: `getNewItems()` and `getRemovedItems()` against the initial items.
  * WHY: the repository saves only what changed in the collection, without rewriting it on every `save()` (domain/watched-list).
@@ -124,54 +117,3 @@ export abstract class WatchedList<T> {
 		);
 	}
 }
-```
-
-## OrderItemList
-
-```ts
-// domain/enterprise/order-item-list.ts
-import { WatchedList } from '@metri/core/entities';
-import { OrderItem } from './order-item.entity';
-
-export class OrderItemList extends WatchedList<OrderItem> {
-  compareItems(a: OrderItem, b: OrderItem): boolean {
-    return a.equals(b);
-  }
-}
-```
-
-No `Order` de `domain/model.md`, só a coleção muda: `items: OrderItemList` nas props, o getter devolve a lista, `create()` confere `props.items.getItems().length`, e `addItem()` chama `this.props.items.add(item)`.
-
-## OrderPrismaRepositoryImpl
-
-O `save()` de backend/persistence.examples.md#orderprismarepositoryimpl, gravando o delta em vez de substituir os itens:
-
-```ts
-async save(order: Order): Promise<void> {
-  const data = OrderPrismaMapper.toPrisma(order);
-  const newItems = order.items.getNewItems();
-  const removedItems = order.items.getRemovedItems();
-
-  await this.prisma.$transaction(async (tx) => {
-    await tx.order.upsert({
-      where: { id: data.id },
-      create: data,
-      update: { status: data.status, updatedAt: data.updatedAt },
-    });
-
-    if (newItems.length > 0) {
-      await tx.orderItem.createMany({
-        data: newItems.map((item) => OrderItemPrismaMapper.toPrisma(item, data.id)),
-      });
-    }
-
-    if (removedItems.length > 0) {
-      await tx.orderItem.deleteMany({
-        where: { id: { in: removedItems.map((item) => item.id.toValue()) } },
-      });
-    }
-  });
-
-  DomainEvents.dispatchEventsForAggregate(order.id);
-}
-```

@@ -4,6 +4,7 @@
 	"private": true,
 	"type": "module",
 	"exports": {
+		".": "./src/index.ts",
 		"./entities": "./src/entities/index.ts",
 		"./errors": "./src/errors/index.ts",
 		"./events": "./src/events/index.ts",

@@ -8,7 +8,7 @@ import type {
   Order as PrismaOrder,
   OrderItem as PrismaOrderItem,
   Prisma,
-} from '@metri/db/client';
+} from '@metri/db/postgres';
 import { OrderItem } from '../../../../domain/enterprise/order-item.entity';
 import { Order } from '../../../../domain/enterprise/order.entity';
 import type { OrderStatus } from '../../../../domain/enterprise/enums/order-status.enum';
@@ -124,7 +124,7 @@ export class OrderPrismaRepositoryImpl implements OrderRepository {
 ## PrismaService
 
 ```ts title="apps/app-api/src/infra/persistence/prisma/prisma.service.ts"
-import { PrismaClient } from '@metri/db/client';
+import { PrismaClient } from '@metri/db/postgres';
 import {
 	Injectable,
 	type OnModuleDestroy,
@@ -163,14 +163,14 @@ export class PrismaService
 
 ## schema.prisma
 
-```prisma title="packages/db/prisma/schema.prisma"
-// The generator of the client and the datasource. Each model lives in `models/<module>.prisma`, the file of the
+```prisma title="packages/db/src/postgres/models/schema.prisma"
+// The generator of the client and the datasource. Each model lives beside this file, in `<module>.prisma`, the file of the
 // module that owns the table (backend/persistence, "Propriedade de tabela no schema"). After changing a model:
 // `pnpm --filter @metri/db migrate:dev --name <name>`, then `pnpm --filter @metri/db generate`.
 
 generator client {
   provider     = "prisma-client"
-  output       = "../src/generated/prisma"
+  output       = "../generated/client"
   moduleFormat = "esm"
 }
 
@@ -181,18 +181,33 @@ datasource db {
 
 ## prisma.config.ts
 
-```ts title="packages/db/prisma.config.ts"
+```ts title="packages/db/src/postgres/prisma.config.ts"
 import 'dotenv/config';
 import { defineConfig, env } from 'prisma/config';
 
-/** SOURCE OF TRUTH: the Prisma config of @metri/db.
- * WHAT: points the Prisma CLI to the multi-file schema in `prisma/`, to the migrations and to the DATABASE_URL of the package's own `.env`.
- * WHY: in Prisma 7 the URL lives here, not in the schema (backend/persistence); a variable already in the environment wins over the `.env`.
- * WHERE: read by every `prisma` command of the package (`generate`, `migrate:dev`, `migrate:deploy`), run by hand and by the app-api e2e setup.
+/** SOURCE OF TRUTH: the Prisma config of the Postgres connector of @metri/db.
+ * WHAT: points the Prisma CLI to the multi-file schema in `models/`, to `migrations/` and to the DATABASE_URL of the package's own `.env`.
+ * WHY: one folder per data connector under `src/`, with its config, schema and migrations inside it (backend/persistence); in Prisma 7 the URL lives here, not in the schema, and a variable already in the environment wins over the `.env`.
+ * WHERE: passed by `--config` to every `prisma` command of the package (`generate`, `migrate:dev`, `migrate:deploy`), run by hand and by the app-api e2e setup.
  */
 export default defineConfig({
-	schema: 'prisma',
-	migrations: { path: 'prisma/migrations' },
-	datasource: { url: env('DATABASE_URL') },
+	schema: 'models',
+	migrations: {
+		path: 'migrations',
+	},
+	datasource: {
+		url: env('DATABASE_URL'),
+	},
 });
+```
+
+## index.ts do conector
+
+```ts title="packages/db/src/postgres/index.ts"
+/** SOURCE OF TRUTH: the Postgres connector of @metri/db.
+ * WHAT: the generated Prisma client and its types, exported as `@metri/db/postgres`.
+ * WHY: consumers import the connector, never the generated folder (backend/persistence).
+ * WHERE: imported by the `PrismaService` of app-api and by its e2e setup.
+ */
+export * from './generated/client/client';
 ```
