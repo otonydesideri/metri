@@ -2,8 +2,15 @@
 id: UC3.2
 title: Conversar com o Coordinator
 feature: F3
+slice: S11
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [T11.1]
+areas: [backend/application, infrastructure/services, frontend/components]
+touches: [runs, requests]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-api test use-cases/requests`", "`pnpm --filter app-web test:e2e e2e/conversation/`"]
 ---
 
 # UC3.2 · Conversar com o Coordinator
@@ -18,9 +25,8 @@ Como humano, quero uma conversa contínua com o projeto, para pedir, perguntar e
 ## Critérios
 
 - [ ] Tela: a conversa é montada dos eventos, com mensagens, chamadas de ferramenta resumidas e o pensamento recolhido, e mostra harness, modelo e custo.
-- [ ] Com o servidor reiniciado, a conversa é retomada pela mesma sessão do harness.
+- [ ] Com o servidor reiniciado, a conversa é retomada pela mesma sessão do harness; se a retomada falha, um Run novo abre, com sessão nova e o resumo da conversa.
 - [ ] Uma pergunta do Coordinator aparece na própria conversa e também na Inbox.
-- [ ] Quando um pedido esgota o orçamento, o turno do Coordinator é interrompido, e a conversa diz por quê; o próximo pedido começa com o orçamento inteiro.
 - [ ] Sem harness pronto, a tela leva à tela de Harnesses.
 
 ## Notas

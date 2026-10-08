@@ -2,8 +2,15 @@
 id: UC6.1
 title: Ver o plano na Matriz
 feature: F6
+slice: S18
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [T18.1]
+areas: [frontend/components, frontend/helpers, backend/reading]
+touches: [app-web:pages/matrix]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-web test pages/matrix`", "`pnpm --filter app-web test:e2e e2e/matrix/`"]
 ---
 
 # UC6.1 · Ver o plano na Matriz
@@ -25,9 +32,6 @@ Como humano, quero ver o plano como um quadro de features e slices em ordem de b
 - [ ] Duas slices do mesmo nível que servem a mesma feature aparecem lado a lado dentro da coluna.
 - [ ] Quando existe uma ordem de faixas em que toda caixa fica contínua, a Matriz usa uma delas; entre ordens empatadas, fica a mais próxima da ordem de build, e a mesma ordem se repete a cada abertura.
 - [ ] Tela: uma slice cujas features não podem ficar vizinhas aparece em partes na mesma coluna, ligadas por uma linha tracejada, com o nome na primeira parte e "parte i de n" em cada uma.
-- [ ] Tela: selecionar uma slice mostra as setas de dependência só dela, cheias para o que vem antes e tracejadas para o que ela destrava.
-- [ ] Tela: selecionar uma slice abre o painel com o que vem antes, o que ela entrega, o que depende dela, os tickets com os checks, o contrato e, na aba de execução, os Runs com estado, custo e motivo de espera.
 - [ ] A feature e a slice mostram a barra de entrega, com a conta da BR38.
-- [ ] Com um portão de plano aberto, o humano alterna entre o plano vigente e o proposto.
 
 ## Notas

@@ -2,8 +2,15 @@
 id: UC9.1
 title: Responder a uma aprovação de ferramenta
 feature: F9
+slice: S8
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [UC8.9]
+areas: [backend/application, infrastructure/services, backend/http-api, frontend/components]
+touches: [tool-approvals, policy]
+sensitive: true
+checks: ["`pnpm verify`", "`pnpm --filter @metri/harness test claude`", "`pnpm --filter app-api test use-cases/inbox`", "`pnpm --filter app-web test:e2e e2e/inbox/`"]
 ---
 
 # UC9.1 · Responder a uma aprovação de ferramenta
@@ -20,11 +27,11 @@ Como humano, quero responder ao pedido de um agente para usar uma ferramenta for
 - [ ] Com um builder pedindo um comando fora da allowlist, "permitir uma vez" roda só aquela chamada, e o Run volta a rodar.
 - [ ] "Permitir sempre neste Run" libera as próximas chamadas do mesmo padrão naquele Run, e em nenhum outro.
 - [ ] Sem padrão proposto pelo harness, ou com `suppressAlwaysAllowRule`, "permitir sempre" fica desabilitado.
-- [ ] Depois de retomar a sessão do harness, as liberações "permitir sempre neste Run" continuam valendo.
 - [ ] Toda sessão do harness abre com o modo de permissão `default`, explícito, e nenhuma chamada fora da Policy roda sem passar pela aprovação.
 - [ ] Recusar devolve a recusa ao agente, e o Run continua sem rodar a chamada.
 - [ ] Com a entrada editada, roda a entrada editada, e o histórico guarda as duas.
 - [ ] Com o Run encerrado antes da resposta, o item aparece expirado, em cinza e sem ações.
+- [ ] Com o Run do ticket esperando o humano, o card do Board mostra esse estado e leva à Inbox.
 - [ ] Tela: o detalhe mostra a ferramenta, a entrada, o Run, o papel e a regra da Policy que pediu a aprovação.
 
 ## Notas

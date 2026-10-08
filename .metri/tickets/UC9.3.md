@@ -2,8 +2,15 @@
 id: UC9.3
 title: Ser avisado do que espera você
 feature: F9
+slice: S16
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [S14, S15]
+areas: [frontend/state, frontend/components, frontend/experience]
+touches: [app-web:notifications]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-web test lib/notifications`", "`pnpm --filter app-web test:e2e e2e/inbox/`"]
 ---
 
 # UC9.3 · Ser avisado do que espera você

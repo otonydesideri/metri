@@ -23,7 +23,7 @@ A decisão tem duas fases.
 
 Até o tracer, o processo de construção usa o método preso numa tag; o `package.json` da raiz diz qual. `packages/method` evolui como parte do produto, sem mudar o processo. Trocar a tag que o processo usa exige uma tag nova e a aprovação do humano.
 
-Na slice do tracer, a skill de construção passa a usar as ferramentas do Metri e deixa de gravar status e de fazer merge, porque essas ferramentas só existem a partir dela. A mudança fecha a slice numa tag nova, aprovada pelo humano, que é a que o Run de aceite do tracer usa. As outras mudanças no método e quantas tags elas pedem antes da fundação se decidem no Look across.
+Na slice do tracer, a skill de construção passa a usar as ferramentas do Metri e deixa de gravar status e de fazer merge, porque essas ferramentas só existem a partir dela. A mudança fecha a slice numa tag nova, aprovada pelo humano, que é a que o Run de aceite do tracer usa. Antes da fundação, as mudanças no método saem numa tag só, a `v1.8.0`; a do tracer é a `method-v1.9.0`, já com o prefixo do componente.
 
 Depois do tracer, o processo usa `packages/method` pelo link do workspace, e o Metri grava em cada Run a versão do método com que ele rodou.
 

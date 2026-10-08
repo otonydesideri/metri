@@ -2,8 +2,15 @@
 id: UC5.2
 title: Mudar um plano aprovado
 feature: F5
+slice: S10
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [UC5.1]
+areas: [domain/model, backend/application, frontend/components]
+touches: [plan]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-api test use-cases/plan`", "`pnpm --filter app-web test:e2e e2e/matrix/`"]
 ---
 
 # UC5.2 · Mudar um plano aprovado

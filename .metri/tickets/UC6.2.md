@@ -2,8 +2,15 @@
 id: UC6.2
 title: Navegar num plano grande
 feature: F6
+slice: S18
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [UC6.1]
+areas: [frontend/components, frontend/experience]
+touches: [app-web:pages/matrix]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-web test:e2e e2e/matrix/`"]
 ---
 
 # UC6.2 · Navegar num plano grande

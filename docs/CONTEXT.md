@@ -71,7 +71,7 @@ Um papel escrito sem fornecedor: instruções, skills, Policy e formato de saíd
 _Evitar:_ Prompt
 
 **Workspace** · `Workspace`
-O lugar isolado onde o Metri faz um trabalho: uma worktree com a sua branch, as suas portas e uma pasta temporária. Pertence a um alvo, um ticket (`ticket/<id>`) ou uma iniciativa (`plan/<n>`), e os Runs desse alvo o usam um de cada vez; o Preview da branch padrão ou da slice em aceite e a fila de integração usam Workspaces sem Run.
+O lugar isolado onde o Metri faz um trabalho: uma worktree com a sua branch, as suas portas e uma pasta temporária. Pertence a um alvo, um ticket (`ticket/<id>`), uma iniciativa (`plan/<n>`) ou um diagnóstico (`diagnose/<n>`, até o ticket de correção nascer), e os Runs desse alvo o usam um de cada vez; o Preview da branch padrão ou da slice em aceite e a fila de integração usam Workspaces sem Run.
 _Evitar:_ Sandbox, Ambiente
 
 **Scripts do projeto** · `ProjectScripts`

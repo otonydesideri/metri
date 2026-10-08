@@ -2,8 +2,15 @@
 id: UC4.1
 title: Moldar uma iniciativa
 feature: F4
+slice: S10
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [T10.2, T10.3]
+areas: [backend/application, infrastructure/services, frontend/components]
+touches: [runs, workspaces:plan]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-api test use-cases/initiatives`", "`pnpm --filter app-web test:e2e e2e/initiatives/`"]
 ---
 
 # UC4.1 · Moldar uma iniciativa
@@ -19,11 +26,10 @@ Como humano, quero que uma ideia vire produto, linguagem, design e specs numa en
 
 - [ ] Com uma ideia descrita pelo humano, quando o Moldar termina, o `plan/<n>` tem PRODUCT, CONTEXT e a spec de cada feature passando no `docs-lint`, os UCs existem em rascunho, e a Inbox tem o portão de direção.
 - [ ] Num projeto com interface e sem documento de design, o `plan/<n>` termina com o documento de design, com os tokens, as referências, o que evitar e os princípios.
-- [ ] Uma decisão difícil de reverter tomada na entrevista sai como ADR no `plan/<n>`, e nenhum ADR é escrito sem o sim do humano.
+- [ ] Um ADR só entra no `plan/<n>` depois de uma pergunta do Run que o humano respondeu com sim.
 - [ ] Com uma pergunta do agente pendente, o Run fica esperando o humano sem consumir tokens.
 - [ ] Antes do portão de direção, o crítico sem contexto roda, e os achados dele aparecem no portão; se ele falhar, o portão diz que a crítica não foi feita.
 - [ ] Tela: no Run de Moldar, um painel mostra os arquivos do `plan/<n>` mudando e as propostas feitas.
-- [ ] Tela: o portão de direção mostra os três blocos e o diff dos documentos.
 
 ## Notas
 

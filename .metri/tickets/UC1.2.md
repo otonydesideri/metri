@@ -2,8 +2,15 @@
 id: UC1.2
 title: Ver a visão geral do projeto
 feature: F1
+slice: S18
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [T18.2]
+areas: [backend/reading, frontend/components, frontend/data-fetching]
+touches: [app-web:pages/overview]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-api test queries/projects`", "`pnpm --filter app-web test:e2e e2e/overview/`"]
 ---
 
 # UC1.2 · Ver a visão geral do projeto

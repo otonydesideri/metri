@@ -2,8 +2,15 @@
 id: UC3.1
 title: Rotear um pedido
 feature: F3
+slice: S11
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [UC3.2]
+areas: [domain/domain-services, backend/application, domain/model, frontend/components]
+touches: [requests, schema:requests]
+sensitive: false
+checks: ["`pnpm verify`", "`pnpm --filter app-api test domain-services/routing`", "`pnpm --filter app-api test use-cases/requests`", "`pnpm --filter app-web test:e2e e2e/conversation/`"]
 ---
 
 # UC3.1 · Rotear um pedido
@@ -20,10 +27,11 @@ Como humano, quero escrever o que preciso e ver para onde o pedido foi, para nã
 
 - [ ] Com um pedido que cabe numa slice existente, o Coordinator propõe a rota direta, e o ticket nasce `open` na slice, com história, critérios e checks, e entra na frontier.
 - [ ] Com um pedido que caberia na rota direta mas é sensível, nenhum ticket nasce: o pedido segue como iniciativa, um Run de Moldar abre, e o cartão diz por quê.
-- [ ] Com a rota direta numa slice feita, a slice volta a ser construída, e o próximo aceite parte do diff contra a branch padrão, que traz só o que mudou depois do último merge.
+- [ ] Com a rota direta numa slice feita, a slice volta a ser construída.
 - [ ] Com um relato de bug, o Coordinator o classifica como bug, e um Run de diagnóstico abre.
 - [ ] Com uma iniciativa, um Run de Moldar abre, e o cartão leva a ele.
 - [ ] O humano confirma ou muda a rota proposta antes de ela seguir; a rota direta só aceita o pedido que passa nas condições da BR41.
 - [ ] Tela: cada pedido aparece como um cartão com o texto, a rota proposta, a conferência do Metri e o destino.
+- [ ] Quando um pedido esgota o orçamento, o turno do Coordinator é interrompido, e a conversa diz por quê; o próximo pedido começa com o orçamento inteiro.
 
 ## Notas

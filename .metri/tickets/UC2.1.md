@@ -2,8 +2,15 @@
 id: UC2.1
 title: Conferir o Claude Code
 feature: F2
+slice: S2
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [T2.1, T2.2]
+areas: [infrastructure/services, backend/application, backend/http-api, frontend/components]
+touches: [packages/harness, app-web:pages/harnesses]
+sensitive: true
+checks: ["`pnpm verify`", "`pnpm --filter @metri/harness test claude`", "`pnpm --filter app-api test:e2e controllers/harnesses`", "`pnpm --filter app-web test:e2e e2e/harnesses/`"]
 ---
 
 # UC2.1 · Conferir o Claude Code
@@ -22,6 +29,7 @@ Como humano, quero ver se o Claude Code está pronto para o Metri usar, para nã
 - [ ] Com outro caminho do binário configurado, o teste usa esse caminho e mostra a versão dele.
 - [ ] Sem login, o teste falha, e a tela diz que o login se faz no próprio Claude Code.
 - [ ] Com um `apiKeyHelper` ou um provedor de nuvem ligado, a tela mostra a origem da credencial que o SDK informa e avisa que a cobrança não vai para a conta Claude.
+- [ ] Um teste sem resposta em 60 s para a sessão, diz que o Claude Code não respondeu e não deixa processo rodando.
 - [ ] Com a versão do binário diferente da suportada, a tela avisa e mostra a versão suportada.
 - [ ] Nenhum evento, log ou linha do banco contém credencial ou token do harness depois do teste.
 - [ ] Tela: nos menus, o harness aparece como "Claude Agent".

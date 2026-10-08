@@ -31,7 +31,7 @@ O método que cada Run usa continua o do ADR-0001: a cópia fixa é só do app.
 
 - Uma correção no Metri só vale para quem conduz depois que o humano atualiza a cópia.
 - Os testes que o builder roda no repositório do Metri não usam a pasta de dados nem as portas do Metri que conduz.
-- Como a cópia é feita (pasta de build ou instalação numa tag) se decide no Look across, na slice da fundação.
+- A cópia é uma worktree travada por `git worktree lock`, fora do repositório e da pasta de Workspaces, numa tag do app (`app-v<versão>`), com o build feito; o roteiro é do T8.5.
 
 ## Imposto por
 

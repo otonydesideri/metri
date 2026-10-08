@@ -2,8 +2,15 @@
 id: UC8.4
 title: Configurar a Policy e os orçamentos do projeto
 feature: F8
+slice: S15
 actor: humano
-status: draft
+status: open
+mode: afk
+blocked_by: [S14]
+areas: [backend/application, backend/http-api, frontend/forms]
+touches: [project-settings, policy]
+sensitive: true
+checks: ["`pnpm verify`", "`pnpm --filter app-api test use-cases/policy`", "`pnpm --filter app-web test:e2e e2e/settings/`"]
 ---
 
 # UC8.4 · Configurar a Policy e os orçamentos do projeto
@@ -13,8 +20,6 @@ Como humano, quero ajustar numa tela a allowlist, a rede e os orçamentos do pro
 ## Regras de negócio
 
 - BR85 (sensitive): A allowlist, os domínios de rede e os orçamentos do projeto só mudam pelo humano, na tela de configuração; nenhum Run os altera.
-- BR86: Um projeto começa com a allowlist cobrindo os scripts do projeto, o `metri verify` e os checks, sem domínio de rede liberado, e com orçamentos padrão por Run e por pedido. O orçamento que o Goal de um ticket traz vale no lugar do padrão por Run.
-- BR95 (sensitive): No preset padrão, um Run escreve só no próprio Workspace; no somente leitura, só na pasta temporária dele.
 - BR87: Uma mudança na configuração vale para os Runs abertos depois dela; o Run em andamento segue com a Policy com que começou.
 - BR91: As instruções e os hooks pessoais do Claude Code entram nos Runs, a menos que o interruptor da configuração do projeto os exclua; o interruptor começa desligado.
 
@@ -31,6 +36,6 @@ Como humano, quero ajustar numa tela a allowlist, a rede e os orçamentos do pro
 
 ## Notas
 
-- Os valores padrão dos orçamentos saem do Look across e se ajustam com o uso.
+- Os valores padrão dos orçamentos estão na F8, Decisões de implementação, e se ajustam com o uso.
 - Como excluir as instruções e os hooks pessoais sem perder o login pelo `apiKeyHelper` não está confirmado. A opção `settings` do SDK aceita o `apiKeyHelper` (https://code.claude.com/docs/en/settings); este ticket confirma.
 - No Claude, a rede tem dois mecanismos: o sandbox, para comandos (`allowedDomains`), e as regras `WebFetch(domain:…)`. O pedido de um host fora da lista chega ao `canUseTool` como `SandboxNetworkAccess`, o que só se vê no código do binário 2.1.289 e não é documentado (não confirmado); este ticket confirma.
