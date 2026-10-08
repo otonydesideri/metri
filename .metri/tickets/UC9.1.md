@@ -12,7 +12,7 @@ Como humano, quero responder ao pedido de um agente para usar uma ferramenta for
 
 ## Regras de negócio
 
-- BR25 (sensitive): A resposta vai só para o Run que pediu. "Permitir sempre" vale só para aquele Run e para o padrão de chamada que o harness propõe junto do pedido, gravado na sessão, nunca nas configurações do projeto ou do usuário.
+- BR25 (sensitive): A resposta vai só para o Run que pediu. "Permitir sempre" vale só para aquele Run e para o padrão de chamada que o harness propõe junto do pedido, guardado pelo Metri e reaplicado na sessão do harness, nunca gravado nas configurações do projeto ou nas pessoais.
 - BR26: Com a entrada editada pelo humano, roda a entrada editada; o histórico guarda a original e a editada.
 
 ## Critérios
@@ -20,7 +20,7 @@ Como humano, quero responder ao pedido de um agente para usar uma ferramenta for
 - [ ] Com um builder pedindo um comando fora da allowlist, "permitir uma vez" roda só aquela chamada, e o Run volta a rodar.
 - [ ] "Permitir sempre neste Run" libera as próximas chamadas do mesmo padrão naquele Run, e em nenhum outro.
 - [ ] Sem padrão proposto pelo harness, ou com `suppressAlwaysAllowRule`, "permitir sempre" fica desabilitado.
-- [ ] Depois de retomar a sessão, as liberações "permitir sempre neste Run" continuam valendo.
+- [ ] Depois de retomar a sessão do harness, as liberações "permitir sempre neste Run" continuam valendo.
 - [ ] Toda sessão do harness abre com o modo de permissão `default`, explícito, e nenhuma chamada fora da Policy roda sem passar pela aprovação.
 - [ ] Recusar devolve a recusa ao agente, e o Run continua sem rodar a chamada.
 - [ ] Com a entrada editada, roda a entrada editada, e o histórico guarda as duas.

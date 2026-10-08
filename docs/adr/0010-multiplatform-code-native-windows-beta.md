@@ -14,16 +14,21 @@ O que se sabe do Windows nativo, conferido em 05/10/2026:
 - O Claude Code não tem sandbox no Windows nativo: "On native Windows, Claude Code runs commands unsandboxed" (https://code.claude.com/docs/en/sandboxing). A orientação oficial é WSL2, container ou VM.
 - O Codex tem sandbox nativo de Windows em dois modos (https://learn.chatgpt.com/docs/windows/windows-sandbox). O `elevated` usa usuários com menos privilégio e regras de firewall, e exige instalação com aprovação de administrador. O `unelevated` usa token restrito e ACL, com isolamento de rede fraco. A lista de domínios permitidos só funciona no `elevated`.
 - Caminho acima de 260 caracteres exige o `LongPathsEnabled` do Windows e um programa que se declare preparado para isso, e iniciar um processo com pasta de trabalho acima desse limite falha (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation). O Git for Windows vem com `core.longpaths` desligado, e até a versão 2.54 o `git worktree remove` atravessava junctions e apagava o que havia do outro lado. No Windows, o pnpm usa junctions e limita o nome das pastas internas a 60 caracteres.
-- O `better-sqlite3` 12.11.1, a versão que o adapter do Prisma usa, publica binários prontos para Windows x64 e ARM64, para o Node 22 e 24 e para o Electron (https://github.com/WiseLibs/better-sqlite3/releases/tag/v12.11.1).
+- O `better-sqlite3` 12.11.1, a versão que o Superset usa com o Drizzle, publica binários prontos para Windows x64 e ARM64, para o Node 22 e 24 e para o Electron (https://github.com/WiseLibs/better-sqlite3/releases/tag/v12.11.1).
 - No Windows, `subprocess.kill()` termina só o filho direto; os netos sobrevivem. Encerrar a árvore pede `taskkill /T /F` ou um job object. Um arquivo do SQLite aberto não pode ser apagado, e a pasta de trabalho de um processo fica travada enquanto ele roda.
+
+O Metri prepara, roda e arquiva cada Workspace com comandos que o projeto declara: preparar (instalar dependências, copiar os `.env`, criar o banco de desenvolvimento), rodar o app no Preview e limpar ao arquivar. O documento de construção os chamava de `metri:setup`, `metri:run` e `metri:archive`, no `package.json`.
 
 ### Como o mercado faz
 
 - Quem roda o Claude Code no Windows nativo roda sem sandbox de sistema: Orca (`stablyai/orca`, `src/shared/tui-agent-permissions.ts`, que ainda pula as aprovações por padrão), T3 Code (`pingdotgg/t3code`, `packages/contracts/src/providerPolicy.ts`, acesso total por padrão), Nimbalyst (motor de permissões próprio, com aprovação), o app desktop do Claude ("Claude Code does not sandbox shell commands on Windows devices", https://claude.com/docs/third-party/claude-desktop/code) e o Morphite (notas da v0.3.0: "Agents are not sandboxed on Windows yet, and Morphite says so").
 - Superset e Conductor não rodam no Windows (`superset-sh/superset`, README; https://www.conductor.build/docs/installation).
 - Orca, Nimbalyst, Morphite e o app desktop do Claude saem para Windows, macOS e Linux a partir de um código só.
+- Os comandos do workspace ficam num arquivo da própria ferramenta, na raiz do repositório e commitado, nunca no `package.json`. São eles: `.conductor/settings.toml`, que substituiu o `conductor.json` na versão 0.62.0 (https://www.conductor.build/docs/reference/settings/reference); `.superset/config.json` (`superset-sh/superset@0482268:apps/docs/content/docs/setup-teardown-scripts.mdx:15-23`); `orca.yaml` (`stablyai/orca@726eaf1:docs/site/content/docs/model/orca-yaml.mdx:14-46`); e `t3.json` (`pingdotgg/t3code@9f48092:packages/contracts/src/t3ProjectFile.ts:28-72`). O Vibe Kanban é a exceção e guarda os comandos no banco do app (`BloopAI/vibe-kanban@d5cbb53:crates/db/migrations/20260107000000_move_scripts_to_repos.sql`).
+- Os comandos são de shell, sem supor linguagem, rodam no diretório do workspace e recebem o caminho do checkout principal e o do workspace, como `CONDUCTOR_ROOT_PATH` e `CONDUCTOR_WORKSPACE_PATH` (https://www.conductor.build/docs/reference/environment-variables). O Orca exporta `CONDUCTOR_ROOT_PATH` por compatibilidade (`src/main/setup-hook-env-vars.ts:14-23`). Só o Conductor dá portas ao workspace, uma faixa de 10 a partir de `CONDUCTOR_PORT`. Conductor e Orca copiam os arquivos ignorados, como os `.env`, pela lista `.worktreeinclude`, commitada na raiz: o Conductor também aceita `file_include_globs`, com `.env*` como padrão (app 0.90.1, `Contents/Resources/conductor-skill/skills/conductor/SKILL.md:100-106`), e o Orca diz "`.worktreeinclude` lists ignored files to carry into new worktrees" (`stablyai/orca@0f9f1993:docs/site/content/docs/model/orca-yaml.mdx:6`).
+- No Windows, o Orca roda o script num `.cmd`, com Bash opcional pelo Git Bash (`docs/reference/windows-setup-shell.md:3-24`); o T3 Code usa o PowerShell, e o Vibe Kanban, o `cmd`.
 
-O Metri segue o app desktop do Claude, o Morphite e o Nimbalyst: sem sandbox no Windows, com as aprovações mantidas e o aviso na tela.
+O Metri segue o app desktop do Claude, o Morphite e o Nimbalyst: sem sandbox no Windows, com as aprovações mantidas e o aviso na tela. Nos scripts do projeto, segue o Conductor: um arquivo do Metri, commitado, com setup, run e archive.
 
 ## Decisão
 
@@ -31,11 +36,13 @@ O Windows nativo entra no `beta`, numa feature própria (F25). No primeiro marco
 
 Desde a slice de fundação, o código nasce multiplataforma:
 
-- os scripts do método e do starter são em Node, não em bash, incluindo `metri:setup`, `metri:run`, `metri:archive`, os hooks e o `hitl-loop` do diagnóstico;
+- os scripts do método e do starter são em Node, não em bash, incluindo os hooks e o `hitl-loop` do diagnóstico;
 - os caminhos são montados com o `node:path`;
 - as skills e os agents são materializados por cópia, não por link simbólico;
 - um lint de portabilidade falha com script em bash no método e no starter, com caminho montado com separador fixo e com link simbólico na materialização;
 - o CI roda em Linux desde o primeiro ticket; os jobs de macOS (F28) e de Windows (F25) entram no `beta`.
+
+Os scripts do projeto (setup, run e archive do Workspace) ficam no `metri.json`, na raiz do repositório e commitado, como comandos de shell. O Metri os roda no diretório do Workspace e passa `METRI_ROOT_PATH`, `METRI_WORKSPACE_PATH`, `METRI_WORKSPACE_ID`, `METRI_PORT`, a porta do Preview, e a `E2E_PORT` do método, a porta de testes. Os arquivos ignorados que o Workspace precisa, como os `.env`, vêm da lista `.worktreeinclude`. No `dogfood`, só o repositório do Metri tem o arquivo; o starter e o `metri init` o ganham na F21. O shell que roda os scripts no Windows se decide no Look across da F25.
 
 No Windows nativo, o Claude Code roda sem sandbox, como em todo produto que o roda ali. A Policy do Claude vale por aprovação e allowlist, nunca pelo sistema operacional: a tela de Harnesses e cada Run dizem isso, o humano aceita uma vez por projeto, e o Metri nunca pula as aprovações. A decisão é revista quando o Claude Code ganhar sandbox no Windows.
 
@@ -44,6 +51,8 @@ No Windows nativo, o Claude Code roda sem sandbox, como em todo produto que o ro
 - Windows só pelo WSL, como no documento de construção: deixaria de fora quem trabalha no Windows nativo.
 - Windows nativo já no primeiro marco: o único usuário do primeiro marco usa o WSL.
 - Rodar as Runs do Claude dentro do WSL2, a orientação oficial: a Policy ficaria igual à do Linux, mas Workspace, pnpm e caminhos passariam a viver no WSL, o que esvazia o Windows nativo.
+- Os scripts `metri:setup`, `metri:run` e `metri:archive` no `package.json`, como no documento de construção: nenhuma ferramenta do mercado faz assim, e o `package.json` prende os scripts a projetos Node.
+- Os comandos guardados no banco do Metri, como no Vibe Kanban: o time deixaria de versionar a configuração junto com o código.
 - Deixar o Claude fora do Windows no `beta`: o Windows passaria a depender só do Codex, que também é `beta`.
 - Os jobs de macOS e de Windows no CI desde o primeiro ticket: pegariam cedo o que quebra fora do Linux, mas atrasariam o começo, e no primeiro marco o Metri roda só no WSL.
 
@@ -51,6 +60,7 @@ No Windows nativo, o Claude Code roda sem sandbox, como em todo produto que o ro
 
 - O `metri init` passa a copiar as skills e os agents para `.claude/` em vez de criar links, e o docs-lint deixa de exigir os links. É uma mudança do Source, num ticket do método (ADR-0001). A cópia tem de ser refeita quando a versão do método muda.
 - O `hitl-loop.template.sh` do diagnóstico vira um script em Node.
+- A camada pessoal por cima do arquivo commitado, que Conductor, Superset e Orca têm, fica para a F21.
 - No Windows, o Metri usa uma raiz de dados curta e nomes curtos de Workspace, liga o `core.longpaths` em cada worktree, exige o Git for Windows 2.54 ou mais novo e nunca inicia um processo com pasta de trabalho acima de 260 caracteres.
 - Arquivar um Workspace encerra a árvore inteira de processos, fecha as conexões do banco e apaga a pasta tentando de novo enquanto houver arquivo travado, sem nunca atravessar uma junction.
 - Até o `beta`, o que quebra no macOS ou no Windows e o lint não pega passa sem aviso; os jobs da F28 e da F25 é que pegam.

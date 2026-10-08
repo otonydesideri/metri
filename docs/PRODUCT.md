@@ -16,7 +16,9 @@ Usada à mão com um agente, a metodologia Slices com Guardrails resolve boa par
 
 ## Resultado esperado
 
-O Metri conduz a construção do próprio Metri com Claude Code, do pedido ao merge, e só para quando o método pede uma decisão humana: direção, plano, padrões e aceite. No primeiro marco, o release continua à mão. O humano deixa de fazer o papel de scheduler, de quadro e de verificador. Ele decide, e encontra num lugar só tudo o que espera por ele.
+O Metri conduz a construção do próprio Metri com Claude Code, do pedido ao merge, e só para quando o método pede o humano: nos portões de direção, de plano, de padrão, de passo humano e de aceite. No primeiro marco, o release continua à mão. O humano deixa de fazer o papel de scheduler, de quadro e de verificador. Ele decide, e encontra num lugar só tudo o que espera por ele.
+
+O primeiro marco termina quando uma iniciativa real do backlog do Metri, com pelo menos uma slice com critério `Tela:`, vai do pedido ao merge da slice na branch padrão inteiramente dentro do Metri: Moldar, Look across, construção, aceite e integração conduzidos pelo sistema, sem rodar etapa do método direto no Claude Code e sem edição à mão de código ou de `.metri/`. Além disso, pelo menos um bug passa pelo Diagnosticar dentro do Metri até a correção integrada. O humano só age em portões, aprovações de ferramenta, perguntas, no despacho dos tickets que o despacho automático não pega, no push e num conflito de merge de slice ou de plano, a única edição à mão aceita.
 
 Esse é o primeiro marco. Depois vêm usuários de fora fazendo o mesmo nos próprios projetos, com Claude Code e Codex, e por fim o Metri vendido por assento.
 
@@ -24,7 +26,7 @@ Esse é o primeiro marco. Depois vêm usuários de fora fazendo o mesmo nos pró
 
 O Metri roda na máquina de quem o usa, sobre os agentes que essa pessoa já tem: Claude Code e Codex. Cada um trabalha com o login que a pessoa já fez nele ou com uma chave de API. Os subagentes que eles disparam por conta própria também aparecem no Metri.
 
-O Metri é vendido. Organização, membros e licença ficam no plano de controle, na nuvem, que não recebe nada do conteúdo do projeto.
+O Metri é vendido. Organização, membros e licença ficam no plano de controle, na nuvem, que não recebe nada do conteúdo do projeto. Essa regra se revê quando um recurso de nuvem entrar no plano, e a arquitetura não pode impedir essa mudança.
 
 Código, conhecimento e checks ficam no repositório do projeto. Sem o Metri, o projeto continua correto, e os guardrails continuam rodando no CI dele.
 

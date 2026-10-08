@@ -21,7 +21,7 @@ Uma das fases do método que o Metri conduz: rotear, moldar, look across, constr
 _Evitar:_ Fase, Phase, Step
 
 **Goal** · `Goal`
-O contrato de conclusão de um ticket, escrito junto com o ticket (no Look across, na rota direta ou no diagnóstico): o que entrega, como se verifica, o que não pode regredir, quando parar e o orçamento.
+O contrato de conclusão de um ticket, escrito junto com o ticket (no Look across, na rota direta ou no diagnóstico): o que entrega, como se verifica, o que não pode regredir, quando parar e o orçamento. É escrito junto com o ticket também no aceite. Fica no Metri: os critérios e os checks do ticket do método, mais o orçamento e os limites da Policy.
 _Evitar:_ Objetivo, Meta
 
 **Proposta** · `Proposal`
@@ -31,6 +31,10 @@ _Evitar:_ Sugestão, Suggestion
 **Proposta de conhecimento** · `KnowledgeProposal`
 Uma Proposta do tipo conhecimento: o texto exato do que o projeto aprendeu e o destino dele (check, regra, ADR, linguagem do domínio ou design).
 _Evitar:_ Lição, Lesson
+
+**Iniciativa** · `Initiative`
+Um pedido que passa por Moldar e Look across, num `plan/<n>` próprio, até o portão de plano. Recusar o portão de direção ou o de plano a encerra.
+_Evitar:_ Projeto (como pedido), Épico
 
 **Rota** · `Route`
 O caminho que um pedido segue: direta (vira um ticket numa slice que já existe), bug (abre um Run de diagnóstico) ou iniciativa (abre um Run de moldar).
@@ -67,15 +71,19 @@ Um papel escrito sem fornecedor: instruções, skills, Policy e formato de saíd
 _Evitar:_ Prompt
 
 **Workspace** · `Workspace`
-O lugar isolado onde o Metri faz um trabalho: uma worktree com a sua branch, as suas portas e uma pasta temporária. Quase sempre pertence a um Run; o Preview da branch padrão usa um Workspace sem Run.
+O lugar isolado onde o Metri faz um trabalho: uma worktree com a sua branch, as suas portas e uma pasta temporária. Pertence a um alvo, um ticket (`ticket/<id>`) ou uma iniciativa (`plan/<n>`), e os Runs desse alvo o usam um de cada vez; o Preview da branch padrão ou da slice em aceite e a fila de integração usam Workspaces sem Run.
 _Evitar:_ Sandbox, Ambiente
+
+**Scripts do projeto** · `ProjectScripts`
+Os comandos que o projeto declara para preparar, rodar e arquivar um Workspace (ADR-0010).
+_Evitar:_ Hooks (sozinho), metri:setup
 
 **Preview** · `Preview`
 O app rodando a partir de um Workspace, na porta dele e só em `127.0.0.1`, para o humano ver.
 _Evitar:_ Demo, Ambiente de teste
 
 **Policy** · `Policy`
-O que um Run pode fazer sem pedir ao humano: onde escreve, que rede acessa, o que exige aprovação e o orçamento padrão.
+O que um Run pode fazer sem pedir ao humano: onde escreve, que rede acessa, o que exige aprovação e o orçamento padrão. Cada papel usa um preset da Policy: o padrão ou o somente leitura.
 _Evitar:_ Sandbox, Permissões, Permissions
 
 **Aprovação de ferramenta** · `ToolApproval`
@@ -111,7 +119,7 @@ Uma entrada na fila de merge do projeto: uma branch que espera para entrar no se
 _Evitar:_ Deploy, Merge (como entidade)
 
 **Inbox** · `Inbox`
-A vista de tudo o que espera o humano.
+A vista de tudo o que espera o humano. Cada item é uma aprovação de ferramenta, um portão, uma pergunta de agente ou um aviso.
 _Evitar:_ Notificações, Notifications
 
 ### Conta
@@ -175,6 +183,10 @@ O Coordinator julga e conversa; quem decide o que roda é o Scheduler, e quem fa
 "Sandbox" é só o isolamento que o sistema operacional dá ao processo do harness, como o do Claude Code ou o do Codex. O que um Run pode fazer é a Policy, e o lugar onde ele trabalha é o Workspace.
 
 "Assinatura" sozinha não se usa. No harness, a pessoa paga pelo plano da própria conta (conta Claude ou ChatGPT) ou pela chave de API; no Metri, o que se paga é a licença.
+
+"Regra de permissão" é a do harness (liberar, perguntar, negar). O pedido de um agente ao humano é a aprovação de ferramenta.
+
+Na interface, o Claude Code aparece nos menus como "Claude Agent" (ADR-0009).
 
 Subagente e Run são coisas diferentes: o Run é aberto pelo Metri, com sessão, Workspace, orçamento e Goal; o subagente é aberto pelo harness, dentro de um Run.
 

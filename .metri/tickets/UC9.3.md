@@ -21,5 +21,6 @@ Como humano, quero ser avisado fora do Metri quando algo espera por mim, para n�
 - [ ] O humano liga ou desliga a notificação por tipo de item, menos para aprovação de ferramenta.
 - [ ] Tela: o contador da Inbox aparece em toda tela, com as aprovações de ferramenta destacadas.
 - [ ] Sem permissão de notificação no navegador, a Inbox diz como ligar.
+- [ ] Tela: a Inbox ensina a manter a aba do Metri ativa, isentando o site do descarte de abas do navegador.
 
 ## Notas

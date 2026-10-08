@@ -1,4 +1,4 @@
-# ADR-0005 O servidor local usa SQLite e não tem biblioteca de fila
+# ADR-0005 O servidor local usa SQLite com Drizzle e não tem biblioteca de fila
 
 status: accepted
 area: backend
@@ -6,67 +6,63 @@ kind: default-change
 
 ## Contexto
 
-O Metri roda na máquina de quem o usa, com um único processo escrevendo o estado. A stack padrão do método pede Postgres, e a fila padrão, o pg-boss, só roda sobre Postgres. Seguir o padrão no servidor local obrigaria cada usuário a ter um Postgres rodando.
+O Metri roda na máquina de quem o usa, com um único processo escrevendo o estado. O núcleo do método é uma stack única, NestJS com Prisma e Postgres, e a fila, quando o projeto precisa de uma, é o pg-boss, que roda sobre Postgres.
 
 ### Como o mercado faz
 
-O que ferramentas comparáveis usam para o estado local, conferido em 04/10/2026 no código-fonte (`repositório@commit:arquivo`) ou, nos apps fechados, no pacote oficial:
+Conferido em 04/10/2026 e em 07/10/2026, no código-fonte (`repositório@commit:arquivo`) ou, nos apps fechados, no pacote oficial:
 
-- Vibe Kanban: SQLite pelo sqlx, com journal `DELETE` (sem WAL), e tarefas tokio com intervalo no próprio processo; um processo só (`BloopAI/vibe-kanban@d5cbb538:crates/db/src/lib.rs:79-83`).
-- Conductor (fechado): um `conductor.db` em SQLite, aberto pelo `tauri-plugin-sql` sobre o sqlx (strings do binário 0.90.1). WAL, migrações e trabalho em segundo plano: sem fonte primária.
-- Morphite (fechado): SQLite pelo `node:sqlite`, em WAL, com migrações próprias; trabalho em segundo plano com mutex e timers no processo, sem biblioteca de fila; um processo só escreve (`out/main/backend.js` do app 0.3.2). Uma trava num SQLite separado, no diretório comum do git, impede duas instâncias de integrar no mesmo repositório.
-- OpenCode: SQLite com Drizzle sobre `bun:sqlite` ou `node:sqlite`, em WAL; trabalho em segundo plano em fibers Effect no processo (`anomalyco/opencode@907b3bc5:packages/core/src/database/database.ts:27-53`).
-- ZCode (fechado): SQLite pelo `node:sqlite`, em WAL; um processo agendador separado varre a tabela a cada 20 s e devolve tarefas interrompidas à fila na partida (`out/scheduler/index.js` do app 3.14.4).
-- T3 Code: SQLite pelo `node:sqlite`, em WAL; um scheduler no processo lê o trabalho devido das tabelas (`pingdotgg/t3code@4ee6bfd5:apps/server/src/persistence/Layers/Sqlite.ts:18-25`).
-- Sculptor: SQLite com SQLAlchemy, em WAL; uma thread lê as tarefas da tabela e, na partida, devolve as que estavam rodando à fila (`imbue-ai/sculptor@f847102a:sculptor/sculptor/database/core.py:120`).
-- Orca, Superset, Nimbalyst, Goose, Cline e Kilo Code também usam SQLite em WAL, com trabalho em segundo plano no processo. O app desktop do Codex usa SQLite com better-sqlite3 e uma tabela de jobs com lease. O app desktop do Claude, o Claude Squad e o Roo Code guardam o estado em arquivos JSON.
+- Das 17 ferramentas comparáveis, 14 guardam o estado local em SQLite, com o trabalho em segundo plano no próprio processo, e nenhuma usa biblioteca de fila no local. Exemplos: Vibe Kanban (`BloopAI/vibe-kanban@d5cbb538:crates/db/src/lib.rs:79-83`), T3 Code (`pingdotgg/t3code@4ee6bfd5:apps/server/src/persistence/Layers/Sqlite.ts:18-25`) e Morphite (app 0.3.2, `out/main/backend.js`). O app desktop do Claude, o Claude Squad e o Roo Code guardam o estado em arquivos JSON.
+- Nenhuma usa Prisma. Com ORM, é o Drizzle: o Superset usa o Drizzle 0.45 sobre o `better-sqlite3` no app e o mesmo Drizzle no Postgres da nuvem, com o adapter oficial do better-auth (`superset-sh/superset@a6de0c84:apps/desktop/package.json:173,184`, `packages/auth/src/server.ts:29,180`). OpenCode e Kilo Code usam o Drizzle 1.0, ainda release candidate, sobre o `node:sqlite` ou o `bun:sqlite` (`anomalyco/opencode@907b3bc5:package.json:64-65`). Sem ORM, o comum é SQL direto no `node:sqlite`, como no T3 Code, no Orca e no Morphite.
+- Todas aplicam as migrations na partida, dentro do próprio app, sem CLI. O Superset escreveu um executor próprio sobre os arquivos do drizzle-kit, porque o migrador do Drizzle 0.45 escolhe pela migration mais recente e pula em silêncio a que chega com data mais antiga (`superset-sh/superset@a6de0c84:packages/shared/src/sqlite-migrations/runMigrations.ts:17-62`, `packages/host-service/src/db/db.ts:59-65`; `drizzle-team/drizzle-orm#5769`).
 
-Das 17 ferramentas, 14 usam SQLite e nenhuma usa biblioteca de fila no local. Nenhuma usa Prisma: o acesso mais comum é o `node:sqlite` (7), seguido de `bun:sqlite`, `better-sqlite3` e sqlx (3 cada).
+O Metri segue o Superset no servidor local: Drizzle sobre o `better-sqlite3` e um executor próprio de migrations.
 
-Fuga do padrão: o acesso pelo Prisma. O humano decidiu manter o Prisma 7, porque as regras de persistência e de transação do método e o starter são escritos para ele.
-
-### Por que as ferramentas locais evitam o Prisma
-
-Conferido em 05/10/2026. Nenhuma das ferramentas escreve por que não usa o Prisma: não há justificativa nas issues e nos PRs de OpenCode, Kilo Code, T3 Code, Cline, Superset, Nimbalyst e Orca. Os motivos vêm da documentação e das issues do próprio Prisma.
-
-- Até o Prisma 6, o client dependia de um query engine nativo em Rust, de cerca de 14 MB, um por sistema e versão de OpenSSL, escolhido por `binaryTargets` (https://www.prisma.io/docs/orm/v6/more/internals/engines; https://www.prisma.io/blog/rust-to-typescript-update-boosting-prisma-orm-performance). No Electron, o binário ficava fora do asar, com o caminho passado por API interna (`prisma/orm#9619`). A issue de suporte ao Electron está aberta desde 2021, com relatos de 70 MB de binários no Windows (`prisma/orm#9613`) e de 4 a 5 s só para importar o client (`prisma/orm#7457`).
-- O `migrate` só roda pelo CLI, como processo filho; não há API para rodá-lo de dentro do app (`prisma/orm#4703`, aberta desde 2020).
-
-No Prisma 7 (7.0.0, de 19/11/2025), o query engine nativo saiu. O client usa um compilador em Wasm de 2 a 4 MB com o driver adapter, e o runtime cabe num arquivo só (https://github.com/prisma/orm/releases/tag/7.0.0). Continuam:
-
-- as migrations no schema engine nativo, um binário de cerca de 23 MB por plataforma, baixado na instalação e chamado pelo CLI ("The Driver Adapter flow for introspection and migration was scrapped", https://www.prisma.io/blog/prisma-7-ama-clearing-up-the-why-behind-the-changes; `prisma/orm#29394`);
-- a falta de API para rodar o `migrate` de dentro do app (`prisma/orm#4703`);
-- a falta de guia para Electron.
-
-Além disso, no Prisma 8, com GA previsto para outubro de 2026, o SQLite é experimental, num pacote separado (`@prisma/orm-sqlite`). O 7 recebe correções por 18 meses depois do GA do 8 (https://www.prisma.io/docs/orm/supported-databases; https://www.prisma.io/docs/orm/release-status).
-
-O motivo principal, o engine nativo do client, não vale no Prisma 7. Valem o binário das migrations e a falta de API para rodá-las de dentro do app, que só pesam quando o Metri roda empacotado, fora do repositório.
+Fuga do padrão do método: o Drizzle e o SQLite no lugar do Prisma e do Postgres, só no servidor local.
 
 ## Decisão
 
-Troca dois defaults, só no servidor local; o plano de controle fica no Postgres e na fila padrão.
+Só no servidor local. O plano de controle fica no default do método; levá-lo também para o Drizzle, como no Superset, é a direção, decidida no Look across da F16.
 
-- `defaults/stack`, "Stack" (Prisma com Postgres): no servidor local, o banco é SQLite, com Prisma 7 e o adapter `better-sqlite3`, em modo WAL, num arquivo da pasta de dados do app, com um único processo escrevendo.
-- `defaults/stack`, "Stack", e `backend/async-jobs` (a fila é o pg-boss): no servidor local não há biblioteca de fila nem Redis. A fila de integração é a tabela de integrações, processada por um worker serial no próprio processo. O scheduler roda a cada mudança de estado. A retomada depois de um reinício lê as tabelas.
+Troca estes defaults no servidor local:
+
+- `defaults/stack`, "Stack" (Prisma com Postgres via `@metri/db`): o banco é SQLite, num arquivo da pasta de dados do app, em modo WAL, com um único processo escrevendo, acessado pelo Drizzle 0.45 sobre o `better-sqlite3`, em `packages/db/src/sqlite/<app>/`.
+- `backend/persistence` (repositório e mapper sobre o Prisma): no servidor local, a regra é substituída por uma regra do projeto para o Drizzle, escrita num ticket `pattern` da fundação.
+- `backend/reading`, "A query de exibição" e "A execução é direta, o contrato não" (o Prisma e o Postgres primário): a leitura usa o Drizzle sobre o SQLite.
+- `backend/testing`, "Convenção de nome e execução" (um banco Postgres isolado por arquivo de e2e): cada arquivo de e2e usa um arquivo SQLite próprio.
+- `infrastructure/runtime`, "Banco de desenvolvimento" (o Postgres de desenvolvimento): o banco de desenvolvimento é um arquivo SQLite, criado pelas migrations.
+- `backend/boundaries`, "Persistência: `@metri/db` é de `infra/persistence/prisma`": no servidor local, o `@metri/db` é de `infra/persistence/drizzle`.
+- `defaults/stack`, "Quando precisar" (a fila com o pg-boss): no servidor local não há biblioteca de fila nem Redis. A fila de integração é a tabela de integrações, processada por um worker serial no próprio processo. O scheduler roda a cada mudança de estado, e a retomada depois de um reinício lê as tabelas.
+
+As migrations são os arquivos SQL que o drizzle-kit gera no desenvolvimento. Na partida, o app copia o banco, confere a cópia e aplica as migrations com um executor próprio: ele guarda o nome de cada migration aplicada, roda as pendentes numa transação e aborta a partida se uma falhar. Isso vale desde a fundação, então o primeiro marco já usa o caminho do `beta`. O drizzle-kit fica só no desenvolvimento.
 
 Um trabalho em segundo plano que não caiba nisso volta como pergunta no Look across.
 
 ## Alternativas consideradas
 
-- Postgres instalado ou em Docker na máquina do usuário: mantém a stack padrão, mas cada instalação passa a depender de um Postgres rodando.
-- Postgres embutido em WebAssembly (PGlite): mantém o dialeto, mas o adapter do Prisma é da comunidade, e não há confirmação de que o pg-boss rode nele.
-- `node:sqlite`: dispensa módulo nativo, mas o Prisma não tem adapter oficial para ele.
-- Drizzle sobre o `better-sqlite3`, como OpenCode, Kilo Code e Superset: as migrations rodam de dentro do app, sem binário. As regras de persistência e de transação do método e o starter, porém, são escritos para o Prisma, e o servidor local teria um acesso ao banco diferente do plano de controle.
+- Prisma 7 com SQLite, o default do método:
+  - nenhuma das ferramentas comparáveis usa Prisma;
+  - no Prisma 8 o SQLite é prova de conceito (`prisma/orm@57675308d6:README.md:100`; https://www.prisma.io/docs/orm/supported-databases), e o 7 recebe correções só por 18 meses depois do lançamento do 8 (https://www.prisma.io/docs/orm/release-status);
+  - rodar as migrations pede o CLI e o schema engine nativo, sem API para fazê-lo de dentro do app (`prisma/orm#4703`; https://www.prisma.io/blog/prisma-7-ama-clearing-up-the-why-behind-the-changes).
+- Drizzle também no método e no plano de controle, como no Superset: muda o default de todos os projetos, quando a evidência vem de app local. O Prisma está em 22 arquivos de regra e em 15 do starter, e no check `boundaries` (medição de 07/10/2026).
+- SQL direto no `node:sqlite`, sem ORM, como T3 Code, Orca e Morphite: dispensa módulo nativo, mas o repositório e o mapper tipados viram regra escrita do zero. O driver do Drizzle para o `node:sqlite` só existe na linha 1.0, ainda release candidate (npm, 07/10/2026: `drizzle-orm` 0.45.3 é a `latest`).
+- Postgres embutido em WebAssembly (PGlite), que manteria as regras do método e roda o pg-boss (`pg-boss@12.36.0:README.md:56`):
+  - o selo do projeto é alpha;
+  - o fsync vem desligado (`electric-sql/pglite@ae182ff`, pacote `pglite`, `src/pglite.ts:151`);
+  - nada impede duas instâncias no mesmo diretório, o que corrompe a base (`electric-sql/pglite#327`, `#709`);
+  - o formato quebra entre versões minor (`docs/docs/upgrade.md:1-7`).
+- Postgres instalado ou em Docker na máquina do usuário: cada instalação passaria a depender de um Postgres rodando.
 - Uma biblioteca de fila (BullMQ com Redis, por exemplo): nenhum trabalho do servidor local pede retry com backoff, dead letter ou vários consumidores.
 
 ## Consequências
 
-- O `packages/db` tem um cliente por banco: SQLite para o servidor local e Postgres para o plano de controle.
-- O `better-sqlite3` é módulo nativo: a casca desktop do ADR-0002 precisa recompilá-lo para o Electron.
-- No primeiro marco, as migrations rodam pelo CLI do Prisma, na cópia fixa do ADR-0008. Como elas rodam na partida, na máquina de um usuário de fora, volta como pergunta no Look across do `beta`: o CLI com o schema engine de cada plataforma junto, ou os `migration.sql` aplicados por um executor próprio sobre o `better-sqlite3`.
-- O servidor local fica no Prisma 7 enquanto o SQLite do Prisma 8 for experimental. O fim do suporte do 7 é o prazo para rever esta decisão.
+- O `@metri/db` ganha a pasta `src/sqlite/<app>/` do servidor local; a do plano de controle chega no v1.
+- A transação do `better-sqlite3` é síncrona ("Transaction functions do not work with async functions", `WiseLibs/better-sqlite3@f8e2d54120:docs/api.md:102`). A escrita atômica fica dentro do repositório, como o método pede, sem esperar nada de fora no meio dela.
+- O check `boundaries` tem o caminho `infra/persistence/prisma/` fixo no código. Ele passa a aceitar o caminho da persistência do servidor local numa mudança do método, depois do planejamento e antes da fundação.
+- Na casca desktop, o `better-sqlite3` precisa do binário do Electron e de ficar fora do asar (`WiseLibs/better-sqlite3@f8e2d54120:docs/troubleshooting.md:27-31`). Isso se decide antes do `beta`.
+- O servidor fica no Drizzle 0.45 e no executor próprio até o Drizzle 1.0 sair estável. Nesse momento, a troca se revê, inclusive o driver do `node:sqlite`, que dispensa módulo nativo.
 - O que `backend/async-jobs` diz valer com qualquer ferramenta continua valendo no worker da fila de integração: worker fino, regra de falha e idempotência.
-- O aviso de Run travado é um timer no próprio processo (F10). O backup diário do banco, outro trabalho por tempo, volta como pergunta no Look across.
+- O aviso de Run travado é um timer no próprio processo (F10). A cópia antes de cada migration e o comando de restaurar valem já no `dogfood` (UC10.3); a cópia de hora em hora entra no `beta`, na F30.
 
 ## Imposto por
 

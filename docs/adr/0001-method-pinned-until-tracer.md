@@ -23,9 +23,11 @@ A decisão tem duas fases.
 
 Até o tracer, o processo de construção usa o método preso numa tag; o `package.json` da raiz diz qual. `packages/method` evolui como parte do produto, sem mudar o processo. Trocar a tag que o processo usa exige uma tag nova e a aprovação do humano.
 
+Na slice do tracer, a skill de construção passa a usar as ferramentas do Metri e deixa de gravar status e de fazer merge, porque essas ferramentas só existem a partir dela. A mudança fecha a slice numa tag nova, aprovada pelo humano, que é a que o Run de aceite do tracer usa. As outras mudanças no método e quantas tags elas pedem antes da fundação se decidem no Look across.
+
 Depois do tracer, o processo usa `packages/method` pelo link do workspace, e o Metri grava em cada Run a versão do método com que ele rodou.
 
-O gatilho da troca é o aceite da slice do tracer, com o critério de pronto dela cumprido: um ticket do repositório do Metri vai de aberto a feito conduzido pelo Metri, sem o humano tocar no código. Um ticket do método faz a troca, depois desse aceite.
+O gatilho da troca é o aceite da slice do tracer, com o critério de pronto dela cumprido: um ticket do repositório do Metri vai de aberto a feito conduzido pelo Metri, sem o humano tocar no código. O teste: todo commit entre o início do Run e o merge tem uma de duas identidades, a do Run ou a da fila de integração. Um ticket do método faz a troca, depois desse aceite.
 
 Nas duas fases, `packages/method` só muda em ticket próprio do método, e a mudança segue as regras do Source: CHANGELOG, poda e texto no presente. O `metri scope` falha quando outro ticket toca `packages/method`.
 
@@ -44,4 +46,4 @@ Nas duas fases, `packages/method` só muda em ticket próprio do método, e a mu
 
 ## Imposto por
 
-`metri scope`, estendido na fundação para falhar quando um ticket que não é do método toca `packages/method`. Até essa extensão, não imposto.
+`metri scope`, estendido na fundação para falhar quando um ticket que não é do método toca `packages/method`. Um ticket do método é um T `pattern` com a área `method`. Até essa extensão, não imposto.

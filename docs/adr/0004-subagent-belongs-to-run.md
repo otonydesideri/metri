@@ -37,7 +37,7 @@ O subagente (`Subagent`) pertence ao Run que o disparou. Ele aparece dentro da c
 Junto, três regras:
 
 1. O subagente é conveniência do harness. Quando o método precisa de contexto limpo, Policy própria ou papel definido (crítico, surveyor, pesquisa, revisores), isso é um Run de papel, nunca um subagente. Um subagente não substitui uma revisão.
-2. O subagente não chama `propose`, `report`, `ask_human` nem `add_note`. Se o harness repassar o MCP ao subagente (não confirmado; o ticket do MCP do Metri confere), a chamada é registrada no Run pai, com o id do subagente no evento.
+2. O subagente não chama `propose`, `report`, `ask_human` nem `add_note`. O harness repassa o MCP ao subagente ("a background subagent keeps every MCP tool", https://code.claude.com/docs/en/agent-sdk/subagents, conferido em 08/10/2026), então a chamada é registrada no Run pai, com o id do subagente no evento.
 3. A herança de Policy e de custo é teste de contrato de cada driver: o filho não escapa da Policy do pai, e o custo dele entra no orçamento do pai.
 
 ## Alternativas consideradas
@@ -47,6 +47,7 @@ Junto, três regras:
 
 ## Consequências
 
+- Os testes de contrato do driver rodam no CI contra dublês, sem chave de API: reprodução de transcrições gravadas, como no T3 Code (`pingdotgg/t3code@a4c9494b:docs/orchestration-v2/testing-strategy.md:23,137-140`), e um CLI falso que fixa o contrato do SDK, como no Orca (`stablyai/orca@e3639ef8:src/main/claude/claude-agent-sdk-contract-pins.test.ts:20-26`). O teste ao vivo é local, ligado à mão, com o login de quem roda, e regrava as transcrições a cada troca de versão do SDK ou do Claude Code.
 - O evento normalizado tem um id de pai, e o subagente tem um id próprio como apelido.
 - Quando o harness não informa o custo, o Metri calcula pela tabela de preços, com os tokens que tiver.
 - No Claude, o Run não termina no primeiro resultado enquanto houver subagente em segundo plano.

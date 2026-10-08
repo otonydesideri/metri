@@ -14,6 +14,7 @@ Como humano, quero ver o plano como um quadro de features e slices em ordem de b
 
 - BR37: A coluna de uma slice é o nível dela na ordem de build, dado pela cadeia mais longa de `blocked_by` até ela.
 - BR38: A barra de entrega é a conta de tickets feitos sobre o total, sem os cancelados: na feature, os UCs dela, em qualquer slice; na slice, todos os tickets dela. Ticket em andamento não conta.
+- BR98: Uma slice está num destes estados: planejada, em construção, em aceite ou feita. Uma reabertura a devolve a em construção.
 - BR39: A posição de cada slice é regra do plano: a coluna é o nível de build, e a caixa cobre as faixas das features que ela serve. Nada se arrasta, e nenhuma posição fica guardada.
 
 ## Critérios

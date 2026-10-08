@@ -14,6 +14,7 @@ Como humano, quero abrir no Metri um repositório que já usa o método, para co
 
 - BR1: Um projeto é um repositório git com branch padrão (a que o `origin/HEAD` aponta) e com o método instalado: o pacote `metri` em `node_modules` e a arquitetura do projeto em `.metri/`. A versão do método é a do pacote instalado.
 - BR2: Abrir um projeto não copia, não cria e não altera nenhum arquivo do repositório.
+- BR101 (sensitive): O servidor escuta só em `127.0.0.1` e exige o token em toda chamada HTTP e WebSocket, conferindo o `Origin` e o `Host`. A regra vale para todo o Metri, e este UC é o primeiro que a usa.
 
 ## Critérios
 
@@ -24,5 +25,10 @@ Como humano, quero abrir no Metri um repositório que já usa o método, para co
 - [ ] Um repositório com `.metri/` mas sem o pacote `metri` instalado é recusado, e a mensagem diz que falta instalar as dependências.
 - [ ] Depois de abrir o projeto, o `git status` do repositório não mostra nenhuma mudança.
 - [ ] Tela: sem projetos, a tela de Projetos diz que ainda não há projeto e oferece a ação de abrir um.
+
+- [ ] Um check recusa um servidor que escute em `0.0.0.0`.
+- [ ] Uma chamada HTTP ou WebSocket sem token recebe 401.
+- [ ] Uma chamada com `Origin` ou `Host` diferente da origem do servidor, com a porta, é recusada, inclusive a que vem do app do Preview.
+- [ ] Uma aba aberta antes de o servidor reiniciar diz que o Metri reiniciou e como abri-lo de novo.
 
 ## Notas

@@ -12,7 +12,7 @@ Como humano, quero uma conversa contínua com o projeto, para pedir, perguntar e
 
 ## Regras de negócio
 
-- BR43: Há um Run de Coordinator contínuo por projeto. Se ele não existe ou terminou, o Metri abre outro, retomando pela sessão do harness quando dá.
+- BR43: Há um Run de Coordinator contínuo por projeto. Se ele cai, o Metri o retoma pela mesma sessão do harness; se a retomada falha, abre um Run novo, com sessão nova e o resumo da conversa.
 - BR44: O Coordinator julga e conversa; não aprova uso de ferramenta, não resolve portão e não escreve código.
 
 ## Critérios

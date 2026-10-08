@@ -185,6 +185,8 @@ Os primitivos são os do coss ui, feitos sobre Base UI e expostos pelo `@metri/u
 - Faça: `primary` na ação principal da tela; `destructive` só em ação destrutiva e erro.
 - Faça: cor de estado (Success, Warning, Info, Destructive) sempre com rótulo.
 - Faça: texto que só afirma o que tem evidência; "concluído" só depois que a verificação confirmou.
+- Faça: contraste AA em texto e controles, nos dois temas, conferido pelo axe-core nos testes de Playwright de cada tela.
+- Faça: todo texto da interface sai de um arquivo plano por idioma, `locales/pt-BR/common.json`, com chaves em snake_case e em inglês, lido pelo hook `useLocale()`, como no cal.com (`calcom/cal.com@54343aa`, `packages/i18n/locales/` e `packages/lib/hooks/useLocale.ts`); a interface é só em pt-BR.
 - Faça: cor nova com valor claro e escuro e, se for superfície, com o par `-foreground`; um desvio do coss entra aqui, na seção Overview.
 - Não faça: cor sem valor escuro.
 - Não faça: toast para erro de operação.
