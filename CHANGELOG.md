@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.8.0
+## v1.8.0 (2026-10-09)
 
 Lentes críticas: o método passa a procurar o que pode dar errado, além de conferir se o código segue o combinado. A
 comparação com o gstack (Garry Tan) mostrou três lacunas: nenhum eixo do aceite procurava falhas que não violam
@@ -41,7 +41,6 @@ enquadramento do usuário sem questioná-lo.
 - **Release.** O smoke test confirma que a versão que responde é a lançada, não só que o app responde.
 - **Portão de conhecimento.** Novo destino: como rodar, construir ou testar o projeto vira script do `package.json`
   ou uma linha numa regra do projeto em `.metri/rules/infrastructure/`.
-
 - **Arquitetura enxuta: só o núcleo é base.** A Source fica com o que todo projeto usa desde o primeiro dia, numa
   stack única (NestJS, Prisma, Postgres, React + Vite) e DDD-Lite. O que só um projeto com necessidade
   concreta usa sai das normas e do starter: vira receita em `## Sob demanda` da regra dona, quando o erro do agente
