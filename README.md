@@ -44,11 +44,11 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 
 ## Começar um projeto
 
-Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode o `metri init`:
+Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode o `metri init`. O `-w` vale também para projeto que ainda não é workspace; sem ele, o pnpm recusa instalar na raiz de um workspace:
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D github:otonydesideri/metri#<tag>                   # ou link:<caminho do source>, para evoluir o método
+pnpm add -D -w github:otonydesideri/metri#<tag>                # ou link:<caminho do source>, para evoluir o método
 pnpm exec metri init
 ```
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.8.1
+
+### O que muda
+
+- **Instalar com `-w`.** A instalação do metri passa a ser `pnpm add -D -w`: sem o `-w`, o pnpm recusa instalar na
+  raiz de um workspace (`ERR_PNPM_ADDING_TO_ROOT`), e todo projeto do starter é um. A ajuda e o erro do `metri init`
+  mostram o comando novo.
+
+### Migrar de v1.8.0
+
+1. `pnpm add -D -w github:otonydesideri/metri#v1.8.1`.
+
 ## v1.8.0 (2026-10-09)
 
 Lentes críticas: o método passa a procurar o que pode dar errado, além de conferir se o código segue o combinado. A
@@ -78,7 +90,7 @@ enquadramento do usuário sem questioná-lo.
 
 ### Migrar de v1.7.0
 
-1. `pnpm add -D github:otonydesideri/metri#v1.8.0`.
+1. `pnpm add -D -w github:otonydesideri/metri#v1.8.0`.
 2. `pnpm exec metri init`, que cria o link `.claude/agents/reviewer-risk.md` (o docs-lint acusa o link que falta).
 3. Abra uma sessão nova do Claude Code, que carrega o agent novo.
 4. Specs, tickets e matriz continuam no mesmo formato.

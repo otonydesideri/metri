@@ -10,8 +10,8 @@ const HELP = `init: prepara o projeto para o método. Mecânico e idempotente: r
 
 Uso: metri init [--root <dir>] [--no-starter]
 
-Pré-requisito: o metri instalado no projeto, em node_modules/metri (pnpm add -D link:<caminho> ou
-github:<dono>/<repo>#<tag>).
+Pré-requisito: o metri instalado no projeto, em node_modules/metri (pnpm add -D -w link:<caminho>
+ou github:<dono>/<repo>#<tag>).
 
 Cria o que falta:
   - num projeto novo (sem código em apps/, packages/ ou src/), o starter: o código inicial da fundação, copiado
@@ -74,7 +74,7 @@ process.chdir(root);
 const installed = join('node_modules', PACKAGE_NAME);
 const hadCode = hasCode();
 if (!existsSync(installed) || realpathSync(installed) !== realpathSync(PACKAGE_ROOT)) {
-  console.log(`erro: o metri não está em ${installed}; instale antes (pnpm add -D link:<caminho> ou github:<dono>/<repo>#<tag>)`);
+  console.log(`erro: o metri não está em ${installed}; instale antes (pnpm add -D -w link:<caminho> ou github:<dono>/<repo>#<tag>)`);
   process.exit(1);
 }
 
