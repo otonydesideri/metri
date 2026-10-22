@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0
+## v2.0.0 (2026-10-22)
 
 Harness em vez de travas. Dois projetos rodaram o método de verdade e mostraram onde ele pesava: travas que só
 davam falso positivo, integração presa ao aceite da slice, ticket entregue tratado como documento vivo, exceção que
@@ -47,13 +47,15 @@ o README já dizia.
   é uma branch, o `pnpm verify` verde e um squash com a mensagem do que mudou, sem arquivo de ticket e sem /accept.
 - **`rules-for` com orçamento por tamanho.** Cada regra sai com o tamanho em KB, e o aviso aparece acima de 80 KB
   de regras, no lugar de "mais de 5 regras".
+- **Instalar com `-w`.** A instalação do metri é `pnpm add -D -w`: sem o `-w`, o pnpm recusa instalar na raiz de
+  um workspace (`ERR_PNPM_ADDING_TO_ROOT`), e todo projeto do starter é um.
 - **Starter e regras.** Os scripts do turbo rodam com `--continue`, e o `test` um pacote por vez (`--concurrency=1`); o `passWithNoTests` sai dos configs do Vitest e
   fica só no `test` da raiz, para o check com filtro que não acha arquivo falhar, e por isso o check de ticket
   filtra no pacote (`pnpm --filter <pacote> test <filtro>`); o `saveEvidence` grava sem animação; o `.env` de cada
   banco fica ao lado do `prisma.config.ts` dele, lido pelo caminho; o filtro global mantém o status do erro 4xx com
   `expose` (413, 415) no lugar de 500; o `metri check` entende o alias `@/`.
 
-### Migrar de v1.8.x
+### Migrar de v1.8.0
 
 1. `pnpm add -D -w github:otonydesideri/metri#v2.0.0` e `pnpm exec metri init`.
 2. Projeto que integra em outro ramo que não a `main`: `"metri": { "integrationBranch": "<ramo>" }` no
@@ -73,18 +75,6 @@ o README já dizia.
 7. Opcional: o `.env` de cada banco ao lado do `prisma.config.ts` e o ramo de erro de cliente no filtro global, como
    no starter.
 8. Specs, tickets e matriz continuam no mesmo formato; as exceções sem ADR já valem como estão.
-
-## v1.8.1
-
-### O que muda
-
-- **Instalar com `-w`.** A instalação do metri passa a ser `pnpm add -D -w`: sem o `-w`, o pnpm recusa instalar na
-  raiz de um workspace (`ERR_PNPM_ADDING_TO_ROOT`), e todo projeto do starter é um. A ajuda e o erro do `metri init`
-  mostram o comando novo.
-
-### Migrar de v1.8.0
-
-1. `pnpm add -D -w github:otonydesideri/metri#v1.8.1`.
 
 ## v1.8.0 (2026-10-09)
 
