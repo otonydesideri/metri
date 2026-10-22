@@ -316,8 +316,9 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
    (`node_modules/metri/skills/shape/SPEC-FORMAT.md`); every T has a `slice`.
 2. **Every `now` slice serves at least one ticket:** one of its UCs or Ts has it in `slice`.
 3. **`blocked_by` points to a UC, a T or a slice;** a ticket is unblocked when each ticket in its `blocked_by` is done
-   (its commit is on the integration branch) and each slice in its `blocked_by`, or in its own slice's, is accepted
-   (/accept's `S<id> accepted` commit, which sets `status: done`, is on the integration branch).
+   (its commit is on the integration branch) and each slice in its `blocked_by` is accepted (/accept's
+   `S<id> accepted` commit, which sets `status: done`, is on the integration branch). A slice's own `blocked_by`
+   orders the plan and blocks none of its tickets.
 4. **Every ticket serves the now.** The slice grows on demand; nothing is built for a `planned` feature, whose UCs
    stay in `draft`.
 5. **New pattern first:** when a slice needs a rule that doesn't exist, its first ticket is a T of `type: pattern`.

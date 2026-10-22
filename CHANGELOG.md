@@ -12,7 +12,7 @@ o README já dizia.
 - **Integração por ticket, julgamento por slice.** Não existe mais branch de slice. O ticket sai do ramo de
   integração (`metri.integrationBranch` no `package.json` da raiz, `main` quando falta) e volta para ele num commit
   só, `<id> <resumo>`, quando os checks e o `pnpm verify` passam: é aí que ele fica `done`. Um ticket espera os
-  tickets do `blocked_by` prontos e as slices do `blocked_by` (o dele e o da slice dele) aceitas. O plano aprovado
+  tickets do `blocked_by` prontos e as slices do `blocked_by` dele aceitas; o `blocked_by` da slice só ordena o plano. O plano aprovado
   entra no ramo de integração na mesma sessão. A fronteira do /build prefere as slices já começadas, e o
   coordenador roda em paralelo os tickets desbloqueados com `touches` disjuntos.
 - **Sai o `metri scope`.** O `.only` e o `.skip` ficam com o lint do projeto (`noFocusedTests` e `noSkippedTests`
@@ -47,7 +47,7 @@ o README já dizia.
   é uma branch, o `pnpm verify` verde e um squash com a mensagem do que mudou, sem arquivo de ticket e sem /accept.
 - **`rules-for` com orçamento por tamanho.** Cada regra sai com o tamanho em KB, e o aviso aparece acima de 80 KB
   de regras, no lugar de "mais de 5 regras".
-- **Starter e regras.** Os scripts do turbo rodam com `--continue`; o `passWithNoTests` sai dos configs do Vitest e
+- **Starter e regras.** Os scripts do turbo rodam com `--continue`, e o `test` um pacote por vez (`--concurrency=1`); o `passWithNoTests` sai dos configs do Vitest e
   fica só no `test` da raiz, para o check com filtro que não acha arquivo falhar, e por isso o check de ticket
   filtra no pacote (`pnpm --filter <pacote> test <filtro>`); o `saveEvidence` grava sem animação; o `.env` de cada
   banco fica ao lado do `prisma.config.ts` dele, lido pelo caminho; o filtro global mantém o status do erro 4xx com
@@ -59,12 +59,15 @@ o README já dizia.
 2. Projeto que integra em outro ramo que não a `main`: `"metri": { "integrationBranch": "<ramo>" }` no
    `package.json` da raiz.
 3. Branches `slice/<id>` abertas: junte cada uma no ramo de integração uma vez e apague-a; os tickets prontos delas
-   passam a contar como integrados. Daí em diante, nenhum ticket nasce de branch de slice.
+   passam a contar como integrados. Migração de uma slice antiga pode cair antes de outras que o banco de
+   desenvolvimento já aplicou: recrie esse banco depois das junções. Daí em diante, nenhum ticket nasce de branch
+   de slice.
 4. Tire o `passWithNoTests` dos configs do Vitest e passe a flag no `test` da raiz; acrescente `--continue` aos
-   scripts do turbo; ligue `noFocusedTests` e `noSkippedTests` como erro no `biome.json`; troque os checks de
+   scripts do turbo e `--concurrency=1` ao `test`; ligue `noFocusedTests` e `noSkippedTests` como erro na
+   configuração do Biome que o lint de cada pacote lê (a da raiz ou a base que os pacotes estendem); troque os checks de
    ticket com filtro na raiz pela forma de pacote.
 5. No `playwright.config.ts` do app web, ponha `grep: /@mobile/` no projeto `mobile` e `@mobile` no título dos
-   testes de critério que falam do celular. Spec de fluxo que repete uma jornada já provada no e2e pode sair.
+   testes de critério que falam do celular e dos que ramificam em `isMobile`. Spec de fluxo que repete uma jornada já provada no e2e pode sair.
 6. Mova o arquivo de lições para a Source que o projeto usa para `.metri/SOURCE-LESSONS.md`, no formato de
    `skills/guardrail/KNOWLEDGE-GATE.md`, "Promotion to the Source".
 7. Opcional: o `.env` de cada banco ao lado do `prisma.config.ts` e o ramo de erro de cliente no filtro global, como

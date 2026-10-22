@@ -64,7 +64,7 @@
 		"build": "turbo run build",
 		"typecheck": "turbo run typecheck --continue",
 		"lint": "turbo run lint --continue && metri check",
-		"test": "turbo run test --continue -- --passWithNoTests",
+		"test": "turbo run test --continue --concurrency=1 -- --passWithNoTests",
 		"verify": "metri verify",
 		"api:generate": "pnpm --filter app-api api:generate && pnpm --filter app-web api:generate",
 		"db:up": "docker compose up -d --wait",

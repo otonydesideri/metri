@@ -78,7 +78,7 @@ Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/
 
 ### E2e de critério de UI
 
-Fora da pirâmide, o Playwright prova no browser real a jornada de cada UC de tela e cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência"), com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O projeto `desktop` (`devices['Desktop Chrome']`) roda todo e2e; o `mobile` (`devices['Pixel 7']`) roda só o teste com `@mobile` no título, o do critério que fala do celular. O teste de um critério `Tela:` termina gravando a evidência dele:
+Fora da pirâmide, o Playwright prova no browser real a jornada de cada UC de tela e cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência"), com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O projeto `desktop` (`devices['Desktop Chrome']`) roda todo e2e; o `mobile` (`devices['Pixel 7']`) roda só o teste com `@mobile` no título: o do critério que fala do celular, e todo teste que ramifica em `isMobile`, que sem a marca perde o ramo em silêncio. O teste de um critério `Tela:` termina gravando a evidência dele:
 
 ```ts
 // e2e/order/confirm-order.e2e.ts

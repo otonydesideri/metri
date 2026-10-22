@@ -73,7 +73,7 @@ O Biome da raiz lê o `.gitignore` (`vcs`) e as diretivas do Tailwind v4 no CSS 
 
 Exemplo completo: stack.examples.md#biomejson.
 
-O `typecheck`, o `lint` e o `test` da raiz rodam o Turborepo com `--continue`, para o `verify` mostrar todo pacote vermelho. Só o `test` da raiz passa `--passWithNoTests`, para o pacote sem spec não derrubar o `verify`; fora dele, o filtro que não acha arquivo falha, e por isso o check do ticket filtra no pacote (`pnpm --filter app-api test order-confirmation`).
+O `typecheck`, o `lint` e o `test` da raiz rodam o Turborepo com `--continue`, para o `verify` mostrar todo pacote vermelho, e o `test` roda um pacote por vez (`--concurrency=1`), porque cada Vitest já ocupa todos os núcleos. Só o `test` da raiz passa `--passWithNoTests`, para o pacote sem spec não derrubar o `verify`; fora dele, o filtro que não acha arquivo falha, e por isso o check do ticket filtra no pacote (`pnpm --filter app-api test order-confirmation`).
 
 Exemplo completo: stack.examples.md#packagejson-da-raiz.
 
