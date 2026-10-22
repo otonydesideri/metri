@@ -14,3 +14,7 @@ dist/
 
 # inputs of the shaping stage (attachments), never versioned
 /inputs/
+
+# eval outputs, regenerated on each run; only evals/baseline.json is versioned
+/evals/stats.json
+/evals/results/

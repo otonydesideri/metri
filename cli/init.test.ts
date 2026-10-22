@@ -106,14 +106,14 @@ describe('init', { timeout: 60_000 }, () => {
     }
     expect(JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))).toMatchObject({
       name,
-      scripts: { lint: 'turbo run lint && metri check', 'db:up': 'docker compose up -d --wait', sot: 'metri sot' },
+      scripts: { lint: 'turbo run lint --continue && metri check', 'db:up': 'docker compose up -d --wait', sot: 'metri sot' },
     });
     expect(existsSync(join(dir, 'scripts'))).toBe(false);
     expect(readFileSync(join(dir, 'apps/app-web/index.html'), 'utf8')).toContain(`<title>${name}</title>`);
     expect(readFileSync(join(dir, 'compose.yaml'), 'utf8')).toContain(`\nname: ${name}\n`);
-    for (const app of ['apps/app-api', 'packages/db']) {
-      expect(readFileSync(join(dir, app, '.env'), 'utf8')).toBe(readFileSync(join(dir, app, '.env.example'), 'utf8'));
-      expect(readFileSync(join(dir, app, '.env'), 'utf8')).toContain(`@localhost:5432/${name}\n`);
+    for (const folder of ['apps/app-api', 'packages/db/src/postgres/app']) {
+      expect(readFileSync(join(dir, folder, '.env'), 'utf8')).toBe(readFileSync(join(dir, folder, '.env.example'), 'utf8'));
+      expect(readFileSync(join(dir, folder, '.env'), 'utf8')).toContain(`@localhost:5432/${name}\n`);
     }
     const architecture = readFileSync(join(dir, '.metri/ARCHITECTURE.md'), 'utf8');
     expect(architecture).not.toContain('mapeamento: pendente');

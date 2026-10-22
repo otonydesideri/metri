@@ -1,5 +1,76 @@
 # Changelog
 
+## v2.0.0
+
+Harness em vez de travas. Dois projetos rodaram o método de verdade e mostraram onde ele pesava: travas que só
+davam falso positivo, integração presa ao aceite da slice, ticket entregue tratado como documento vivo, exceção que
+exigia ADR e casos de borda gerados em todas as etapas. Esta versão tira peso e faz as skills e a CLI cumprirem o que
+o README já dizia.
+
+### O que muda
+
+- **Integração por ticket, julgamento por slice.** Não existe mais branch de slice. O ticket sai do ramo de
+  integração (`metri.integrationBranch` no `package.json` da raiz, `main` quando falta) e volta para ele num commit
+  só, `<id> <resumo>`, quando os checks e o `pnpm verify` passam: é aí que ele fica `done`. Um ticket espera os
+  tickets do `blocked_by` prontos e as slices do `blocked_by` (o dele e o da slice dele) aceitas. O plano aprovado
+  entra no ramo de integração na mesma sessão. A fronteira do /build prefere as slices já começadas, e o
+  coordenador roda em paralelo os tickets desbloqueados com `touches` disjuntos.
+- **Sai o `metri scope`.** O `.only` e o `.skip` ficam com o lint do projeto (`noFocusedTests` e `noSkippedTests`
+  do Biome, como erro no starter). O builder pode corrigir o documento que a própria mudança deixa errado (uma
+  linha do caminho linear, um trecho de regra ou de ADR), com nota no ticket; regra, ADR, termo e design novos
+  continuam vindo só do ticket `pattern` ou do portão de conhecimento.
+- **/accept com memória.** O aceite revisa os commits dos tickets da slice no ramo de integração. As decisões de
+  cada rodada ficam nas Notas dos tickets, e a rodada seguinte revisa só os tickets que a anterior reabriu ou criou,
+  com essas decisões; a correção mecânica não volta à revisão, e os achados mecânicos da rodada viram um T só. O revisor
+  recebe as exceções do projeto, e cenário com evento que o projeto de hoje não dispara vai para o apêndice. A
+  evidência de tela é gravada uma vez, na ponta do ramo de integração. Para história atrás de login, o testador
+  recebe uma conta por papel. O aceite fecha com o commit `S<id> accepted`.
+- **Exceção é uma linha.** A linha de "Exceções e defaults trocados" leva ADR só quando a decisão passa o critério
+  de ADR, e substitui a seção que nomeia. O `rules-for` imprime também a exceção da regra citada, e a regra do
+  projeto que substitui uma global não exige ADR.
+- **Ticket `done` é histórico.** O docs-lint não cobra mais a evidência de ticket pronto, e a remoção de um conceito
+  varre código, `CONTEXT.md`, specs e tickets abertos, nunca ticket entregue.
+- **Teste prova o código do projeto.** A falha realista do look-across fica para o passo com efeito externo que o
+  projeto tem hoje e cuja falha seria silenciosa ou perderia dado. As regras de teste dizem o que ganha teste e
+  barram o teste do padrão de uma biblioteca e a opção fora do padrão ligada só para o teste.
+- **E2e prova a jornada; `Tela:` só o que o screenshot julga.** A jornada de cada UC de tela é provada no e2e, e o
+  spec de fluxo fica com a variante que o e2e não força (o fato que muda no meio do caminho, a falha de um passo). O
+  projeto `mobile` do Playwright roda só o teste com `@mobile` no título, e a evidência mobile vale só para o
+  critério que fala do celular. O critério `Tela:` é o que só o screenshot julga (hierarquia, composição, estado
+  visual); o comportamento na tela é critério comum, provado por asserção no e2e.
+- **Contrato depois do aceite.** Cada invariante do contrato tem um teste nos checks da slice; o cabeçalho
+  `SOURCE OF TRUTH` fica com uma frase curta em WHAT, WHY e WHERE.
+- **Portão de conhecimento subtrai primeiro.** Toda lição começa perguntando o que no método a causou. A lição
+  para a Source vai para `.metri/SOURCE-LESSONS.md`, que o docs-lint aceita, e só sobe com dois projetos ou com um
+  defeito da CLI ou do starter.
+- **Rota direta sem cerimônia.** A mudança pequena (um módulo, sem regra nova, não sensível, sem tela de tipo novo)
+  é uma branch, o `pnpm verify` verde e um squash com a mensagem do que mudou, sem arquivo de ticket e sem /accept.
+- **`rules-for` com orçamento por tamanho.** Cada regra sai com o tamanho em KB, e o aviso aparece acima de 80 KB
+  de regras, no lugar de "mais de 5 regras".
+- **Starter e regras.** Os scripts do turbo rodam com `--continue`; o `passWithNoTests` sai dos configs do Vitest e
+  fica só no `test` da raiz, para o check com filtro que não acha arquivo falhar, e por isso o check de ticket
+  filtra no pacote (`pnpm --filter <pacote> test <filtro>`); o `saveEvidence` grava sem animação; o `.env` de cada
+  banco fica ao lado do `prisma.config.ts` dele, lido pelo caminho; o filtro global mantém o status do erro 4xx com
+  `expose` (413, 415) no lugar de 500; o `metri check` entende o alias `@/`.
+
+### Migrar de v1.8.x
+
+1. `pnpm add -D -w github:otonydesideri/metri#v2.0.0` e `pnpm exec metri init`.
+2. Projeto que integra em outro ramo que não a `main`: `"metri": { "integrationBranch": "<ramo>" }` no
+   `package.json` da raiz.
+3. Branches `slice/<id>` abertas: junte cada uma no ramo de integração uma vez e apague-a; os tickets prontos delas
+   passam a contar como integrados. Daí em diante, nenhum ticket nasce de branch de slice.
+4. Tire o `passWithNoTests` dos configs do Vitest e passe a flag no `test` da raiz; acrescente `--continue` aos
+   scripts do turbo; ligue `noFocusedTests` e `noSkippedTests` como erro no `biome.json`; troque os checks de
+   ticket com filtro na raiz pela forma de pacote.
+5. No `playwright.config.ts` do app web, ponha `grep: /@mobile/` no projeto `mobile` e `@mobile` no título dos
+   testes de critério que falam do celular. Spec de fluxo que repete uma jornada já provada no e2e pode sair.
+6. Mova o arquivo de lições para a Source que o projeto usa para `.metri/SOURCE-LESSONS.md`, no formato de
+   `skills/guardrail/KNOWLEDGE-GATE.md`, "Promotion to the Source".
+7. Opcional: o `.env` de cada banco ao lado do `prisma.config.ts` e o ramo de erro de cliente no filtro global, como
+   no starter.
+8. Specs, tickets e matriz continuam no mesmo formato; as exceções sem ADR já valem como estão.
+
 ## v1.8.1
 
 ### O que muda

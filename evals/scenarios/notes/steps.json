@@ -1,0 +1,22 @@
+{
+  "description": "Um /build de um UC que cruza app-api e app-web sobre o starter: escrever e listar notas.",
+  "permission_mode": "acceptEdits",
+  "allowed_tools": [
+    "Bash(pnpm *)",
+    "Bash(node *)",
+    "Bash(npx *)",
+    "Bash(git *)",
+    "Bash(ls *)",
+    "Bash(cat *)",
+    "Bash(head *)",
+    "Bash(tail *)",
+    "Bash(grep *)",
+    "Bash(find *)",
+    "Bash(wc *)",
+    "Bash(mkdir *)",
+    "Bash(docker *)"
+  ],
+  "max_budget_usd": 15,
+  "timeout_min": 90,
+  "steps": [{ "prompt": "/build UC1.1" }]
+}

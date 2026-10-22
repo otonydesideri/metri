@@ -10,7 +10,7 @@ use_when:
 applies_to:
   - "apps/app-api/src/domain/enterprise/errors/**"
   - "packages/core/src/errors/**"
-keywords: [DomainError, DomainErrorType, ApiErrorType, type, code, Either, failure, throw, toHttpException, STATUS_MAP, "Record<DomainErrorType, number>", toInvalidRequestException, ZodValidationPipe, APP_PIPE, UnexpectedErrorFilter, APP_FILTER, envelope, INVALID_REQUEST, INTERNAL_ERROR, REQUEST_REJECTED, erros sensíveis, anti-enumeração, "@metri/core/errors"]
+keywords: [DomainError, DomainErrorType, ApiErrorType, type, code, Either, failure, throw, toHttpException, STATUS_MAP, "Record<DomainErrorType, number>", toInvalidRequestException, ZodValidationPipe, APP_PIPE, UnexpectedErrorFilter, APP_FILTER, envelope, INVALID_REQUEST, INTERNAL_ERROR, REQUEST_REJECTED, expose, http-errors, erros sensíveis, anti-enumeração, "@metri/core/errors"]
 examples: [backend/errors.examples.md]
 status: active
 ---
@@ -26,7 +26,7 @@ Como erro de domínio é modelado, retornado e traduzido em resposta HTTP, e o e
 
 **Erro inesperado.** Falha técnica: queda de conexão com banco, bug que escapou de teste, resposta fora do DTO. O cliente nunca recebe detalhe interno disso, apenas uma resposta genérica de 500; o detalhe completo vai para o log. A captura é um filtro global ("Erro inesperado: filtro global" adiante); o log em si é mecanismo transversal, com desenho próprio em `infrastructure/logging.md`.
 
-A recusa nativa do framework (rota inexistente, método não permitido) não é um quarto tipo com desenho próprio: o mesmo filtro global só a normaliza para o envelope único ("O formato de resposta de erro").
+A recusa nativa do framework (rota inexistente) e o erro de cliente exposto por uma biblioteca (corpo acima do limite) não são um quarto tipo: o filtro global só os normaliza para o envelope único ("O formato de resposta de erro").
 
 ## A base: `DomainError` e `DomainErrorType`
 
@@ -164,9 +164,9 @@ Exemplo completo: errors.examples.md#apierrorresponse.
 
 - `INVALID_REQUEST`: erro de formato HTTP (`toInvalidRequestException`, adiante).
 - `INTERNAL_ERROR`: erro inesperado (o filtro global, adiante).
-- `REQUEST_REJECTED`: `HttpException` nativa do framework, como a rota inexistente (o filtro global, adiante).
+- `REQUEST_REJECTED`: recusa nativa do framework ou erro de cliente exposto por biblioteca (o filtro global, adiante).
 
-O `ApiErrorType` vive ao lado do `DomainErrorType`, em `packages/core/src/errors`, TypeScript puro, sem dependência de NestJS, Prisma ou qualquer infra, com export próprio (`@metri/core/errors`). O frontend consome o contrato HTTP, não o domínio: tipa o campo `type` com o `ApiErrorType`, importado direto do pacote como dependência de workspace, sem redeclarar os valores à mão e sem usar o `DomainErrorType` como tipo do campo. `code` e `message` continuam string livre: não há vocabulário fechado do lado do frontend pra eles, cada um é valor de runtime tratado como tal (`code` via comparação direta, `message` só exibido).
+O `ApiErrorType` vive ao lado do `DomainErrorType`, em `packages/core/src/errors`, TypeScript puro, sem dependência de NestJS, Prisma ou qualquer infra, com export próprio (`@metri/core/errors`). O frontend consome o contrato HTTP, não o domínio: tipa o campo `type` com o `ApiErrorType`, importado direto do pacote como dependência de workspace, sem redeclarar os valores à mão e sem usar o `DomainErrorType` como tipo do campo. `code` e `message` são string livre: `code` comparado direto, `message` só exibido.
 
 ### Erro de formato HTTP: `toInvalidRequestException`
 
@@ -194,8 +194,9 @@ Pontos-chave:
 - `HttpException` abaixo de 500 cujo corpo já é o envelope (produzida por `toHttpException` ou pelo `ZodValidationPipe` global) atravessa o filtro sem alteração de corpo nem de status.
 - `HttpException` nativa do framework abaixo de 500 (a 404 de rota inexistente, qualquer outra do pipeline do Nest) mantém o status e tem o corpo trocado pelo envelope: `type: 'REQUEST_REJECTED'`, `code` com o nome do status (`NOT_FOUND`) e mensagem genérica. O corpo nativo carrega detalhe técnico (o path pedido, o nome da classe) e nunca chega ao cliente.
 - Pedido sem identidade validada (sem sessão ou com sessão inválida) é a `UnauthorizedException` nativa do Nest, lançada pela fronteira: sai 401 no envelope, `code: 'UNAUTHORIZED'` e `type: 'REQUEST_REJECTED'`. Nunca um `DomainError`: quem pede ainda não é ninguém no domínio.
-- Exceção que não é `HttpException` é, por definição, não classificada. O cliente recebe sempre o mesmo corpo genérico com status 500; a mensagem original e o stack ficam só no log (`infrastructure/logging.md`), nunca no corpo da resposta.
-- `code: 'INTERNAL_SERVER_ERROR'` e `type: 'INTERNAL_ERROR'` reaproveitam as mesmas três chaves do formato de erro de domínio (`code`, `message`, `type`), mantendo um único formato de erro na API. `'INTERNAL_ERROR'` é valor do `ApiErrorType` e não entra em `DomainErrorType`: esse enum é reservado a categorias do vocabulário de negócio, e um erro inesperado não pronuncia vocabulário de negócio nenhum.
+- Quando o erro não é `HttpException` mas traz `statusCode` 4xx e `expose: true` (o `http-errors` do body parser: 413, 415): **Obrigatório.** O filtro mantém o status e o trata como a `HttpException` nativa (`code: 'PAYLOAD_TOO_LARGE'`).
+- Fora esse caso, exceção que não é `HttpException` é não classificada, inclusive a que traz `statusCode` sem `expose` (o erro de um SDK): sai 500 com o corpo genérico, e a mensagem original fica só no log.
+- `'INTERNAL_ERROR'` é valor do `ApiErrorType`, fora do `DomainErrorType`: erro inesperado não pronuncia vocabulário de negócio.
 - Erro do Prisma que escapa da persistência cai no mesmo filtro, sem tratamento por código do driver: a condição esperada que o banco só revela na gravação (violação de unicidade, registro não encontrado) vira o outcome declarado do contrato de persistência, que o caso de uso traduz em `DomainError` (`backend/persistence.md`, "Outcome de persistência"). Erro de driver que chega aqui nenhum contrato declarou, e é inesperado como qualquer outro.
 
 ## Erros sensíveis: o que não vazar
@@ -229,8 +230,8 @@ Pontos-chave:
 - Acesso negado a recurso de outro dono reusa a classe de não-encontrado?
 - Mensagem não expõe id interno, path, query ou stack?
 - Teste afirma a falha com `instanceof`, não comparando `message`?
-- Erro que chega ao `UnexpectedErrorFilter` sem ser `HttpException` vira sempre o mesmo corpo genérico e status 500, e todo status 500 ou mais sai com esse corpo, `INTERNAL_ERROR`, com a stack no log (`infrastructure/logging.md`)?
-- `HttpException` nativa do framework abaixo de 500 (rota inexistente) sai com o status dela e o corpo no envelope, `type: 'REQUEST_REJECTED'`, sem o corpo nativo?
+- Erro que não é `HttpException` nem erro de cliente exposto sai 500, e todo status 500 ou mais sai com o corpo genérico, `INTERNAL_ERROR`, com a stack no log?
+- Recusa nativa do framework abaixo de 500 e erro de cliente exposto saem com o próprio status e o corpo no envelope, `REQUEST_REJECTED`?
 - Frontend tipa o `type` do envelope com o `ApiErrorType` de `@metri/core/errors`, sem redeclarar os valores à mão nem usar o `DomainErrorType` como tipo do campo?
 
 O envelope e o `ApiErrorType` cruzam a fronteira como parte do contrato de API e moram no core por serem vocabulário de erro. O resto do contrato (schema de request/response, união fechada que a API aceita ou devolve) segue `backend/http-api.md`, "Contrato de API: o backend é a fonte", e o caso de tipos em `frontend/helpers.md` ("Tipos compartilhados").

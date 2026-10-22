@@ -63,6 +63,21 @@ describe('check', { timeout: 30_000 }, () => {
     expect(check(dir, 'boundaries')).toEqual({ status: 0, lines: [] });
   });
 
+  it('boundaries: import com @/ é o alias do tsconfig, nunca pacote; o grafo continua valendo por ele', () => {
+    const dir = project();
+    write(dir, 'apps/app-api/src/domain/application/use-cases/confirm-order.ts', "import { Order } from '@/domain/enterprise/entities/order';\n");
+    write(dir, 'packages/core/src/types/result.ts', "import { Either } from '@/types/either';\n");
+    expect(check(dir, 'boundaries')).toEqual({ status: 0, lines: [] });
+    write(dir, 'apps/app-api/src/domain/application/use-cases/cancel-order.ts', "import { PrismaService } from '@/infra/persistence/prisma/prisma.service';\n");
+    expect(check(dir, 'boundaries')).toEqual({
+      status: 1,
+      lines: [
+        'falha boundaries: domain importando src/infra',
+        '  apps/app-api/src/domain/application/use-cases/cancel-order.ts: @/infra/persistence/prisma/prisma.service',
+      ],
+    });
+  });
+
   it('date-time: new Date com componentes soltos no app-api e nos pacotes; o app-web fica de fora', () => {
     const dir = project();
     write(dir, 'apps/app-api/src/domain/enterprise/domain-services/cutoff.ts', 'const a = 1;\nconst cutoff = new Date(2026, 8, 30, 14);\n');

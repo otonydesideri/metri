@@ -69,7 +69,8 @@ Só no projeto:
   - Árvores fechadas (qualquer outro arquivo nelas é erro):
     - docs/: PRODUCT.md, CONTEXT.md, DESIGN.md e adr/NNNN-<slug>.md;
     - .metri/: ARCHITECTURE.md, rules/<área>/<tema>.md (com frontmatter), rules/<área>/<tema>.examples.md,
-      rules/<área>/INDEX.md (gerado), MATRIX.md, specs/F<n>.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
+      rules/<área>/INDEX.md (gerado), MATRIX.md, SOURCE-LESSONS.md (as lições do projeto para a Source, sem lint
+      de formato), specs/F<n>.md, tickets/<id>.md e tickets/<id>/*.png (evidências).
   - Links: .claude/skills/<nome> para cada skill do pacote, e .claude/agents/<nome>.md para cada agent, apontando
     para node_modules/metri/skills/<nome> e node_modules/metri/agents/<nome>.md (metri init cria).
   - AGENTS.md com mais de 30 linhas: aviso.
@@ -116,10 +117,9 @@ Só no projeto:
     - T: seção "O que entrega" (1 a 3 linhas); T, e UC fora de draft: "Critérios" com ao menos um item "- [ ]";
     - metrics, quando existe: { rules: <n>, tokens: <n> }, com rules sempre e números inteiros;
     - "Notas" com no máximo 10 linhas;
-    - ticket done tem, para cada critério "Tela:" n (n na ordem dos itens "- [ ]" do primeiro nível),
-      tickets/<id>/<n>-desktop.png e <n>-mobile.png (frontend/experience); numa slice reaberta, a evidência que
-      uma poda anterior tirou da árvore conta pelo histórico do git;
-    - PNG em tickets/<id>/ de ticket de slice done é erro: a poda do /accept a tira (metri prune <slice>).
+    - PNG em tickets/<id>/ de ticket de slice done é erro: a poda do /accept a tira (metri prune <slice>). A
+      evidência de ticket done não é conferida: o ticket done é histórico, e o /accept registra a evidência na
+      ponta da integração.
   - ADR (docs/adr/NNNN-<slug>.md): "# ADR-NNNN <título>" com o número do arquivo; status accepted ou
     superseded by ADR-NNNN (que existe); area; kind decision, exception ou default-change; as seções Contexto,
     Decisão, Alternativas consideradas, Consequências e Imposto por, nessa ordem.
@@ -172,8 +172,8 @@ const PROJECT_TARGETS = [
 // Project files cited by name: they live in the project, not in the source.
 const PROJECT_FILES = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md', 'PRODUCT.md', 'DESIGN.md', 'MATRIX.md', 'ARCHITECTURE.md'];
 const DOCS_FILES = ['docs/PRODUCT.md', 'docs/CONTEXT.md', 'docs/DESIGN.md'];
-const METRI_FILES = [PROJECT_INDEX, MATRIX];
-const EVIDENCE_DEVICES = ['desktop', 'mobile'];
+// SOURCE-LESSONS.md: the project's lessons for the Source, free text without a format lint.
+const METRI_FILES = [PROJECT_INDEX, MATRIX, '.metri/SOURCE-LESSONS.md'];
 const AGENTS_MAX_LINES = 30;
 const TICKET_ID_IN_TEXT = /\b(?:UC|T)\d+\.\d+\b/g;
 // Project code where GAP-n and PP-n are checked, and the folders left out.
@@ -723,9 +723,6 @@ function lintTickets(): void {
     if (typeof frontmatter?.slice === 'string') {
       servedSlices.add(frontmatter.slice);
     }
-    if (!collapsed.has(String(frontmatter?.slice))) {
-      lintEvidence(path, expectedId, frontmatter, source);
-    }
   }
   lintPrunedEvidence(files, collapsed);
   const matrix = parseMatrix(matrixSource);
@@ -734,21 +731,6 @@ function lintTickets(): void {
       report(MATRIX, block.line, `${block.id}: slice now que nenhum ticket usa (slice de um UC ou de um T)`);
     }
   }
-}
-
-// A done ticket has, per "Tela:" criterion, the evidence on desktop and on mobile (frontend/experience).
-function lintEvidence(path: string, id: string, frontmatter: Record<string, unknown> | undefined, source: string): void {
-  if (frontmatter?.status !== 'done') {
-    return;
-  }
-  topLevelCriteria(source).forEach(({ line, isScreen }, index) => {
-    for (const device of isScreen ? EVIDENCE_DEVICES : []) {
-      const evidence = `${TICKETS_DIR}/${id}/${index + 1}-${device}.png`;
-      if (!existsSync(evidence) && !isInGitHistory(evidence)) {
-        report(path, line, `evidência: falta ${evidence} (frontend/experience)`);
-      }
-    }
-  });
 }
 
 // PNG of a ticket of a done slice: the /accept prune removes the evidence from the tree (metri prune).
@@ -769,26 +751,6 @@ function lintPrunedEvidence(files: string[], collapsed: Set<string>): void {
       report(join(dir, png), 1, `evidência: ${id} é da slice done ${String(slice)}; rode pnpm exec metri prune ${String(slice)}`);
     }
   }
-}
-
-// Each top-level criterion ("- [ ]" or "- [x]" without indent) of the "Critérios" section: its line and whether it is "Tela:".
-function topLevelCriteria(source: string): { line: number; isScreen: boolean }[] {
-  const lines = source.split('\n');
-  const start = lines.indexOf('## Critérios');
-  const result: { line: number; isScreen: boolean }[] = [];
-  for (let index = start + 1; start !== -1 && index < lines.length && !lines[index].startsWith('## '); index++) {
-    const criterion = /^- \[[ xX]\] (.*)$/.exec(lines[index]);
-    if (criterion) {
-      result.push({ line: index + 1, isScreen: criterion[1].startsWith('Tela:') });
-    }
-  }
-  return result;
-}
-
-// Pruned evidence left the tree but stays in the git history.
-function isInGitHistory(path: string): boolean {
-  const result = spawnSync('git', ['log', '-1', '--format=%h', '--', path], { encoding: 'utf8' });
-  return result.status === 0 && result.stdout.trim() !== '';
 }
 
 function lintAgents(): void {

@@ -1,8 +1,6 @@
 # Finding Format
 
-Each reviewer /accept calls (`reviewer-contract`, `reviewer-patterns`, `reviewer-ux`, `reviewer-risk` and
-`consumer-tester`) writes every finding with these four fields, on top of what its brief asks; /accept presents
-them unchanged.
+Every agent /accept calls writes each finding with these four fields, on top of its brief.
 
 - **Evidence**: the quoted line or lines that motivate it, with `file:line` (for `reviewer-ux`, the screenshot path;
   for `consumer-tester`, the steps taken and what the screen or the interface answered).
@@ -13,7 +11,9 @@ them unchanged.
   (behaviour, scope, taste, security, data).
 - **Group**: Corrigir agora, Virar T or Aceitar como está, with the reviewer's recommendation.
 
-Findings with confidence below 5 go to an "Apêndice" at the end of the report, one line each.
+Findings with confidence below 5, and an incident or a scenario with an event that can't happen in the project as it
+is today (its deploy and instances in `.metri/ARCHITECTURE.md`, its data, its usage), go to an "Apêndice" at the end
+of the report, one line each.
 
 A reviewer that couldn't do its work (no tool, no input, an error) reports **não coberto** and why, never zero
 findings.

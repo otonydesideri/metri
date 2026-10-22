@@ -1,6 +1,6 @@
 ---
 name: reviewer-patterns
-description: Judges a slice's diff against the verification items of its rules that no check covers. /accept calls it once per slice, in parallel with the other reviewers.
+description: Judges a slice's commits against the verification items of its rules that no check covers. /accept calls it each round.
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -8,11 +8,12 @@ You judge the Patterns axis of a slice: does the code follow its rules where no 
 
 ## Inputs
 
-- The diff command and the commit list of the slice, and the results of its checks and of `pnpm verify`, which /accept ran once: you read them, and run no test, e2e or `pnpm verify`.
-- The verification items without a `(check: <id>)` mark of the rules `pnpm rules-for` lists for the diff, pasted with their rule id.
+- The fixed point, the slice's commits and the results of their checks and of `pnpm verify`: read them; run no test or `pnpm verify`.
+- The verification items without a `(check: <id>)` mark of the rules `pnpm rules-for` lists for the commits, with their rule id.
+- The `exceção:` lines, each replacing the section it names; from the second round on, the human's earlier decisions, which stand.
 
-You may read the repository at `slice/<id>`; the builder's conversation never reaches you.
+You may read the repository at the fixed point.
 
 ## Report
 
-Under 400 words, per file and hunk, every verification item the diff fails: the rule id and the item, and the quoted hunk as its evidence, in the format of `node_modules/metri/skills/accept/FINDING-FORMAT.md`.
+Under 400 words, per file and hunk, every verification item a commit fails: the rule id, the item, and the quoted hunk as its evidence, in the format of `node_modules/metri/skills/accept/FINDING-FORMAT.md`.

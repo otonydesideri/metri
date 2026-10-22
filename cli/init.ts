@@ -18,9 +18,9 @@ Cria o que falta:
     de starter/ com __PROJECT__ trocado pelo nome do projeto (o name do package.json ou, sem ele, o nome do
     diretório). Arquivo que já existe fica como está; o package.json e o pnpm-workspace.yaml ganham só as chaves
     que não têm, e o .gitignore, as linhas do .gitignore do init que não tem. O "Caminho linear" vazio do
-    .metri/ARCHITECTURE.md ganha os donos do starter. Depois da cópia, cria o .env de cada app e pacote a partir do
-    .env.example ao lado dele, sem sobrescrever um que já exista, e roda pnpm install. --no-starter pula a cópia; num projeto existente, ela não
-    acontece;
+    .metri/ARCHITECTURE.md ganha os donos do starter. Depois da cópia, cria um .env ao lado de cada .env.example
+    (o de cada app e o de cada banco do packages/db), sem sobrescrever um que já exista, e roda pnpm install.
+    --no-starter pula a cópia; num projeto existente, ela não acontece;
   - AGENTS.md e CLAUDE.md, de cli/templates/. Um AGENTS.md que já existe ganha as seções do template que não
     tem; um CLAUDE.md que já existe passa o conteúdo para o fim do AGENTS.md e fica só com "@AGENTS.md";
   - .metri/ARCHITECTURE.md, de cli/templates/; com código em apps/, packages/ ou src/, ganha a linha
@@ -255,7 +255,7 @@ function mergeGitignore(): void {
   }
 }
 
-// Each app and package's .env, from its .env.example beside it; one that exists is never overwritten.
+// The .env beside each .env.example (each app's, each database's in packages/db); one that exists is never overwritten.
 function env(): void {
   for (const example of projectFiles('.').filter((path) => path.endsWith('/.env.example') || path === '.env.example')) {
     const target = example.replace(/\.example$/, '');

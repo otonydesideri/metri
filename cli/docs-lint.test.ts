@@ -91,6 +91,13 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     );
   });
 
+  it('árvore fechada de .metri/: SOURCE-LESSONS.md entra, sem lint de formato', () => {
+    expect(lintChanged((dir) => write(dir, '.metri/SOURCE-LESSONS.md', 'texto livre, sem título\n- docs/x.md e UC1.1\n'))).toEqual({
+      status: 0,
+      output: '',
+    });
+  });
+
   it('árvore fechada de .metri/: <tema>.examples.md de regra do projeto entra', () => {
     expect(lintChanged((dir) => write(dir, '.metri/rules/frontend/order-list.examples.md', '# Exemplos\n')).status).toBe(0);
   });
@@ -420,31 +427,12 @@ describe('docs-lint', { timeout: 60_000 }, () => {
     expect(lint(source).lines).toContain('architecture/defaults/ui.md:24: frontmatter: chave adr só em regra do projeto; o source não tem ADR');
   });
 
-  it('evidência: critério Tela: de ticket done tem desktop e mobile, até a poda da slice', () => {
-    const done = inTicket('UC1.1', 'status: in_progress', 'status: done');
-    // a criterion that does not start with "Tela:" asks for no evidence, whatever the area
-    expect(lintChanged(done)).toEqual({ status: 0, output: '' });
+  it('evidência: ticket done sem evidência passa (é histórico); PNG de ticket de slice done é erro, até a poda', () => {
     const screen = (dir: string) => {
-      done(dir);
+      inTicket('UC1.1', 'status: in_progress', 'status: done')(dir);
       inTicket('UC1.1', '- [ ] A lista mostra', '- [ ] Tela: a lista mostra')(dir);
     };
-    const missing = lintChanged(screen);
-    expect(missing.status).toBe(1);
-    expect(missing.output).toContain('evidência: falta .metri/tickets/UC1.1/1-desktop.png (frontend/experience)');
-    expect(missing.output).toContain('evidência: falta .metri/tickets/UC1.1/1-mobile.png');
-    const withEvidence = lintChanged((dir) => {
-      screen(dir);
-      write(dir, '.metri/tickets/UC1.1/1-desktop.png', 'png');
-      write(dir, '.metri/tickets/UC1.1/1-mobile.png', 'png');
-    });
-    expect(withEvidence).toEqual({ status: 0, output: '' });
-    // an indented sub-item is not a criterion; n is the order among all criteria
-    const second = lintChanged((dir) => {
-      screen(dir);
-      inTicket('UC1.1', '- [ ] Tela: a lista mostra', '- [ ] O backend ordena.\n  - inclusive com zero pedidos\n- [ ] Tela: a lista mostra')(dir);
-    });
-    expect(second.output).toContain('evidência: falta .metri/tickets/UC1.1/2-desktop.png');
-    expect(second.output).not.toContain('1-desktop.png');
+    expect(lintChanged(screen)).toEqual({ status: 0, output: '' });
     const sliceDone = inMatrix('horizon: now · sot: [OrdersPage]', 'status: done · sot: [OrdersPage]');
     const pruned = lintChanged((dir) => {
       screen(dir);

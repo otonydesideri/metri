@@ -1,7 +1,8 @@
 ---
 id: backend/testing
-description: "a pirâmide de teste do backend — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber, e2e por controller contra banco Postgres isolado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis."
+description: "o que ganha teste no backend e a pirâmide de teste dele — spec de entidade e value object, spec de caso de uso com repositório em memória, spec de subscriber, e2e por controller contra banco Postgres isolado; a convenção de nome e execução; as factories de teste e os repositórios em memória compartilhados entre os níveis."
 use_when:
+  - "decidir se um comportamento do backend ganha teste, ou apagar um teste"
   - "escrever spec de entidade, value object, caso de uso ou subscriber do backend"
   - "escrever e2e de controller, que prova o fluxo HTTP completo com tradução de erro e persistência real"
   - "criar factory de teste ou repositório em memória de um agregado"
@@ -18,9 +19,17 @@ status: active
 ---
 # Testes
 
-Como o backend do produto prova comportamento: os três níveis da pirâmide, o que cada um prova e onde mora, as factories e dublês compartilhados entre eles.
+Como o backend do produto prova comportamento: o que ganha teste, os três níveis da pirâmide, o que cada um prova e onde mora, as factories e dublês compartilhados entre eles.
 
-Os exemplos usam o domínio didático de pedidos (`order`, `customer`) de `skills/writing-for-agents/RULE-FORMAT.md`, "Domínio didático". Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada: este documento cobre a regra transversal, o documento de área cobre a específica.
+Regra de teste que já tem casa num documento de área (query em `backend/reading.md`, worker em `backend/async-jobs.md`, dublê de infra em `infrastructure/services.md`) é referenciada aqui, nunca duplicada.
+
+## O que ganha teste
+
+**Obrigatório.** O teste prova o que o projeto acrescenta: a regra de negócio, o fluxo importante, uma decisão de acesso, um bug que já aconteceu, um check que falharia em silêncio.
+
+**Proibido.** Teste que não prova nada do projeto: a recusa, o default ou o comportamento de uma biblioteca, e o caminho que outro teste já percorre.
+
+> **Por quê.** A biblioteca é provada por quem a mantém.
 
 ## A pirâmide
 
@@ -30,9 +39,7 @@ Três níveis, do mais barato ao mais caro:
 2. **Spec de caso de uso**: injeta os repositórios em memória de `test/repositories/`, sem Nest e sem banco. Prova a orquestração (leitura, regra, gravação) com dublês.
 3. **E2e por controller**: app Nest inteiro, banco Postgres isolado por arquivo. Prova o fluxo HTTP completo, incluindo tradução de erro e persistência real.
 
-Cada nível prova uma camada diferente da mesma operação; o mesmo caso de uso tem spec unitário cobrindo a regra de negócio e pode aparecer num e2e cobrindo o fluxo HTTP em volta dela, sem repetir a mesma variação de regra nos dois lugares.
-
-**Proibido.** Arquivo de produção ganhar abstração, método ou mudança só para o teste: o teste usa entidades e demais arquivos como são, e a estrutura dele é factory + implementação em memória.
+**Proibido.** Arquivo de produção ganhar abstração, método ou mudança só para o teste, e biblioteca ganhar opção fora do default só para um teste rodar: o teste usa entidades e demais arquivos como são, e a estrutura dele é factory + implementação em memória.
 
 | Artefato | Caminho |
 | --- | --- |
@@ -53,7 +60,7 @@ Paths de `src/` e `test/` são relativos ao app backend (`apps/app-api/`).
 
 ## Convenção de nome e execução
 
-O nome do arquivo declara o nível: `*.spec.ts` para spec unitário (entidade, value object, caso de uso ou subscriber), `*.e2e-spec.ts` para e2e. Dois configs do Vitest fazem a separação: um roda `src/**/*.spec.ts` sem nenhum setup, o outro roda `src/**/*.e2e-spec.ts` com um setup que cria um banco Postgres novo por arquivo (nunca um schema novo dentro do mesmo banco: o client tipado do Prisma sempre assume o schema `public` na SQL gerada, então isolamento por schema daria falsa sensação de isolamento) e roda as migrations nele antes da suíte, dropando o banco no fim.
+O nome do arquivo declara o nível: `*.spec.ts` para spec unitário (entidade, value object, caso de uso ou subscriber), `*.e2e-spec.ts` para e2e. Dois configs do Vitest fazem a separação: um roda `src/**/*.spec.ts` sem nenhum setup, o outro roda `src/**/*.e2e-spec.ts` com um setup que cria um banco Postgres novo por arquivo (nunca um schema novo no mesmo banco: o client do Prisma assume o schema `public` na SQL gerada) e roda as migrations nele antes da suíte, dropando o banco no fim.
 
 Os bancos do e2e ficam no Postgres de desenvolvimento (`infrastructure/runtime.md`, "Banco de desenvolvimento"), com um prefixo do projeto no nome. O `DROP DATABASE ... WITH (FORCE)` (Postgres 13+) derruba a conexão que ficou aberta, para nenhum banco de teste sobrar. O e2e usa o servidor do `DATABASE_URL` do `.env` do app-api, carregado por `dotenv/config` no `test/setup-e2e.ts` (uma variável do ambiente vence, no CI), nunca o banco dele, e o `hookTimeout` do config de e2e cabe o `CREATE` e as migrations.
 
@@ -80,7 +87,7 @@ Exemplo completo: testing.examples.md#orderinmemoryrepositoryimpl
 ## Como escrever spec de entidade e value object (`enterprise/<entidade>.entity.spec.ts`, `enterprise/value-objects/<nome>.spec.ts`)
 
 - Sem repositório, sem Nest, sem I/O: instancia a classe direto e chama os métodos de domínio.
-- A entidade sob prova nasce por `create()`, nunca pela factory de teste (seção "Como criar uma factory de teste"): a factory reconstitui de propósito para não pagar validação duas vezes, e é exatamente a validação de nascimento que este spec existe para provar. O que é só insumo do arranjo (a entidade filha que preenche a raiz, e que tem spec próprio) vem da factory normalmente. Mesmo princípio de "o que está sob prova não usa atalho" que separa, no e2e, a pré-condição montada por factory do fluxo HTTP real.
+- A entidade sob prova nasce por `create()`, nunca pela factory de teste (seção "Como criar uma factory de teste"): a factory reconstitui de propósito para não pagar validação duas vezes, e é exatamente a validação de nascimento que este spec existe para provar. O que é só insumo do arranjo (a entidade filha que preenche a raiz, e que tem spec próprio) vem da factory normalmente.
 - Prova invariante de criação (entrada inválida vira `failure` com a classe certa) e transição de estado por método de domínio (mudança de prop, `touch()` quando a entidade tem `updatedAt`, evento registrado quando o método emite um).
 - Asserção de falha é `instanceof`, nunca comparando `message` (`backend/errors.md`).
 
@@ -89,7 +96,6 @@ Exemplo completo: testing.examples.md#order
 ## Como escrever spec de caso de uso (`application/use-cases/<módulo>/<ação>.use-case.spec.ts`)
 
 - Arrange direto no repositório em memória (`inMemory.<Agregado>Repository.items.push(...)`), sem passar por método de escrita.
-- Asserção de falha por `instanceof`, nunca comparando `message` (`backend/errors.md`).
 
 Exemplo completo: testing.examples.md#confirmorderusecase
 
@@ -131,9 +137,9 @@ it('envia a confirmação quando o pedido é confirmado', async () => {
 
 ## Como escrever um e2e-spec de controller (`http/controllers/<módulo>/<ação>.e2e-spec.ts`)
 
-- Um arquivo por ação de controller, ao lado dele. `beforeAll` monta o app Nest inteiro do zero (`Test.createTestingModule`, `moduleRef.createNestApplication()`, `app.setGlobalPrefix('api')`, `app.init()`), mesmo sendo idêntico entre arquivos — nunca vira um `createTestApp()` compartilhado em `test/`. O e2e não executa `main.ts`, por isso repete o prefixo antes de `app.init()`. Toda rota, inclusive health, é chamada sob `/api`. `afterAll` fecha (`app.close()`).
-- Pré-condição que o teste precisa só para chegar ao requisito real é montada por factory registrada em `providers`, sem round-trip HTTP. O fluxo HTTP completo fica reservado para o teste cuja própria mecânica é o requisito sob prova, ou que depende de um efeito colateral que a factory não reproduz. Montar a pré-condição pela API encadeia o teste ao comportamento de outra rota: quando aquela rota quebra, este teste falha por um motivo que não é o dele.
-- Sem função utilitária escondendo um passo de Arrange/Act/Assert (`createOrder()`, `confirmOrder()`) — o passo fica inline no corpo do `it()`, mesmo que repita as mesmas linhas em vários arquivos, sempre que essa mecânica for o requisito sob prova. Uma factory de teste registrada em `providers` (`OrderFactory`) não é esse tipo de utilitário: grava de verdade contra a infraestrutura real, em vez de só empacotar uma sequência de chamadas HTTP que o próprio teste deveria estar exercitando. Utilitário puro sem semântica de fluxo, que só transforma um dado (`extractLink()` parseando `href` de um HTML, por exemplo), continua permitido, local ao arquivo.
+- Um arquivo por ação de controller, ao lado dele. `beforeAll` monta o app Nest inteiro do zero (`Test.createTestingModule`, `moduleRef.createNestApplication()`, `app.setGlobalPrefix('api')`, `app.init()`); a montagem, idêntica entre arquivos, pode ficar numa função de `test/` que só monta o app, sem passo de Arrange/Act/Assert. O e2e não executa `main.ts`, por isso repete o prefixo antes de `app.init()`. Toda rota, inclusive health, é chamada sob `/api`. `afterAll` fecha (`app.close()`).
+- Pré-condição que o teste precisa só para chegar ao requisito real é montada por factory registrada em `providers`, sem round-trip HTTP. O fluxo HTTP completo fica reservado para o teste cuja própria mecânica é o requisito sob prova, ou que depende de um efeito colateral que a factory não reproduz. Pela API, o teste falharia quando outra rota quebra.
+- Sem função utilitária escondendo um passo de Arrange/Act/Assert (`createOrder()`, `confirmOrder()`) — o passo fica inline no corpo do `it()`, mesmo que repita as mesmas linhas em vários arquivos, sempre que essa mecânica for o requisito sob prova. A factory registrada em `providers` (`OrderFactory`) não é esse utilitário: grava contra a infraestrutura real. Utilitário puro sem semântica de fluxo, que só transforma um dado (`extractLink()` parseando `href` de um HTML, por exemplo), continua permitido, local ao arquivo.
 - `.overrideProvider(<Contrato>).useClass(Fake<Contrato>Impl)` no `Test.createTestingModule` só entra quando o teste precisa inspecionar o que o dublê capturou; teste que só passa pelo fluxo sem checar aquele efeito não precisa do override.
 - Estado que a API não alcança sozinha, ou só alcançaria com passos demais, é montado com mutação direta via Prisma, inline no `it()`, com comentário explicando o motivo quando não for óbvio.
 
@@ -148,18 +154,19 @@ Pipe, filtro e serializer globais são provados por um controller de prova decla
 
 ## O que não tem spec próprio
 
-- **Tabela declarativa de tradução de erro** (`toHttpException`): sem spec unitário; a exaustividade é garantida pela anotação `Record<DomainErrorType, ...>` no compilador e o status resultante aparece nos e2e de erro (`backend/errors.md`). O critério que separa: função ou filtro de infra com ramificação própria (`UnexpectedErrorFilter`) ganha spec unitário ao lado do arquivo; tabela pura não, porque não tem branch que um teste possa errar.
+- **Tabela declarativa de tradução de erro** (`toHttpException`): sem spec unitário; o compilador garante a exaustividade (`backend/errors.md`) e o status aparece nos e2e de erro. O critério que separa: função ou filtro de infra com ramificação própria (`UnexpectedErrorFilter`) ganha spec unitário ao lado do arquivo, do ramo que nenhum e2e percorre; tabela pura não, porque não tem branch que um teste possa errar.
 - **Contrato e implementação de query de leitura de exibição**: sem spec unitário nem dublê em memória; a prova é o e2e do controller (`backend/reading.md`, "Testes").
 - **Worker de job**: sem spec unitário próprio; o formato do e2e com fila real é delegado ao projeto (`backend/async-jobs.md`, "Testes" e "Delegado ao projeto").
 - **Classe de infra que fala com o vendor** (`PrismaService`, o client da fila, o client do storage): nunca tem dublê em `test/`; dublê é sempre por contrato de fluxo, e a única substituição é o stub local ao spec da impl que compõe (`infrastructure/services.md`).
 
 ## Verificação rápida
 
+- O teste prova algo que o projeto acrescenta, sem provar a biblioteca e sem repetir um caminho que outro teste já percorre?
 - O teste está no nível certo da pirâmide (entidade/VO puro, caso de uso com repositório em memória, ou e2e com banco real)?
 - O nome do arquivo declara o nível (`.spec.ts` contra `.e2e-spec.ts`)?
 - Spec de entidade ou value object usa `create()`, nunca a factory de teste?
 - Factory de teste usa `reconstitute()`, nunca `create()`?
-- Nenhum arquivo de produção mudou só para atender ao teste?
+- Nenhum arquivo de produção mudou, nem opção de biblioteca saiu do default, só para atender ao teste?
 - Repositório em memória implementa só o que o contrato declara, despachando eventos no fim de cada escrita?
 - Asserção de falha é `instanceof`, nunca comparando `message`?
 - E2e: Arrange inline, sem função utilitária escondendo um passo que está sob prova?

@@ -3,9 +3,9 @@
 `.metri/MATRIX.md` is the project's single plan: slices and their contracts, Fog, Gaps and Pattern proposals. A
 feature lives in its own file, `.metri/specs/<F-id>.md` (`node_modules/metri/skills/shape/SPEC-FORMAT.md`); the
 MATRIX cites it only by id. Each ticket, a UC or a T, lives in its own file, `.metri/tickets/<id>.md` ("Ticket
-files", below); the MATRIX is not the source of the ticket's content, only of the plan around it. Keys and enumerated
-values are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines them; section titles are fixed as in the
-blocks below, in English in the MATRIX and in Portuguese in a ticket; the prose is in Portuguese. `pnpm docs-lint` checks the format.
+files", below). Keys and enumerated values are fixed, in English, as `node_modules/metri/VOCABULARY.md` defines
+them; section titles are fixed as in the blocks below, in English in the MATRIX and in Portuguese in a ticket; the
+prose is in Portuguese. `pnpm docs-lint` checks the format.
 
 ## Skeleton
 
@@ -69,33 +69,31 @@ when missing or empty, the rest are written only with a value.
 - Story (UC only, body, required outside `done`): the line right below the title, `Como <ator>, quero <ação>,
   para <benefício>.`, with `<ator>` the same as the `actor` key; whoever writes the UC's file writes it, through
   the humanizer skill, and whoever reopens a UC without one writes it then. A T never has one.
-- `type` (T only): `pattern`, `task` or `release`; the tracer is the UC and never takes `type`.
+- `type` (T only): `pattern`, `task` or `release`.
 - `status`: `draft` (UC only, written by /shape until /look-across plans it) `| open | in_progress | blocked |
   done`. A UC in `draft` is never built.
 - `mode` and `checks` (T always; UC required outside `draft`), and `blocked_by`, `areas`, `touches`, `sensitive`,
   `subtasks` and `metrics`.
-- `checks`: besides `pnpm verify`, at least one command that runs the test or test pattern proving the criteria
-  (`` `pnpm test order-confirmation` ``), a pattern the runner matches against the file path; an e2e check filters
-  by its folder (`` `pnpm --filter app-web test:e2e e2e/order/` ``), since a bare word also matches the worktree's
-  name in the path. A command with a backtick, space or `·` is written as a quoted YAML string
-  (`` "`pnpm test order-confirmation`" ``).
+- `checks`: besides `pnpm verify`, at least one command that runs, in its package, the tests proving the criteria
+  (`` `pnpm --filter app-api test order-confirmation` ``; at the root, a filter that matches no file passes green);
+  an e2e filters by its folder (`` `pnpm --filter app-web test:e2e e2e/order/` ``). The filter names the module,
+  screen or file the ticket extends, never the ticket id. Each command is a quoted YAML string (`` "`pnpm verify`" ``).
 - `metrics`: `{ rules: <n>, tokens: <n> }`, whole numbers, written at `done`: `rules` always, the count of rules
   `pnpm rules-for --ticket <id>` lists; `tokens` only when the tool reports them.
 - "Critérios": a criterion is verifiable and says what happens; a scope sentence (`não depende de X`) goes
-  to the feature's spec, Fora de escopo, not here. A criterion judged on the screen starts with `Tela:`
-  (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); only these carry evidence:
+  to the feature's spec, Fora de escopo, not here. A criterion only a screenshot can judge (hierarchy, composition, a visual state) starts with
+  `Tela:` (`- [ ] Tela: sem serviços, a tela mostra o estado vazio com a ação de cadastrar.`); behaviour on the
+  screen is an ordinary criterion, proved by an e2e assertion. Only `Tela:` criteria carry evidence:
   `node_modules/metri/architecture/frontend/experience.md`, "Desktop, mobile e evidência".
 - "Notas": written only when there's something to say, and only what the code, the tests and git don't show, in
   at most 10 lines. A decision leaves the Notas for an ADR, a rule or a code
   header, at the knowledge gate of /accept.
 
-A ticket file is never pruned or collapsed, because the board reads it: done, it keeps its title, its frontmatter
-and its body, with `status: done`, in its own file. Done, the tests its `checks` run
-are the source of its criteria; the file changes again only when the ticket reopens.
+A done ticket is history: its tests and code are the truth of what it delivered. Its file stays whole (the board
+reads it) and changes again only when the ticket reopens; nothing reads it as current behaviour or rewrites it when
+the product changes.
 
 ### UC block
-
-The UC is the tracer ticket: its title, story, BRs and criteria are its what and its done.
 
 ```markdown
 ---
@@ -132,12 +130,9 @@ Como <ator>, quero <ação>, para <benefício>.
 <achados do /build ou do /accept, quando houver>
 ```
 
-- Its BRs (`- BR<n>: ...`, with `(sensitive)` after the id when it is) go under "Regras de negócio", and its
-  criteria (`- [ ] ...`) under "Critérios".
-
 ### T block
 
-A `T<s>.<n>` exists only for work without a UC, and belongs to the slice it sits under.
+A `T<s>.<n>` exists only for work without a UC.
 
 ```markdown
 ---
@@ -221,7 +216,7 @@ blocked_by: [T2.0]
 areas: [frontend/components, backend/http-api]
 touches: [registry:components]
 sensitive: true
-checks: ["`pnpm verify`", "`pnpm test mounter`"]
+checks: ["`pnpm verify`", "`pnpm --filter app-web test mounter`"]
 subtasks: [registro no mounter, renderização no site]
 ---
 
@@ -251,7 +246,7 @@ feature: F1
 slice: S2
 status: done
 mode: afk
-checks: ["`pnpm verify`", "`pnpm test forms-submit`"]
+checks: ["`pnpm verify`", "`pnpm --filter app-api test forms-submit`"]
 metrics: { rules: 2 }
 ---
 
@@ -311,8 +306,8 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 
 | `type` | When | Particularity |
 | --- | --- | --- |
-| `pattern` | The first instance of a new pattern, or an update of the Source version | The only ticket that writes in `.metri/rules/`, `docs/adr/`, `docs/CONTEXT.md` or `docs/DESIGN.md`. **Mandatory human review** before the tickets it blocks are released |
-| `task` | Work that delivers no UC but unblocks others (create an account, a credential, a third-party panel, prepare data), and each batch of an expand–contract | With `mode: afk`, the agent does it alone. With `mode: hitl`, the agent prepares a step-by-step script and the ticket closes on the human's confirmation |
+| `pattern` | The first instance of a new pattern, or an update of the Source version | The only ticket that adds a rule, an ADR, a `docs/CONTEXT.md` term or a `docs/DESIGN.md` change. **Mandatory human review** before the tickets it blocks are released |
+| `task` | Work that delivers no UC but unblocks others (create an account, a credential, a third-party panel, prepare data), and each batch of an expand–contract | `mode: hitl` closes on the human's confirmation |
 | `release` | Take deliveries to production | Follows `.metri/rules/infrastructure/release.md`, which a `pattern` T writes before the first `release` |
 
 ## Matrix rules
@@ -320,8 +315,9 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
 1. **Nothing orphan:** every UC outside `draft` has a `slice` and appears in its feature's spec, Casos de uso
    (`node_modules/metri/skills/shape/SPEC-FORMAT.md`); every T has a `slice`.
 2. **Every `now` slice serves at least one ticket:** one of its UCs or Ts has it in `slice`.
-3. **`blocked_by` points to a UC, a T or a slice;** a ticket is unblocked when each of them is done, and a slice counts
-   as done once /accept merged it into main.
+3. **`blocked_by` points to a UC, a T or a slice;** a ticket is unblocked when each ticket in its `blocked_by` is done
+   (its commit is on the integration branch) and each slice in its `blocked_by`, or in its own slice's, is accepted
+   (/accept's `S<id> accepted` commit, which sets `status: done`, is on the integration branch).
 4. **Every ticket serves the now.** The slice grows on demand; nothing is built for a `planned` feature, whose UCs
    stay in `draft`.
 5. **New pattern first:** when a slice needs a rule that doesn't exist, its first ticket is a T of `type: pattern`.
@@ -332,21 +328,22 @@ The tracer is the UC ("UC block"); `type` is written only on a T.
    own, since it has no UC.
 9. **Pruning:** in /accept, a done slice collapses, all its tickets included, into one line with the symbols
    that own it (`status: done · sot: [<símbolo>]`), and its contract leaves the MATRIX ("Contrato de slice",
-   below). A done slice that takes a new or reopened UC, or a new T, goes back to `horizon: now` with its `sot`,
-   and with a `contract` block when the ticket changes what the slice guarantees, until it collapses again. A
-   ticket file is never collapsed ("Ticket files"): its id stays listed in its
-   feature's spec, Casos de uso; its evidence folder (`.metri/tickets/<id>/`) leaves the tree. Git keeps the
-   history. The MATRIX stays small.
+   below). A ticket file is never collapsed ("Ticket files"): its id stays listed in its feature's spec, Casos de
+   uso; its evidence folder (`.metri/tickets/<id>/`) leaves the tree. A done slice that takes a new or reopened
+   UC, or a new T, goes back to `horizon: now` with its `sot`, and with a `contract` block when the ticket changes
+   what the slice guarantees, until it collapses again; only the tickets built since bring evidence.
 
 ## Contrato de slice
 
-While the slice is a plan, and until /accept prunes it, its contract is the slice's `contract` block, as in "Skeleton".
+Until /accept prunes the slice, its contract is its `contract` block ("Skeleton").
 
 `planned` describes what is still missing, in words: a GAP or PP id lives only in Gaps and Pattern proposals.
 
-Once built, the slice is registered in two places:
+Each item of `invariants` is proved by a test that the `checks` of one of the slice's tickets run. Once accepted, the
+contract leaves the MATRIX, `planned` with it, and the slice lives in three places:
 
-- the header of each canonical owner, in the code:
+- the tests, which keep the invariants;
+- the header of each canonical owner, in the code, with WHAT, WHY and WHERE and no invariant line:
   `node_modules/metri/skills/guardrail/SKILL.md`, "While writing code", step 5;
-- its steps in the linear path of `.metri/ARCHITECTURE.md`, one `arquivo:símbolo` per step:
+- its steps in the linear path of `.metri/ARCHITECTURE.md`, the map of the human gate of /accept:
   `node_modules/metri/skills/look-across/ACTIVATION.md`, "Record".

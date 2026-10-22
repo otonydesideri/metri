@@ -12,7 +12,7 @@ Before writing a UC's story, call the Skill tool with "humanizer" on it.
 
 # Look Across
 
-Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`); a ticket `T` exists only for work without a UC. The plan goes to `.metri/MATRIX.md` and each ticket to its own file in `.metri/tickets/`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md). Your output is the plan, in documents; the code starts in /build.
+Look across every feature, `now` and `planned`, to find the **slices** they share: the capabilities they connect to. Then make each `now` UC a **tracer bullet** ticket, a thin end-to-end path through its slice that declares what **blocks** it (`blocked_by`). The plan goes to `.metri/MATRIX.md` and each ticket to its own file in `.metri/tickets/`, in the format of [MATRIX-FORMAT.md](MATRIX-FORMAT.md). Your output is the plan, in documents, on `plan/<name>` from the integration branch (`node_modules/metri/skills/build/SKILL.md`, "Git"); the code starts in /build.
 
 ## Process
 
@@ -28,7 +28,7 @@ Titles and descriptions use the vocabulary of `docs/CONTEXT.md`. Call the Skill 
 
 ### 2. Features → use cases
 
-Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with its `actor`, its story, verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; each criterion judged on the screen starts with `Tela:` ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files"). Each **risky step** of a UC (one that writes, calls an outside service or runs in the background) gets its realistic failure (the call times out, two requests race, the job runs twice, the step after a side effect fails) and what the user sees then; a failure that would stay silent becomes a BR or a criterion.
+Keep the `horizon` and the `milestone` the direction gate confirmed for each feature, in its spec. Give each `now` feature its UCs: its id and title in the spec's Casos de uso, and its own file, `.metri/tickets/UC<f>.<n>.md`, with its `actor`, its story, verifiable criteria and BRs, marking the sensitive BRs; the UCs /shape wrote come in `draft`. A UC with UI has criteria for its main action, what is seen first, its states and the next step after the action; only a criterion that just a screenshot can judge (hierarchy, composition, a visual state) starts with `Tela:`, and the rest are proved by the e2e's assertions ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files"). A step with an external effect the project has today (a write other users see, a call to an outside service, a background job) gets its realistic failure (the call times out, the job runs twice, the step after a side effect fails) only when that failure would be silent or lose data: what the user sees then becomes a BR or a criterion. A criterion proves the project's code, never a library's default.
 
 ### 3. Look across
 
@@ -40,11 +40,11 @@ For each UC, name the capabilities it needs and ask, in this order:
 
 ### 4. Contracts
 
-Give each new or changed slice its `contract` block, designed to accommodate what is `planned`; the foundation slice, `S0`, has none. A built slice that changes what it guarantees gets back a `contract` block, and /build writes the change in the headers of the owners it touches ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Contrato de slice").
+Give each new or changed slice its `contract` block, designed to accommodate what is `planned`, each invariant proved by a test that the `checks` of one of its tickets run; the foundation slice, `S0`, has none. A built slice that changes what it guarantees gets back a `contract` block ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Contrato de slice").
 
 ### 5. Architectural coverage
 
-For each slice, name the areas and rules it needs (the area indexes, `pnpm rules-for <paths>`). A missing rule is a `type: pattern` ticket, the first of its slice; so is a behaviour a /shape prototype settled in a spec's Notas, and its line leaves the Notas. A screen of a new type, with no canonical screen in `docs/DESIGN.md`, gets before its UC a `pattern` T, "Padrão de tela: <tipo>" (`node_modules/metri/skills/build/TICKET-TYPES.md`, "pattern"). Each `PP-n` bound for the next look across becomes a `pattern` ticket or a change to the plan, or is dropped with the user; its line leaves Pattern proposals. Each `GAP-n` whose arrow points to a done ticket gets the ticket (UC or T) that closes it, and its arrow points there.
+For each slice, name the areas and rules it needs (the area indexes, `pnpm rules-for <paths>`). A missing rule is a `type: pattern` ticket, the first of its slice; so is a behaviour a /shape prototype settled in a spec's Notas, and its line leaves the Notas. A screen of a new type, with no canonical screen in `docs/DESIGN.md`, gets before its UC a `pattern` T, "Padrão de tela: <tipo>" (`node_modules/metri/skills/build/TICKET-TYPES.md`, "pattern"). Each `PP-n` bound for the next look across becomes a `pattern` ticket or a change to the plan, or is dropped with the user; its line leaves Pattern proposals. Each `GAP-n` whose arrow points to a done ticket gets a ticket that closes it, and the arrow points there.
 
 ### 6. Draft tickets
 
@@ -54,16 +54,16 @@ Each `now` UC is a **tracer bullet** ticket.
 
 - Each UC cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests): vertical, NOT a horizontal cut of one layer
 - A completed UC is demoable or verifiable on its own
-- Each UC is sized to fit in a single fresh context window, with about 5 rules (`pnpm rules-for --ticket <id>`), or more when rules-for says the excess is expected
+- Each UC is sized to fit in a single fresh context window; a size warning of `pnpm rules-for --ticket <id>` splits it only when it spans more areas than its paths need
 - Any prefactoring should be done first
 
 </tracer-bullet-rules>
 
-A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice` (the other slices it crosses go in `areas` and `touches`), `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete before it can start. A ticket with no blockers can start immediately. Split a ticket into `subtasks` when its parts can run in parallel. A ticket that changes a built slice names, among its criteria, the behaviour of that slice it must keep, and its `checks` run the tests that prove it; when no test proves it, writing one is its first criterion.
+A UC that doesn't fit is split into smaller UCs, each visible to the user and verifiable; a UC never has a partial ticket. Fill each UC's ticket file and set it `open`: its main `slice`, `mode`, `areas`, `touches`, `sensitive` (by the criterion in MATRIX-FORMAT.md), the executable `checks` that prove its criteria, and its **blocking edges** in `blocked_by`: the UCs, T tickets or slices that must complete first. Split a ticket into `subtasks` when its parts can run in parallel. A ticket that changes a built slice names, among its criteria, the behaviour of that slice it must keep, and its `checks` run the tests that prove it; when no test proves it, writing one is its first criterion.
 
 A ticket `T` only for work without a UC, its own file (`.metri/tickets/T<s>.<n>.md`) with its `type`, "O que entrega" and "Critérios": `pattern`; `task` for the work a UC needs but doesn't deliver; `release` per feature, `milestone` or batch of deliveries, never per ticket, except the urgent fix of /diagnose.
 
-**Wide refactors are the exception to tracer bullets.** A **wide refactor** is one mechanical change (rename a column, retype a shared symbol) whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no tracer bullet can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**, in `task` tickets. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket; green is promised only there.
+**Wide refactors are the exception to tracer bullets.** A **wide refactor** is one mechanical change (rename a column, retype a shared symbol) whose **blast radius** fans across the whole codebase, so no tracer bullet can land green. Sequence it as **expand–contract**, in `task` tickets. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, they become the `subtasks` of one ticket, which integrates once, green.
 
 ### 7. Spec decisions
 
@@ -73,19 +73,19 @@ For each `now` feature, fill its spec's Decisões de implementação (the module
 
 - **New project**: `metri init` delivered the starter, the monorepo of `general/code-placement` with `pnpm verify` green. The foundation slice, `S0`, is what is left after it:
   - with a database, the development database: the delegation "Banco de desenvolvimento" of [ACTIVATION.md](ACTIVATION.md), an open question of the plan gate, done when `pnpm dev` boots app-api and `/api/health` answers `database: up`;
-  - with an interface, the design-system ticket, the first of `S0`, blocking the others: from the moment `docs/DESIGN.md` exists, `pnpm design-tokens` fails until this ticket brings its tokens to `packages/ui/src/styles/globals.css` (with the `cn` list and the `index.html` background it checks) and adjusts the app shell of `apps/app-web/src/app/layouts/`; it closes on the human's visual approval;
+  - with an interface, the design-system ticket, the first of `S0`, blocking the others: from the moment `docs/DESIGN.md` exists, `pnpm design-tokens` fails until this ticket brings its tokens to `packages/ui/src/styles/globals.css` and adjusts the app shell of `apps/app-web/src/app/layouts/`; it closes on the human's visual approval;
   - what each active capability asks for before its first UC.
 - **New project without the starter** (`metri init --no-starter`): `S0` also builds the monorepo, by the rules the starter follows.
 - **Existing project**: the mapping of step 0.
 
 ### 9. Quiz the user
 
-First run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion, UCs that repeat a criterion of their own, risky steps with no failure in their BRs or criteria, and tickets that change a built slice without naming the behaviour they keep.
+First run a context-free critic in a sub-agent: it reads only `docs/PRODUCT.md`, the specs and the draft tickets, and reports features without a slice, forgotten consumers, UCs without a criterion, UCs that repeat a criterion of their own, a failure step 2 asks for with no BR or criterion, a failure step 2 doesn't ask for or that proves a library's default, and tickets that change a built slice without naming the behaviour they keep.
 
 Present the proposed plan as a numbered list: each slice with its contract, then each UC and each T:
 
 - **Id and title**: the UC or T id and its name
-- **Blocked by**: which UCs, T tickets or slices (if any) must complete first
+- **Blocked by**: its `blocked_by`, if any
 - **What it delivers**: the end-to-end behaviour the UC makes work, or the T's `what`
 
 Then call the Skill tool with "grilling" and show the plan gate in its three blocks. Inferred: the capabilities activated from the UCs and BRs, the contracts, the seams of each spec's Decisões de teste, the order, the granularity, the blocking edges, and each ticket's `sensitive` and `mode`, each with its reason. Open questions: the PROJECT_SPECIFIC values a UC needs, any merge or split you can't settle, and the critic's findings.
@@ -94,7 +94,7 @@ Iterate until the user approves the plan.
 
 ### 10. Write the matrix
 
-Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md`, hard decisions to ADRs (domain-language), and the activated capabilities and resolved delegations to `.metri/ARCHITECTURE.md` ([ACTIVATION.md](ACTIVATION.md), "Record"). The human commits the result: the agent never commits on main.
+Write the approved plan to `.metri/MATRIX.md` (slices, Fog, Gaps and Pattern proposals), each `now` feature's spec (Decisões de implementação and Decisões de teste) and each ticket to its own file in `.metri/tickets/`, keeping every id already there; new terms go to `docs/CONTEXT.md`, hard decisions to ADRs (domain-language), and the activated capabilities and resolved delegations to `.metri/ARCHITECTURE.md` ([ACTIVATION.md](ACTIVATION.md), "Record"). A concept the plan removes leaves `docs/CONTEXT.md`, the specs and the open tickets, and a ticket sweeps it from the code; done tickets stay as written ([MATRIX-FORMAT.md](MATRIX-FORMAT.md), "Ticket files"). With the human's approval, squash-merge `plan/<name>` into the integration branch, in this session.
 
 Done when:
 
@@ -103,7 +103,7 @@ Done when:
 - every T has `type`, "O que entrega" and "Critérios";
 - every `now` slice has the rules it needs, or a `pattern` T that writes them;
 - nothing is orphan;
-- `pnpm rules-for --ticket <id>` lists about 5 rules or fewer for every UC and T id, or says the excess is expected (the first ticket after a new pattern);
-- `pnpm docs-lint` is green.
+- `pnpm docs-lint` is green;
+- `plan/<name>` is squash-merged into the integration branch.
 
-Tell the user the plan is ready: /build takes a UC or T id, or the next ticket of the **frontier** (the unblocked ones, T first).
+Tell the user the plan is ready: /build takes a UC or T id, or the next ticket of the **frontier**.

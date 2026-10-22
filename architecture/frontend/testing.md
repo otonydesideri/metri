@@ -1,7 +1,8 @@
 ---
 id: frontend/testing
-description: "a pirâmide de testes do frontend — spec de função pura (rule, schema), de hook, de página e componente, de rota e guard, e de fluxo entre telas; o dublê de rede único, o MSW no nível do fetch; os builders de payload; e o spec de estrutura."
+description: "o que ganha teste no frontend e a pirâmide de testes dele — spec de função pura (rule, schema), de hook, de página e componente, de rota e guard, e de fluxo entre telas; o dublê de rede único, o MSW no nível do fetch; os builders de payload; e o spec de estrutura."
 use_when:
+  - "decidir se um comportamento do frontend ganha teste, ou apagar um teste"
   - "escrever spec de rule de UI ou de schema Zod do `app-web`"
   - "escrever spec de hook do `app-web`, com a rede pelo MSW"
   - "escrever spec de página ou componente, com a interação do usuário e o corpo da requisição enviada"
@@ -23,9 +24,19 @@ status: active
 ---
 # Testes do frontend
 
-Como o frontend do produto prova comportamento: os cinco níveis da pirâmide, o que cada um prova e onde mora, o spec de estrutura que fica fora dela, o dublê de rede único e os builders de payload compartilhados.
+Como o frontend do produto prova comportamento: o que ganha teste, os cinco níveis da pirâmide, o que cada um prova e onde mora, o spec de estrutura que fica fora dela, o dublê de rede único e os builders de payload compartilhados.
 
 Os exemplos usam o domínio didático de pedidos (`order`, `customer`) dos demais documentos.
+
+## O que ganha teste
+
+**Obrigatório.** O teste prova o que o projeto acrescenta: o fluxo importante, uma decisão de acesso, um critério `Tela:`, um bug que já aconteceu, um check que falharia em silêncio.
+
+**Proibido.** Teste que não prova nada do projeto: a recusa, o default ou o comportamento de uma biblioteca, e o caminho que outro teste já percorre.
+
+**Proibido.** Ligar uma opção não default de biblioteca só para um teste rodar.
+
+> **Por quê.** A biblioteca é provada por quem a mantém, e a opção ligada para o teste faz ele provar um sistema que não é o que roda.
 
 ## A pirâmide
 
@@ -35,19 +46,17 @@ Cinco níveis, do mais barato ao mais caro:
 2. **Spec de hook**: `renderHook` com os providers montados no próprio arquivo, rede pelo MSW. Prova orquestração de cache, debounce, estado derivado e estado em voo. Não prova nenhum ramo de JSX.
 3. **Spec de página e componente**: `render` com `@testing-library/react`, interação com `user-event`, rede pelo MSW. Prova o que o usuário vê em cada estado e o que o clique dispara, incluindo o corpo da requisição enviada. Não prova navegação entre telas.
 4. **Spec de rota e guard**: `MemoryRouter` com `initialEntries` sobre a árvore real de guards, com rotas-sonda no lugar das páginas. Prova uma transição de cada vez: redirecionamento, bloqueio e liberação. Não prova o que a página faz ao chegar.
-5. **Spec de fluxo**: `MemoryRouter` sobre a árvore real de rotas (`AppRoutes`), com as páginas de verdade. Prova a sequência entre telas, que é onde a spec de negócio descreve o comportamento como jornada. Não prova a derivação do estado, que é do servidor.
+5. **Spec de fluxo**: `MemoryRouter` sobre a árvore real de rotas (`AppRoutes`), com as páginas de verdade. Prova a variante de uma jornada que o e2e não força: o fato que muda no meio do caminho, a falha de um passo. A jornada em si é do e2e. Não prova a derivação do estado, que é do servidor.
 
-Cada nível prova uma camada diferente da mesma operação, sem repetir a mesma variação em dois lugares. Os níveis acima do dono de uma regra provam só o resíduo que ele não alcança.
+Cada nível prova uma camada diferente da mesma operação, e os níveis acima do dono de uma regra provam só o resíduo que ele não alcança.
 
-O nível 5 existe porque quase tudo que quebra num fluxo de várias telas é invisível nos outros quatro: o contexto que se perde numa navegação, o guard que dispara junto com o `navigate` da página e vence a corrida, o passo que se repete depois de um recarregamento. Cada tela isolada passa, e a jornada não funciona.
+A jornada entre telas é provada no e2e, no browser real e contra o app-api ("E2e de critério de UI"): é lá que aparece o contexto que se perde numa navegação, o guard que vence a corrida com o `navigate` da página e o passo que se repete depois de um recarregamento.
 
 O limite da pirâmide inteira: **o teste de frontend prova a reação da interface ao contrato, nunca a regra do servidor.** Todo caso se lê como "dado que o contrato responde X, a interface faz Y". Regra derivada de fato persistido (se o estado foi recomputado, se a expiração foi calculada, se a flag não existe) é provada no backend, e afirmá-la aqui produz um teste que passa sem provar nada.
 
 ### O volume é outro: fluxo e exceção, não a tabela inteira
 
-A pirâmide diz onde cada prova mora, não que toda variação mereça prova. O backend é o dono das regras e por isso prova as tabelas de decisão por inteiro; o frontend prova **a jornada e a exceção**. O que mais quebra numa interface — e o que os specs cobrem primeiro — é a sequência entre telas (nível 5) e os cenários em que algo sai do trilho: falha de leitura, falha de escrita, estado em voo, vazio com e sem filtro.
-
-O caminho feliz de cada tela isolada é o que o fluxo já atravessa; repeti-lo variação a variação em spec de página é custo sem prova nova. Spec de página entra pelo resíduo que o fluxo não alcança: o corpo da requisição enviada, o ramo de exceção específico da tela, a interação que não é passo de jornada. Na dúvida entre cobrir mais uma variação do caminho feliz e cobrir um cenário de exceção ainda sem prova, a exceção vence sempre.
+O backend é o dono das regras e por isso prova as tabelas de decisão por inteiro; o frontend prova **a jornada**, no e2e, e **a exceção** que o projeto escreveu, no spec de fluxo quando o e2e não a força. Spec de página entra pelo resíduo que eles não alcançam: o corpo da requisição enviada, a falha da escrita.
 
 | Artefato | Caminho |
 | --- | --- |
@@ -69,7 +78,7 @@ Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/
 
 ### E2e de critério de UI
 
-Fora da pirâmide, cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência") tem um teste do Playwright no browser real, com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O config tem dois projetos, `desktop` (`devices['Desktop Chrome']`) e `mobile` (`devices['Pixel 7']`), e cada teste termina gravando a evidência do critério:
+Fora da pirâmide, o Playwright prova no browser real a jornada de cada UC de tela e cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência"), com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O projeto `desktop` (`devices['Desktop Chrome']`) roda todo e2e; o `mobile` (`devices['Pixel 7']`) roda só o teste com `@mobile` no título, o do critério que fala do celular. O teste de um critério `Tela:` termina gravando a evidência dele:
 
 ```ts
 // e2e/order/confirm-order.e2e.ts
@@ -151,7 +160,7 @@ Exemplo completo: testing.examples.md#useconfirmorder
 - Consulta por papel e texto acessível, na ordem de prioridade da própria `@testing-library`. Consulta por `data-testid` só quando não existe nenhum papel ou texto que identifique o elemento, e o motivo fica num comentário.
 - O que a página envia é asserção de primeira classe: capturar o corpo da requisição no handler do MSW e afirmar sobre ele. Só verificar que a tela mudou deixa passar campo errado, valor não normalizado e id trocado.
 - Estado em voo (botão travado, linha marcada, campo desabilitado) é provado com handler atrasado, não com mock de função.
-- Falha da escrita é caso obrigatório de toda página que escreve: o que o usuário vê, e que a tela não navega.
+- Falha da escrita é caso obrigatório de toda página que escreve, quando nenhum outro teste a prova: o que o usuário vê, e que a tela não navega.
 - A notificação da falha de escrita nasce no `catch` do handler que disparou a ação (`frontend/data-fetching.md`, "Erro e sucesso: quem dispara a ação nomeia o resultado"), então ela é observável no spec de página: título e descrição afirmados com o `toast` do `sonner` mockado, sem montar o `Toaster`. Junto dela, o spec afirma o que a página faz na falha: continua na tela, mantém a ação disponível, recarrega a lista. A escrita confirmada afirma a notificação de sucesso do mesmo jeito: título nomeando o resultado e descrição dizendo onde ele aparece, ou o efeito além dele.
 
 ## Como escrever spec de rota e guard (`app/router/guards/<nome>-guard.spec.tsx`)
@@ -164,7 +173,7 @@ Exemplo completo: testing.examples.md#useconfirmorder
 
 ## Como escrever spec de fluxo (`app/router/<módulo>-flow.spec.tsx`)
 
-Um arquivo por módulo para os percursos, outro para as transições entre eles. A divisão não é estética: o percurso é o caminho feliz de uma jornada inteira, e a transição é o que acontece quando o fato que trouxe o usuário até ali muda no meio do caminho. Misturar os dois num arquivo só esconde qual dos dois quebrou.
+Um arquivo por módulo, só com o que o e2e da jornada não força: a transição, quando o fato que trouxe o usuário até ali muda no meio do caminho, e a falha de um passo.
 
 - Monta `AppRoutes` inteiro dentro de `MemoryRouter`, com as páginas de verdade. Rota-sonda é do nível 4; aqui a prova é o que a página real renderiza ao chegar.
 - O estado do servidor não é recomputado no teste. Um handler guarda a resposta corrente e **quem a avança é o handler da escrita que satisfaz o passo**: o `POST` que conclui o passo é o que faz o contrato passar a responder o passo seguinte. Isso mantém a sequência declarada no teste e a derivação onde ela mora, no servidor.
@@ -190,11 +199,9 @@ Resposta de escrita é envelope: quando o presenter do backend devolve `{ order:
 
 Exemplo completo: testing.examples.md#makeorder
 
-## Nada de helper de render compartilhado
+## Helper de render
 
-Um helper de render compartilhado em `test/` não entra: `QueryClientProvider` e `MemoryRouter` são o runtime sem o qual o componente não existe, não um passo sob prova, e a resposta consistente para esse caso já está escrita no backend: todo e2e monta o app inteiro no próprio arquivo, "nunca vira um `createTestApp()` compartilhado" (`backend/testing.md`).
-
-O que continua permitido é helper local ao arquivo. Uma `function renderPage()` no topo de um spec que renderiza a mesma página em muitas variações monta providers e não esconde passo nenhum; é a mesma carve-out que o backend abre para utilitário puro sem semântica de fluxo. O que ele não pode fazer é executar interação, montar estado de domínio ou escolher a rota de entrada.
+`QueryClientProvider` e `MemoryRouter` são o runtime sem o qual o componente não existe, não um passo sob prova: o helper que só os monta, com o `QueryClient` novo por teste, fica local ao arquivo ou em `test/`, como a montagem do app no e2e do backend (`backend/testing.md`). O que ele não pode fazer é executar interação, montar estado de domínio ou escolher a rota de entrada.
 
 ## O que não tem spec próprio
 
@@ -208,8 +215,8 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 ## Verificação rápida
 
 - O teste está no nível mais barato que consegue afirmar o comportamento por inteiro?
-- O spec novo cobre fluxo ou cenário de exceção, em vez de mais uma variação de caminho feliz que o fluxo já atravessa?
-- Comportamento de sequência entre telas está no nível de fluxo, e não espalhado em specs de página?
+- O teste prova algo que o projeto acrescenta, sem provar a biblioteca, sem opção não default ligada só para ele e sem repetir um caminho que outro teste já percorre?
+- A jornada entre telas está no e2e, e o spec de fluxo só tem a variante que o e2e não força?
 - Spec de fluxo confirma a tela de destino depois de cada navegação, antes da próxima interação?
 - O nome do arquivo declara a extensão certa (`.spec.ts` sem JSX, `.spec.tsx` com JSX)?
 - A rede está dublada só pelo MSW, com o handler declarado no próprio spec e construído a partir de `window.location.origin`?
@@ -219,7 +226,7 @@ O que continua permitido é helper local ao arquivo. Uma `function renderPage()`
 - O `QueryClient` é novo por teste, com `retry: false`, e não é o singleton do app?
 - Interação usa `user-event`, e o corpo da requisição enviada foi afirmado?
 - `MemoryRouter` está inline no `it()`, com o destino observado como texto de rota-sonda?
-- O helper de render, se existe, é local ao arquivo e só monta providers?
+- O helper de render, se existe, só monta providers?
 - O teste afirma reação da interface ao contrato, e não uma regra derivada que só o servidor pode provar?
 - Produção não importa de `test/`? (check: boundaries)
 - Tela atrás de login recebe no e2e a sessão gravada no banco e o cookie por `addCookies`, sem o provedor externo?

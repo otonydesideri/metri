@@ -1,6 +1,6 @@
 ---
 id: infrastructure/runtime
-description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), o endpoint de infra externa, a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (o `.env` de cada app e pacote, o `compose.yaml`, `db:up` e `db:down`)."
+description: "a montagem do app backend em runtime — o bootstrap de processo em `main.ts`, a composição no `AppModule`, o registro de providers globais (`APP_PIPE`, `APP_INTERCEPTOR`, `APP_FILTER`, `APP_GUARD`), o endpoint de infra externa, a leitura de env e a montagem de client, o shutdown gracioso, as fronteiras de request do framework e o contexto que elas produzem, o registro global no grafo de módulos que mantém o app dos e2e igual ao real nesses providers, e o banco de desenvolvimento (o `.env` de cada app e de cada banco, o `compose.yaml`, `db:up` e `db:down`)."
 use_when:
   - "editar `main.ts` ou `app.module.ts`"
   - "registrar pipe, interceptor, filtro ou guard global"
@@ -61,13 +61,11 @@ Exemplo completo: runtime.examples.md#envmodule, runtime.examples.md#validate e 
 
 **Proibido.** Montar client no top-level do arquivo.
 
-> **Por quê.** Um `import` executa o corpo do módulo importado antes de devolver controle a quem importou, e client montado no topo lê o env antes de o `ConfigModule` carregar o `.env`, não importa a ordem textual das linhas. O resultado falha de forma inconsistente, dependendo de quem carrega o módulo primeiro, um bug difícil de reproduzir.
+> **Por quê.** Client montado no topo lê o env quando o arquivo é importado, antes de o `ConfigModule` carregar o `.env`, e falha conforme a ordem em que os módulos carregam.
 
 ### Shutdown gracioso
 
-Quando o funcionamento correto do runtime depende de os hooks de shutdown rodarem em resposta ao encerramento do processo (o sinal de término de um deploy): **Obrigatório.** O bootstrap habilita os shutdown hooks (`app.enableShutdownHooks()`).
-
-> **Por quê.** Sem essa habilitação, o Nest não roda os hooks de shutdown quando o processo recebe o sinal de término, e o que depende desse encerramento fica pela metade.
+Quando o funcionamento correto do runtime depende de os hooks de shutdown rodarem em resposta ao encerramento do processo (o sinal de término de um deploy): **Obrigatório.** O bootstrap habilita os shutdown hooks (`app.enableShutdownHooks()`), que o Nest não roda sem isso.
 
 ### Fronteiras de request
 
@@ -89,9 +87,11 @@ Quando o funcionamento correto do runtime depende de os hooks de shutdown rodare
 
 O Postgres de desenvolvimento é delegação do projeto, decidida no planejamento da fundação: o que já roda na máquina ou o do `compose.yaml` do projeto (`node_modules/metri/skills/look-across/ACTIVATION.md`, "Delegation matrix").
 
-**Obrigatório.** Cada app ou pacote que lê env tem o próprio `.env` na sua raiz, criado do `.env.example` ao lado (`apps/app-api/.env`, `packages/db/.env`); a raiz do monorepo não tem `.env`.
+**Obrigatório.** Cada leitor de env tem o próprio `.env`, criado do `.env.example` ao lado: o app na raiz dele (`apps/app-api/.env`) e cada banco do `@metri/db` na pasta do `prisma.config.ts` dele (`packages/db/src/postgres/app/.env`), que o carrega pelo caminho explícito (`config({ path })` do `dotenv`); a raiz do monorepo não tem `.env`.
 
-**Obrigatório.** O `DATABASE_URL` do `apps/app-api/.env` e o do `packages/db/.env` apontam para o mesmo banco.
+> **Por quê.** Um `.env` só para o pacote dá o mesmo `DATABASE_URL` a todos os bancos, e as migrations do segundo banco caem no primeiro.
+
+**Obrigatório.** O `DATABASE_URL` do `apps/app-api/.env` e o do `.env` do banco que o app usa apontam para o mesmo banco.
 
 > **Por quê.** Com URLs diferentes, o app e as migrations acabam em bancos diferentes sem nenhum erro.
 
@@ -109,10 +109,9 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 
 - O bootstrap de processo que a Source descreve cria o app, aplica o prefixo `/api` (`general/http-surface.md`, "Superfície HTTP") e, com a fila, chama `enableShutdownHooks()`.
 - No `AppModule`, `APP_PIPE` registra o `ZodValidationPipe` composto com `toInvalidRequestException` (`backend/errors.md`), `APP_FILTER` registra o `UnexpectedErrorFilter` (`backend/errors.md`) e `APP_INTERCEPTOR` registra o `ZodSerializerInterceptor` (`backend/http-api.md`).
-- O `PgBossService` (a fila padrão, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; é o caso da Source em que o runtime depende do shutdown gracioso: sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
+- O `PgBossService` (a fila padrão, `backend/async-jobs.md`) para no `onModuleDestroy` aguardando os jobs ativos; sem os shutdown hooks, todo deploy abandonaria jobs no meio (`backend/async-jobs.md`, "Registro e ciclo de vida").
 - O que o e2e repete do bootstrap: o prefixo `/api` e, no e2e de asset de `infrastructure/storage.md`, o limite de corpo.
 - O schema de env e o `validate` moram em `src/infra/common/env/env.validation.ts` (`backend/layers.md`, "Onde cada arquivo mora"), um dos dois lugares de Zod de `backend/boundaries.md`.
-- O `@metri/db` lê o `.env` dele no `src/postgres/app/prisma.config.ts` (`import 'dotenv/config'` e `env('DATABASE_URL')` de `prisma/config`); o e2e carrega o `.env` do app-api por `dotenv/config` no `test/setup-e2e.ts` (`backend/testing.md`).
 - O `compose.yaml` publica o Postgres na porta `POSTGRES_PORT`, 5432 por padrão.
 
 ## Verificação
@@ -124,7 +123,7 @@ O banco de cada e2e: `backend/testing.md`, "Convenção de nome e execução".
 - O client nasce só no construtor ou num `useFactory`, nunca no top-level do arquivo?
 - Runtime que depende de hook de shutdown no encerramento do processo tem os shutdown hooks habilitados no bootstrap?
 - Hook, guard, interceptor e filter ficaram fora do `ServicesModule`, em `infra/common/<fronteira>/`, com o contexto viajando na request?
-- Cada app e pacote tem o próprio `.env`, criado do `.env.example` ao lado, sem `.env` na raiz, e os `DATABASE_URL` apontam para o mesmo banco?
+- Cada app tem o `.env` na raiz e cada banco, na pasta do `prisma.config.ts`, sem `.env` na raiz do monorepo, e o `DATABASE_URL` do app e o do banco dele são o mesmo?
 - Com Docker, há um `compose.yaml` só, com o nome do projeto, e o `pnpm db:down` remove o container? Com o Postgres que já roda, o `compose.yaml` e os scripts `db:up` e `db:down` saíram?
 
 ## Delegado ao projeto

@@ -8,5 +8,6 @@ This repository is the global Architecture Source of the "Slices com Guardrails"
 - Change a rule in `architecture/` only when the task asks for it, by `skills/writing-for-agents/RULE-FORMAT.md`.
 - The Source has no ADR. A global decision with a real alternative gets one row in `README.md`, "Decisões do método" (decision | why | discarded alternative); the owner rule keeps only the why that changes the agent's behavior.
 - Every change to a `.md` ends with a prune by `skills/writing-for-agents/SKILL.md`, "Pruning".
+- Each release starts by triaging the projects' `.metri/SOURCE-LESSONS.md` by `skills/guardrail/KNOWLEDGE-GATE.md`: a defect gets fixed, a wrong default changes, a lock leaves, an edge case goes back to the project.
 - Before committing: `pnpm verify` green. A change that reaches projects gets its line in `CHANGELOG.md`, under the next version.
 - Language: keys, ids and skills in English; prose of rules and ADRs in Portuguese. Full policy: `README.md`, "Política de idioma".

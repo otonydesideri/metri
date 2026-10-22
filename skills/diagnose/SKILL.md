@@ -14,7 +14,7 @@ Before reporting to the user, call the Skill tool with "humanizer" on the report
 
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
-When exploring the codebase, read `docs/CONTEXT.md` (if it exists) to get a clear mental model of the relevant modules, and check ADRs in `docs/adr/` in the area you're touching.
+When exploring the codebase, read `docs/CONTEXT.md` and the ADRs in `docs/adr/` of the area you're touching.
 
 ## Redact
 
@@ -98,7 +98,7 @@ Each hypothesis must be **falsifiable**: state the prediction it makes.
 
 If you cannot state the prediction, the hypothesis is a vibe: discard or sharpen it.
 
-**Show the ranked list to the user before testing.** They often have domain knowledge that re-ranks instantly ("we just deployed a change to #3"), or know hypotheses they've already ruled out. Cheap checkpoint, big time saver. Don't block on it; proceed with your ranking if the user is AFK.
+**Show the ranked list to the user before testing.** They often have domain knowledge that re-ranks instantly ("we just deployed a change to #3"), or know hypotheses they've already ruled out. Don't block on it; proceed with your ranking if the user is AFK.
 
 ## Phase 4: Instrument
 
@@ -118,11 +118,11 @@ Tool preference:
 
 Phases 1 to 4 commit nothing. The fix is a ticket, in the format of `node_modules/metri/skills/look-across/MATRIX-FORMAT.md` (a done slice reopens by its "Pruning" rule):
 
-- A bug that breaks a criterion of a UC reopens that UC in its own ticket file: `status: in_progress`, what broke in "Notas"; its `slice`, `mode`, `areas`, `touches` and `sensitive` stay from before, since the file was never pruned or collapsed; a UC without a story gets one (MATRIX-FORMAT.md, "Ticket files").
+- A bug that breaks a criterion of a UC reopens that UC in its own ticket file: `status: in_progress`, what broke in "Notas"; its `slice`, `mode`, `areas`, `touches` and `sensitive` stay; a UC without a story gets one (MATRIX-FORMAT.md, "Ticket files").
 - Any other bug becomes a T, its own new file in the slice whose code the fix changes, with the next free id of that slice: `type: task`, `mode: afk`, `status: in_progress`, "O que entrega" and "Critérios" for the fix, the `areas` and `touches` of that code, and `sensitive` by the criterion of MATRIX-FORMAT.md.
 - Their `checks` get the regression check: the regression test's command (with no correct seam, the Phase 1 command, committed), plus `pnpm verify`.
 
-Run `pnpm docs-lint`. Work on `ticket/<id>` by the Git rules of `node_modules/metri/skills/build/SKILL.md`, with `slice/<id>` taken again from main when the slice was merged; the new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
+Run `pnpm docs-lint`. Work on `ticket/<id>` by `node_modules/metri/skills/build/SKILL.md`, "Git". The new branch carries the uncommitted work of Phases 1 to 4. Before editing code, call the Skill tool with "guardrail".
 
 Write the regression test **before the fix**, but only if there is a **correct seam** for it (call the Skill tool with "tdd"). A Phase 1 test that already sits at a correct seam, minimised, is that regression test.
 
@@ -149,10 +149,10 @@ Required before declaring done:
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
 - [ ] The hypothesis that turned out correct is stated in the commit message, with the ticket id, so the next debugger learns
-- [ ] The ticket's checks, `pnpm verify` and `pnpm exec metri scope <id>` are green
+- [ ] The ticket's checks and `pnpm verify` are green
 
 ## Phase 7: Why didn't the guardrail catch it?
 
-Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson on `ticket/<id>`; a lesson for the Source goes as a PR to the Source's repository (`node_modules/metri/` is read-only). Then set the ticket's `status: done` and its `metrics` (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`, "Ticket files") and commit, with its id.
+Answer it: which rung of the guardrail's ladder (check, pattern in the code, inline header, rule) would have stopped this bug, or why none could (a missing seam included). Call the Skill tool with "guardrail" and put the answer through its knowledge gate; the human approves its destination, or it is discarded. Write an approved lesson in its destination, on `ticket/<id>`. Then set the ticket's `status: done` and its `metrics` (`node_modules/metri/skills/look-across/MATRIX-FORMAT.md`, "Ticket files"), commit and integrate it by /build's "Git" (the urgent fix with a release branch, after /accept).
 
-Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice to take the fix to main. A fix with `sensitive: true` is urgent: its ticket works on `slice/<id>` taken again from main, even when the slice isn't merged; /accept runs on that branch for it alone, and a `release` T of its own takes it to production right after.
+Done when the regression check is green, the answer has gone through the knowledge gate (written or discarded) and the ticket is `done`. Tell the user to run /accept on the slice. A fix with `sensitive: true` is urgent: /accept runs for its ticket alone, and a `release` T of its own takes it to production right after.

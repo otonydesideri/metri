@@ -242,7 +242,6 @@ export default defineConfig({
 		proxy: { '/api': `http://127.0.0.1:${API_PORT}` },
 	},
 	test: {
-		passWithNoTests: true,
 		environment: 'jsdom',
 		include: ['src/**/*.spec.{ts,tsx}'],
 		setupFiles: ['test/setup.ts'],

@@ -5,7 +5,7 @@ const API_PORT = E2E_PORT + 1;
 const APP_URL = `http://localhost:${E2E_PORT}`;
 
 /** SOURCE OF TRUTH: the Playwright config of app-web.
- * WHAT: runs the `*.e2e.ts` files under `e2e/` on the `desktop` (Desktop Chrome) and `mobile` (Pixel 7) projects, against app-api on `E2E_PORT + 1` and the Vite dev server on `E2E_PORT`, which serves the page and `/api` on one origin.
+ * WHAT: runs the `*.e2e.ts` files under `e2e/` on the `desktop` (Desktop Chrome) project, and on `mobile` (Pixel 7) only the tests tagged `@mobile`, against app-api on `E2E_PORT + 1` and the Vite dev server on `E2E_PORT`, which serves the page and `/api` on one origin.
  * WHY: each worktree gets its own `E2E_PORT`, and `reuseExistingServer: false` keeps the e2e from hitting another project's server (frontend/testing, "E2e de critério de UI").
  * WHERE: run by `pnpm --filter app-web test:e2e`; app-api reads its own `.env`, and the environment wins.
  */
@@ -23,7 +23,7 @@ export default defineConfig({
 	},
 	projects: [
 		{ name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-		{ name: 'mobile', use: { ...devices['Pixel 7'] } },
+		{ name: 'mobile', use: { ...devices['Pixel 7'] }, grep: /@mobile/ },
 	],
 	webServer: [
 		{

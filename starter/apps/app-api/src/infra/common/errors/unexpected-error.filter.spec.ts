@@ -61,6 +61,37 @@ describe('UnexpectedErrorFilter', () => {
 		});
 	});
 
+	it('mantém o status do erro de cliente que a biblioteca expõe, com o corpo no envelope', () => {
+		const tooLarge = Object.assign(new Error('request entity too large'), {
+			statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
+			expose: true,
+		});
+
+		sut.catch(tooLarge, host);
+
+		expect(reply.status).toHaveBeenCalledWith(HttpStatus.PAYLOAD_TOO_LARGE);
+		expect(reply.send).toHaveBeenCalledWith({
+			code: 'PAYLOAD_TOO_LARGE',
+			message: 'Requisição não atendida',
+			type: 'REQUEST_REJECTED',
+		});
+	});
+
+	it('responde 500 genérico ao erro com statusCode 4xx sem expose', () => {
+		const sdkError = Object.assign(new Error('sessão inválida'), {
+			statusCode: HttpStatus.UNAUTHORIZED,
+		});
+
+		sut.catch(sdkError, host);
+
+		expect(reply.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+		expect(reply.send).toHaveBeenCalledWith({
+			code: 'INTERNAL_SERVER_ERROR',
+			message: 'Erro interno inesperado',
+			type: 'INTERNAL_ERROR',
+		});
+	});
+
 	it('responde 500 genérico à HttpException 500, mesmo com o corpo no formato do envelope', () => {
 		sut.catch(
 			new InternalServerErrorException({

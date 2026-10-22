@@ -21,10 +21,12 @@ Parâmetros, na chave metri do package.json da raiz:
   }
   domainPackages   os pacotes que um ADR do projeto libera em src/domain, além dos da Source
 
+Import com @/ é interno: o alias de caminho do tsconfig, nunca um pacote.
+
 Um check próprio do projeto: node_modules/metri/skills/guardrail/KNOWLEDGE-GATE.md, "Destination".
 
 Saída: nada quando passa; na falha, "falha <check>: <o quê>" e, recuado, cada arquivo. Sai com código 1 quando
-algum falha. Roda no lint da raiz ("lint": "turbo run lint && metri check"), e por ele no metri verify.
+algum falha. Roda no lint da raiz ("lint": "turbo run lint --continue && metri check"), e por ele no metri verify.
 `;
 
 type Params = { domainPackages: string[] };
@@ -67,7 +69,8 @@ function packageOf(specifier: string): string {
   return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
 }
 
-const isRelative = (specifier: string) => specifier.startsWith('.');
+// Relative or through the `@/` path alias of the tsconfig: the project's own code, never a package.
+const isInternal = (specifier: string) => specifier.startsWith('.') || specifier.startsWith('@/');
 const isBuiltin = (specifier: string) => specifier.startsWith('node:');
 
 // Each file whose imports match, as `file: specifier`.
@@ -98,7 +101,7 @@ const boundaries: Check = ({ domainPackages }) => {
     },
     {
       label: 'domain importando pacote externo fora da allowlist',
-      items: importing(domain, (s) => !isRelative(s) && !isBuiltin(s) && !allowed.has(packageOf(s))),
+      items: importing(domain, (s) => !isInternal(s) && !isBuiltin(s) && !allowed.has(packageOf(s))),
     },
     {
       label: 'infra importando domain service',
@@ -130,7 +133,7 @@ const boundaries: Check = ({ domainPackages }) => {
     },
     ...['core', 'utils'].map((name) => ({
       label: name === 'core' ? 'core com dependência externa' : 'utils com dependência externa, inclusive o core',
-      items: importing(tsFiles(`packages/${name}/src`), (s) => !isRelative(s) && !isBuiltin(s)),
+      items: importing(tsFiles(`packages/${name}/src`), (s) => !isInternal(s) && !isBuiltin(s)),
     })),
     {
       label: 'produção do app-api importando test/',

@@ -31,12 +31,13 @@ Rotear → Moldar → Look across → Construir → Verificar → Aceitar → Re
 | `docs/CONTEXT.md`        | Linguagem compartilhada do domínio (PT ↔ identificador EN)             |
 | `docs/PRODUCT.md`        | Intenção e escopo                                                      |
 | `docs/DESIGN.md`         | Identidade visual e design system (se houver interface)                |
-| `docs/adr/`              | Decisões, trade-offs e exceções                                        |
-| `.metri/ARCHITECTURE.md` | Estado do projeto: o caminho linear, desvios, capacidades ativas, delegações, exceções |
+| `docs/adr/`              | Decisões e trade-offs que passam no limiar de ADR                      |
+| `.metri/ARCHITECTURE.md` | Estado do projeto: o caminho linear, desvios, capacidades ativas, delegações, exceções (uma linha cada) |
 | `.metri/rules/`          | Regras só deste projeto, por área                                      |
 | `.metri/specs/<F-id>.md` | Uma spec por feature: problema, solução, casos de uso e decisões de implementação e de teste          |
 | `.metri/MATRIX.md`       | Plano: slices e contratos, Fog, Gaps, Pattern proposals                |
 | `.metri/tickets/<id>.md` | Um arquivo por ticket (UC ou T): frontmatter, critérios e notas; a evidência dos critérios `Tela:` ao lado, em `<id>/` |
+| `.metri/SOURCE-LESSONS.md` | Lições do projeto para o Source ("Limiares")                       |
 | `node_modules/metri/`    | O pacote do método: regras globais, skills, agents e a CLI; somente leitura, só em desenvolvimento |
 | Código                   | Padrões, o cabeçalho `SOURCE OF TRUTH` de cada dono (onde fica a slice construída), tokens e checks |
 
@@ -48,11 +49,11 @@ Na raiz do repositório git do projeto, instale o pacote `metri` numa tag e rode
 
 ```bash
 printf 'allowBuilds:\n  esbuild: false\n' >> pnpm-workspace.yaml   # sem isso, o pnpm 11 para no build do esbuild
-pnpm add -D -w github:otonydesideri/metri#<tag>                # ou link:<caminho do source>, para evoluir o método
+pnpm add -D -w github:otonydesideri/metri#<tag>                # ou link:<caminho do source>, para evoluir o método (com link:, o worktree fica na mesma profundidade do repositório)
 pnpm exec metri init
 ```
 
-O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, o `.env` criado do `.env.example` e instalado pelo `pnpm install`. Termina com `metri verify` verde, com o `design-tokens` pendente. Com o banco no ar, `pnpm dev` abre a tela inicial em http://localhost:5279, com o estado da API e do banco; a documentação da API fica em `/api/docs`. Quando o `/shape` escreve um `docs/DESIGN.md` com a marca do projeto, o `design-tokens` passa a falhar até o ticket de design system, o primeiro da slice de fundação. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
+O `metri init` cria o que o método precisa no projeto (árvore em "Mapa do projeto e do source"). Num repositório sem código, entrega também o starter: o monorepo da fundação (app-api, app-web, `packages/core`, `db` e `ui`), com o nome do diretório no lugar de `__PROJECT__`, o `.env` criado do `.env.example` e instalado pelo `pnpm install`. Termina com `metri verify` verde, com o `design-tokens` pendente. Com o banco no ar, `pnpm dev` abre a tela inicial em http://localhost:5279, com o estado da API e do banco; a documentação da API fica em `/api/docs`. Com o `docs/DESIGN.md` do `/shape`, o `design-tokens` falha até o ticket de design system, o primeiro da slice de fundação. Num projeto que já tem código, nada disso é copiado, e o `/look-across` começa pelo mapeamento. Depois, no Claude Code: `/reload-skills` quando `.claude/skills/` não existia ao abrir a sessão, e `/shape`. Trocar de versão: `node_modules/metri/CHANGELOG.md`.
 
 A slice de fundação fica com o que o starter não tem como saber: o banco de desenvolvimento, que é o Postgres que já roda ou o do `compose.yaml` do starter (`architecture/infrastructure/runtime.md`, "Banco de desenvolvimento"), e, com interface, o tema e o shell do starter, pelos tokens do `DESIGN.md`.
 
@@ -60,21 +61,22 @@ As skills e os agents entram por link, não por plugin: o plugin pede marketplac
 
 ## Princípios
 
-1. **Confiar em erros, não em contexto.** Toda regra desce pela _escada de regras_ (`skills/guardrail/SKILL.md`, "The rules ladder") até o degrau mais barato que funcione. O que pode ser verificado no código vira check, não texto.
+1. **Confiar em erros, não em contexto.** Toda regra desce pela _escada de regras_ (`skills/guardrail/SKILL.md`, "The rules ladder") até o degrau mais barato que funcione. O que pode ser verificado no código vira check, não texto, e o teste prova o código do projeto, não a biblioteca.
 2. **Uma fonte da verdade por conceito.** Cada informação mora em um único lugar; os outros só apontam para ela. **A fonte migra** quando o conhecimento vira código: um critério planejado mora no ticket até virar teste.
 3. **Planejar por capacidade, entregar por fatia fina.** O look across descobre as slices (capacidades compartilhadas). Os tickets dentro delas são tracer bullets: finos, de ponta a ponta, verificáveis.
 4. **Construir para o agora, desenhar para o futuro.** O contrato de uma slice acomoda as features previstas; a implementação atende só às features "agora". Todo ticket serve a um caso de uso atual.
 5. **Contexto sob demanda.** Pouquíssimo fica sempre carregado. O resto chega por ponteiro, por resolução de regras por caminho ou por grep do cabeçalho `SOURCE OF TRUTH`. Cada ticket roda num contexto limpo, e a passagem entre etapas é feita por artefato + id, nunca pela conversa.
 6. **Conhecimento persistente é exceção.** Só vira conhecimento o que não é derivável nem verificável e afeta o futuro (`skills/guardrail/KNOWLEDGE-GATE.md`). A maioria dos tickets termina sem gerar nenhum.
-7. **O humano dirige; o agente executa.** O humano decide direção, plano, padrões e aceite. O agente não inventa arquitetura.
+7. **O humano dirige; o agente executa.** O agente não inventa arquitetura.
 8. **O futuro entra por extensão.** Campos opcionais; nada que já existe muda de forma quando uma evolução chega ("Evolução futura", abaixo).
 
 **Limiares:**
 
 - Arquivo só existe se tiver conteúdo que nenhum outro pode carregar.
 - ADR só com decisão tomada, difícil de reverter, surpreendente e com trade-off real.
-- Regra nunca é pré-carregada: cerca de 5 por ticket, pelo `rules-for`, e encolhe quando um check ou o código assume o que ela diz.
+- Regra nunca é pré-carregada: chega pelo `rules-for`, que avisa acima de 80 KB de regras por ticket (o ticket que atravessa áreas demais é dividido), e encolhe quando um check ou o código assume o que ela diz.
 - Skill: adaptar do Matt; skill nova só para método nosso.
+- Lição subtrai primeiro: o portão de conhecimento muda ou tira o que no método a causou antes de acrescentar. A causada pelo Source vai para o `.metri/SOURCE-LESSONS.md`, que o Source tria a cada versão, e só entra nele quando aparece em dois projetos ou é defeito da CLI ou do starter.
 
 ## Política de idioma
 
@@ -99,14 +101,6 @@ As chaves canônicas e o frontmatter de regra: `VOCABULARY.md`.
 
 ## Mapa do projeto e do source
 
-### Três naturezas de conteúdo
-
-| Natureza                                     | Exemplo                                              | Onde                                  |
-| -------------------------------------------- | ---------------------------------------------------- | ------------------------------------- |
-| **Consumido** (não é produzido pelo projeto) | Regras globais, skills, CLI                          | `node_modules/metri/`, somente leitura |
-| **Conhecimento do produto**                  | Produto, contexto, design, ADRs                      | `docs/`                               |
-| **Estado da metodologia**                    | Ativação, regras do projeto, matriz, tickets         | `.metri/`                             |
-
 ### Árvore do projeto
 
 ```
@@ -119,19 +113,18 @@ docs/
   DESIGN.md                   identidade visual e design system (se houver interface)
   adr/NNNN-*.md
 .metri/
-  ARCHITECTURE.md             desvios de stack, caminho linear, capacidades ativas, delegações, caminhos do projeto, exceções, áreas ativas
+  ARCHITECTURE.md             estado do projeto: caminho linear, desvios, capacidades, delegações, caminhos, exceções
   rules/<área>/*.md           regras só do projeto          (+ INDEX.md gerado)
-  specs/F<n>.md               uma spec por feature: problema, solução, casos de uso, decisões de implementação e de teste
-  MATRIX.md                   plano vivo: slices e contratos, Fog, Gaps, Pattern proposals
-  tickets/<id>.md             um arquivo por ticket (UC ou T): frontmatter, critérios e notas
+  specs/F<n>.md               uma spec por feature
+  MATRIX.md                   plano vivo
+  tickets/<id>.md             um arquivo por ticket (UC ou T)
   tickets/<id>/*.png          evidência dos critérios `Tela:` do ticket, até a poda da slice
+  SOURCE-LESSONS.md           lições do projeto para o Source, uma por `### L<n>`
 apps/  packages/              código: no projeto novo, nasce do starter do metri init, com o compose.yaml e o .env.example
 ```
 
-- **Critério de casa:** `docs/` é o conhecimento do produto e vale sem a metodologia; `.metri/` é o estado da metodologia no projeto.
+- **Critério de casa:** `node_modules/metri/` é o consumido, somente leitura; `docs/` é o conhecimento do produto e vale sem a metodologia; `.metri/` é o estado da metodologia no projeto.
 - **Os arquivos que agentes já reconhecem pelo nome ficam em maiúsculas:** `AGENTS.md`, `CONTEXT.md` (nome do Matt), `DESIGN.md` (nome do spec). O nome funciona como palavra-guia.
-- **`AGENTS.md` fica na raiz**, porque as ferramentas o procuram lá.
-- **Arquivos gerados** (`INDEX.md` de área) têm como primeira linha "Gerado por rules-index. Não edite."; no `.metri/ARCHITECTURE.md`, só a lista abaixo do marcador `<!-- rules-index -->` é gerada. O `rules-index --check` confere se estão atualizados.
 - **O lint estrutural** aceita só essa árvore (`pnpm docs-lint --help`).
 
 ### Árvore do Architecture Source
@@ -145,6 +138,7 @@ agents/                         os subagentes por função, no formato do Claude
 skills/                         as skills: skills/<nome>/SKILL.md, o formato de cada artefato que a skill escreve (<ARTEFATO>-FORMAT.md) e a base que a skill adapta no projeto (<ARQUIVO>-TEMPLATE.md)
 cli/                            a CLI metri (TypeScript com tsx, sem build) e, em cli/templates/, o que o metri init copia
 starter/                        o código inicial que o metri init copia num projeto novo; o exemplo canônico que as regras citam em examples
+evals/                          a régua de cada corte no método: o peso das regras, skills e agents (pnpm stats)
 VOCABULARY.md                   vocabulário da metodologia (chaves canônicas)
 README.md                       a metodologia para humano: porquê, princípios, mapa e referências
 AGENTS.md, CLAUDE.md            instruções do agente neste repositório
@@ -159,12 +153,12 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 | Camada               | Onde                    | Conteúdo                                                         | Quem escreve                            | Quando é lido                          |
 | -------------------- | ----------------------- | ---------------------------------------------------------------- | --------------------------------------- | -------------------------------------- |
 | Architecture Source  | `node_modules/metri/`   | Padronização, capacidades condicionais, defaults, vocabulário, templates, skills | Você, por PR no repositório do source   | Via `rules-for`, `INDEX.md` e defaults |
-| Project Architecture | `.metri/ARCHITECTURE.md`, `.metri/rules/` | Estado da ativação e regras só do projeto        | Look across, ticket de padrão, Aprender | Via `rules-for` e ponteiros do ticket  |
-| ADRs                 | `docs/adr/`             | Decisões, trade-offs, exceções                                   | Moldar, Look across, Aprender           | Quando uma regra ou ticket cita o ADR  |
+| Project Architecture | `.metri/ARCHITECTURE.md`, `.metri/rules/` | Estado da ativação, exceções e regras só do projeto | Look across, ticket de padrão, Aprender | Via `rules-for` e ponteiros do ticket  |
+| ADRs                 | `docs/adr/`             | Decisões e trade-offs que passam no limiar de ADR                | Moldar, Look across, Aprender           | Quando uma regra ou ticket cita o ADR  |
 | Linguagem            | `docs/CONTEXT.md`       | Termos do domínio, PT ↔ EN                                       | Moldar, Look across                     | Ao nomear qualquer coisa               |
 | Produto              | `docs/PRODUCT.md`       | Intenção e escopo                                                | Moldar                                  | Ao discutir requisitos                 |
 | Design               | `docs/DESIGN.md`        | Identidade visual, uso de componentes                            | Moldar (triagem de design), Aprender    | Via ponteiro em regras de `frontend/`  |
-| Spec                 | `.metri/specs/<F-id>.md` | Problema, solução, casos de uso e decisões de implementação e de teste da feature | Moldar, Look across; Aceitar, no portão de conhecimento | Construir, na cadeia de contexto do ticket |
+| Spec                 | `.metri/specs/<F-id>.md` | Problema, solução, casos de uso e decisões da feature | Moldar, Look across; Aceitar, no portão de conhecimento | Construir, na cadeia de contexto do ticket |
 | Plano                | `.metri/MATRIX.md`   | Slices e contratos, Fog, Gaps, Pattern proposals                  | Look across                             | Ao planejar                            |
 | Ticket                | `.metri/tickets/<id>.md` | Um UC ou um T: frontmatter, história e BRs (UC) ou "O que entrega" (T), critérios e notas | Moldar (draft), Look across, Construir (status), Aceitar e Diagnosticar (reabrir, T novo) | Só o arquivo do ticket em trabalho |
 | Procedimentos        | `AGENTS.md`             | Operação + ponteiros                                             | `metri init`                            | Sempre (~20 linhas)                    |
@@ -172,9 +166,7 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 
 ### Architecture Source (global)
 
-**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é `architecture/defaults/ui.md`, e a stack tem o `architecture/defaults/stack.md` como registro. O porquê de cada decisão global: "Decisões do método".
-
-**Stack padrão:** a stack que se repete entre projetos é um default, como a biblioteca de UI (`architecture/defaults/ui.md`): `architecture/defaults/stack.md`. As regras citam essa stack no próprio texto.
+**O que é:** regras de padronização de como construímos software. Não contém nada específico de um projeto nem de uma tecnologia que varia de projeto para projeto. A exceção são os `architecture/defaults/`: escolhas tecnológicas padrão, usadas quando o projeto não decide nada diferente; a de UI é `architecture/defaults/ui.md`, e a stack que se repete entre projetos é o `architecture/defaults/stack.md`, que as regras citam no próprio texto. O porquê de cada decisão global: "Decisões do método".
 
 **Entrada no projeto:** o pacote `metri`, dependência de desenvolvimento numa tag, somente leitura ("Começar um projeto"). Ele fica fora do código entregue: fora de build, exportação e pacote final.
 
@@ -184,27 +176,18 @@ package.json                    o pacote metri: o bin, os arquivos que o projeto
 
 **Relação com o global:** complementa sem repetir. O global padroniza, e o projeto acrescenta o que é dele.
 
-- Uma regra do projeto nunca reescreve uma regra global.
-- **Contrariar uma regra global é uma exceção:** vira ADR, e a regra do projeto aponta para ele.
-- **Trocar um default global** (ex.: outra biblioteca de UI) é uma decisão registrada em ADR.
+- **Contrariar uma regra global ou trocar um default** (ex.: outra biblioteca de UI) é uma exceção: uma linha em "Exceções e defaults trocados" do `.metri/ARCHITECTURE.md`, que substitui a seção que nomeia (ou a regra global inteira, por uma do projeto); o `rules-for` a imprime com a regra, o `/accept` a passa a cada revisor, e ela vira ADR só quando passa no limiar de ADR.
 - **Precedência:** `architecture/INDEX.md`, "O que mora aqui, o que mora em outro lugar".
 
 ### A área `domain`
 
-A área `domain/` (global e do projeto) define como modelamos domínio no código: entidade, value object, caso de uso, agregado, invariantes, eventos, comunicação com outras camadas.
-
-**Ela não lista entidades nem regras do projeto.** A fonte de cada coisa:
-
-- o significado dos termos → `CONTEXT.md`;
-- o modelo em si → schema e código;
-- as regras de negócio planejadas → casos de uso nos arquivos de ticket (`.metri/tickets/`), que migram para testes e invariantes no código.
+A área `domain/` (global e do projeto) define como modelamos domínio no código: entidade, value object, caso de uso, agregado, invariantes, eventos, comunicação com outras camadas. **Ela não lista entidades nem regras do projeto:** os termos moram no `CONTEXT.md`, o modelo no schema e no código, e as regras de negócio planejadas nos tickets, até migrarem para testes e invariantes.
 
 ### Carregamento sob demanda (regras por caminho)
 
 - A **fonte da verdade do escopo** de uma regra é o `applies_to` no frontmatter.
 - Se a ferramenta de agente suportar regras nativas por caminho, os ponteiros nativos são gerados a partir do frontmatter, nunca escritos à mão.
-- `rules-for`, `rules-index` e os `INDEX.md` gerados: `metri rules-for --help` e `metri rules-index --help`.
-- **Orçamento:** um ticket deve precisar de no máximo ~5 regras. Se precisar de mais, atravessa áreas demais e deve ser dividido; a exceção esperada é o primeiro ticket depois de um pattern novo, e o `rules-for` diz isso.
+- `rules-for`, `rules-index`, os `INDEX.md` gerados e o orçamento por tamanho ("Limiares"): `metri rules-for --help` e `metri rules-index --help`.
 
 ### Fonte única por conceito
 
@@ -216,17 +199,17 @@ A área `domain/` (global e do projeto) define como modelamos domínio no códig
 | Padronização (como construímos)                | Architecture Source                       | projeto                                        |
 | Escolha padrão de tecnologia                   | `architecture/defaults/` (global)         | projeto                                        |
 | Regras só do projeto                           | `.metri/rules/<área>/`               | global, README                                 |
-| Contrato de uma slice                          | Bloco `contract` na matriz até o aceite; construída, os cabeçalhos `SOURCE OF TRUTH` dos donos e o caminho linear do `.metri/ARCHITECTURE.md` (`metri sot`) | arquivo próprio em `docs/`                     |
-| Decisão, trade-off, exceção                    | ADR                                       | comentário solto                               |
+| Contrato de uma slice                          | Bloco `contract` na matriz até o aceite; depois, um teste por invariante, o cabeçalho `SOURCE OF TRUTH` curto de cada dono e o caminho linear, que qualquer ticket atualiza (`metri sot`) | arquivo próprio em `docs/`                     |
+| Decisão, trade-off, exceção                    | ADR acima do limiar; abaixo, a exceção é uma linha no `.metri/ARCHITECTURE.md` | comentário solto                               |
 | Identidade visual e uso de componentes         | `DESIGN.md`                               | regras de código                               |
 | Valores dos tokens de design                   | `DESIGN.md`; o tema segue ele (`metri design-tokens`) | valor solto no código |
 | Contrato de API                                | DTOs do app-api; OpenAPI e client do app-web gerados deles (`api:drift`) | cópia à mão no frontend |
-| Evidência de um critério `Tela:`               | `.metri/tickets/<id>/<n>-desktop.png` e `-mobile.png`, gravados com `METRI_EVIDENCE=<id>`, até a poda da slice (`metri prune`); depois, o git | chat, pasta fora do git |
+| Evidência de um critério `Tela:`               | `.metri/tickets/<id>/<n>-desktop.png`, e `-mobile.png` no critério de celular (`METRI_EVIDENCE=<id>`), até a poda da slice (`metri prune`); depois, o git | chat, pasta fora do git |
 | Regra que pode ser verificada                  | check, lint, tipo, teste                  | qualquer `.md`                                 |
-| Problema, solução, casos de uso e decisões de implementação e de teste de uma feature | `.metri/specs/<F-id>.md` | chat, `PRODUCT.md`, `MATRIX.md`                |
+| Spec de uma feature | `.metri/specs/<F-id>.md` | chat, `PRODUCT.md`, `MATRIX.md`                |
 | Slices, contratos e o plano ao redor dos tickets | `MATRIX.md` | chat, handoff                                  |
-| Cada UC ou T: história e BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md`, a fonte única do ticket | `MATRIX.md`, chat, handoff                     |
-| Comportamento já construído                    | testes + código                           | matriz (a slice colapsa numa linha com os donos, `sot:`; o arquivo do ticket fica, com `status: done`) |
+| Cada UC ou T: história e BRs ou "O que entrega", critérios, status | `.metri/tickets/<id>.md` | `MATRIX.md`, chat, handoff                     |
+| Comportamento já construído                    | testes + código                           | matriz (a slice colapsa numa linha, `sot:`); ticket feito, que é histórico |
 | Como um módulo funciona                        | código + cabeçalho inline                 | `docs/`                                        |
 | Procedimentos do agente                        | `AGENTS.md` + skills                      | regras de arquitetura                          |
 
@@ -237,22 +220,25 @@ Escada de regras: `skills/guardrail/SKILL.md`, "The rules ladder".
 Não é uma etapa própria do fluxo; é uma camada que atravessa as etapas:
 
 - **Moldar:** a triagem de design procura o DS já dado, pergunta só o que falta e propõe os princípios de experiência (`skills/shape/DESIGN-TRIAGE.md`); os tokens do `DESIGN.md` são a fonte do tema.
-- **Look across:** critérios de UI por UC, e o que se julga na tela começa com `Tela:`; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 leva os tokens do `DESIGN.md` ao tema e ao shell do starter, com aprovação visual.
-- **Construir:** `frontend/experience`, seed realista e screenshot desktop e mobile por critério `Tela:`, com autocrítica de até 2 rodadas; os textos da interface passam pela skill `humanizer`.
-- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md`, o shadcn/ui dentro do `@metri/ui`, com os arquivos da CLI em `components/ui/` e o primitivo importado pelo nome.
+- **Look across:** critérios de UI por UC, e só o que o screenshot julga começa com `Tela:`; tela de tipo novo vira ticket `pattern` com 2–3 variantes, e a escolhida vira tela canônica; a slice 0 leva os tokens ao tema, com aprovação visual.
+- **Construir:** `frontend/experience`, seed realista, a jornada no e2e e screenshot desktop por critério `Tela:` (mobile no critério de celular), com autocrítica de até 2 rodadas; os textos da interface passam pela skill `humanizer`.
+- **Aceitar:** o `reviewer-ux` julga a evidência contra o `DESIGN.md`, e o teste do consumidor usa o navegador; default de UI: `architecture/defaults/ui.md`.
 
 ### O fluxo
 
 ```
-Pedido ─► 0 Rotear ─┬─ direto (cabe numa slice, 1 ticket, sem regra nova, não sensível) ─► 3 Construir
-                    ├─ bug ─► ↺ Diagnosticar ─► ticket ──────────────────────────────────► 3 Construir
+Pedido ─► 0 Rotear ─┬─ direto (mudança pequena) ─► branch, verify, squash; sem ticket nem /accept
+                    ├─ um ticket numa slice ────────────────────► 3 Construir
+                    ├─ bug ─► ↺ Diagnosticar ─► ticket ─────────► 3 Construir
                     └─ iniciativa ─► 1 Moldar ─► 2 Look across ─► 3 Construir ─► 4 Verificar
                                                                        ▲             │
-                                                                       └── vermelho ─┘
-                                                           verde ─► 5 Aceitar ─► 6 Release
-                                                                        │
-                                                                        ▼
-                                                                  7 Aprender e evoluir
+                                                                       └── vermelho ─┤
+                                                                                     │ verde: o ticket integra
+                                                                                     ▼
+                                                               slice inteira ─► 5 Aceitar ─► 6 Release
+                                                                                     │
+                                                                                     ▼
+                                                                            7 Aprender e evoluir
                                                    (checks, regras, ADRs, contexto, design, source global)
 ```
 
@@ -278,13 +264,15 @@ A cadeia de contexto de um ticket: `skills/build/SKILL.md`, passo 1.
 
 1. **Julgamento, que precisa de isolamento:** revisores do aceite, teste do consumidor sem contexto, críticos da direção e do plano.
 2. **Varredura da qual interessa só a conclusão:** pesquisa externa, survey de arquitetura, mapeamento de projeto existente.
-3. **Paralelismo real:** tickets ou subtarefas desbloqueados, sem `touches` em comum, em áreas diferentes.
+3. **Paralelismo real:** tickets desbloqueados com `touches` disjuntos, preferindo as slices já começadas.
 
 **Não usar:** personas (PM, arquiteto, QA), passagem de trabalho entre agentes, revisor por ticket, agente planejador separado do humano.
 
-**Agentes** (`agents/`, ligados em `.claude/agents/` pelo `metri init`): funções, não personas. `builder` constrói um ticket pela skill `/build`; `reviewer-contract`, `reviewer-patterns`, `reviewer-ux` e `reviewer-risk` são os eixos do aceite, com os achados no formato de `skills/accept/FINDING-FORMAT.md`; `consumer-tester` usa a slice como consumidor de fora e depois tenta quebrá-la. Cada arquivo é o dono do seu brief e diz quais entradas o agente recebe.
+**Agentes** (`agents/`, ligados em `.claude/agents/` pelo `metri init`): funções, não personas. `builder` constrói um ticket pela skill `/build`; `reviewer-contract`, `reviewer-patterns`, `reviewer-ux` e `reviewer-risk` são os eixos do aceite; `consumer-tester` usa a slice como consumidor de fora e depois tenta quebrá-la. Cada arquivo é o dono do seu brief e diz quais entradas o agente recebe.
 
-Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/build/SKILL.md`, "Git"; revisores isolados e teste do consumidor: `skills/accept/SKILL.md`; crítico da direção: `skills/shape/SKILL.md`; crítico do plano e mapeamento: `skills/look-across/SKILL.md`; pesquisa externa: `skills/research/SKILL.md`.
+**Git: integração por ticket, julgamento por slice.** O ticket com checks e `pnpm verify` verdes entra num squash na branch de integração (`metri.integrationBranch` do `package.json`, padrão `main`). O `/accept` julga a slice pelos commits dos tickets (cada rodada, só o que entrou depois da anterior, com as decisões das anteriores). O modelo de branches: `skills/build/SKILL.md`, "Git".
+
+Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; revisores isolados e teste do consumidor: `skills/accept/SKILL.md`; crítico da direção: `skills/shape/SKILL.md`; crítico do plano e mapeamento: `skills/look-across/SKILL.md`; pesquisa externa: `skills/research/SKILL.md`.
 
 ### Portões humanos
 
@@ -294,30 +282,30 @@ Coordenador, workers e paralelismo: `skills/build/COORDINATOR.md`; git: `skills/
 4. **Aceite:** `skills/accept/SKILL.md`, "5. Human gate" e "6. Knowledge gate".
 5. **Release:** `skills/build/TICKET-TYPES.md`, "release".
 
-Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o motivo; e as perguntas em aberto (`skills/grilling/SKILL.md`, "Defined, inferred, ask"). Todo o resto é trabalho do agente.
+Cada portão mostra três blocos: o definido, com a fonte; o inferido, com o motivo; e as perguntas em aberto (`skills/grilling/SKILL.md`, "Defined, inferred, ask").
 
 ### Integração entre planejamento, arquitetura e execução
 
 | Passagem                   | Risco                                                 | Como é fechado                                                                        |
 | -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Planejamento → arquitetura | A slice precisa de um padrão que não existe           | Cobertura arquitetural no look across + ticket `pattern` primeiro, com revisão humana |
-| Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato na matriz até o aceite; construído, nos cabeçalhos dos donos e no caminho linear, conferidos pelo `metri sot` |
+| Planejamento → arquitetura | O contrato se perde quando o plano termina            | Contrato na matriz até o aceite; depois, testes, cabeçalhos e caminho linear ("Fonte única por conceito") |
 | Planejamento → execução    | Regra de negócio discutida some entre sessões         | UCs e BRs gravados no arquivo do ticket desde o Moldar (`draft`); depois migram para testes |
 | Planejamento → execução    | Agentes nomeiam o mesmo conceito de formas diferentes | `CONTEXT.md` com identificador EN; chaves da metodologia fixas e validadas            |
-| Arquitetura → execução     | O agente lê regras demais ou de menos                 | `applies_to` + `rules-for` + orçamento de ~5 regras por ticket                        |
-| Arquitetura → execução     | O builder altera padrões em silêncio                  | O builder não edita arquitetura; proposta de padrão                                   |
+| Arquitetura → execução     | O agente lê regras demais ou de menos                 | `applies_to` + `rules-for` + orçamento por tamanho                                    |
+| Arquitetura → execução     | O builder altera padrões em silêncio                  | O builder só corrige o doc que a própria mudança deixou errado; regra, ADR, termo ou design novo, só por ticket `pattern` ou portão de conhecimento |
 | Design → execução          | Componentes recriados ou estilos fixos                | Biblioteca base + tokens no tema + lint sem valores fixos                             |
-| Execução → verificação     | Checks afrouxados por quem constrói                   | Checks imutáveis para o `/build`, conferidos pelo `metri scope`; revisor de contrato confere a cobertura |
-| Execução → verificação     | Falha que passa nos checks, no contrato e nas regras   | Falha realista por passo no UC, no look across; eixo Risco no aceite                  |
-| Execução → execução        | Conflitos em paralelo                                 | `touches` + serialização de pontos centrais + worktrees, com uma `E2E_PORT` por worker |
+| Execução → verificação     | Checks afrouxados por quem constrói                   | Checks imutáveis para o `/build`; `.only` e `.skip` barrados pelo lint do projeto (Biome); revisor de contrato confere a cobertura |
+| Execução → verificação     | Falha que passa nos checks, no contrato e nas regras   | Falha realista só para efeito externo real que o projeto tem hoje; eixo Risco no aceite, com cenário possível hoje |
+| Execução → execução        | Conflitos em paralelo                                 | Fronteira em profundidade + `touches` disjuntos + teto de builders pela máquina + worktrees, com uma `E2E_PORT` por worker |
 | Execução → produção        | Tarefas humanas e deploy esquecidos                   | Tickets `task` e `release`                                                            |
 | Produção → evolução        | Bug volta                                             | Diagnosticar com check vermelho + "por que o guardrail não pegou?"                    |
 
 ### Skills e scripts
 
-Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents` e `humanizer`, que tira do texto lido por humano (a prosa de `docs/` e dos ADRs, a interface, os portões e os relatórios) os sinais de texto gerado. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
+Cada skill em `skills/<nome>/SKILL.md`; a `description` diz o que faz e quando. Chamadas pelo usuário: `/shape`, `/look-across`, `/build`, `/accept`, `/diagnose`. Chamadas pelo modelo: `grilling`, `domain-language`, `guardrail`, `tdd`, `research`, `writing-for-agents` e `humanizer`, que tira do texto lido por humano os sinais de texto gerado. Como são escritas: `skills/writing-for-agents/SKILL.md` e `skills/writing-for-agents/SKILL-MECHANICS.md`.
 
-**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init` (com o starter num projeto novo), `verify`, `check` (fronteiras, acesso e datas, no `lint` do projeto), `rules-for`, `rules-index` (gera os INDEX; `--check` confere), `docs-lint` (lint estrutural + formato da matriz), `design-tokens` (o tema contra o `DESIGN.md`), `sot` (os cabeçalhos `SOURCE OF TRUTH` e o registro das slices construídas), `prune` (tira a evidência da slice na poda do `/accept`) e `scope` (a branch de um ticket muda só o que o ticket pode mudar, sem afrouxar check). Cada comando explica o que faz em `--help`.
+**A CLI `metri`** (código, não skill; TypeScript rodando com `tsx`, sem build): `init`, `verify`, `check`, `rules-for`, `rules-index`, `docs-lint`, `design-tokens`, `sot` e `prune`; `metri --help` diz o que cada um faz.
 
 ## Decisões do método
 
@@ -330,7 +318,9 @@ O porquê das decisões globais, para humano. A regra dona, entre parênteses, g
 | O backend é a fonte do contrato de API: os DTOs Zod geram o OpenAPI, e o app-web gera o client dele (`backend/http-api`) | O contrato é o que o servidor valida e serializa de fato; o client desatualizado quebra o `verify`, não a produção, e o OpenAPI serve também a documentação | Pacote de contrato compartilhado (URL, método e resposta à mão, sem tipo que acuse a deriva); tRPC (sem adaptador oficial para o NestJS, chamada RPC e OpenAPI ainda alfa); ts-rest (contrato próprio no lugar dos DTOs do `nestjs-zod`, ignora o prefixo global do Nest e o estável pede Zod 3) |
 | Quatro eixos no aceite: contrato, padrões, experiência e risco (`skills/accept/SKILL.md`) | Os três primeiros julgam conformidade; uma corrida, uma falha parcial ou uma fronteira de confiança que nenhum contrato, regra ou check nomeia não tinha dono | Mais itens de verificação nas regras (só cobre o que alguém já escreveu); um revisor único com lista longa (um eixo mascara o outro) |
 | Achados com evidência citada, confiança e classe; o mecânico entra como inferido no portão (`skills/accept/FINDING-FORMAT.md`) | Achado sem linha citada é palpite, e o humano não deve decidir cada correção óbvia | Todo achado decidido pelo humano (portão pesado); correção aplicada pelo próprio revisor (o trabalho se julgaria) |
-| O processo do `/build` conferido pelo `metri scope`, não só por texto (`skills/build/SKILL.md`) | Confiar em erros vale também para as regras do método: check afrouxado e mudança fora do ticket viram falha | Hooks do Claude Code instalados pelo `metri init` (presos a uma ferramenta de agente); a regra só em texto |
+| Integração por ticket, julgamento por slice (`skills/build/SKILL.md`, "Git") | O aceite como portão de integração criava ciclo entre slices que o grafo de tickets não tinha e deixava trabalho pronto parado em branches longas; o ticket verde já passou nos checks | Aceite por slice como portão de integração (slices acíclicas, branches empilhadas) |
+| `.only` e `.skip` barrados pelo lint do projeto (Biome); "checks imutáveis" fica em texto, e o revisor de contrato confere a cobertura (`skills/build/SKILL.md`) | Conferir o processo do `/build` por comando só deu falso positivo, e o que ele pegaria o lint já pega | `metri scope` (a branch do ticket muda só o que o ticket pode mudar) |
+| Exceção de projeto é uma linha no `.metri/ARCHITECTURE.md`; ADR só acima do limiar (`skills/look-across/ACTIVATION.md`) | ADR para toda exceção contrariava o limiar de ADR, e a maioria das exceções não passava nele; a linha chega ao builder e aos revisores com a regra que substitui | ADR para toda exceção |
 | Enquadramento desafiado, 2–3 abordagens e crítico sem contexto antes dos portões de direção e de plano (`skills/shape/SKILL.md`, `skills/look-across/SKILL.md`) | O interrogatório aprofunda o enquadramento do usuário sem questioná-lo, e uma abordagem escolhida sem comparação é uma decisão que o agente tomou | Diagnóstico de demanda no estilo YC (o método começa depois da decisão de construir); revisões de plano por persona (CEO, engenharia), cada uma com sua etapa |
 | A Source é o núcleo: stack única e DDD-Lite; o particular fica sob demanda ou em "Quando precisar" (`skills/writing-for-agents/RULE-FORMAT.md`, "Sob demanda") | A consistência entre aplicações vem do mesmo jeito de escrever o código, e a configuração particular na base virava cópia em todo projeto novo, sem a necessidade que a justificaria | Perfis por stack, combináveis por área (difíceis de manter e sem projeto que os pedisse); manter tudo na base (regras longas, starter com configuração que o projeto não usa) |
 | Sem padrão de transação: a escrita que precisa ser atômica abre `$transaction` dentro do próprio repositório (`backend/persistence`) | O escopo de transação no caso de uso (`UnitOfWork`, contexto assíncrono, `version`) enviesava toda escrita para um mecanismo que poucas operações pedem; o agente estrutura a atomicidade conforme a necessidade | `UnitOfWork` genérico com `version` como padrão (toda escrita dependia do escopo); contrato de transação por fluxo (a regra de negócio vazou para a infra) |
@@ -387,10 +377,10 @@ Referências:
 | Triagem com máquina de estados      | Fora               | Uma regra de roteamento no `AGENTS.md` basta                                                                                                                          |
 | Wayfinder como processo separado    | Fundido            | Vira a seção Fog da matriz                                                                                                                                            |
 | Standup, relatório de status, retro | Fora               | A matriz é o status; o aprendizado é disparado por evento e passa por portão                                                                                          |
-| Estimativas                         | Fora               | O tamanho já é limitado: um ticket cabe num contexto limpo e em ~5 regras                                                                                             |
+| Estimativas                         | Fora               | O tamanho já é limitado: um ticket cabe num contexto limpo e no orçamento do `rules-for`                                                                              |
 | Times de agentes com papéis         | Fora               | Passar trabalho entre agentes perde contexto ("Evolução futura")                                                                                            |
 | Documento de handoff                | Só se interrompido | O ticket já é autocontido                                                                                                                                             |
-| Arquivo de lições aprendidas        | Fora               | A lição vira check, regra, ADR, contexto, design, ou nada                                                                                                             |
+| Arquivo de lições aprendidas        | Fora no projeto    | A lição vira check, regra, ADR, contexto, design, ou nada; só a do Source tem arquivo ("Limiares") |
 
 ## Evolução futura
 
@@ -404,5 +394,5 @@ Itens fora do método, cada um com o ponto de extensão pronto (campo opcional o
 | **Comunicação entre agentes** | Artefatos (status, `PP`, `GAP`, Notas), mediados pelo coordenador | Canais ou "rooms"; troca de informação entre workers, nunca repasse de trabalho |
 | **Acompanhamento de consumo de tokens** | `metrics` no ticket, `{ rules, tokens }`, preenchido pelo `/build` no `done` | Painel de consumo, orçamentos por agente e por slice |
 | **Segunda opinião de outro modelo** | O eixo Risco e os críticos são subagentes com brief próprio, sem a conversa | O mesmo brief rodando em outro modelo, com cada achado marcado pela origem; concordância sobe a confiança, nunca decide |
-| **Evals das skills** | O projeto de amostra da CLI (`cli/__fixtures__/project`) | `/shape`, `/look-across` e `/build` rodando num projeto de amostra a cada versão, com o resultado conferido |
-| **Times de agentes coordenados** | Coordenador e worker; `blocked_by` e `touches`; branches `slice/<id>` e `ticket/<id>`; worktrees | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações |
+| **Evals do método** | `evals/`: o peso (`pnpm stats`), que mede cada corte contra a base | `/shape`, `/look-across` e `/build` rodando nos cenários a cada versão, com o resultado conferido |
+| **Times de agentes coordenados** | Coordenador e worker; `blocked_by` e `touches`; branches `ticket/<id>` sobre a de integração; worktrees | Orquestrador contínuo (no estilo Sandcastle ou Morphite), orçamentos, notificações |

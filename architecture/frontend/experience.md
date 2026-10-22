@@ -62,7 +62,7 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 
 **Obrigatório.** A tela funciona em desktop e em mobile.
 
-**Obrigatório.** Cada critério `Tela:` de um ticket (o critério julgado na tela) tem screenshot em desktop e em mobile na pasta do ticket: `.metri/tickets/<id>/<n>-desktop.png` e `<n>-mobile.png`, com `<n>` a ordem do critério entre todos os do ticket.
+**Obrigatório.** Cada critério `Tela:` de um ticket (o que só o screenshot julga) tem screenshot em desktop na pasta do ticket, `.metri/tickets/<id>/<n>-desktop.png`, com `<n>` a ordem do critério entre todos os do ticket; o critério que fala do celular também em mobile, `<n>-mobile.png`, pelo teste com `@mobile` (`frontend/testing.md`, "E2e de critério de UI").
 
 ## Verificação
 
@@ -73,4 +73,4 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 - A tela parte de uma tela canônica ou de uma referência, agrupada por proximidade e alinhamento?
 - Os textos usam os termos do `docs/CONTEXT.md`, os rótulos dizem o resultado e os dados são realistas?
 - A tela funciona em desktop e em mobile?
-- Todo critério `Tela:` de um ticket `done` tem os dois screenshots na pasta do ticket, e a slice done não guarda nenhum? (check: docs-lint)
+- A slice done não guarda screenshot na pasta dos tickets? (check: docs-lint)

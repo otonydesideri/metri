@@ -41,28 +41,33 @@ Capacidades condicionais:
   - No source, todas entram.
 
 Saída (não imprime o conteúdo das regras):
-  - Uma linha por regra: "<id> — <description> (<caminho>)", as do projeto primeiro, cada grupo em ordem de id.
+  - Uma linha por regra: "<id> — <description> (<caminho>, <tamanho> KB)", as do projeto primeiro, cada grupo
+    em ordem de id.
   - Depois, as regras que as devolvidas citam (not_covered e caminhos <área>/<tema>.md do corpo) e que não
     foram devolvidas, com o prefixo "citada:": só o id e a description, para ler quando o caso chegar lá.
-  - Depois, as linhas de "Exceções e defaults trocados" do ARCHITECTURE.md que citam algum id devolvido,
-    com o prefixo "exceção:".
-  - Avisos com o prefixo "aviso:". Mais de 5 regras gera o aviso "ticket grande demais ou applies_to largo";
-    não é erro. No primeiro ticket depois de um pattern novo (um T de type pattern em blocked_by), o aviso diz
-    que é exceção esperada.
+  - Depois, as linhas de "Exceções e defaults trocados" do ARCHITECTURE.md que citam algum id devolvido ou
+    citado, com o prefixo "exceção:".
+  - Avisos com o prefixo "aviso:". Regras devolvidas somando mais de 80 KB geram um aviso, não erro: o ticket
+    se divide quando cruza áreas que os caminhos dele não pedem, e a regra longa vira lição para a Source
+    (.metri/SOURCE-LESSONS.md). No primeiro ticket depois de um pattern novo (um T de type pattern em
+    blocked_by), o aviso diz que é exceção esperada.
 
 Erros (saem com código 1, prefixo "erro:"):
   - Id de regra do projeto igual a id global, a não ser que "Exceções e defaults trocados" declare a
-    substituição: "- <id> substituída pela regra do projeto → ADR-NNNN" (a linha cita o id, "substitu" e o
-    ADR). Declarada, a regra do projeto entra no lugar da global.
+    substituição: "- <id> substituída pela regra do projeto" (a linha cita o id e "substitu"; o "→ ADR-NNNN"
+    no fim é opcional). Declarada, a regra do projeto entra no lugar da global.
   - Ticket cujo arquivo não existe, ticket sem "areas" e chamada sem caminho nem ticket.
 `;
 
-const BUDGET = 5;
+// The budget of the returned rules, in KB: what a ticket's context holds besides code.
+const BUDGET_KB = 80;
 
 type Rule = {
   id: string;
   path: string;
   description: string;
+  // Size of the rule file, in bytes.
+  size: number;
   appliesTo: string[];
   readFirst: string[];
   // Rule ids it cites: those of not_covered and the `<area>/<topic>.md` paths of the body.
@@ -134,6 +139,7 @@ function readRules(dir: string | undefined, isProject: boolean): Rule[] {
         id: frontmatter.id,
         path,
         description: String(frontmatter.description ?? ''),
+        size: Buffer.byteLength(source),
         appliesTo: asList(frontmatter.applies_to),
         readFirst: asList(frontmatter.read_first),
         cited: citedIds(source, asList(frontmatter.not_covered)),
@@ -149,12 +155,9 @@ const projectRules = readRules(layout.projectDir, true);
 const globalIds = new Set(globalRules.map(({ id }) => id));
 const replaced = new Set<string>();
 for (const rule of projectRules.filter(({ id }) => globalIds.has(id))) {
-  const isDeclared = exceptions.some(
-    (text) => mentions(text, rule.id) && /substitu/i.test(text) && /ADR-\d{4}/.test(text),
-  );
-  if (!isDeclared) {
+  if (!exceptions.some((text) => mentions(text, rule.id) && /substitu/i.test(text))) {
     fail(
-      `${rule.path}: o id ${rule.id} já é regra global; para substituí-la, declare em "Exceções e defaults trocados" do ${PROJECT_INDEX}: - ${rule.id} substituída pela regra do projeto → ADR-NNNN`,
+      `${rule.path}: o id ${rule.id} já é regra global; para substituí-la, declare em "Exceções e defaults trocados" do ${PROJECT_INDEX}: - ${rule.id} substituída pela regra do projeto`,
     );
   }
   replaced.add(rule.id);
@@ -256,8 +259,9 @@ const result = [...selected]
   })
   .sort((a, b) => Number(b.isProject) - Number(a.isProject) || a.id.localeCompare(b.id));
 
+const kb = (bytes: number) => (bytes / 1024).toFixed(1);
 for (const rule of result) {
-  lines.push(`${rule.id} — ${rule.description} (${rule.path})`);
+  lines.push(`${rule.id} — ${rule.description} (${rule.path}, ${kb(rule.size)} KB)`);
 }
 lines.push(...readBefore);
 const resultIds = new Set(result.map(({ id }) => id));
@@ -267,8 +271,9 @@ const cited = [...new Set(result.flatMap((rule) => rule.cited))]
 for (const id of cited) {
   lines.push(`citada: ${id} — ${rules.get(id)?.description}`);
 }
+const mentioned = [...resultIds, ...cited];
 for (const text of exceptions) {
-  if (result.some(({ id }) => mentions(text, id))) {
+  if (mentioned.some((id) => mentions(text, id))) {
     lines.push(`exceção: ${text}`);
   }
 }
@@ -280,10 +285,13 @@ if (inactive.length > 0) {
 if (result.length === 0) {
   warnings.push('nenhuma regra');
 }
-if (result.length > BUDGET && afterPattern !== undefined) {
-  warnings.push(`${result.length} regras, mais de ${BUDGET}: exceção esperada, primeiro ticket depois do pattern ${afterPattern}`);
-} else if (result.length > BUDGET) {
-  warnings.push(`${result.length} regras, mais de ${BUDGET}: ticket grande demais ou applies_to largo`);
+const total = result.reduce((sum, rule) => sum + rule.size, 0);
+if (total > BUDGET_KB * 1024) {
+  const reason =
+    afterPattern !== undefined
+      ? `exceção esperada, primeiro ticket depois do pattern ${afterPattern}`
+      : 'divida o ticket se ele cruza áreas que os caminhos dele não pedem; regra longa é lição para a Source';
+  warnings.push(`regras somam ${kb(total)} KB, mais de ${BUDGET_KB} KB: ${reason}`);
 }
 
 for (const text of [...lines, ...warnings.map((warning) => `aviso: ${warning}`)]) {

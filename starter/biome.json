@@ -9,6 +9,10 @@
 	"linter": {
 		"rules": {
 			"preset": "recommended",
+			"suspicious": {
+				"noFocusedTests": "error",
+				"noSkippedTests": "error"
+			},
 			"style": {
 				"noRestrictedImports": {
 					"level": "error",

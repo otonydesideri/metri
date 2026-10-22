@@ -11,6 +11,5 @@ export default defineConfig({
 		setupFiles: ['test/setup-e2e.ts'],
 		env: { NODE_ENV: 'test' },
 		hookTimeout: 30_000,
-		passWithNoTests: true,
 	},
 });

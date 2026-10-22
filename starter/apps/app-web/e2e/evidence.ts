@@ -25,5 +25,6 @@ export async function saveEvidence(
 			`${criterion}-${testInfo.project.name}.png`,
 		),
 		fullPage: true,
+		animations: 'disabled',
 	});
 }

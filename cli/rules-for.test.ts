@@ -17,7 +17,7 @@ describe('rules-for', { timeout: 30_000 }, () => {
     expect(status).toBe(0);
     expect(ids(lines)).toEqual(['frontend/order-list', 'frontend/components', 'frontend/experience', 'frontend/state']);
     expect(lines[0]).toBe(
-      'frontend/order-list — a lista de pedidos do painel — o estado vazio sem a ação de criar pedido. (.metri/rules/frontend/order-list.md)',
+      'frontend/order-list — a lista de pedidos do painel — o estado vazio sem a ação de criar pedido. (.metri/rules/frontend/order-list.md, 0.4 KB)',
     );
     expect(lines).toContain(
       'exceção: `frontend/components`, "Estados de leitura": o vazio da lista de pedidos não convida a criar → ADR-0001',
@@ -76,15 +76,24 @@ describe('rules-for', { timeout: 30_000 }, () => {
     expect(ids(run('rules-for', ['--root', REPO, CACHE]).lines)).toContain('infrastructure/cache');
   });
 
-  it('orçamento: mais de 5 regras gera aviso, sem erro', () => {
+  it('orçamento: cada regra devolvida sai com o tamanho; mais de 80 KB somados gera aviso, sem erro', () => {
     const { status, lines } = run('rules-for', ['--root', FIXTURE, '--ticket', 'UC1.2']);
     expect(status).toBe(0);
-    expect(ids(lines)).toHaveLength(7);
-    expect(lines).toContain('aviso: 7 regras, mais de 5: ticket grande demais ou applies_to largo');
-    expect(run('rules-for', ['--root', FIXTURE, PAGE]).lines.join('\n')).not.toContain('mais de 5');
+    const sizes = lines.filter((line) => ids([line]).length === 1).map((line) => Number(/, ([\d.]+) KB\)$/.exec(line)?.[1]));
+    expect(sizes).toHaveLength(7);
+    expect(sizes.every((size) => size > 0)).toBe(true);
+    expect(lines.filter((line) => line.startsWith('aviso: '))).toEqual([]);
+    // the size counts, not the number of rules: the same 4 rules warn once one of them grows
+    expect(ids(run('rules-for', ['--root', FIXTURE, PAGE]).lines)).toHaveLength(4);
+    expect(run('rules-for', ['--root', FIXTURE, PAGE]).lines.join('\n')).not.toContain('mais de 80 KB');
+    const dir = copyFixture();
+    edit(dir, '.metri/rules/frontend/order-list.md', (source) => `${source}\n${'Texto longo da regra.\n'.repeat(4000)}`);
+    expect(run('rules-for', ['--root', dir, PAGE]).lines.filter((line) => line.startsWith('aviso: '))).toEqual([
+      expect.stringMatching(/^aviso: regras somam [\d.]+ KB, mais de 80 KB: divida o ticket se ele cruza áreas que os caminhos dele não pedem; regra longa é lição para a Source$/),
+    ]);
   });
 
-  it('colisão de id com regra global é erro, salvo substituição declarada com ADR', () => {
+  it('colisão de id com regra global é erro, salvo substituição declarada, com ADR opcional', () => {
     const dir = copyFixture();
     write(
       dir,
@@ -98,12 +107,12 @@ describe('rules-for', { timeout: 30_000 }, () => {
     edit(dir, '.metri/ARCHITECTURE.md', (source) =>
       source.replace(
         '## Exceções e defaults trocados\n',
-        '## Exceções e defaults trocados\n\n- frontend/components substituída pela regra do projeto → ADR-0001\n',
+        '## Exceções e defaults trocados\n\n- frontend/components substituída pela regra do projeto\n',
       ),
     );
     const replaced = run('rules-for', ['--root', dir, PAGE]);
     expect(replaced.status).toBe(0);
-    expect(replaced.lines).toContain('frontend/components — componentes do projeto (.metri/rules/frontend/components.md)');
+    expect(replaced.lines).toContain('frontend/components — componentes do projeto (.metri/rules/frontend/components.md, 0.1 KB)');
     expect(replaced.lines.join('\n')).not.toContain('node_modules/metri/architecture/frontend/components.md');
   });
 
@@ -131,9 +140,28 @@ describe('rules-for', { timeout: 30_000 }, () => {
   it('orçamento: no primeiro ticket depois de um pattern novo, o aviso diz que é exceção esperada', () => {
     const dir = copyFixture();
     edit(dir, '.metri/tickets/T2.1.md', (source) => source.replace('type: task', 'type: pattern'));
-    expect(run('rules-for', ['--root', dir, '--ticket', 'UC1.2']).lines).toContain(
-      'aviso: 7 regras, mais de 5: exceção esperada, primeiro ticket depois do pattern T2.1',
+    edit(dir, '.metri/tickets/UC1.2.md', (source) => source.replace('areas: [', 'areas: [frontend/order-list, '));
+    edit(dir, '.metri/rules/frontend/order-list.md', (source) => `${source}\n${'Texto longo da regra.\n'.repeat(4000)}`);
+    expect(run('rules-for', ['--root', dir, '--ticket', 'UC1.2']).lines).toContainEqual(
+      expect.stringMatching(/^aviso: regras somam [\d.]+ KB, mais de 80 KB: exceção esperada, primeiro ticket depois do pattern T2\.1$/),
     );
+  });
+
+  it('exceção: sai a linha que cita uma regra devolvida ou citada; a de outra regra, não', () => {
+    const dir = copyFixture();
+    edit(dir, '.metri/ARCHITECTURE.md', (source) =>
+      source.replace(
+        '## Exceções e defaults trocados\n\n',
+        '## Exceções e defaults trocados\n\n- `frontend/theming`, "Tokens": o painel usa a paleta do cliente → ADR-0001\n- `backend/errors`, "Envelope": o envelope legado da exportação, enquanto o parceiro não migra\n',
+      ),
+    );
+    const { lines } = run('rules-for', ['--root', dir, PAGE]);
+    expect(lines.some((line) => line.startsWith('citada: frontend/theming — '))).toBe(true);
+    expect(lines).toContain('exceção: `frontend/theming`, "Tokens": o painel usa a paleta do cliente → ADR-0001');
+    expect(lines).toContain(
+      'exceção: `frontend/components`, "Estados de leitura": o vazio da lista de pedidos não convida a criar → ADR-0001',
+    );
+    expect(lines.join('\n')).not.toContain('backend/errors');
   });
 
   it('sem caminho nem ticket é erro', () => {

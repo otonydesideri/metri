@@ -14,6 +14,10 @@
 	"linter": {
 		"rules": {
 			"preset": "recommended",
+			"suspicious": {
+				"noFocusedTests": "error",
+				"noSkippedTests": "error"
+			},
 			"style": {
 				"noRestrictedImports": {
 					"level": "error",
@@ -58,9 +62,9 @@
 	"scripts": {
 		"dev": "turbo run dev",
 		"build": "turbo run build",
-		"typecheck": "turbo run typecheck",
-		"lint": "turbo run lint && metri check",
-		"test": "turbo run test --",
+		"typecheck": "turbo run typecheck --continue",
+		"lint": "turbo run lint --continue && metri check",
+		"test": "turbo run test --continue -- --passWithNoTests",
 		"verify": "metri verify",
 		"api:generate": "pnpm --filter app-api api:generate && pnpm --filter app-web api:generate",
 		"db:up": "docker compose up -d --wait",
@@ -95,7 +99,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
 	test: {
 		include: ['src/**/*.spec.ts'],
-		passWithNoTests: true,
 	},
 });
 ```
