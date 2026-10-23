@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.0.1 (2026-10-23)
+
+O `@metri/utils` pode importar pacote externo. Função de uso geral compartilhada entre app e frontend precisa de
+biblioteca de cálculo puro, como o `date-fns`, e o `boundaries` a reprovava junto com o import do core.
+
+### O que muda
+
+- **`boundaries` separa o core do utils.** O `core` segue sem dependência externa. O `utils` passa a reprovar só o
+  import de `@metri/core` (`utils importando o core`), regra à parte com outro motivo: o utils tem de servir quem não
+  tem domínio, como os frontends. `backend/boundaries.md` acompanha: a tabela, o `use_when`, a exceção e a seção do
+  utils. Dependência externa no utils entra por escolha do projeto, porque vira dependência de todo consumidor.
+
+### Migrar de v2.0.0
+
+1. `pnpm add -D -w github:otonydesideri/metri#v2.0.1`.
+
 ## v2.0.0 (2026-10-22)
 
 Harness em vez de travas. Dois projetos rodaram o método de verdade e mostraram onde ele pesava: travas que só
