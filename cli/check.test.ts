@@ -78,6 +78,17 @@ describe('check', { timeout: 30_000 }, () => {
     });
   });
 
+  it('boundaries: o utils aceita pacote externo, e só o import do core o reprova', () => {
+    const dir = project();
+    write(dir, 'packages/utils/src/date.ts', "import { format } from 'date-fns';\nimport { randomUUID } from 'node:crypto';\nimport { pad } from './pad';\n");
+    expect(check(dir, 'boundaries')).toEqual({ status: 0, lines: [] });
+    write(dir, 'packages/utils/src/result.ts', "import { right } from '@metri/core/types';\n");
+    expect(check(dir, 'boundaries')).toEqual({
+      status: 1,
+      lines: ['falha boundaries: utils importando o core', '  packages/utils/src/result.ts: @metri/core/types'],
+    });
+  });
+
   it('date-time: new Date com componentes soltos no app-api e nos pacotes; o app-web fica de fora', () => {
     const dir = project();
     write(dir, 'apps/app-api/src/domain/enterprise/domain-services/cutoff.ts', 'const a = 1;\nconst cutoff = new Date(2026, 8, 30, 14);\n');

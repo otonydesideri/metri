@@ -131,10 +131,14 @@ const boundaries: Check = ({ domainPackages }) => {
         (s) => packageOf(s) === '@metri/db',
       ),
     },
-    ...['core', 'utils'].map((name) => ({
-      label: name === 'core' ? 'core com dependência externa' : 'utils com dependência externa, inclusive o core',
-      items: importing(tsFiles(`packages/${name}/src`), (s) => !isInternal(s) && !isBuiltin(s)),
-    })),
+    {
+      label: 'core com dependência externa',
+      items: importing(tsFiles('packages/core/src'), (s) => !isInternal(s) && !isBuiltin(s)),
+    },
+    {
+      label: 'utils importando o core',
+      items: importing(tsFiles('packages/utils/src'), (s) => packageOf(s) === '@metri/core'),
+    },
     {
       label: 'produção do app-api importando test/',
       items: importing(apiProduction, (s) => /(^|\/)test\//.test(s)),

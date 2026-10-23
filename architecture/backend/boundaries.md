@@ -4,7 +4,7 @@ description: "o grafo de dependência permitido entre camadas e pacotes do backe
 use_when:
   - "adicionar um import que cruza camada ou pacote do backend"
   - "criar uma área nova em `src/`"
-  - "adicionar dependência externa a `@metri/core` ou a `@metri/utils`"
+  - "adicionar dependência externa a `@metri/core`"
   - "usar framework, Prisma ou Zod dentro de `domain/`"
 applies_to:
   - "apps/app-api/**"
@@ -41,7 +41,7 @@ main.ts / app.module.ts
 | Código em | Pode importar | Nunca importa |
 | --- | --- | --- |
 | `packages/core/src` | builtins do Node (`node:*`) | Qualquer pacote externo: NestJS, Prisma, Zod |
-| `packages/utils/src` | builtins do Node (`node:*`) | Qualquer pacote externo, mais `@metri/core` |
+| `packages/utils/src` | builtins do Node (`node:*`) e pacotes externos | `@metri/core` |
 | `src/domain/enterprise` | `@metri/core`, `@metri/utils`, `node:*` e as bibliotecas de cálculo puro permitidas, abaixo | NestJS, `@metri/db`, Zod, `src/infra`, `test/` |
 | `src/domain/application` | O de cima, mais `Injectable` de `@nestjs/common` | O resto de `@nestjs/common` e qualquer outro `@nestjs/*`, `nestjs-pino`, `@metri/db`, Zod, `src/infra`, `test/` |
 | `src/infra` | `src/domain`, `@metri/core`, `@metri/utils`, bibliotecas de infraestrutura | `test/`, `src/domain/enterprise/domain-services` |
@@ -53,7 +53,7 @@ Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client
 
 > **Por quê.** Refazer à mão o cálculo que a biblioteca resolve (horário de verão, arredondamento) é a classe de bug que ela existe para evitar, e um contrato de infra em volta dela seria abstração sem troca real.
 
-- **Exceção.** `packages/core` e `packages/utils` ficam sem dependência externa mesmo assim: a permissão vale só para o domínio do app.
+- **Exceção.** `packages/core` fica sem dependência externa mesmo assim: a permissão vale só para o domínio do app.
 
 ## A infra não importa regra de domínio
 
@@ -63,9 +63,9 @@ Quando o domínio precisa de uma biblioteca de cálculo puro, sem I/O nem client
 
 O core é o vocabulário de domínio compartilhado do monorepo; qualquer dependência externa dele vira dependência de todo consumidor.
 
-## `packages/utils` também não, nem do core
+## `packages/utils` não importa o core
 
-Mesma restrição de dependência externa do core, mais uma: `@metri/utils` não importa `@metri/core`. Uma função de uso geral vale em qualquer ponto do sistema, e depender do vocabulário de uma camada específica é o que a prenderia a uma delas. Na prática: função que precisa devolver `Either` ou `DomainError` está codificando uma regra, e a casa dela é o módulo dono dessa regra. Sem essa seta, o pacote deixa de ser consumível por quem não tem domínio nenhum, como os apps de frontend.
+`@metri/utils` não importa `@metri/core`. Uma função de uso geral vale em qualquer ponto do sistema, e depender do vocabulário de uma camada específica é o que a prenderia a uma delas. Na prática: função que precisa devolver `Either` ou `DomainError` está codificando uma regra, e a casa dela é o módulo dono dessa regra. Sem essa seta, o pacote deixa de ser consumível por quem não tem domínio nenhum, como os apps de frontend. Dependência externa no utils vira dependência de todo consumidor, então entra por escolha do projeto.
 
 ## A exceção de framework no domínio é `@Injectable()`, e só ela
 
