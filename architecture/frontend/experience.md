@@ -62,7 +62,7 @@ Quando a ação é destrutiva: **Padrão.** Desfazer; confirmar só quando desfa
 
 **Obrigatório.** A tela funciona em desktop e em mobile.
 
-**Obrigatório.** Cada critério `Tela:` de um ticket (o que só o screenshot julga) tem screenshot em desktop na pasta do ticket, `.metri/tickets/<id>/<n>-desktop.png`, com `<n>` a ordem do critério entre todos os do ticket; o critério que fala do celular também em mobile, `<n>-mobile.png`, pelo teste com `@mobile` (`frontend/testing.md`, "E2e de critério de UI").
+**Obrigatório.** Cada critério `Tela:` de um ticket (o que só o screenshot julga) tem screenshot em desktop e em mobile na pasta do ticket, `.metri/tickets/<id>/<n>-desktop.png` e `<n>-mobile.png`, com `<n>` a ordem do critério entre todos os do ticket, cada um gravado pela execução do e2e no projeto dele (`frontend/testing.md`, "E2e de critério de UI"); só o critério cujo teste leva `@desktop` fica sem o mobile.
 
 ## Verificação
 

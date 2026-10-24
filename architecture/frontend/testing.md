@@ -78,7 +78,15 @@ Paths de `src/`, `test/` e `e2e/` são relativos ao app frontend (`apps/app-web/
 
 ### E2e de critério de UI
 
-Fora da pirâmide, o Playwright prova no browser real a jornada de cada UC de tela e cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência"), com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O projeto `desktop` (`devices['Desktop Chrome']`) roda todo e2e; o `mobile` (`devices['Pixel 7']`) roda só o teste com `@mobile` no título: o do critério que fala do celular, e todo teste que ramifica em `isMobile`, que sem a marca perde o ramo em silêncio. O teste de um critério `Tela:` termina gravando a evidência dele:
+Fora da pirâmide, o Playwright prova no browser real a jornada de cada UC de tela e cada critério `Tela:` de um ticket (`frontend/experience.md`, "Desktop, mobile e evidência"), com o app servido pelo `webServer` do `playwright.config.ts` e o seed de desenvolvimento. O projeto `desktop` (`devices['Desktop Chrome']`) e o `mobile` (`devices['Pixel 7']`) rodam todo e2e, e a execução no `mobile` prova que o UC se cumpre no celular: o Playwright só age no elemento visível, habilitado e não coberto.
+
+**Obrigatório.** O que a tela faz diferente no celular (o menu num drawer, a tabela que rola de lado) é afirmado num ramo `isMobile` do próprio teste.
+
+**Obrigatório.** Só o teste que prova o que não existe no celular (hover, atalho de teclado, arrastar com o mouse) leva `@desktop` no título, que o tira do projeto `mobile`. Na dúvida, o teste fica sem a marca: rodar a mais custa tempo, e a marca a mais esconde o celular.
+
+**Obrigatório.** O dado que o e2e cria (e-mail, nome, slug) é único por execução, com sufixo aleatório, e a busca espera a linha única antes de agir: os dois projetos rodam em paralelo no mesmo banco.
+
+O teste de um critério `Tela:` termina gravando a evidência dele:
 
 ```ts
 // e2e/order/confirm-order.e2e.ts
@@ -230,3 +238,4 @@ Exemplo completo: testing.examples.md#makeorder
 - O teste afirma reação da interface ao contrato, e não uma regra derivada que só o servidor pode provar?
 - Produção não importa de `test/`? (check: boundaries)
 - Tela atrás de login recebe no e2e a sessão gravada no banco e o cookie por `addCookies`, sem o provedor externo?
+- Só leva `@desktop` o e2e que prova o que não existe no celular, e o dado que o e2e cria é único por execução?

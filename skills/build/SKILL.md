@@ -23,7 +23,8 @@ Build the ticket the user names: a UC (the tracer) or a T. With no id, take the 
 ## UI tickets
 
 - **Seed**: realistic development data in the language of `docs/CONTEXT.md`: zero, one and many items, and long texts.
-- **Evidence**: each `Tela:` criterion has a Playwright e2e that ends saving `.metri/tickets/<id>/<n>-desktop.png` (and `<n>-mobile.png` for a criterion about the phone, tagged `@mobile`), `<n>` the criterion's order (`node_modules/metri/architecture/frontend/testing.md`, "E2e de critério de UI"). Run the ticket's e2e with `METRI_EVIDENCE=<id>`: only then does it save. Commit the evidence; /accept's pruning takes it out of the tree.
+- **E2e**: while writing and fixing an e2e, run it with `--project=desktop`; the ticket's `checks` in step 4 run both projects.
+- **Evidence**: each `Tela:` criterion has a Playwright e2e that ends saving `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`, one per project, `<n>` the criterion's order (`node_modules/metri/architecture/frontend/testing.md`, "E2e de critério de UI"). Run the ticket's e2e with `METRI_EVIDENCE=<id>`: only then does it save. Commit the evidence; /accept's pruning takes it out of the tree.
 - **Critique**: read the screenshots and judge them against the principles of `docs/DESIGN.md`, the UC's criteria, the rule `frontend/experience` and the canonical screen; fix and shoot again, at most 2 rounds, before step 4.
 
 ## Git

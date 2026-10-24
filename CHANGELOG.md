@@ -1,5 +1,31 @@
 # Changelog
 
+## v2.1.0
+
+O celular volta a ser provado. Na v2.0.0, o projeto `mobile` do Playwright passou a rodar só o teste com `@mobile`,
+e a jornada no celular e o print mobile pararam de vir.
+
+### O que muda
+
+- **Todo e2e roda em desktop e mobile.** O projeto `mobile` roda todo teste sem `@desktop` (`grepInvert`), e só o
+  teste que prova o que não existe no celular (hover, atalho de teclado, arrastar com o mouse) leva a marca. A
+  execução no `mobile` prova que o UC se cumpre no celular, e o que a tela faz diferente nele é afirmado num ramo
+  `isMobile` do próprio teste (`frontend/testing`, "E2e de critério de UI").
+- **Todo critério `Tela:` tem os dois prints**, `<n>-desktop.png` e `<n>-mobile.png`, cada um gravado pela execução
+  do e2e no projeto dele; sai o "critério que fala do celular" (`frontend/experience`).
+- **Dado único no e2e.** O que o e2e cria (e-mail, nome, slug) leva sufixo aleatório: os dois projetos rodam em
+  paralelo no mesmo banco.
+- **/build** escreve e corrige o e2e com `--project=desktop`, e os `checks` do ticket rodam os dois projetos.
+
+### Migrar de v2.0.1
+
+1. `pnpm add -D -w github:otonydesideri/metri#v2.1.0`.
+2. No `playwright.config.ts` do app web, troque `grep: /@mobile/` por `grepInvert: /@desktop/` no projeto `mobile`.
+3. Tire o `@mobile` dos títulos dos e2e, e ponha `@desktop` só no teste que prova o que não existe no celular.
+4. Troque e-mail, nome e slug literais que o e2e cria por valor com sufixo aleatório.
+5. Rode o e2e do app web: o teste que falhar só no `mobile` é bug do celular ou falta o ramo `isMobile`. A
+   evidência mobile dos tickets abertos sai no próximo /build ou /accept deles.
+
 ## v2.0.1 (2026-10-23)
 
 O `@metri/utils` pode importar pacote externo. Função de uso geral compartilhada entre app e frontend precisa de

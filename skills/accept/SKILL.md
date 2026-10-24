@@ -59,7 +59,7 @@ Present the reports in the chat, each axis apart so none masks another, under `#
 Call the Skill tool with "grilling" and walk the human through:
 
 - the slice's linear path: the "Caminho linear" of `.metri/ARCHITECTURE.md` with the slice's new owners in their places, each step as `arquivo:símbolo` with its `SOURCE OF TRUTH:` header;
-- for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png`, and `<n>-mobile.png` for one about the phone), with visual conformity to `docs/DESIGN.md`; and, when every UC of a feature's spec is `done` (its last slice), whether its Solução holds across all its UCs. Give the steps to run the app per criterion when the human wants them;
+- for each criterion, the paths of its evidence (the test that proves it and, for a `Tela:` criterion, `.metri/tickets/<id>/<n>-desktop.png` and `<n>-mobile.png`), with visual conformity to `docs/DESIGN.md`; and, when every UC of a feature's spec is `done` (its last slice), whether its Solução holds across all its UCs. Give the steps to run the app per criterion when the human wants them;
 - the commits (`git show <hash>`) of every ticket with `sensitive: true` or `type: pattern`;
 - each finding, with its group and the reviewer's recommendation: a `mecânico` finding grouped Corrigir agora is Inferred, decided with its reason unless the user objects; the user decides every other finding;
 - each uncovered axis: the user decides whether the slice is accepted without it or the axis runs again.

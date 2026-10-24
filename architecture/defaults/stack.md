@@ -43,7 +43,7 @@ Testes:
 - E2e do backend: supertest (backend/testing).
 - Dados de teste: `@faker-js/faker` (backend/testing, frontend/testing).
 - Interface: jsdom, `@testing-library/react`, `@testing-library/jest-dom`, `user-event` e MSW (frontend/testing).
-- E2e de interface e evidência dos critérios de UI: Playwright, com o projeto desktop e o mobile só para o teste `@mobile` (frontend/testing, frontend/experience).
+- E2e de interface e evidência dos critérios de UI: Playwright, com os projetos desktop e mobile, este sem o teste `@desktop` (frontend/testing, frontend/experience).
 
 ## Quando precisar
 
