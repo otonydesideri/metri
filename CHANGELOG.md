@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.0
+## v2.1.0 (2026-10-24)
 
 O celular volta a ser provado. Na v2.0.0, o projeto `mobile` do Playwright passou a rodar só o teste com `@mobile`,
 e a jornada no celular e o print mobile pararam de vir.
